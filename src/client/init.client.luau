@@ -18,6 +18,7 @@ local CONTROLLER_ORDER = {
 	"DataController",
 	"CombatController",
 	"LeaderboardController",
+	"ShiftLockController",
 }
 
 local UI_ORDER = {
@@ -28,6 +29,7 @@ local UI_ORDER = {
 	"ChestUI",
 	"CombatUI",
 	"LeaderboardUI",
+	"HudToggle",
 }
 
 print("[Client] bootstrap starting")
