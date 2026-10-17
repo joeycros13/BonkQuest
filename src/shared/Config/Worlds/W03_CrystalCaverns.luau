@@ -14,6 +14,9 @@ local World: WorldTypes.WorldDef = {
 	id = 3,
 	name = "The Crystal Caverns",
 	folder = "W03_CrystalCaverns",
+	-- the Index world card and Worlds-menu banner (2026-10-17, no enemies, past the stalls
+	-- looking at the boarded-up mine entrance; art/portraits/worlds/world_W03_2026-10-17.png)
+	profile = "rbxassetid://125541783517148",
 	enemies = {
 		-- Minion: a small bat that hovers low at the front of every lane and in the
 		-- halls; swoops down for a bite (ServerStorage/Assets/Enemies/CaveBat).
@@ -78,6 +81,7 @@ local World: WorldTypes.WorldDef = {
 			name = "Gem Mole",
 			hp = 1200,
 			secret = true,
+			adminPortrait = "rbxassetid://95259297161320", -- admin panel only, never the Index (2026-10-17)
 			melee = { damage = 40, cooldown = 1.8, windup = 0.48, range = 1.8, chaseSpeed = 15, armor = 0.15, move = "slash" },
 			coins = { min = 160, max = 230 },
 			exp = 360,
