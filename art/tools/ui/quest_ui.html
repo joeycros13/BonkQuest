@@ -1,0 +1,70 @@
+<!doctype html>
+<!--
+  DiceBattles quest skins (Dialogue B "Side card" + Tracker B "Outlined text",
+  picked on the Claude Design canvas https://claude.ai/artifact/M6s1p4LLoAErQGcy347KVt).
+  Each svg below with a data-export name renders to art/quest/NAME.png with
+  art/svg_render.py (the longer side gets the size given).
+-->
+<html><body style="background:#567">
+
+<!-- the dialogue card: aqua glass with a diamond pattern, cyan header band, teal rim and lip.
+     500x520 on the canvas, drawn at 2x; the lip adds 16 below. -->
+<svg data-export="q_card" viewBox="0 0 1000 1056" width="500" height="528">
+<defs>
+<linearGradient id="c-glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4FEFF"/><stop offset="1" stop-color="#CDF2F8"/></linearGradient>
+<linearGradient id="c-head" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4FDCF5"/><stop offset="1" stop-color="#14A9D3"/></linearGradient>
+<pattern id="c-diamond" width="44" height="44" patternUnits="userSpaceOnUse"><path d="M0 0 L44 44 M44 0 L0 44" stroke="#FFFFFF" stroke-width="4" opacity="0.55"/></pattern>
+<clipPath id="c-inner"><rect x="8" y="8" width="984" height="1024" rx="52"/></clipPath>
+</defs>
+<rect x="0" y="16" width="1000" height="1040" rx="60" fill="#0A5566"/>
+<rect x="0" y="0" width="1000" height="1040" rx="60" fill="#0C7084"/>
+<g clip-path="url(#c-inner)">
+<rect x="8" y="8" width="984" height="1024" fill="url(#c-glass)"/>
+<rect x="8" y="8" width="984" height="1024" fill="url(#c-diamond)"/>
+<rect x="8" y="8" width="984" height="200" fill="url(#c-head)"/>
+<rect x="8" y="22" width="984" height="10" fill="#FFFFFF" opacity="0.22"/>
+<rect x="8" y="208" width="984" height="8" fill="#0C7084"/>
+</g>
+</svg>
+
+<!-- the tracker's backdrop: a soft dark glow fading out from the right edge -->
+<svg data-export="q_shade" viewBox="0 0 400 400" width="200" height="200">
+<defs><radialGradient id="sh" cx="1" cy="0.45" r="1" gradientTransform="translate(0 0.225) scale(1 0.5)"><stop offset="0" stop-color="#081E26" stop-opacity="0.5"/><stop offset="0.75" stop-color="#081E26" stop-opacity="0"/></radialGradient></defs>
+<rect x="0" y="0" width="400" height="400" fill="url(#sh)"/>
+</svg>
+
+<!-- the tracker title's quest scroll: yellow with a dark ink outline -->
+<svg data-export="q_scroll" viewBox="0 0 128 128" width="64" height="64">
+<path d="M30 16 H92 a14 14 0 0 1 14 14 V106 H42 a14 14 0 0 1 -14 -14 Z" fill="#FFD84A" stroke="#10262C" stroke-width="9" stroke-linejoin="round"/>
+<path d="M28 92 a14 14 0 0 0 14 14 a14 14 0 0 0 14 -14 V82 H28 Z" fill="#F5A10F" stroke="#10262C" stroke-width="9" stroke-linejoin="round"/>
+<path d="M50 44 H86 M50 62 H86" stroke="#10262C" stroke-width="8" stroke-linecap="round"/>
+</svg>
+
+<!-- level objectives: an orange badge with a white up arrow -->
+<svg data-export="q_level" viewBox="0 0 128 128" width="64" height="64">
+<rect x="10" y="16" width="108" height="104" rx="30" fill="#A8560A"/>
+<rect x="10" y="8" width="108" height="104" rx="30" fill="#F5A10F"/>
+<rect x="18" y="16" width="92" height="40" rx="20" fill="#FFD84A" opacity="0.55"/>
+<path d="M64 30 L94 62 H76 V92 H52 V62 H34 Z" fill="#FFFFFF" stroke="#A8560A" stroke-width="5" stroke-linejoin="round"/>
+</svg>
+
+<!-- Tracker C: the progress ring round the target badge. White, tinted in Studio
+     (ImageColor3); the same image is the pale track and the coloured fill. -->
+<svg data-export="q_ring" viewBox="0 0 512 512" width="128" height="128">
+<circle cx="256" cy="256" r="214" fill="none" stroke="#FFFFFF" stroke-width="42"/>
+</svg>
+
+<!-- the tracker's Guide button: a white navigation arrow, tinted per state -->
+<svg data-export="q_guide" viewBox="0 0 128 128" width="64" height="64">
+<path d="M64 14 L104 108 L64 86 L24 108 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="10" stroke-linejoin="round"/>
+</svg>
+
+<!-- the guide arrow on the ground: chunky yellow arrow, ink outline, pointing up
+     (the image's top is the way it points) -->
+<svg data-export="q_arrow" viewBox="0 0 256 256" width="128" height="128">
+<defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE45C"/><stop offset="1" stop-color="#F5A10F"/></linearGradient></defs>
+<path d="M128 18 L222 122 L164 122 L164 232 L92 232 L92 122 L34 122 Z" fill="url(#ga)" stroke="#10262C" stroke-width="14" stroke-linejoin="round"/>
+<path d="M128 46 L190 112" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" opacity="0.55"/>
+</svg>
+
+</body></html>

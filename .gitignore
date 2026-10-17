@@ -1,11 +1,22 @@
-# Project place file
-/FirstRobloxGame.rbxlx
+# Live place and Studio files (the place is ~130 MB, over GitHub's 100 MB limit; backed up to Google Drive)
+/place/
+*.rbxlx
+*.rbxl
+*.rbxlx.lock
+*.rbxl.lock
 
-# Rojo build output
+# Blender working files (backed up to Google Drive)
+/blender/
+*.blend
+*.blend1
+
+# Rojo and tooling output
 /build.rbxlx
-
-# Roblox Studio lock files
-/*.rbxlx.lock
-/*.rbxl.lock
-
 sourcemap.json
+
+# Claude app working folders
+/.claude/worktrees/
+
+# Local leftovers kept out of git
+/_old_*/
+/_art_old_worktree/

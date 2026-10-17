@@ -1,0 +1,321 @@
+{
+ "Woodland": {
+  "pieces": {
+   "Belt": {
+    "offset": [
+     -0.0,
+     -0.86,
+     0.0
+    ],
+    "size": [
+     2.26,
+     0.22,
+     1.36
+    ],
+    "colour": "5a3a22",
+    "bone": "Torso"
+   },
+   "Collar": {
+    "offset": [
+     -0.0,
+     0.955,
+     0.0
+    ],
+    "size": [
+     1.85,
+     0.62,
+     1.81
+    ],
+    "colour": "fff8ef",
+    "bone": "Torso"
+   },
+   "FurL": {
+    "offset": [
+     -1.51,
+     0.02,
+     0.0
+    ],
+    "size": [
+     1.18,
+     0.8,
+     1.2
+    ],
+    "colour": "e8752a",
+    "bone": "LeftArm"
+   },
+   "FurR": {
+    "offset": [
+     1.51,
+     0.02,
+     0.0
+    ],
+    "size": [
+     1.18,
+     0.8,
+     1.2
+    ],
+    "colour": "e8752a",
+    "bone": "RightArm"
+   },
+   "LaceL": {
+    "offset": [
+     -2.079,
+     -0.66,
+     0.0
+    ],
+    "size": [
+     0.0,
+     0.4754,
+     0.1757
+    ],
+    "colour": "3a2618",
+    "bone": "LeftArm"
+   },
+   "LaceR": {
+    "offset": [
+     2.079,
+     -0.66,
+     0.0
+    ],
+    "size": [
+     0.0,
+     0.4754,
+     0.1757
+    ],
+    "colour": "3a2618",
+    "bone": "RightArm"
+   },
+   "LegFurL": {
+    "offset": [
+     -0.5,
+     -2.07,
+     -0.005
+    ],
+    "size": [
+     1.2,
+     0.22,
+     1.21
+    ],
+    "colour": "e8752a",
+    "bone": "LeftLeg"
+   },
+   "LegFurR": {
+    "offset": [
+     0.5,
+     -2.07,
+     -0.005
+    ],
+    "size": [
+     1.2,
+     0.22,
+     1.21
+    ],
+    "colour": "e8752a",
+    "bone": "RightLeg"
+   },
+   "LegWrapL": {
+    "offset": [
+     -0.5,
+     -2.5,
+     -0.005
+    ],
+    "size": [
+     1.14,
+     0.76,
+     1.15
+    ],
+    "colour": "7a4a2a",
+    "bone": "LeftLeg"
+   },
+   "LegWrapR": {
+    "offset": [
+     0.5,
+     -2.5,
+     -0.005
+    ],
+    "size": [
+     1.14,
+     0.76,
+     1.15
+    ],
+    "colour": "7a4a2a",
+    "bone": "RightLeg"
+   },
+   "Loops": {
+    "offset": [
+     -0.0,
+     0.1,
+     -0.64
+    ],
+    "size": [
+     0.14,
+     0.96,
+     0.08
+    ],
+    "colour": "3a2618",
+    "bone": "Torso"
+   },
+   "PadL": {
+    "offset": [
+     -1.56,
+     0.785,
+     0.0
+    ],
+    "size": [
+     1.2,
+     0.77,
+     1.26
+    ],
+    "colour": "9a5a34",
+    "bone": "LeftArm"
+   },
+   "PadR": {
+    "offset": [
+     1.56,
+     0.785,
+     0.0
+    ],
+    "size": [
+     1.2,
+     0.77,
+     1.26
+    ],
+    "colour": "9a5a34",
+    "bone": "RightArm"
+   },
+   "Seam": {
+    "offset": [
+     -0.0,
+     -0.01,
+     -0.6175
+    ],
+    "size": [
+     0.05,
+     1.54,
+     0.035
+    ],
+    "colour": "b8561d",
+    "bone": "Torso"
+   },
+   "StrapL": {
+    "offset": [
+     -0.5,
+     -2.53,
+     -0.005
+    ],
+    "size": [
+     1.18,
+     0.38,
+     1.19
+    ],
+    "colour": "3a2618",
+    "bone": "LeftLeg"
+   },
+   "StrapR": {
+    "offset": [
+     0.5,
+     -2.53,
+     -0.005
+    ],
+    "size": [
+     1.18,
+     0.38,
+     1.19
+    ],
+    "colour": "3a2618",
+    "bone": "RightLeg"
+   },
+   "Tusk": {
+    "offset": [
+     -0.0,
+     -0.228,
+     -0.7354
+    ],
+    "size": [
+     0.4414,
+     1.544,
+     0.113
+    ],
+    "colour": "f5ecd4",
+    "bone": "Torso"
+   },
+   "TuskL": {
+    "offset": [
+     -1.8981,
+     1.3181,
+     0.0476
+    ],
+    "size": [
+     0.7489,
+     0.7502,
+     0.3238
+    ],
+    "colour": "f5ecd4",
+    "bone": "LeftArm"
+   },
+   "TuskR": {
+    "offset": [
+     1.8981,
+     1.3181,
+     0.0476
+    ],
+    "size": [
+     0.7489,
+     0.7502,
+     0.3238
+    ],
+    "colour": "f5ecd4",
+    "bone": "RightArm"
+   },
+   "Vest": {
+    "offset": [
+     -0.0,
+     -0.05,
+     0.0
+    ],
+    "size": [
+     2.16,
+     2.2,
+     1.24
+    ],
+    "colour": "e8752a",
+    "bone": "Torso"
+   },
+   "WrapL": {
+    "offset": [
+     -1.5,
+     -0.655,
+     0.0
+    ],
+    "size": [
+     1.1,
+     0.63,
+     1.12
+    ],
+    "colour": "7a4a2a",
+    "bone": "LeftArm"
+   },
+   "WrapR": {
+    "offset": [
+     1.5,
+     -0.655,
+     0.0
+    ],
+    "size": [
+     1.1,
+     0.63,
+     1.12
+    ],
+    "colour": "7a4a2a",
+    "bone": "RightArm"
+   }
+  },
+  "size": [
+   4.545,
+   4.573,
+   1.81
+  ],
+  "minZ": -2.88,
+  "maxZ": 1.693
+ }
+}

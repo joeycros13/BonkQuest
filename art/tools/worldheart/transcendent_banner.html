@@ -1,0 +1,29 @@
+<!doctype html>
+<!--
+  DiceBattles NEW-popup banner for the Transcendent rarity (2026-10-12): the same shape as
+  the other rarity banners (art/rarity_popup.html). A plum-to-deep-violet face (#6B2FA8 to
+  #2A0F4A, the Transcendent tile) inside a gold rim, with tiny gold sparkles and two gold
+  octagon studs, echoing the Worldheart Blade's sockets.
+  Render: python svg_render.py transcendent_banner.html <out> 1024 <port>
+-->
+<html><body style="background:#567">
+<svg data-export="pop_banner_transcendent" viewBox="0 0 420 88" width="210" height="44">
+<defs>
+<linearGradient id="tf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7B3CBC"/><stop offset="0.55" stop-color="#4E1F80"/><stop offset="1" stop-color="#2A0F4A"/></linearGradient>
+<linearGradient id="tr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7D57A"/><stop offset="1" stop-color="#D69C28"/></linearGradient>
+<clipPath id="tc"><rect x="7" y="7" width="406" height="67" rx="18"/></clipPath>
+</defs>
+<rect x="0" y="7" width="420" height="81" rx="24" fill="#170726"/>
+<rect x="0" y="0" width="420" height="81" rx="24" fill="url(#tr)"/>
+<rect x="7" y="7" width="406" height="67" rx="18" fill="url(#tf)"/>
+<g clip-path="url(#tc)" fill="#F2C14E">
+<polygon points="48,52 50,58 56,60 50,62 48,68 46,62 40,60 46,58" opacity="0.7"/>
+<polygon points="70,20 71.2,23.8 75,25 71.2,26.2 70,30 68.8,26.2 65,25 68.8,23.8" opacity="0.55"/>
+<polygon points="364,20 366,26 372,28 366,30 364,36 362,30 356,28 362,26" opacity="0.7"/>
+<polygon points="346,58 347.2,61.8 351,63 347.2,64.2 346,68 344.8,64.2 341,63 344.8,61.8" opacity="0.55"/>
+</g>
+<path d="M30 16 H390" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.25"/>
+<polygon points="17,36.5 19.5,34 24.5,34 27,36.5 27,43.5 24.5,46 19.5,46 17,43.5" fill="#F2C14E" stroke="#5A3A12" stroke-width="2"/>
+<polygon points="393,36.5 395.5,34 400.5,34 403,36.5 403,43.5 400.5,46 395.5,46 393,43.5" fill="#F2C14E" stroke="#5A3A12" stroke-width="2"/>
+</svg>
+</body></html>
