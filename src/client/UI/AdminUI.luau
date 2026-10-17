@@ -536,7 +536,9 @@ local function renderMobs()
 				end)
 			end
 			row.LayoutOrder = order
-			find("Portrait", row).Image = def.portrait or ""
+			-- secret enemies have no `portrait` (it would show in the Index); their
+			-- admin-only picture is `adminPortrait`
+			find("Portrait", row).Image = def.portrait or def.adminPortrait or ""
 			find("MobName", row).Text = def.name
 			local c = counts[def.id] or { total = 0, dead = 0 }
 			local note = find("Note", row)

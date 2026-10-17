@@ -82,6 +82,7 @@ local World: WorldTypes.WorldDef = {
 			name = "Corn Wraith",
 			hp = 180,
 			secret = true,
+			adminPortrait = "rbxassetid://85851674951625", -- admin panel only, never the Index (2026-10-17)
 			melee = { damage = 15, cooldown = 1.7, windup = 0.48, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
 			coins = { min = 25, max = 40 },
 			exp = 60,

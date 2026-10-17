@@ -85,6 +85,7 @@ local World: WorldTypes.WorldDef = {
 			name = "Fairy",
 			hp = 600,
 			secret = true,
+			adminPortrait = "rbxassetid://128352315360379", -- admin panel only, never the Index (2026-10-17)
 			melee = { damage = 24, cooldown = 1.6, windup = 0.45, range = 2.2, chaseSpeed = 18, armor = 0.1, move = "zap" },
 			coins = { min = 80, max = 120 },
 			exp = 180,

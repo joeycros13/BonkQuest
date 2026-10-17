@@ -53,11 +53,15 @@ export type EnemyDef = {
 	coins: CoinRange?, -- coins a kill gives (none if absent)
 	exp: number?, -- EXP a kill gives (ExpService; none if absent)
 	-- The Index picture: the model turned a little right, seen a little from
-	-- above, on a transparent background (art/index/portrait_<id>.png).
+	-- above, on a transparent background (art/portraits/enemies/portrait_<id>.png).
 	portrait: string?,
 	-- A secret enemy (one hidden per world, 2026-10-12): left out of the Index, its
 	-- counts and the NEW popup, so finding it stays a surprise.
 	secret: boolean?,
+	-- A picture shown ONLY in the admin panel's Mobs tab (2026-10-17, the user's
+	-- request). Secret enemies use it instead of `portrait`, which the Index, NEW
+	-- popup and quest UI all read, so their picture can never leak to players.
+	adminPortrait: string?,
 }
 
 -- Tuning for the enemies that stand around in the world. Presence tuning that

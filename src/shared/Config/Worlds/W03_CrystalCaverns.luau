@@ -78,6 +78,7 @@ local World: WorldTypes.WorldDef = {
 			name = "Gem Mole",
 			hp = 1200,
 			secret = true,
+			adminPortrait = "rbxassetid://95259297161320", -- admin panel only, never the Index (2026-10-17)
 			melee = { damage = 40, cooldown = 1.8, windup = 0.48, range = 1.8, chaseSpeed = 15, armor = 0.15, move = "slash" },
 			coins = { min = 160, max = 230 },
 			exp = 360,
