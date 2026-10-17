@@ -22,7 +22,7 @@ C:\FirstRobloxGame\           the git repo (GitHub joeycros13/DiceBattles), bran
 
 ## Code: Rojo, files are the source of truth
 
-- **Rojo 7.7.0** (Aftman): `default.project.json` maps `src/shared` → `ReplicatedStorage.Shared`, `src/server` → `ServerScriptService.Server` and `src/client` → `StarterPlayer.StarterPlayerScripts.Client`, each with `$ignoreUnknownInstances`. So Rojo never deletes Studio instances it doesn't know: a deleted file's script must also be deleted in Studio by hand.
+- **Rojo 7.7.1** (Aftman): `default.project.json` maps `src/shared` → `ReplicatedStorage.Shared`, `src/server` → `ServerScriptService.Server` and `src/client` → `StarterPlayer.StarterPlayerScripts.Client`, each with `$ignoreUnknownInstances`. So Rojo never deletes Studio instances it doesn't know: a deleted file's script must also be deleted in Studio by hand.
 - Run `rojo serve` in the checkout or worktree you're working in, then press Connect in Studio's Rojo plugin. **Edit the `.luau` files**; never edit scripts in Studio's editor or through `.Source` while Rojo is connected (the next sync overwrites it).
 - `.gitattributes` keeps `.luau` / `.json` / `.toml` LF (`core.autocrlf` is on here, and Rojo copies bytes as-is).
 - The ServerStorage dev modules (`W2Swap`, `W3Swap`, `W3RimSolver`, `DevTools/*`…) and `StarterCharacter.Animate` stay in the place file only.
