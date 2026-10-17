@@ -1,0 +1,124 @@
+--!strict
+-- World 2: The Redwood Forest (the user's name, 2026-10-11; it was planned as
+-- The Frozen Caverns, then a forest under the placeholder The Whispering
+-- Woods). The World 2 gate's sign shows the name.
+--
+-- Roster (decided with the user, 2026-10-11): angry wildlife plus a forest-spirit
+-- boss. Starting numbers, not final. Sizes were set against World 1: the Fox is as
+-- tall as the Chicken, the Bear slightly bigger than the Bull, the Boar between.
+--
+-- Drops use the World 2 weapons (switched on 2026-10-11). A drop must name a
+-- weapon that exists in Config/Weapons. The Firefly Lantern (Legendary) comes only
+-- from the park ranger's final quest.
+
+local WorldTypes = require(script.Parent.Parent.WorldTypes)
+
+local World: WorldTypes.WorldDef = {
+	id = 2,
+	name = "The Redwood Forest",
+	folder = "W02_RedwoodForest",
+	-- the Index world card (2026-10-12, no enemies; art/index/world_W02_2026-10-12.png)
+	profile = "rbxassetid://110979330411375",
+
+	enemies = {
+		-- Minion: quick and common, at the front of both lanes
+		-- (ServerStorage/Assets/Enemies/Fox).
+		Fox = {
+			id = "Fox",
+			name = "Snarling Fox",
+			portrait = "rbxassetid://102792357956654", -- calm face (2026-10-11)
+			hp = 110,
+			-- Quick pounces with a snap at the end.
+			melee = { damage = 10, cooldown = 1.0, windup = 0.5, range = 1.5, chaseSpeed = 17, armor = 0, move = "pounce" },
+			coins = { min = 15, max = 25 },
+			exp = 35,
+			drops = {
+				{ weapon = "Hatchet", chance = 0.20 },
+				{ weapon = "Cleaver", chance = 0.05 },
+			},
+			-- crafting materials (Config/Materials): the first armour set
+			materials = { { id = "FoxFur", chance = 0.5, min = 1, max = 2 } },
+		},
+		-- Tough minion: armoured hide and a tusk charge
+		-- (ServerStorage/Assets/Enemies/Boar).
+		Boar = {
+			id = "Boar",
+			name = "Wild Boar",
+			portrait = "rbxassetid://105726195455752", -- calm face (2026-10-11)
+			hp = 260,
+			melee = { damage = 20, cooldown = 1.8, windup = 0.55, range = 1.5, chaseSpeed = 15, armor = 0.15, move = "charge" },
+			coins = { min = 30, max = 45 },
+			exp = 70,
+			drops = {
+				{ weapon = "Cleaver", chance = 0.20 },
+				{ weapon = "Quarterstaff", chance = 0.15 },
+				{ weapon = "Mace", chance = 0.08 },
+			},
+			materials = { { id = "BoarTusk", chance = 0.5, min = 1, max = 2 } },
+		},
+		-- Elite: one at the far end of each lane; rears up for a two-paw slam
+		-- (ServerStorage/Assets/Enemies/Bear).
+		Bear = {
+			id = "Bear",
+			name = "Grizzly Bear",
+			portrait = "rbxassetid://117018743106247", -- calm face (2026-10-11)
+			hp = 550,
+			melee = { damage = 32, cooldown = 2.4, windup = 0.78, range = 1.6, chaseSpeed = 13, armor = 0.2, move = "slam" },
+			coins = { min = 60, max = 90 },
+			exp = 150,
+			drops = {
+				{ weapon = "Mace", chance = 0.15 },
+				{ weapon = "WoodsmansAxe", chance = 0.10 },
+				{ weapon = "Greatclub", chance = 0.08 },
+			},
+			-- the second armour set
+			materials = { { id = "BearClaw", chance = 0.4, min = 1, max = 1 } },
+		},
+		-- SECRET (2026-10-12): the Fairy of the hollow stump. Found by looking through the
+		-- lookout telescope at the fairy ring, then standing in the ring for 5 s. A small
+		-- mushroom-cap fairy with fluttering wings; flicks her acorn wand for a pop of
+		-- fairy dust. Quick and a bit tougher than the Bear, but hits softer. Kept out of
+		-- the Index (secret). Her drop -- one part of the secret crafted weapon -- is still
+		-- to design (ServerStorage/Assets/Enemies/Fairy).
+		Fairy = {
+			id = "Fairy",
+			name = "Fairy",
+			hp = 600,
+			secret = true,
+			melee = { damage = 24, cooldown = 1.6, windup = 0.45, range = 2.2, chaseSpeed = 18, armor = 0.1, move = "zap" },
+			coins = { min = 80, max = 120 },
+			exp = 180,
+			-- the Forest Core: about 1%, once per player (trial numbers)
+			materials = { { id = "ForestCore", chance = 0.01, min = 1, max = 1 } },
+		},
+	},
+
+	bosses = {
+		-- The Redwood Forest boss, in the mossy ruins arena
+		-- (ServerStorage/Assets/Bosses/ElderTreant). Lifts a knee and stomps.
+		ElderTreant = {
+			id = "ElderTreant",
+			name = "Elder Treant",
+			portrait = "rbxassetid://98505547017601", -- calm face (2026-10-11)
+			hp = 1200,
+			-- Two attacks, picked 50/50, same damage and timing (user, 2026-10-11): the
+			-- knee-up stomp and an overhead double-arm smash.
+			melee = { damage = 40, cooldown = 2.4, windup = 0.72, range = 1.5, chaseSpeed = 10, armor = 0.3, move = "stomp", moves = { "stomp", "smash" } },
+			coins = { min = 150, max = 220 },
+			exp = 400,
+			drops = {
+				{ weapon = "WoodsmansAxe", chance = 0.20 },
+				{ weapon = "Greatclub", chance = 0.20 },
+				-- Legendary: the treant's living heart
+				{ weapon = "HeartwoodStaff", chance = 0.05 },
+				-- the secret Marshmallow Stick (hidden in the Index until found)
+				{ weapon = "MarshmallowStick", chance = 0.02 },
+			},
+			materials = { { id = "HeartwoodSap", chance = 0.5, min = 1, max = 1 } },
+		},
+	},
+
+	worldEnemy = { archetype = "Fox" },
+}
+
+return World

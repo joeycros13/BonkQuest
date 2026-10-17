@@ -1,0 +1,243 @@
+--!strict
+-- PortalService: walk-in teleports (2026-10-12; first used for the secret rooms).
+--
+-- A zone is an invisible part tagged TeleportZone (MapLayout.Tags) holding an
+-- ObjectValue "Target" that points at a part: standing inside the zone's box
+-- sends you to that part's CFrame (feet on it, facing its look direction).
+-- Zone attributes:
+--   Fade         true: fade the screen out and back (Remotes.TeleportFade)
+--   KeepFalling  true: keep the player's downward speed (the silo drop lands you
+--                still falling, so it reads as one long fall)
+--   Round        true: the zone is a cylinder (its X size is the diameter), not a box
+--   ChargeSeconds  stand inside this long before you go (the fairy ring's
+--                sparkle-up); stepping out resets it. While anyone is charging,
+--                the zone's ParticleEmitters named "ChargeFx" run and each part an
+--                ObjectValue "Glow" points at turns Neon.
+--   Countdown    a Folder of ObjectValues (named in lighting order: Step01, Step02...)
+--                pointing at parts: they turn Neon one by one across the charge,
+--                all lit `CountdownHold` seconds (default 1) before the teleport
+--                (the fairy ring's mushrooms going round).
+-- Polled like the walk-in rings (nothing in the game uses Touched); a player is
+-- only teleported again after COOLDOWN, so arriving inside another zone can't loop.
+--
+--   PortalService.send(player, target, opts?)   teleport by code (the Worlds menu will)
+
+local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local MapLayout = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("MapLayout"))
+local Worlds = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("Worlds"))
+
+local PortalService = {}
+
+local POLL = 0.1
+local COOLDOWN = 2.5
+local FADE_SECONDS = 0.25
+-- a target's centre is where the feet go; the root sits this far above the feet (R6)
+local ROOT_HEIGHT = 3
+
+local deps: any = nil
+local fadeRemote: RemoteEvent? = nil
+local busy: { [Player]: number } = {}
+-- players standing in a charging zone, and since when
+local charging: { [Player]: { zone: BasePart, since: number } } = {}
+
+local function inside(zone: BasePart, point: Vector3): boolean
+	local p = zone.CFrame:PointToObjectSpace(point)
+	local h = zone.Size / 2
+	if zone:GetAttribute("Round") == true then
+		return math.abs(p.Y) <= h.Y and Vector2.new(p.X, p.Z).Magnitude <= h.X
+	end
+	return math.abs(p.X) <= h.X and math.abs(p.Y) <= h.Y and math.abs(p.Z) <= h.Z
+end
+
+local function setGlow(part: BasePart, on: boolean)
+	if on then
+		if part:GetAttribute("BaseMaterial") == nil then
+			part:SetAttribute("BaseMaterial", part.Material.Name)
+		end
+		part.Material = Enum.Material.Neon
+	else
+		local base = part:GetAttribute("BaseMaterial")
+		part.Material = if type(base) == "string" then (Enum.Material :: any)[base] else Enum.Material.SmoothPlastic
+	end
+end
+
+-- the charge-up effects of a zone; `elapsed` = the longest anyone has stood in it (nil: nobody)
+local function chargeFx(zone: BasePart, elapsed: number?)
+	local on = elapsed ~= nil
+	if zone:GetAttribute("FxOn") ~= on then
+		zone:SetAttribute("FxOn", on)
+		for _, d in zone:GetDescendants() do
+			if d:IsA("ParticleEmitter") and d.Name == "ChargeFx" then
+				d.Enabled = on
+			elseif d:IsA("ObjectValue") and d.Name == "Glow" and d.Value and d.Value:IsA("BasePart") then
+				setGlow(d.Value :: BasePart, on)
+			end
+		end
+	end
+	local folder = zone:FindFirstChild("Countdown")
+	if folder then
+		local steps = folder:GetChildren()
+		table.sort(steps, function(a, b)
+			return a.Name < b.Name
+		end)
+		local charge = zone:GetAttribute("ChargeSeconds")
+		local hold = zone:GetAttribute("CountdownHold")
+		hold = if type(hold) == "number" then hold else 1
+		local span = math.max((if type(charge) == "number" then charge else 1) - hold, 0.1)
+		-- one lights as soon as you step on, the last one `hold` seconds before you go
+		local lit = if elapsed then math.min(#steps, 1 + math.floor(elapsed / span * (#steps - 1) + 1e-6)) else 0
+		for i, step in steps do
+			if step:IsA("ObjectValue") and step.Value and step.Value:IsA("BasePart") then
+				setGlow(step.Value :: BasePart, i <= lit)
+			end
+		end
+	end
+end
+
+export type SendOptions = { fade: boolean?, keepFalling: boolean? }
+
+function PortalService.send(player: Player, target: BasePart, opts: SendOptions?)
+	local o: SendOptions = opts or {}
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	if not (character and root and root:IsA("BasePart")) then
+		return
+	end
+	busy[player] = os.clock() + COOLDOWN
+	local remote: RemoteEvent? = if o.fade ~= false then fadeRemote else nil
+	if remote then
+		remote:FireClient(player, "out", FADE_SECONDS)
+		task.wait(FADE_SECONDS)
+	end
+	if character.Parent == nil then
+		return
+	end
+	local fall = if o.keepFalling then math.min(root.AssemblyLinearVelocity.Y, 0) else 0
+	local look = target.CFrame.LookVector * Vector3.new(1, 0, 1)
+	if look.Magnitude < 1e-3 then
+		look = Vector3.new(0, 0, -1)
+	end
+	local at = target.Position + Vector3.new(0, ROOT_HEIGHT, 0)
+	character:PivotTo(CFrame.lookAt(at, at + look.Unit))
+	root.AssemblyLinearVelocity = Vector3.new(0, fall, 0)
+	root.AssemblyAngularVelocity = Vector3.zero
+	if remote then
+		task.wait(0.05)
+		remote:FireClient(player, "in", FADE_SECONDS * 1.6)
+	end
+end
+
+local function poll()
+	local zones = CollectionService:GetTagged(MapLayout.Tags.TeleportZone)
+	if #zones == 0 then
+		return
+	end
+	local now = os.clock()
+	local active: { [BasePart]: number } = {}
+	for _, player in Players:GetPlayers() do
+		if (busy[player] or 0) > now then
+			charging[player] = nil
+			continue
+		end
+		local character = player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		if not (root and root:IsA("BasePart")) then
+			charging[player] = nil
+			continue
+		end
+		local found: BasePart? = nil
+		for _, zone in zones do
+			if zone:IsA("BasePart") and zone:IsDescendantOf(workspace) and inside(zone, root.Position) then
+				found = zone
+				break
+			end
+		end
+		if not found then
+			charging[player] = nil
+			continue
+		end
+		local zone = found :: BasePart
+		local charge = zone:GetAttribute("ChargeSeconds")
+		if type(charge) == "number" and charge > 0 then
+			local c = charging[player]
+			if not c or c.zone ~= zone then
+				charging[player] = { zone = zone, since = now }
+				active[zone] = math.max(active[zone] or 0, 0)
+				continue
+			end
+			if now - c.since < charge then
+				active[zone] = math.max(active[zone] or 0, now - c.since)
+				continue
+			end
+			charging[player] = nil
+		end
+		local value = zone:FindFirstChild("Target")
+		local target = value and value:IsA("ObjectValue") and value.Value
+		if target and target:IsA("BasePart") then
+			busy[player] = now + COOLDOWN
+			task.spawn(PortalService.send, player, target, {
+				fade = zone:GetAttribute("Fade") == true,
+				keepFalling = zone:GetAttribute("KeepFalling") == true,
+			})
+		else
+			warn(("[PortalService] %s has no Target part"):format(zone:GetFullName()))
+		end
+	end
+	-- charge-up effects follow whoever is standing in a charging zone
+	for _, zone in zones do
+		if zone:IsA("BasePart") and zone:GetAttribute("ChargeSeconds") ~= nil then
+			chargeFx(zone, active[zone])
+		end
+	end
+end
+
+function PortalService.init(injected: any)
+	deps = injected
+end
+
+-- The Worlds menu (2026-10-12): Remotes.TravelToWorld(world) sends the player to that world's
+-- Spawns/PlayerSpawn with the fade, if they have unlocked it (HighestWorld; the gates unlock worlds).
+-- Returns (ok, reason): "unknown" no such world / no spawn yet, "locked", "busy" mid-teleport.
+function PortalService.travel(player: Player, world: any): (boolean, string?)
+	local def = if type(world) == "number" then Worlds.get(world) else nil
+	if not def then
+		return false, "unknown"
+	end
+	if world > deps.Services.PlayerDataService.highestWorld(player) then
+		return false, "locked"
+	end
+	if (busy[player] or 0) > os.clock() then
+		return false, "busy"
+	end
+	local root = workspace:FindFirstChild("Worlds")
+	local folder = root and root:FindFirstChild(def.folder)
+	local spawns = folder and folder:FindFirstChild("Spawns")
+	local spawn = spawns and spawns:FindFirstChild("PlayerSpawn")
+	if not (spawn and spawn:IsA("BasePart")) then
+		return false, "unknown"
+	end
+	task.spawn(PortalService.send, player, spawn, { fade = true })
+	return true, nil
+end
+
+function PortalService.start()
+	fadeRemote = deps.Remotes.getEvent("TeleportFade")
+	deps.Remotes.getFunction("TravelToWorld").OnServerInvoke = function(player: Player, world: any)
+		return PortalService.travel(player, world)
+	end
+	Players.PlayerRemoving:Connect(function(player: Player)
+		busy[player] = nil
+		charging[player] = nil
+	end)
+	task.spawn(function()
+		while true do
+			poll()
+			task.wait(POLL)
+		end
+	end)
+end
+
+return PortalService

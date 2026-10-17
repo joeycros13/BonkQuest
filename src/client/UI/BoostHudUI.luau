@@ -1,0 +1,138 @@
+--!strict
+-- BoostHudUI: the running potions (timed boosts: Luck, Coins, EXP) stacked in
+-- the bottom-right corner, each with its countdown (user's request, 2026-10-11).
+--
+-- Order: the first one bought sits at the bottom, the next above it, and so
+-- on; when one runs out the ones above slide down (a bottom-aligned
+-- UIListLayout does the moving). The order comes from the server's
+-- "BoostOrder_<id>" stamps (ShopService), the time from "Boost_<id>" (seconds
+-- left, ticked every second), so it survives rejoining.
+--
+-- Hand-built StarterGui/BoostHud: Stack (bottom-right, UIListLayout) and
+-- Templates/BoostChip (Icon, Texts/BoostName, Texts/Timer). The chip's
+-- attributes: Color_<id> (the pill), Icon_<id> (the potion art), LowSeconds /
+-- LowColor (the timer turns red near the end). Wording: Config/Shop.BoostHud,
+-- names: Config/Shop.Boosts. On touch screens the stack sits above the Attack
+-- button.
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
+local Shop = require(Config:WaitForChild("Shop"))
+
+local BoostHudUI = {}
+
+local player = Players.LocalPlayer
+local deps: any = nil
+local gui: ScreenGui? = nil
+
+local function attr(inst: Instance, name: string, fallback: any): any
+	local v = inst:GetAttribute(name)
+	return if v ~= nil then v else fallback
+end
+
+local function clock(seconds: number): string
+	local s = math.max(0, math.floor(seconds))
+	if s >= 3600 then
+		return Shop.BoostHud.hourFormat:format(s // 3600, (s % 3600) // 60, s % 60)
+	end
+	return Shop.BoostHud.timeFormat:format(s // 60, s % 60)
+end
+
+local function render()
+	local stack = gui and gui:FindFirstChild("Stack")
+	local templates = gui and gui:FindFirstChild("Templates")
+	local template = templates and templates:FindFirstChild("BoostChip")
+	if not (stack and template) then
+		return
+	end
+	for id, boost in Shop.Boosts do
+		local left = player:GetAttribute("Boost_" .. id)
+		local order = player:GetAttribute("BoostOrder_" .. id)
+		local running = type(left) == "number" and left > 0
+		local chip = stack:FindFirstChild(id)
+		if not running then
+			if chip then
+				chip:Destroy()
+			end
+			continue
+		end
+		if not chip then
+			chip = template:Clone()
+			chip.Name = id
+			chip.Visible = true
+			chip.BackgroundColor3 = attr(template, "Color_" .. id, chip.BackgroundColor3)
+			local icon = chip:FindFirstChild("Icon")
+			if icon and icon:IsA("ImageLabel") then
+				icon.Image = attr(template, "Icon_" .. id, icon.Image)
+			end
+			local name = chip:FindFirstChild("BoostName", true)
+			if name and name:IsA("TextLabel") then
+				name.Text = boost.name
+			end
+			chip.Parent = stack
+		end
+		-- bottom-aligned list, ascending top to bottom: the oldest (smallest
+		-- stamp) gets the largest LayoutOrder, so it sits at the bottom
+		chip.LayoutOrder = -(if type(order) == "number" then order else 0)
+		local timer = chip:FindFirstChild("Timer", true)
+		if timer and timer:IsA("TextLabel") then
+			timer.Text = clock(left :: number)
+			local low = (left :: number) <= attr(template, "LowSeconds", 60)
+			timer.TextColor3 = if low then attr(template, "LowColor", Color3.new(1, 0.35, 0.35)) else Color3.new(1, 1, 1)
+		end
+	end
+end
+
+-- On touch screens the Attack button owns the corner: sit just above it.
+local function place()
+	local stack = gui and gui:FindFirstChild("Stack")
+	if not (stack and stack:IsA("GuiObject")) then
+		return
+	end
+	local base = stack:GetAttribute("BasePositionY")
+	if type(base) ~= "number" then
+		base = stack.Position.Y.Scale
+		stack:SetAttribute("BasePositionY", base)
+	end
+	local hud = player.PlayerGui:FindFirstChild("WeaponHud")
+	local attack = hud and hud:FindFirstChild("Attack")
+	local y = base :: number
+	if attack and attack:IsA("GuiObject") and attack.Visible and gui and gui.AbsoluteSize.Y > 0 then
+		-- the top of the Attack button, as a share of the screen, less a small gap
+		y = math.min(y, (attack.AbsolutePosition.Y - gui.AbsolutePosition.Y) / gui.AbsoluteSize.Y - 0.015)
+	end
+	stack.Position = UDim2.new(stack.Position.X.Scale, 0, y, 0)
+end
+
+function BoostHudUI.init(injected: any)
+	deps = injected
+end
+
+function BoostHudUI.start()
+	task.spawn(function()
+		local found = player:WaitForChild("PlayerGui"):WaitForChild("BoostHud", 15)
+		if not (found and found:IsA("ScreenGui")) then
+			warn("[BoostHudUI] no StarterGui/BoostHud")
+			return
+		end
+		gui = found
+		deps.Util.FontDrop.watch(found)
+		for id in Shop.Boosts do
+			player:GetAttributeChangedSignal("Boost_" .. id):Connect(render)
+			player:GetAttributeChangedSignal("BoostOrder_" .. id):Connect(render)
+		end
+		render()
+		place()
+		found:GetPropertyChangedSignal("AbsoluteSize"):Connect(place)
+		local hud = player.PlayerGui:WaitForChild("WeaponHud", 15)
+		local attack = hud and hud:FindFirstChild("Attack")
+		if attack then
+			attack:GetPropertyChangedSignal("Visible"):Connect(place)
+		end
+		place()
+	end)
+end
+
+return BoostHudUI

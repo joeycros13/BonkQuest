@@ -9,25 +9,71 @@ local Loader = require(Shared:WaitForChild("Loader"))
 local Remotes = require(Shared:WaitForChild("Remotes"))
 
 local UTIL_ORDER = {
+	-- first: sizes every pixel-only UI value (outlines, text caps...) for this screen
 	"Responsive",
-	"AssetResolver",
-	"UIFactory",
+	"DamagePopup",
+	"HudFly",
+	"FontDrop",
+	"Format",
+	-- the shared weapon tile every screen clones
+	"WeaponTile",
+	-- sizes the text in icon + text rows so they stay centred
+	"CenterRow",
 }
 
 local CONTROLLER_ORDER = {
-	"DataController",
-	"CombatController",
-	"LeaderboardController",
+	"InteractionController",
+	"NpcIdleController",
+	"WorldEnemyController",
+	"EnemyAnimator",
+	"CritterController",
+	"SprintController",
+	-- Before WeaponController: both pose joints each frame, and the weapon arm and
+	-- swings must win over the idle / walk / sprint pose.
+	"PlayerAnimator",
+	"WeaponController",
+	"LootController",
+	"SpinnerController",
+	"FlowController",
+	"QuestController",
+	"GuideController",
+	"ChatTagController",
+	"PromptController",
+	-- the black fade around teleports (secret rooms, the Worlds menu)
+	"FadeController",
+	-- the World 2 lookout telescope's zoom onto the fairy ring
+	"TelescopeController",
+	-- local sky/lighting for special places (the stump room's twilight)
+	"AmbienceController",
+	-- the Infuser altars: the Infuse prompt and the infusion reveal
+	"InfuserController",
+	-- World 3's secret: the three breathing crystals and their colour code
+	"SecretCrystalController",
 }
 
 local UI_ORDER = {
-	"MenuShell",
-	"EquipmentTab",
-	"BattleTab",
-	"TalentsTab",
-	"ChestUI",
-	"CombatUI",
-	"LeaderboardUI",
+	"PanelWindow",
+	"InventoryUI",
+	"PlayerCardUI",
+	"HotbarUI",
+	"ShopUI",
+	"CraftingUI",
+	"RobuxShopUI",
+	"IndexUI",
+	"IndexPopup",
+	"CoinsUI",
+	-- crafting materials picked up: a toast on the right
+	"MaterialToastUI",
+	"DialogueUI",
+	"QuestTrackerUI",
+	"GateUI",
+	"WorldBannerUI",
+	"AdminUI",
+	"BoostHudUI",
+	-- the Infuser altar's panel (opened by InfuserController)
+	"InfuserUI",
+	-- the Worlds menu: teleport to any unlocked world (HUD globe button)
+	"WorldsUI",
 }
 
 print("[Client] bootstrap starting")

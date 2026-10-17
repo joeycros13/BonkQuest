@@ -1,0 +1,240 @@
+--!strict
+-- EffectPresets: the look of every effect, as data. Tune or add presets here;
+-- Effects reads them by name. Textures are Roblox's built-in particle images,
+-- so no uploads are needed.
+--
+-- kind = "burst"      a one-shot particle burst (+ optional light flash)
+--        emitter      ParticleEmitter properties (Color/Size/Transparency may be
+--                     plain values or sequences)
+--        count        particles per burst
+--        light        { Color, Brightness, Range, Time } -- a brief PointLight
+-- kind = "shockwave"  an expanding flat ring
+-- kind = "flash"      a Highlight that fades out on a model
+-- kind = "trail"      a Trail along a held weapon
+
+local SPARKLE = "rbxasset://textures/particles/sparkles_main.dds"
+local SMOKE = "rbxasset://textures/particles/smoke_main.dds"
+
+local function seq(a: number, b: number): NumberSequence
+	return NumberSequence.new(a, b)
+end
+
+local function colors(a: Color3, b: Color3): ColorSequence
+	return ColorSequence.new(a, b)
+end
+
+return {
+	-- Weapon connects with an enemy.
+	HitSpark = {
+		kind = "burst",
+		count = 14,
+		emitter = {
+			Texture = SPARKLE,
+			Color = colors(Color3.fromRGB(255, 244, 170), Color3.fromRGB(255, 160, 50)),
+			Size = seq(0.55, 0),
+			Transparency = seq(0, 1),
+			Lifetime = NumberRange.new(0.16, 0.3),
+			Speed = NumberRange.new(14, 26),
+			SpreadAngle = Vector2.new(180, 180),
+			Drag = 6,
+			Acceleration = Vector3.new(0, -30, 0),
+			LightEmission = 1,
+			RotSpeed = NumberRange.new(-300, 300),
+		},
+		light = { Color = Color3.fromRGB(255, 220, 140), Brightness = 3, Range = 9, Time = 0.12 },
+	},
+	-- The Fairy's wand zap: a pop of pink-gold fairy dust where the player stands.
+	FairyZap = {
+		kind = "burst",
+		count = 26,
+		emitter = {
+			Texture = SPARKLE,
+			Color = colors(Color3.fromRGB(255, 236, 160), Color3.fromRGB(255, 150, 220)),
+			Size = seq(0.7, 0),
+			Transparency = seq(0, 1),
+			Lifetime = NumberRange.new(0.35, 0.6),
+			Speed = NumberRange.new(6, 12),
+			SpreadAngle = Vector2.new(180, 180),
+			Drag = 5,
+			Acceleration = Vector3.new(0, 4, 0),
+			LightEmission = 1,
+			RotSpeed = NumberRange.new(-200, 200),
+		},
+		light = { Color = Color3.fromRGB(255, 190, 230), Brightness = 2.5, Range = 10, Time = 0.18 },
+	},
+	-- The Spider Queen's rear-up slam: crystal shards (cyan, lilac, pink) burst up
+	-- and out where her legs come down, then fall.
+	CrystalBurst = {
+		kind = "burst",
+		count = 36,
+		emitter = {
+			Texture = SPARKLE,
+			Color = colors(Color3.fromRGB(143, 228, 247), Color3.fromRGB(255, 168, 216)),
+			Size = seq(1.1, 0.2),
+			Transparency = seq(0, 1),
+			Lifetime = NumberRange.new(0.5, 0.85),
+			Speed = NumberRange.new(14, 26),
+			SpreadAngle = Vector2.new(70, 70),
+			Drag = 2,
+			Acceleration = Vector3.new(0, -40, 0),
+			LightEmission = 1,
+			RotSpeed = NumberRange.new(-240, 240),
+		},
+		light = { Color = Color3.fromRGB(170, 230, 255), Brightness = 4, Range = 18, Time = 0.25 },
+	},
+	-- Heavy footfalls, a charge, landing.
+	Dust = {
+		kind = "burst",
+		count = 10,
+		emitter = {
+			Texture = SMOKE,
+			Color = colors(Color3.fromRGB(214, 190, 150), Color3.fromRGB(180, 160, 130)),
+			Size = seq(0.9, 2.6),
+			Transparency = seq(0.35, 1),
+			Lifetime = NumberRange.new(0.45, 0.8),
+			Speed = NumberRange.new(4, 9),
+			SpreadAngle = Vector2.new(80, 180),
+			Drag = 4,
+			Acceleration = Vector3.new(0, 3, 0),
+			RotSpeed = NumberRange.new(-60, 60),
+		},
+	},
+	-- An enemy is defeated.
+	Poof = {
+		kind = "burst",
+		count = 22,
+		emitter = {
+			Texture = SMOKE,
+			Color = colors(Color3.fromRGB(255, 255, 255), Color3.fromRGB(220, 220, 230)),
+			Size = seq(1.4, 3.4),
+			Transparency = seq(0.15, 1),
+			Lifetime = NumberRange.new(0.5, 0.9),
+			Speed = NumberRange.new(6, 12),
+			SpreadAngle = Vector2.new(180, 180),
+			Drag = 5,
+			Acceleration = Vector3.new(0, 4, 0),
+			RotSpeed = NumberRange.new(-90, 90),
+		},
+	},
+	-- An enemy is defeated (WorldEnemyController, with Poof, a Shockwave and the
+	-- EnemyPop sound): gold and white stars fly out and drop, with a warm flash.
+	DeathPop = {
+		kind = "burst",
+		count = 20,
+		emitter = {
+			Texture = SPARKLE,
+			Color = colors(Color3.fromRGB(255, 226, 90), Color3.fromRGB(255, 255, 255)),
+			Size = seq(0.95, 0),
+			Transparency = seq(0, 1),
+			Lifetime = NumberRange.new(0.45, 0.8),
+			Speed = NumberRange.new(14, 24),
+			SpreadAngle = Vector2.new(180, 180),
+			Drag = 4,
+			Acceleration = Vector3.new(0, -12, 0),
+			RotSpeed = NumberRange.new(-180, 180),
+			LightEmission = 0.6,
+		},
+		light = { Color = Color3.fromRGB(255, 220, 140), Brightness = 3, Range = 12, Time = 0.18 },
+	},
+	-- Healing, pickups.
+	Heal = {
+		kind = "burst",
+		count = 16,
+		emitter = {
+			Texture = SPARKLE,
+			Color = colors(Color3.fromRGB(170, 255, 170), Color3.fromRGB(80, 220, 120)),
+			Size = seq(0.45, 0),
+			Transparency = seq(0, 1),
+			Lifetime = NumberRange.new(0.5, 0.9),
+			Speed = NumberRange.new(2, 5),
+			SpreadAngle = Vector2.new(40, 180),
+			Acceleration = Vector3.new(0, 8, 0),
+			LightEmission = 1,
+		},
+	},
+	-- A ground slam / heavy impact.
+	Shockwave = {
+		kind = "shockwave",
+		color = Color3.fromRGB(255, 240, 210),
+		startSize = 1,
+		endSize = 9,
+		thickness = 0.15,
+		time = 0.35,
+		transparency = 0.35,
+	},
+	-- A heavy weapon hits the ground (weapon impact = "Slam", the Corn Cob).
+	-- WeaponController fires SlamDust once per direction around the spot (each
+	-- burst is aimed outward along its Front face), so the dust rolls out in a
+	-- low ring; SlamDebris kicks clods up that fall back; SlamRing is the flash
+	-- of the shock across the ground.
+	SlamDust = {
+		kind = "burst",
+		count = 5,
+		emitter = {
+			Texture = SMOKE,
+			EmissionDirection = Enum.NormalId.Front,
+			Color = colors(Color3.fromRGB(196, 168, 124), Color3.fromRGB(150, 124, 92)),
+			Size = seq(1.8, 4.6),
+			Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 0),
+				NumberSequenceKeypoint.new(0.4, 0.15),
+				NumberSequenceKeypoint.new(1, 1),
+			}),
+			Lifetime = NumberRange.new(0.6, 1),
+			Speed = NumberRange.new(14, 22),
+			SpreadAngle = Vector2.new(14, 22),
+			Drag = 5,
+			Acceleration = Vector3.new(0, 2.5, 0),
+			RotSpeed = NumberRange.new(-80, 80),
+		},
+	},
+	SlamDebris = {
+		kind = "burst",
+		count = 16,
+		emitter = {
+			Texture = SMOKE,
+			Color = colors(Color3.fromRGB(122, 92, 60), Color3.fromRGB(92, 70, 46)),
+			Size = seq(0.55, 0.4),
+			Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 0),
+				NumberSequenceKeypoint.new(0.75, 0),
+				NumberSequenceKeypoint.new(1, 1),
+			}),
+			Lifetime = NumberRange.new(0.55, 0.85),
+			Speed = NumberRange.new(14, 24),
+			SpreadAngle = Vector2.new(38, 38),
+			Acceleration = Vector3.new(0, -70, 0),
+			RotSpeed = NumberRange.new(-200, 200),
+		},
+	},
+	SlamRing = {
+		kind = "shockwave",
+		color = Color3.fromRGB(255, 236, 196),
+		startSize = 2,
+		endSize = 18,
+		thickness = 0.12,
+		time = 0.45,
+		transparency = 0.3,
+	},
+	-- Something takes damage.
+	HurtFlash = {
+		kind = "flash",
+		color = Color3.fromRGB(255, 255, 255),
+		fillTransparency = 0.35,
+		time = 0.15,
+	},
+	-- A weapon's swing arc.
+	SlashTrail = {
+		kind = "trail",
+		Color = colors(Color3.fromRGB(255, 255, 255), Color3.fromRGB(220, 230, 255)),
+		Transparency = seq(0.25, 1),
+		Lifetime = 0.15,
+		LightEmission = 0.5,
+		WidthScale = seq(1, 0.25),
+		MinLength = 0.05,
+		FaceCamera = false,
+		-- Where along the weapon (fractions of its length from the grip) the trail runs.
+		from = 0.35,
+		to = 1,
+	},
+}

@@ -14,31 +14,34 @@ local WAIT_TIMEOUT = 10
 -- Request (client -> server) and Replication (server -> client) events.
 local EVENT_NAMES: { string } = {
 	-- Request (client -> server)
-	"StartBattle",
-	"RollDice",
-	"ToggleLockDie",
-	"Reroll",
-	"AttackEnemy",
-	"EquipGear",
-	"UnequipGear",
-	"LevelSlot",
-	"MergeGear",
-	"AutoMergeGear",
-	"RollTalent",
-	"OpenChest",
-	"ChooseTrait",
+	"EquipWeapon",
+	"HolsterWeapon",
+	"WeaponSwing",
+	"WeaponHit",
+	"SellItems",
+	"QuestAction", -- ("accept" | "turnIn", lineId): any questline (QuestService)
+	"ShopBuy", -- { kind = "Bundle" | "Pass" | "Boost" | "Starter", id = string? }: the Robux shop (ShopService)
+	"GateBuy", -- { id = string }: buy a world gate (GateService, Config/Gates)
+	"EquipArmor", -- (id: string?): wear an owned armour set, nil takes it off (ArmorService)
+	"SecretCrystalHit", -- (order: number): a swing reached World 3's secret crystal #order (SecretService)
+
 	-- Replication (server -> client)
-	"ProfileUpdated",
-	"CombatStateUpdated",
-	"CombatEnded",
-	"TraitOffer",
-	"ChestOpened",
-	"LeaderboardUpdated",
-	"Toast",
+	"IndexDiscovered", -- { kind = "Enemy" | "Weapon", id = string }: show the NEW popup
+	"CoinsDropped", -- { body = Instance?, position = Vector3, amount = number, pieces = number }: the coin spill
+	"ExpDropped", -- same shape: the blue EXP stars
+	"MaterialsDropped", -- { body = Instance?, position = Vector3, items = { { id, amount } }, afterTalk = boolean? }: crafting materials (MaterialService)
+	"TeleportFade", -- ("out" | "in", seconds): fade the screen to black and back around a teleport (PortalService)
+	"CoreInfused", -- { core = string, awakened = boolean, infuser = Instance }: play the infusion reveal (InfuseService)
 }
 
--- RemoteFunctions (request/response). None required yet; reserved for future use.
-local FUNCTION_NAMES: { string } = {}
+-- RemoteFunctions (request/response).
+local FUNCTION_NAMES: { string } = {
+	"AdminAction", -- { action = string, ... } -> (ok: boolean, message: string): the admin panel (AdminService)
+	"CraftArmor", -- (id: string) -> (ok: boolean, reason: string?): craft a set at the Crafting stall (CraftingService)
+	"BuyWeapon", -- (id: string) -> (ok: boolean, reason: string?): buy a weapon at the Weapons stall (MerchantService)
+	"InfuseCore", -- (core: string) -> (ok: boolean, reason: string?): set a core into the blade at an Infuser (InfuseService)
+	"TravelToWorld", -- (world: number) -> (ok: boolean, reason: string?): teleport to an unlocked world's spawn (PortalService, the Worlds menu)
+}
 
 local container: Folder? = nil
 

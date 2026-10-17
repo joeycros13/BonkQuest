@@ -10,15 +10,34 @@ local Remotes = require(Shared:WaitForChild("Remotes"))
 
 -- Services must init/start in this dependency order.
 local SERVICE_ORDER = {
-	"DataService",
-	"CurrencyService",
-	"InventoryService",
-	"TalentService",
-	"GlobalLevelService",
-	"CombatService",
-	"ChestService",
+	-- first: every other service registers its saved section with it in init
+	"PlayerDataService",
+	"WorldEnemyService",
+	"AvatarService",
+	"MeleeService",
+	"IndexService",
+	"CoinService",
+	"ExpService",
+	-- crafting materials: drops on kills, quest items for QuestService
+	"MaterialService",
+	-- armour sets: bonus HP through ExpService
+	"ArmorService",
+	-- after CoinService / ExpService / MaterialService: it pays rewards through them
+	"QuestService",
+	-- world gates: spends coins and unlocks worlds through the services above
+	"GateService",
+	-- the Robux shop: grants coins and weapons through the services above
 	"ShopService",
-	"LeaderboardService",
+	-- the Crafting and Weapons stalls: crafting armour and buying weapons
+	"StallService",
+	-- the admin panel: coins, EXP, levels, weapons and respawns through the services above
+	"AdminService",
+	-- walk-in teleport zones (the secret rooms' entrances and exits)
+	"PortalService",
+	-- the Infusers: cores into the Rusty / Worldheart Blade through MaterialService and MeleeService
+	"InfuseService",
+	-- World 3's secret crystal code: opens the front mineshaft for whoever solves it
+	"SecretService",
 }
 
 print("[Server] bootstrap starting")
