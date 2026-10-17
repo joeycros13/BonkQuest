@@ -1,120 +1,61 @@
 --!strict
--- Balance: tunable constants for combat, dice, progression, and economy.
+-- Balance: tunable constants for world enemies, sprinting, weapon combat and
+-- the coin / EXP spills.
 -- Every number here is a PLACEHOLDER meant to be tuned later; systems read
 -- from this module so balancing never requires touching logic code.
 
 local Balance = {}
 
--- === Dice (R-C8, R-C11) ===
-Balance.Dice = {
-	faces = 6, -- die values are 1..faces
-	startingDice = 1, -- dice at chapter entry before upgrades
-	maxDice = 5, -- hard cap across all sources
-	baseRerolls = 3, -- rerolls granted at the start of each turn
+-- === World enemies (spawned at each world's EnemySpawn / BossSpawn markers) ===
+-- Stats come from the archetype in the owning world's config file; this section
+-- tunes their presence in the world. Values here apply to every world, so
+-- anything that should differ per world belongs in Config/Worlds/<world>.luau.
+Balance.WorldEnemy = {
+	wanderRadius = 5, -- studs from its spawn point the enemy may drift within (marker can override)
+	respawnSeconds = 20, -- delay before a defeated enemy returns at full HP (marker can override)
+	bossWanderRadius = 4, -- bosses pace a small circle on their platform (marker can override)
+	bossRespawnSeconds = 60,
 }
 
--- Hand multipliers (R-C12). Names map to DiceHands detection results.
-Balance.HandMultipliers = {
-	highCard = 1.0,
-	onePair = 1.5,
-	twoPair = 2.0,
-	threeOfAKind = 2.5,
-	straight = 3.0,
-	fullHouse = 4.0,
-	fourOfAKind = 5.0,
-	fiveOfAKind = 8.0,
+-- === Sprinting (SprintController) ===
+-- Hold Shift (gamepad: left stick) to run faster, for as long as you like:
+-- stamina was removed on 2026-10-11 (the user's call: unlimited sprinting).
+Balance.Sprint = {
+	speedMultiplier = 1.5, -- sprint speed = normal walk speed x this
 }
 
--- === Player base stats (R-C14..R-C18) ===
-Balance.Player = {
-	baseHp = 100,
-	baseAttackFlat = 0, -- flat added to dice total before multipliers
-	baseCritChance = 0.05, -- 0..1
-	baseCritMultiplier = 2.0, -- crit deals x2 (R-C14)
-	baseDodgeChance = 0.0, -- 0..1 (R-C16)
-	baseDamageReduction = 0.0, -- 0..1 (R-C15)
-	baseHealAmount = 0,
-	baseLifesteal = 0.0, -- 0..1 of damage dealt
-	-- Safety clamps so stacking never breaks resolution.
-	maxCritChance = 1.0,
-	maxDodgeChance = 0.9,
-	maxDamageReduction = 0.9,
+-- === Real-time weapon combat (MeleeService) ===
+-- Per-weapon numbers live in Config/Weapons, per-enemy ones in each enemy's
+-- `melee` block; this is what applies to every fight.
+Balance.Melee = {
+	leashRange = 35, -- an enemy gives up once it, or its target, is this far from its spawn point
+	returnSpeedScale = 1.5, -- walking home is this much faster than chasing
+	stopFraction = 0.75, -- a chasing enemy stops this fraction of its attack range past its front
+	dodgeSlack = 1.5, -- extra studs beyond range at which a landing attack still connects
+	separation = 3, -- chasing enemies keep at least this far apart
+	-- Server-side tolerance for hit claims, in studs: covers the per-client wander
+	-- and network delay between where the client drew an enemy and where the
+	-- server has it.
+	hitSlack = 4,
+	tickRate = 20, -- AI updates per second
+	-- For playtesting: weapons every player owns from the start, Studio only; the
+	-- first one starts selected in the hotbar. Empty since 2026-10-11 (the user
+	-- took the Corn Cob off); the admin panel's Give is the usual way now.
+	testStartWeapons = {},
 }
 
--- === Gear (magnitude of a Common-rarity piece per stat, before rarity/slot scaling) ===
-Balance.GearBaseStat = {
-	hp = 20,
-	attack = 5,
-	critChance = 0.03,
-	dodgeChance = 0.03,
-	damageReduction = 0.02,
-	healAmount = 8,
+-- Coins dropped by defeated enemies (CoinService). Each enemy's own range is
+-- its `coins` entry in Config/Worlds; these are the visual spill only.
+Balance.Coins = {
+	piecesMin = 3, -- coins that fling out of the enemy...
+	piecesMax = 5, -- ...whatever the amount actually is
 }
 
--- === Slot leveling (R-E8) ===
-Balance.SlotLevels = {
-	maxLevel = 20,
-	-- Buff multiplier applied to equipped gear = 1 + (level-1) * bonusPerLevel.
-	bonusPerLevel = 0.10,
-	-- Material cost to go from level L to L+1 = baseCost + (L-1) * costPerLevel.
-	baseCost = 5,
-	costPerLevel = 5,
-}
-
--- === Per-chapter (transient) leveling & dice unlock (R-C21) ===
-Balance.PerChapter = {
-	xpPerEnemyKill = 10,
-	xpPerBossKill = 40,
-	-- XP needed to reach level L+1 = baseXp + (L-1) * xpPerLevel.
-	baseXp = 5,
-	xpPerLevel = 0,
-	-- Each per-chapter level-up unlocks one more die (up to Balance.Dice.maxDice).
-	diceUnlockPerLevel = 1,
-}
-
--- === Global (persistent) account leveling (R-C22) ===
-Balance.Global = {
-	xpPerChapterComplete = 100,
-	-- One-time bonus the FIRST time a chapter is cleared (a progression milestone).
-	xpPerChapterMilestone = 150,
-	baseXp = 100,
-	xpPerLevel = 50,
-	-- Permanent stat increases granted per global level-up. Keys match
-	-- PlayerStats.Stats field names and are summed into the profile's
-	-- globalStatBonus, then reflected in combat via PlayerStats.compute.
-	statGainsPerLevel = {
-		maxHp = 5,
-		flatAttack = 1,
-	},
-	-- Free talent rolls granted per global level-up (applied immediately).
-	talentRollsPerLevel = 1,
-	-- Starting-dice upgrade every N global levels (permanent, still capped at 5).
-	startingDiceEveryLevels = 5,
-}
-
--- === Enemy / boss scaling ===
-Balance.Enemy = {
-	-- Boss stages multiply the base archetype stats (R-C2).
-	bossHpMultiplier = 4.0,
-	bossAttackMultiplier = 2.0,
-	-- Per-chapter difficulty ramp applied to enemy stats (chapterIndex based).
-	hpPerChapter = 0.25, -- +25% hp per chapter beyond the first
-	attackPerChapter = 0.15,
-}
-
--- === Economy (R-Y*) ===
-Balance.Economy = {
-	talentRollCost = 50, -- coins per talent roll (R-T2)
-	chestKeyCost = 1, -- keys per chest roll (R-Y2)
-}
-
--- === Rewards (R-C5, R-Y4) granted on chapter completion. Placeholder values;
--- scaled by chapter id so later chapters pay out more. Global XP is granted
--- separately via Balance.Global.xpPerChapterComplete. ===
-Balance.Rewards = {
-	chapterBaseCoins = 100, -- coins for completing chapter 1
-	chapterCoinsPerChapter = 50, -- extra coins per chapter beyond the first
-	chapterKeys = 1, -- chest keys per chapter completion
+-- EXP from defeated enemies (ExpService): each enemy's `exp` is in Config/Worlds,
+-- the level curve in Config/Leveling; these are the blue stars that spill out.
+Balance.Exp = {
+	piecesMin = 3,
+	piecesMax = 5,
 }
 
 return Balance

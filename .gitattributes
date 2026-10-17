@@ -1,0 +1,6 @@
+# Keep Luau and project files LF on every machine: Rojo copies file bytes into Studio as-is, and
+# core.autocrlf would otherwise check them out with CRLF.
+*.luau text eol=lf
+*.lua text eol=lf
+*.json text eol=lf
+*.toml text eol=lf

@@ -1,158 +1,232 @@
 --!strict
--- Responsive: viewport scaling + device-class helper for phone/desktop (R-P1, R-M2).
--- Derives a uniform UI scale factor from the current viewport relative to a base
--- design resolution, classifies the device (Phone/Tablet/Desktop), and notifies
--- listeners whenever any of those change. Pure client utility: no networking.
+-- Responsive: keeps every pixel-only UI value in step with the screen, so the
+-- game looks the same on a phone as on a monitor (user's rule, 2026-10-11:
+-- nothing in the UI may be fixed in pixels -- no sizes, fonts or placements).
+--
+-- Sizes and positions are authored in scale, so they already follow the
+-- screen. Since 2026-10-11 the rest is authored natively in scale as well, so
+-- the Studio editor shows the UI exactly as a playtest does (the user's ask):
+--   outlines   UIStroke.StrokeSizingMode = ScaledSize: Thickness is a fraction
+--              of the parent's shorter side, or of the font size on text
+--   corners, paddings, list/grid gaps   Scale, not Offset
+--   text caps  a single-line label's cap became a UIPadding inset (InsetTop /
+--              InsetBottom attributes) so TextScaled draws at the old cap size
+-- This module covers what still only exists in pixels, multiplying each by
+-- factor() = screen height / REFERENCE_HEIGHT (the 1080-high screen the UI was
+-- designed at):
+--   UIStroke.Thickness                  only FixedSize outlines (never under 1)
+--   UITextSizeConstraint Max/MinTextSize caps kept on wrapping, multi-line text
+--   ScrollingFrame.ScrollBarThickness
+--   Image SliceScale (ScaleType Slice)   9-slice borders are drawn in pixels
+--   the Offset part of UICorner.CornerRadius, UIPadding, UIListLayout.Padding
+--     and UIGridLayout.CellPadding
+--   BillboardGui.Size offsets           in-world bars and prompts drawn in pixels
+-- The authored value is kept in a "Base<Property>" attribute the first time it
+-- is seen, so it is never scaled twice (clones of a template carry the
+-- attribute with them). Everything is re-applied when the screen changes size
+-- (rotation, resizing the window).
+--
+-- Covers every ScreenGui and BillboardGui under PlayerGui and any BillboardGui
+-- that appears in Workspace. SurfaceGuis live in the world (their pixels are
+-- per stud) and are left alone.
+--
+-- Code that sets one of these properties itself goes through px() /
+-- setStroke(), so its value is scaled the same way.
 
-local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
 
 local Responsive = {}
 
-export type DeviceClass = "Phone" | "Tablet" | "Desktop"
+local REFERENCE_HEIGHT = 1080
+local MIN_FACTOR, MAX_FACTOR = 0.25, 4
 
--- Design resolution the layouts are authored against.
-local BASE = Vector2.new(1280, 720)
-local MIN_SCALE = 0.65
-local MAX_SCALE = 1.5
--- Viewport min-axis (px) thresholds used to classify touch devices.
-local PHONE_MAX_MIN_AXIS = 550
-local TABLET_MAX_MIN_AXIS = 1100
+-- No list of scaled objects is kept: a weak table loses Instances while they
+-- still exist (their Lua handles get collected), so a resize rescans instead.
+-- Resizes are rare, and the rescan only touches PlayerGui and billboards.
+local changed = Instance.new("BindableEvent")
+local current = 1
 
-local deps: any = nil
-local changedEvent: BindableEvent? = nil
-local initialized = false
-
-local currentViewport = BASE
-local currentScale = 1
-local currentClass: DeviceClass = "Desktop"
-
-local function computeScale(viewport: Vector2): number
-	local byWidth = viewport.X / BASE.X
-	local byHeight = viewport.Y / BASE.Y
-	return math.clamp(math.min(byWidth, byHeight), MIN_SCALE, MAX_SCALE)
+function Responsive.factor(): number
+	return current
 end
 
-local function computeClass(viewport: Vector2): DeviceClass
-	-- A device with touch but no keyboard is treated as a mobile form factor.
-	local touchOnly = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
-	if not touchOnly then
-		return "Desktop"
+local function measure(): number
+	local camera = Workspace.CurrentCamera
+	local height = if camera then camera.ViewportSize.Y else REFERENCE_HEIGHT
+	if height < 2 then
+		height = REFERENCE_HEIGHT
 	end
-	local minAxis = math.min(viewport.X, viewport.Y)
-	if minAxis <= PHONE_MAX_MIN_AXIS then
-		return "Phone"
-	elseif minAxis <= TABLET_MAX_MIN_AXIS then
-		return "Tablet"
-	end
-	return "Desktop"
+	return math.clamp(height / REFERENCE_HEIGHT, MIN_FACTOR, MAX_FACTOR)
 end
 
-local function getViewportSize(): Vector2
-	local camera = workspace.CurrentCamera
-	if camera and camera.ViewportSize.Y > 0 then
-		return camera.ViewportSize
-	end
-	return BASE
+-- A pixel value authored for the reference screen, sized for this one.
+function Responsive.px(value: number): number
+	return value * current
 end
 
-local function recompute()
-	local viewport = getViewportSize()
-	local scale = computeScale(viewport)
-	local class = computeClass(viewport)
-	local didChange = viewport ~= currentViewport or scale ~= currentScale or class ~= currentClass
-	currentViewport = viewport
-	currentScale = scale
-	currentClass = class
-	if didChange and changedEvent then
-		changedEvent:Fire()
+-- Fires (factor) whenever the screen's scale changes.
+function Responsive.onChanged(callback: (number) -> ()): RBXScriptConnection
+	return changed.Event:Connect(callback)
+end
+
+-- The authored value of `prop`, recorded on first sight.
+local function base(inst: Instance, prop: string, value: any): any
+	local key = "Base" .. prop
+	local stored = inst:GetAttribute(key)
+	if stored == nil then
+		inst:SetAttribute(key, value)
+		return value
+	end
+	return stored
+end
+
+local function udim(u: UDim, offset: number): UDim
+	return UDim.new(u.Scale, offset * current)
+end
+
+-- Apply to one instance; returns true when it holds something to scale.
+local function apply(inst: Instance): boolean
+	if inst:IsA("UIStroke") then
+		if inst.StrokeSizingMode == Enum.StrokeSizingMode.ScaledSize then
+			return false -- already relative to its parent / font size
+		end
+		local b = base(inst, "Thickness", inst.Thickness)
+		inst.Thickness = if b > 0 then math.max(1, b * current) else 0
+		return true
+	elseif inst:IsA("UITextSizeConstraint") then
+		local maxBase = base(inst, "MaxTextSize", inst.MaxTextSize)
+		local minBase = base(inst, "MinTextSize", inst.MinTextSize)
+		local minSize = math.max(1, math.floor(minBase * current + 0.5))
+		inst.MinTextSize = minSize
+		inst.MaxTextSize = math.max(minSize, math.floor(maxBase * current + 0.5))
+		return true
+	elseif inst:IsA("ScrollingFrame") then
+		local b = base(inst, "ScrollBarThickness", inst.ScrollBarThickness)
+		inst.ScrollBarThickness = math.max(if b > 0 then 2 else 0, math.floor(b * current + 0.5))
+		return true
+	elseif (inst:IsA("ImageLabel") or inst:IsA("ImageButton")) and inst.ScaleType == Enum.ScaleType.Slice then
+		local b = base(inst, "SliceScale", inst.SliceScale)
+		inst.SliceScale = b * current
+		return true
+	elseif inst:IsA("UICorner") then
+		local b: UDim = base(inst, "CornerRadius", inst.CornerRadius)
+		if b.Offset == 0 then
+			return false
+		end
+		inst.CornerRadius = UDim.new(b.Scale, b.Offset * current)
+		return true
+	elseif inst:IsA("UIPadding") then
+		local any = false
+		for _, prop in { "PaddingTop", "PaddingBottom", "PaddingLeft", "PaddingRight" } do
+			local value: UDim = (inst :: any)[prop]
+			local b: UDim = base(inst, prop, value)
+			if b.Offset ~= 0 then
+				any = true
+				-- keep whatever scale is set now (Util.FontDrop writes the scale part)
+				;(inst :: any)[prop] = udim(value, b.Offset)
+			end
+		end
+		return any
+	elseif inst:IsA("UIListLayout") then
+		local b: UDim = base(inst, "Padding", inst.Padding)
+		if b.Offset == 0 then
+			return false
+		end
+		inst.Padding = UDim.new(b.Scale, b.Offset * current)
+		return true
+	elseif inst:IsA("UIGridLayout") then
+		local b: UDim2 = base(inst, "CellPadding", inst.CellPadding)
+		if b.X.Offset == 0 and b.Y.Offset == 0 then
+			return false
+		end
+		inst.CellPadding = UDim2.new(b.X.Scale, b.X.Offset * current, b.Y.Scale, b.Y.Offset * current)
+		return true
+	elseif inst:IsA("BillboardGui") then
+		local b: UDim2 = base(inst, "Size", inst.Size)
+		inst.Size = UDim2.new(b.X.Scale, b.X.Offset * current, b.Y.Scale, b.Y.Offset * current)
+		return true
+	end
+	return false
+end
+
+local function inWorld(inst: Instance): boolean
+	return inst:FindFirstAncestorWhichIsA("SurfaceGui") ~= nil or inst:IsA("SurfaceGui")
+end
+
+local function adopt(inst: Instance)
+	if not inWorld(inst) then
+		apply(inst)
 	end
 end
 
-local function bindCamera(camera: Camera?)
-	if camera then
-		camera:GetPropertyChangedSignal("ViewportSize"):Connect(recompute)
+local function adoptTree(root: Instance)
+	adopt(root)
+	for _, d in root:GetDescendants() do
+		adopt(d)
 	end
 end
 
-local function ensureInit()
-	if initialized then
+-- Set an outline from code (state colours, selected rims). For a ScaledSize
+-- stroke `px` is its fraction (of the parent's shorter side, or the font size)
+-- and is set as is; for a FixedSize one it is the value for the reference screen.
+function Responsive.setStroke(stroke: UIStroke, px: number)
+	if stroke.StrokeSizingMode == Enum.StrokeSizingMode.ScaledSize then
+		stroke.Thickness = math.max(0, px)
 		return
 	end
-	initialized = true
-	changedEvent = Instance.new("BindableEvent")
-	recompute()
-
-	bindCamera(workspace.CurrentCamera)
-	workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
-		bindCamera(workspace.CurrentCamera)
-		recompute()
-	end)
-	-- Switching between touch and mouse/keyboard can change the device class.
-	UserInputService.LastInputTypeChanged:Connect(recompute)
+	stroke:SetAttribute("BaseThickness", px)
+	stroke.Thickness = if px > 0 then math.max(1, px * current) else 0
 end
 
-function Responsive.init(injected: any)
-	deps = injected
-	ensureInit()
+local function refresh()
+	local factor = measure()
+	if math.abs(factor - current) < 1e-3 then
+		return
+	end
+	current = factor
+	local playerGui = Players.LocalPlayer:FindFirstChildOfClass("PlayerGui")
+	if playerGui then
+		adoptTree(playerGui)
+	end
+	for _, d in Workspace:GetDescendants() do
+		if d:IsA("BillboardGui") then
+			adoptTree(d)
+		end
+	end
+	changed:Fire(current)
+end
+
+function Responsive.init(_injected: any)
+	current = measure()
 end
 
 function Responsive.start()
-	ensureInit()
-end
+	local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+	adoptTree(playerGui)
+	playerGui.DescendantAdded:Connect(adopt)
 
--- Current viewport size in pixels.
-function Responsive.getViewport(): Vector2
-	ensureInit()
-	return currentViewport
-end
+	-- billboards cloned into the world (enemy bars, damage numbers, prompts)
+	local function watchBillboard(gui: Instance)
+		if gui:IsA("BillboardGui") then
+			adoptTree(gui)
+			gui.DescendantAdded:Connect(adopt)
+		end
+	end
+	for _, d in Workspace:GetDescendants() do
+		watchBillboard(d)
+	end
+	Workspace.DescendantAdded:Connect(watchBillboard)
 
--- Uniform UI scale factor for the current viewport (clamped).
-function Responsive.scale(): number
-	ensureInit()
-	return currentScale
-end
-
--- Convert design pixels to device pixels using the current scale (rounded).
-function Responsive.scaled(px: number): number
-	ensureInit()
-	return math.round(px * currentScale)
-end
-
--- Device classification derived from touch capability + viewport size.
-function Responsive.getDeviceClass(): DeviceClass
-	ensureInit()
-	return currentClass
-end
-
-function Responsive.isPhone(): boolean
-	return Responsive.getDeviceClass() == "Phone"
-end
-
-function Responsive.isTouch(): boolean
-	return UserInputService.TouchEnabled
-end
-
--- True when layouts should use the compact (single-column, taller controls) form.
-function Responsive.isCompact(): boolean
-	return Responsive.getDeviceClass() == "Phone"
-end
-
--- Subscribe to viewport/scale/device-class changes. Returns the connection.
-function Responsive.onChanged(callback: () -> ()): RBXScriptConnection
-	ensureInit()
-	return (changedEvent :: BindableEvent).Event:Connect(callback)
-end
-
--- Attach a UIScale to a GuiObject that tracks the current scale automatically.
-function Responsive.applyUIScale(guiObject: GuiObject): UIScale
-	ensureInit()
-	local uiScale = Instance.new("UIScale")
-	uiScale.Scale = currentScale
-	uiScale.Parent = guiObject
-	Responsive.onChanged(function()
-		uiScale.Scale = currentScale
-	end)
-	return uiScale
+	local function watchCamera()
+		local camera = Workspace.CurrentCamera
+		if camera then
+			camera:GetPropertyChangedSignal("ViewportSize"):Connect(refresh)
+		end
+		refresh()
+	end
+	Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(watchCamera)
+	watchCamera()
 end
 
 return Responsive
