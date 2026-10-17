@@ -1,0 +1,17 @@
+<!doctype html>
+<!--
+  DiceBattles HUD icons drawn as SVG. Each svg below with a data-export name
+  renders to art/hud/NAME.png with art/svg_render.py (art/hud_icons.html art/hud 512).
+-->
+<html><body style="background:#567">
+
+<!-- EXP star (HUD flying star, Index EXP stat, quest reward chip): bubbly blue star with a lip.
+     The inner highlight star is centred on the big star (fixed 2026-10-08: it sat 6 left and had a stray shine stroke). -->
+<svg data-export="icon_exp_star" viewBox="0 0 128 128" width="128" height="128">
+<defs><linearGradient id="xs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9CDBFF"/><stop offset="1" stop-color="#2F8BF0"/></linearGradient></defs>
+<polygon transform="translate(0,6)" points="64.0,14.0 76.9,46.2 111.6,48.5 84.9,70.8 93.4,104.5 64.0,86.0 34.6,104.5 43.1,70.8 16.4,48.5 51.1,46.2" fill="#1A55A8" stroke="#1A55A8" stroke-width="6" stroke-linejoin="round"/>
+<polygon points="64.0,14.0 76.9,46.2 111.6,48.5 84.9,70.8 93.4,104.5 64.0,86.0 34.6,104.5 43.1,70.8 16.4,48.5 51.1,46.2" fill="url(#xs)" stroke="#2470D6" stroke-width="6" stroke-linejoin="round"/>
+<polygon points="64.0,43.0 69.4,56.6 84.0,57.5 72.7,66.8 76.3,81.0 64.0,73.2 51.7,81.0 55.3,66.8 44.0,57.5 58.6,56.6" fill="#FFFFFF" opacity="0.35"/>
+</svg>
+
+</body></html>

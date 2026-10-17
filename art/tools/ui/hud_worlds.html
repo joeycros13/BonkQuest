@@ -1,0 +1,52 @@
+<!doctype html>
+<!--
+  DiceBattles HUD side button "Worlds" (2026-10-12): the user's pick, icon 1 on the Worlds Menu canvas
+  (a globe with a gold ring), in the hudB "puffy toy" style of the Inventory / Index / Shop buttons:
+  a chunky dark ink outline, soft gradients, a glossy highlight and a dark drop lip.
+  The ring is a real ring (user): its back half is drawn behind the globe, so the sphere hides it, and only
+  its front half crosses over the globe.
+  Render: python svg_render.py hud_worlds.html <out> 512 <port>
+-->
+<html><body style="background:#6d8a5f">
+<svg data-export="hud_worlds" viewBox="0 0 512 512" width="256" height="256">
+<defs>
+<linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6fdcf2"/><stop offset="1" stop-color="#1b86c0"/></linearGradient>
+<linearGradient id="land" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8be873"/><stop offset="1" stop-color="#37a046"/></linearGradient>
+<linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe490"/><stop offset="1" stop-color="#e3a21e"/></linearGradient>
+<clipPath id="globe"><circle cx="256" cy="246" r="148"/></clipPath>
+<!-- the half of the ring that is in front of the globe: below the ring's own centre line -->
+<clipPath id="front"><rect x="-200" y="246" width="912" height="500" transform="rotate(-16 256 246)"/></clipPath>
+</defs>
+<!-- drop lip: the whole silhouette in ink, a little lower -->
+<g transform="translate(0 16)">
+  <circle cx="256" cy="246" r="160" fill="#2a1a3a"/>
+  <ellipse cx="256" cy="246" rx="222" ry="56" fill="none" stroke="#2a1a3a" stroke-width="50" transform="rotate(-16 256 246)"/>
+</g>
+<!-- the ring, whole: its back half sits behind the globe -->
+<g transform="rotate(-16 256 246)">
+  <ellipse cx="256" cy="246" rx="222" ry="56" fill="none" stroke="#2a1a3a" stroke-width="50"/>
+  <ellipse cx="256" cy="246" rx="222" ry="56" fill="none" stroke="url(#gold)" stroke-width="28"/>
+  <ellipse cx="256" cy="238" rx="214" ry="50" fill="none" stroke="#fff6c8" stroke-width="5" opacity="0.6"/>
+</g>
+<!-- the globe -->
+<circle cx="256" cy="246" r="160" fill="#2a1a3a"/>
+<circle cx="256" cy="246" r="148" fill="url(#sea)"/>
+<g clip-path="url(#globe)" stroke="#2a1a3a" stroke-width="11" stroke-linejoin="round">
+  <path d="M120 170 q40 -46 92 -22 q30 22 4 54 q-30 26 -10 58 q8 26 -26 30 q-40 -6 -58 -50 q-14 -36 -2 -70 z" fill="url(#land)"/>
+  <path d="M262 110 q50 -6 84 22 q20 22 -6 36 q-26 8 -44 -6 q-30 6 -40 -22 q-6 -24 6 -30 z" fill="url(#land)"/>
+  <path d="M286 236 q44 -24 82 2 q22 30 4 66 q-22 40 -58 40 q-26 -12 -22 -50 q2 -34 -6 -58 z" fill="url(#land)"/>
+</g>
+<circle cx="256" cy="246" r="148" fill="none" stroke="#ffffff" stroke-width="6" opacity="0.25"/>
+<!-- gloss -->
+<ellipse cx="200" cy="148" rx="58" ry="26" fill="#ffffff" opacity="0.55" transform="rotate(-28 200 148)"/>
+<circle cx="262" cy="122" r="9" fill="#ffffff" opacity="0.8"/>
+<!-- the ring's front half, crossing over the globe -->
+<g clip-path="url(#front)">
+  <g transform="rotate(-16 256 246)">
+    <ellipse cx="256" cy="246" rx="222" ry="56" fill="none" stroke="#2a1a3a" stroke-width="50"/>
+    <ellipse cx="256" cy="246" rx="222" ry="56" fill="none" stroke="url(#gold)" stroke-width="28"/>
+    <ellipse cx="256" cy="238" rx="214" ry="50" fill="none" stroke="#fff6c8" stroke-width="5" opacity="0.6"/>
+  </g>
+</g>
+</svg>
+</body></html>

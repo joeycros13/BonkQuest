@@ -1,0 +1,125 @@
+<!doctype html>
+<!--
+  DiceBattles Index skins (layout C "Open book" + popup 1 "Ray burst", picked on
+  the Claude Design canvas https://claude.ai/artifact/BusFKRRnTTbCgYCaevN82o).
+  Each svg below with a data-export name renders to art/index/NAME.png with
+  art/svg_render.py (the longer side gets the size given).
+-->
+<html><body style="background:#567">
+
+<!-- the book: teal cover with a lip, two cream pages, a spine -->
+<svg data-export="idx_window" viewBox="0 0 1140 772" width="570" height="386">
+<defs>
+<linearGradient id="w-cover" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#138A9F"/><stop offset="1" stop-color="#0B6A7D"/></linearGradient>
+<linearGradient id="w-left" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFBF1"/><stop offset="0.85" stop-color="#FFF6E4"/><stop offset="1" stop-color="#E6D3AE"/></linearGradient>
+<linearGradient id="w-right" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#E6D3AE"/><stop offset="0.07" stop-color="#FFF6E4"/><stop offset="1" stop-color="#FFFBF1"/></linearGradient>
+<clipPath id="w-pages"><rect x="26" y="22" width="1088" height="712" rx="18"/></clipPath>
+</defs>
+<rect x="0" y="12" width="1140" height="760" rx="30" fill="#074A57"/>
+<rect x="0" y="0" width="1140" height="760" rx="30" fill="url(#w-cover)"/>
+<rect x="3" y="3" width="1134" height="754" rx="28" fill="none" stroke="#2FB4C9" stroke-width="5"/>
+<rect x="12" y="10" width="1116" height="740" rx="24" fill="none" stroke="#5FD3E3" stroke-width="3" stroke-dasharray="12 9" opacity="0.45"/>
+<rect x="26" y="30" width="1088" height="712" rx="18" fill="#000" opacity="0.18"/>
+<g clip-path="url(#w-pages)">
+<rect x="26" y="22" width="380" height="712" fill="url(#w-left)"/>
+<rect x="406" y="22" width="708" height="712" fill="url(#w-right)"/>
+</g>
+<path d="M406 24 L406 732" stroke="#C9B084" stroke-width="2"/>
+</svg>
+
+<!-- the drop slip: a paper card with a brown rim, a lip and a dashed rule -->
+<svg data-export="idx_slip" viewBox="0 0 340 568" width="170" height="284">
+<defs><linearGradient id="s-paper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFBF1"/><stop offset="1" stop-color="#F4E7CF"/></linearGradient></defs>
+<rect x="0" y="8" width="340" height="560" rx="20" fill="#B99A6B"/>
+<rect x="0" y="0" width="340" height="560" rx="20" fill="#8C6A3F"/>
+<rect x="5" y="5" width="330" height="550" rx="16" fill="url(#s-paper)"/>
+<path d="M22 126 L318 126" stroke="#C9A978" stroke-width="3" stroke-dasharray="10 8" stroke-linecap="round"/>
+</svg>
+
+<!-- creature photos: found / found boss / selected / not found / boss not found -->
+<svg data-export="idx_photo_found" viewBox="0 0 260 322" width="130" height="161">
+<defs><radialGradient id="pf" cx="0.5" cy="0.6" r="0.7"><stop offset="0" stop-color="#E9F8FB"/><stop offset="1" stop-color="#BDE6EE"/></radialGradient></defs>
+<rect x="0" y="6" width="260" height="316" rx="6" fill="#D8C49F"/>
+<rect x="0.5" y="0.5" width="259" height="315" rx="6" fill="#FFFFFF" stroke="#E6D6B6"/>
+<rect x="14" y="14" width="232" height="232" rx="3" fill="url(#pf)"/>
+</svg>
+<svg data-export="idx_photo_boss" viewBox="0 0 260 322" width="130" height="161">
+<defs><radialGradient id="pb" cx="0.5" cy="0.6" r="0.7"><stop offset="0" stop-color="#F5EEFF"/><stop offset="1" stop-color="#D6C4F2"/></radialGradient></defs>
+<rect x="0" y="6" width="260" height="316" rx="6" fill="#C9B4E6"/>
+<rect x="0.5" y="0.5" width="259" height="315" rx="6" fill="#FFFFFF" stroke="#DCCDF0"/>
+<rect x="14" y="14" width="232" height="232" rx="3" fill="url(#pb)"/>
+</svg>
+<svg data-export="idx_photo_selected" viewBox="0 0 260 322" width="130" height="161">
+<defs><radialGradient id="ps" cx="0.5" cy="0.6" r="0.7"><stop offset="0" stop-color="#FFF1D6"/><stop offset="1" stop-color="#F7CF86"/></radialGradient></defs>
+<rect x="0" y="6" width="260" height="316" rx="8" fill="#C98A12"/>
+<rect x="0" y="0" width="260" height="316" rx="8" fill="#F3B521"/>
+<rect x="6" y="6" width="248" height="304" rx="4" fill="#FFFFFF"/>
+<rect x="16" y="16" width="228" height="228" rx="3" fill="url(#ps)"/>
+</svg>
+<svg data-export="idx_photo_unknown" viewBox="0 0 260 322" width="130" height="161">
+<rect x="3" y="3" width="254" height="310" rx="8" fill="#FFFFFF" fill-opacity="0.35" stroke="#C9A978" stroke-width="5" stroke-dasharray="16 11" stroke-linecap="round"/>
+</svg>
+<svg data-export="idx_photo_boss_unknown" viewBox="0 0 260 322" width="130" height="161">
+<rect x="3" y="3" width="254" height="310" rx="8" fill="#FFFFFF" fill-opacity="0.35" stroke="#B48BE0" stroke-width="5" stroke-dasharray="16 11" stroke-linecap="round"/>
+</svg>
+
+<!-- a world that isn't open yet, and its lock -->
+<svg data-export="idx_world_locked" viewBox="0 0 328 110" width="164" height="55">
+<rect x="3" y="3" width="322" height="104" rx="16" fill="#FFFFFF" fill-opacity="0.25" stroke="#C9A978" stroke-width="4" stroke-dasharray="14 10" stroke-linecap="round"/>
+</svg>
+<svg data-export="idx_lock" viewBox="0 0 64 64" width="64" height="64">
+<rect x="13" y="29" width="38" height="28" rx="7" fill="none" stroke="#A88B62" stroke-width="6.5"/>
+<path d="M21 29 V21 a11 11 0 0 1 22 0 V29" fill="none" stroke="#A88B62" stroke-width="6.5" stroke-linecap="round"/>
+<circle cx="32" cy="43" r="4" fill="#A88B62"/>
+</svg>
+
+<!-- red bookmark ribbon -->
+<svg data-export="idx_ribbon" viewBox="0 0 40 120" width="40" height="120">
+<defs><linearGradient id="rb" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#C93A2C"/><stop offset="0.45" stop-color="#E8513F"/><stop offset="1" stop-color="#B83226"/></linearGradient></defs>
+<path d="M2 0 H38 V118 L20 98 L2 118 Z" fill="url(#rb)"/>
+<path d="M8 0 V104" stroke="#FF8C78" stroke-width="2" opacity="0.6"/>
+</svg>
+
+<!-- popup: white sun rays fading out (tinted per kind in Roblox) -->
+<svg data-export="pop_rays" viewBox="0 0 512 512" width="256" height="256">
+<defs>
+<radialGradient id="rf"><stop offset="0.18" stop-color="#FFFFFF"/><stop offset="0.7" stop-color="#000000"/></radialGradient>
+<mask id="rm"><rect width="512" height="512" fill="url(#rf)"/></mask>
+</defs>
+<g mask="url(#rm)" fill="#FFFFFF">
+<polygon points="256,256 228,-103 284,-103"/><polygon points="256,256 367,-86 419,-65"/><polygon points="256,256 490,-18 530,22"/><polygon points="256,256 577,93 598,145"/>
+<polygon points="256,256 615,228 615,284"/><polygon points="256,256 598,367 577,419"/><polygon points="256,256 530,490 490,530"/><polygon points="256,256 419,577 367,598"/>
+<polygon points="256,256 284,615 228,615"/><polygon points="256,256 145,598 93,577"/><polygon points="256,256 22,530 -18,490"/><polygon points="256,256 -65,419 -86,367"/>
+<polygon points="256,256 -103,284 -103,228"/><polygon points="256,256 -86,145 -65,93"/><polygon points="256,256 -18,22 22,-18"/><polygon points="256,256 93,-65 145,-86"/>
+</g>
+</svg>
+<svg data-export="pop_glow" viewBox="0 0 256 256" width="128" height="128">
+<defs><radialGradient id="gl"><stop offset="0" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="0.38" stop-color="#FFFFFF" stop-opacity="0.65"/><stop offset="0.72" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient></defs>
+<circle cx="128" cy="128" r="128" fill="url(#gl)"/>
+</svg>
+
+<!-- popup name banners (enemy teal, weapon green) and the NEW! tag -->
+<svg data-export="pop_banner_teal" viewBox="0 0 420 88" width="210" height="44">
+<defs><linearGradient id="bt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#33CDE0"/><stop offset="1" stop-color="#0E9DB5"/></linearGradient></defs>
+<rect x="0" y="7" width="420" height="81" rx="24" fill="#0A5A6A"/>
+<rect x="0" y="0" width="420" height="81" rx="24" fill="#FFFFFF"/>
+<rect x="6" y="6" width="408" height="69" rx="19" fill="url(#bt)"/>
+<path d="M30 16 H390" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.35"/>
+</svg>
+<svg data-export="pop_banner_green" viewBox="0 0 420 88" width="210" height="44">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FDB86"/><stop offset="1" stop-color="#45B451"/></linearGradient></defs>
+<rect x="0" y="7" width="420" height="81" rx="24" fill="#2F7A38"/>
+<rect x="0" y="0" width="420" height="81" rx="24" fill="#FFFFFF"/>
+<rect x="6" y="6" width="408" height="69" rx="19" fill="url(#bg)"/>
+<path d="M30 16 H390" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.35"/>
+</svg>
+<svg data-export="pop_new" viewBox="0 0 130 64" width="130" height="64">
+<defs><linearGradient id="nw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF5A4A"/><stop offset="1" stop-color="#D8321F"/></linearGradient></defs>
+<rect x="0" y="6" width="130" height="58" rx="16" fill="#8F2A20"/>
+<rect x="0" y="0" width="130" height="58" rx="16" fill="#FFFFFF"/>
+<rect x="5" y="5" width="120" height="48" rx="12" fill="url(#nw)"/>
+</svg>
+
+
+
+</body></html>

@@ -1,0 +1,1058 @@
+{
+ "GemcutterGear": {
+  "pieces": {
+   "Apron": {
+    "offset": [
+     -0.0,
+     -0.59,
+     -0.545
+    ],
+    "size": [
+     1.7,
+     2.62,
+     0.05
+    ],
+    "colour": "a0673a",
+    "bone": "Torso"
+   },
+   "ApronStraps": {
+    "offset": [
+     -0.0,
+     0.225,
+     0.0
+    ],
+    "size": [
+     1.12,
+     1.69,
+     1.14
+    ],
+    "colour": "7a4a26",
+    "bone": "Torso"
+   },
+   "Band": {
+    "offset": [
+     -0.0,
+     1.9,
+     0.0
+    ],
+    "size": [
+     1.33,
+     0.16,
+     1.2967
+    ],
+    "colour": "6b3fa0",
+    "bone": "Head"
+   },
+   "ChiselBlade": {
+    "offset": [
+     -0.25,
+     0.69,
+     -0.6
+    ],
+    "size": [
+     0.06,
+     0.18,
+     0.02
+    ],
+    "colour": "9aa3b2",
+    "bone": "Torso"
+   },
+   "ChiselHandle": {
+    "offset": [
+     -0.25,
+     0.45,
+     -0.6
+    ],
+    "size": [
+     0.1,
+     0.3,
+     0.03
+    ],
+    "colour": "9c6a3a",
+    "bone": "Torso"
+   },
+   "Loupe": {
+    "offset": [
+     0.22,
+     1.92,
+     -0.73
+    ],
+    "size": [
+     0.3,
+     0.3,
+     0.22
+    ],
+    "colour": "deb248",
+    "bone": "Head"
+   },
+   "LoupeLens": {
+    "offset": [
+     0.22,
+     1.92,
+     -0.78
+    ],
+    "size": [
+     0.21,
+     0.21,
+     0.04
+    ],
+    "colour": "bfefff",
+    "bone": "Head"
+   },
+   "Pocket": {
+    "offset": [
+     -0.17,
+     0.165,
+     -0.5825
+    ],
+    "size": [
+     0.5,
+     0.43,
+     0.035
+    ],
+    "colour": "7a4a26",
+    "bone": "Torso"
+   },
+   "Pouch": {
+    "offset": [
+     -1.005,
+     -0.99,
+     -0.645
+    ],
+    "size": [
+     0.27,
+     0.42,
+     0.15
+    ],
+    "colour": "855633",
+    "bone": "Torso"
+   },
+   "PouchCyan": {
+    "offset": [
+     -1.0,
+     -0.63,
+     -0.66
+    ],
+    "size": [
+     0.13,
+     0.38,
+     0.1126
+    ],
+    "colour": "8fe4f7",
+    "bone": "Torso"
+   },
+   "PouchFlap": {
+    "offset": [
+     -1.01,
+     -0.81,
+     -0.655
+    ],
+    "size": [
+     0.3,
+     0.1,
+     0.17
+    ],
+    "colour": "6b4426",
+    "bone": "Torso"
+   },
+   "PouchPink": {
+    "offset": [
+     -1.005,
+     -0.67,
+     -0.6443
+    ],
+    "size": [
+     0.25,
+     0.3,
+     0.1353
+    ],
+    "colour": "ffa8d8",
+    "bone": "Torso"
+   },
+   "RolledL": {
+    "offset": [
+     -1.51,
+     -0.01,
+     0.0
+    ],
+    "size": [
+     1.12,
+     0.26,
+     1.12
+    ],
+    "colour": "d2c6ec",
+    "bone": "LeftArm"
+   },
+   "RolledR": {
+    "offset": [
+     1.51,
+     -0.01,
+     0.0
+    ],
+    "size": [
+     1.12,
+     0.26,
+     1.12
+    ],
+    "colour": "d2c6ec",
+    "bone": "RightArm"
+   },
+   "Shirt": {
+    "offset": [
+     -0.0,
+     0.0125,
+     0.0
+    ],
+    "size": [
+     2.02,
+     2.025,
+     1.02
+    ],
+    "colour": "b7a6d9",
+    "bone": "Torso"
+   },
+   "Shoes": {
+    "offset": [
+     -0.0,
+     -2.77,
+     -0.115
+    ],
+    "size": [
+     2.06,
+     0.3,
+     1.29
+    ],
+    "colour": "3a2a20",
+    "bone": ""
+   },
+   "SleeveL": {
+    "offset": [
+     -1.505,
+     0.53,
+     0.0
+    ],
+    "size": [
+     1.07,
+     1.02,
+     1.06
+    ],
+    "colour": "b7a6d9",
+    "bone": "LeftArm"
+   },
+   "SleeveR": {
+    "offset": [
+     1.505,
+     0.53,
+     0.0
+    ],
+    "size": [
+     1.07,
+     1.02,
+     1.06
+    ],
+    "colour": "b7a6d9",
+    "bone": "RightArm"
+   },
+   "Soles": {
+    "offset": [
+     -0.0,
+     -2.96,
+     -0.12
+    ],
+    "size": [
+     2.1,
+     0.08,
+     1.36
+    ],
+    "colour": "241a14",
+    "bone": ""
+   },
+   "Trousers": {
+    "offset": [
+     -0.0,
+     -1.83,
+     0.0
+    ],
+    "size": [
+     2.04,
+     1.66,
+     1.04
+    ],
+    "colour": "4b4453",
+    "bone": ""
+   },
+   "WaistTie": {
+    "offset": [
+     -0.0,
+     -0.59,
+     0.0
+    ],
+    "size": [
+     2.1,
+     0.14,
+     1.1
+    ],
+    "colour": "7a4a26",
+    "bone": "Torso"
+   }
+  },
+  "size": [
+   4.14,
+   5.07,
+   1.488
+  ],
+  "minZ": -3.0,
+  "maxZ": 2.07
+ },
+ "MinerGear": {
+  "pieces": {
+   "Belt": {
+    "offset": [
+     -0.0,
+     -0.82,
+     0.0
+    ],
+    "size": [
+     2.12,
+     0.16,
+     1.14
+    ],
+    "colour": "6b4426",
+    "bone": "Torso"
+   },
+   "Bib": {
+    "offset": [
+     -0.0,
+     -0.11,
+     -0.5325
+    ],
+    "size": [
+     1.24,
+     1.22,
+     0.045
+    ],
+    "colour": "33476e",
+    "bone": "Torso"
+   },
+   "Boots": {
+    "offset": [
+     -0.0,
+     -2.63,
+     -0.15
+    ],
+    "size": [
+     2.08,
+     0.54,
+     1.38
+    ],
+    "colour": "7a4a2a",
+    "bone": ""
+   },
+   "Brim": {
+    "offset": [
+     -0.0,
+     1.845,
+     -0.0774
+    ],
+    "size": [
+     1.8751,
+     0.07,
+     1.8748
+    ],
+    "colour": "d47f12",
+    "bone": "Head"
+   },
+   "Buckle": {
+    "offset": [
+     -0.0,
+     -0.82,
+     -0.595
+    ],
+    "size": [
+     0.28,
+     0.2,
+     0.05
+    ],
+    "colour": "deb248",
+    "bone": "Torso"
+   },
+   "Buttons": {
+    "offset": [
+     -0.0,
+     0.45,
+     -0.5675
+    ],
+    "size": [
+     1.04,
+     0.14,
+     0.035
+    ],
+    "colour": "deb248",
+    "bone": "Torso"
+   },
+   "CuffL": {
+    "offset": [
+     -1.51,
+     -0.7,
+     0.0
+    ],
+    "size": [
+     1.12,
+     0.24,
+     1.12
+    ],
+    "colour": "8b8d99",
+    "bone": "LeftArm"
+   },
+   "CuffR": {
+    "offset": [
+     1.51,
+     -0.7,
+     0.0
+    ],
+    "size": [
+     1.12,
+     0.24,
+     1.12
+    ],
+    "colour": "8b8d99",
+    "bone": "RightArm"
+   },
+   "Hat": {
+    "offset": [
+     -0.0,
+     2.15,
+     0.0
+    ],
+    "size": [
+     1.4,
+     0.62,
+     1.3649
+    ],
+    "colour": "f39c1f",
+    "bone": "Head"
+   },
+   "Laces": {
+    "offset": [
+     -0.0,
+     -2.53,
+     -0.5525
+    ],
+    "size": [
+     1.4,
+     0.19,
+     0.025
+    ],
+    "colour": "e8dcc0",
+    "bone": ""
+   },
+   "Lamp": {
+    "offset": [
+     -0.0,
+     2.06,
+     -0.72
+    ],
+    "size": [
+     0.38,
+     0.3614,
+     0.2
+    ],
+    "colour": "8e95a3",
+    "bone": "Head"
+   },
+   "Lens": {
+    "offset": [
+     -0.0,
+     2.06,
+     -0.835
+    ],
+    "size": [
+     0.28,
+     0.2663,
+     0.05
+    ],
+    "colour": "fff3b0",
+    "bone": "Head"
+   },
+   "Moustache": {
+    "offset": [
+     -0.0,
+     1.29,
+     -0.65
+    ],
+    "size": [
+     0.76,
+     0.2,
+     0.1
+    ],
+    "colour": "5a5158",
+    "bone": "Head"
+   },
+   "OverallWaist": {
+    "offset": [
+     -0.0,
+     -0.85,
+     0.0
+    ],
+    "size": [
+     2.05,
+     0.3,
+     1.05
+    ],
+    "colour": "33476e",
+    "bone": "Torso"
+   },
+   "Pencil": {
+    "offset": [
+     0.06,
+     0.37,
+     -0.585
+    ],
+    "size": [
+     0.08,
+     0.38,
+     0.03
+    ],
+    "colour": "f2c12e",
+    "bone": "Torso"
+   },
+   "PickHandle": {
+    "offset": [
+     -0.0,
+     0.175,
+     0.69
+    ],
+    "size": [
+     1.6165,
+     2.3277,
+     0.12
+    ],
+    "colour": "9c6a3a",
+    "bone": "Torso"
+   },
+   "PickHead": {
+    "offset": [
+     -0.5614,
+     1.0379,
+     0.695
+    ],
+    "size": [
+     1.592,
+     1.1122,
+     0.15
+    ],
+    "colour": "6b7280",
+    "bone": "Torso"
+   },
+   "Pocket": {
+    "offset": [
+     -0.09,
+     0.08,
+     -0.5675
+    ],
+    "size": [
+     0.5,
+     0.4,
+     0.035
+    ],
+    "colour": "4a608c",
+    "bone": "Torso"
+   },
+   "Pouches": {
+    "offset": [
+     -0.0,
+     -0.93,
+     -0.635
+    ],
+    "size": [
+     2.0,
+     0.38,
+     0.13
+    ],
+    "colour": "855633",
+    "bone": "Torso"
+   },
+   "Shirt": {
+    "offset": [
+     -0.0,
+     0.0125,
+     0.0
+    ],
+    "size": [
+     2.02,
+     2.025,
+     1.02
+    ],
+    "colour": "a7a9b4",
+    "bone": "Torso"
+   },
+   "SleeveL": {
+    "offset": [
+     -1.505,
+     0.16,
+     0.0
+    ],
+    "size": [
+     1.07,
+     1.76,
+     1.06
+    ],
+    "colour": "a7a9b4",
+    "bone": "LeftArm"
+   },
+   "SleeveR": {
+    "offset": [
+     1.505,
+     0.16,
+     0.0
+    ],
+    "size": [
+     1.07,
+     1.76,
+     1.06
+    ],
+    "colour": "a7a9b4",
+    "bone": "RightArm"
+   },
+   "Soles": {
+    "offset": [
+     -0.0,
+     -2.95,
+     -0.15
+    ],
+    "size": [
+     2.12,
+     0.1,
+     1.46
+    ],
+    "colour": "2a1a10",
+    "bone": ""
+   },
+   "Straps": {
+    "offset": [
+     -0.0,
+     0.175,
+     0.0
+    ],
+    "size": [
+     1.12,
+     1.79,
+     1.12
+    ],
+    "colour": "33476e",
+    "bone": "Torso"
+   },
+   "TrouserCuffs": {
+    "offset": [
+     -0.0,
+     -2.31,
+     0.0
+    ],
+    "size": [
+     2.12,
+     0.22,
+     1.12
+    ],
+    "colour": "4a608c",
+    "bone": ""
+   },
+   "Trousers": {
+    "offset": [
+     -0.0,
+     -1.71,
+     0.0
+    ],
+    "size": [
+     2.06,
+     1.42,
+     1.06
+    ],
+    "colour": "33476e",
+    "bone": ""
+   }
+  },
+  "size": [
+   4.14,
+   5.46,
+   1.875
+  ],
+  "minZ": -3.0,
+  "maxZ": 2.46
+ },
+ "PipGear": {
+  "pieces": {
+   "Belt": {
+    "offset": [
+     -0.0,
+     0.0425,
+     -0.01
+    ],
+    "size": [
+     2.14,
+     2.125,
+     1.23
+    ],
+    "colour": "6b4426",
+    "bone": "Torso"
+   },
+   "Boots": {
+    "offset": [
+     -0.0,
+     -2.66,
+     -0.13
+    ],
+    "size": [
+     2.08,
+     0.52,
+     1.34
+    ],
+    "colour": "5a3a22",
+    "bone": ""
+   },
+   "Brass": {
+    "offset": [
+     0.3484,
+     0.3324,
+     0.1801
+    ],
+    "size": [
+     2.1417,
+     2.6648,
+     1.5802
+    ],
+    "colour": "deb248",
+    "bone": "Torso"
+   },
+   "Compass": {
+    "offset": [
+     -1.5,
+     -1.14,
+     -0.0175
+    ],
+    "size": [
+     0.5,
+     0.4755,
+     0.135
+    ],
+    "colour": "deb248",
+    "bone": "LeftArm"
+   },
+   "CompassFace": {
+    "offset": [
+     -1.5,
+     -1.14,
+     -0.086
+    ],
+    "size": [
+     0.38,
+     0.3614,
+     0.012
+    ],
+    "colour": "fff8ea",
+    "bone": "LeftArm"
+   },
+   "CompassNeedle": {
+    "offset": [
+     -1.5,
+     -1.14,
+     -0.0975
+    ],
+    "size": [
+     0.09,
+     0.3,
+     0.015
+    ],
+    "colour": "d2463a",
+    "bone": "LeftArm"
+   },
+   "CuffL": {
+    "offset": [
+     -1.505,
+     -0.58,
+     0.0
+    ],
+    "size": [
+     1.11,
+     0.2,
+     1.09
+    ],
+    "colour": "e2d2b2",
+    "bone": "LeftArm"
+   },
+   "CuffR": {
+    "offset": [
+     1.505,
+     -0.1049,
+     -1.0188
+    ],
+    "size": [
+     1.11,
+     0.9635,
+     0.8538
+    ],
+    "colour": "e2d2b2",
+    "bone": "RightArm"
+   },
+   "Glasses": {
+    "offset": [
+     -0.0,
+     1.71,
+     -0.2575
+    ],
+    "size": [
+     1.33,
+     0.2758,
+     0.815
+    ],
+    "colour": "3b2a20",
+    "bone": "Head"
+   },
+   "Hair": {
+    "offset": [
+     -0.0,
+     1.835,
+     0.0
+    ],
+    "size": [
+     1.35,
+     0.77,
+     1.35
+    ],
+    "colour": "4a2e1c",
+    "bone": "Head"
+   },
+   "LanternFrame": {
+    "offset": [
+     -0.68,
+     -1.231,
+     -0.74
+    ],
+    "size": [
+     0.28,
+     0.558,
+     0.28
+    ],
+    "colour": "3b3b45",
+    "bone": "Torso"
+   },
+   "LanternGlass": {
+    "offset": [
+     -0.68,
+     -1.28,
+     -0.74
+    ],
+    "size": [
+     0.22,
+     0.32,
+     0.22
+    ],
+    "colour": "ffe9a8",
+    "bone": "Torso"
+   },
+   "LanternGlow": {
+    "offset": [
+     -0.68,
+     -1.285,
+     -0.74
+    ],
+    "size": [
+     0.11,
+     0.13,
+     0.0953
+    ],
+    "colour": "ffd36b",
+    "bone": "Torso",
+    "neon": true
+   },
+   "Map": {
+    "offset": [
+     1.5,
+     -0.8891,
+     -1.2135
+    ],
+    "size": [
+     1.16,
+     0.98,
+     0.13
+    ],
+    "colour": "f4e4bc",
+    "bone": "Tool"
+   },
+   "MapRoute": {
+    "offset": [
+     1.4501,
+     -0.9342,
+     -1.2305
+    ],
+    "size": [
+     0.7664,
+     0.478,
+     0.01
+    ],
+    "colour": "5b3fa0",
+    "bone": "Tool"
+   },
+   "MapX": {
+    "offset": [
+     1.87,
+     -0.6441,
+     -1.2315
+    ],
+    "size": [
+     0.16,
+     0.16,
+     0.012
+    ],
+    "colour": "d2463a",
+    "bone": "Tool"
+   },
+   "Pencil": {
+    "offset": [
+     0.72,
+     1.7972,
+     -0.005
+    ],
+    "size": [
+     0.07,
+     0.175,
+     0.61
+    ],
+    "colour": "f2c230",
+    "bone": "Head"
+   },
+   "Scarf": {
+    "offset": [
+     -0.0,
+     0.805,
+     0.0
+    ],
+    "size": [
+     1.35,
+     0.89,
+     1.35
+    ],
+    "colour": "c8423a",
+    "bone": "Torso"
+   },
+   "Shirt": {
+    "offset": [
+     -0.0,
+     0.0225,
+     0.0
+    ],
+    "size": [
+     2.02,
+     2.005,
+     1.02
+    ],
+    "colour": "f4e9d2",
+    "bone": "Torso"
+   },
+   "SleeveL": {
+    "offset": [
+     -1.505,
+     0.21,
+     0.0
+    ],
+    "size": [
+     1.07,
+     1.66,
+     1.06
+    ],
+    "colour": "f4e9d2",
+    "bone": "LeftArm"
+   },
+   "SleeveR": {
+    "offset": [
+     1.505,
+     0.4029,
+     -0.4137
+    ],
+    "size": [
+     1.07,
+     1.879,
+     1.953
+    ],
+    "colour": "f4e9d2",
+    "bone": "RightArm"
+   },
+   "Soles": {
+    "offset": [
+     -0.0,
+     -2.96,
+     -0.135
+    ],
+    "size": [
+     2.12,
+     0.08,
+     1.41
+    ],
+    "colour": "2b1d14",
+    "bone": ""
+   },
+   "Trousers": {
+    "offset": [
+     -0.0,
+     -1.81,
+     0.0
+    ],
+    "size": [
+     2.04,
+     1.62,
+     1.04
+    ],
+    "colour": "3a4a6b",
+    "bone": ""
+   },
+   "Tube": {
+    "offset": [
+     0.3484,
+     0.525,
+     0.78
+    ],
+    "size": [
+     1.9081,
+     2.0329,
+     0.3234
+    ],
+    "colour": "8a5a34",
+    "bone": "Torso"
+   },
+   "Vest": {
+    "offset": [
+     -0.0,
+     0.1125,
+     0.0
+    ],
+    "size": [
+     2.1,
+     1.905,
+     1.1
+    ],
+    "colour": "6f8a3c",
+    "bone": "Torso"
+   },
+   "VestPockets": {
+    "offset": [
+     -0.0,
+     -0.41,
+     -0.565
+    ],
+    "size": [
+     1.84,
+     0.42,
+     0.04
+    ],
+    "colour": "5a7230",
+    "bone": "Torso"
+   }
+  },
+  "size": [
+   4.14,
+   5.22,
+   2.416
+  ],
+  "minZ": -3.0,
+  "maxZ": 2.22
+ }
+}

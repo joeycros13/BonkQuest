@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Button B: Puffy toy</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; font-family: 'Luckiest Guy', cursive; color: #2b1b3d;">
+  <div style="position: absolute; left: {{iconLeft}}px; top: 0; width: {{size}}px; height: {{size}}px;">
+    <sc-if value="{{isPack}}" hint-placeholder-val="{{true}}">
+      <svg data-export="hudB_pack" viewBox="0 0 256 256" width="100%" height="100%" aria-hidden="true">
+        <defs>
+          <filter id="bShPack" x="-20%" y="-20%" width="140%" height="145%" color-interpolation-filters="sRGB">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="5"/>
+            <feOffset dy="8" result="b"/>
+            <feFlood flood-color="#1b1030" flood-opacity="0.45"/>
+            <feComposite in2="b" operator="in"/>
+            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <linearGradient id="bPackBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb84f"/><stop offset="1" stop-color="#f0700c"/></linearGradient>
+          <linearGradient id="bPackFlap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa53a"/><stop offset="1" stop-color="#e2620a"/></linearGradient>
+          <linearGradient id="bPackPocket" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5ae6d8"/><stop offset="1" stop-color="#1a9f98"/></linearGradient>
+          <linearGradient id="bPackGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe68a"/><stop offset="1" stop-color="#f2ac1e"/></linearGradient>
+        </defs>
+        <g filter="url(#bShPack)">
+          <g transform="translate(0,-8) rotate(-6 128 140)" stroke="#2b1b3d" stroke-width="9" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M100 66 C100 32 156 32 156 66" fill="none" stroke-width="26"/>
+            <path d="M100 66 C100 32 156 32 156 66" fill="none" stroke="#d96d16" stroke-width="10"/>
+            <path d="M58 104 C54 66 80 58 110 58 L146 58 C176 58 202 66 198 104 L206 196 C208 226 186 232 160 232 L96 232 C70 232 48 226 50 196 Z" fill="url(#bPackBody)"/>
+            <ellipse cx="72" cy="170" rx="9" ry="30" fill="#ffffff" fill-opacity="0.45" stroke="none"/>
+            <path d="M82 166 C82 156 90 152 100 152 L156 152 C166 152 174 156 174 166 L172 206 C172 216 164 220 154 220 L102 220 C92 220 84 216 84 206 Z" fill="url(#bPackPocket)" stroke-width="7"/>
+            <path d="M96 166 C110 160 140 160 160 164" fill="none" stroke="#ffffff" stroke-opacity="0.7" stroke-width="6"/>
+            <rect x="94" y="178" width="68" height="32" rx="10" fill="none" stroke="#ffffff" stroke-opacity="0.6" stroke-width="3.5" stroke-dasharray="7 7"/>
+            <path d="M64 102 C62 70 84 62 112 62 L144 62 C172 62 194 70 192 102 L190 118 C160 134 96 134 66 118 Z" fill="url(#bPackFlap)"/>
+            <ellipse cx="96" cy="82" rx="22" ry="9" transform="rotate(-12 96 82)" fill="#ffffff" fill-opacity="0.7" stroke="none"/>
+            <circle cx="126" cy="76" r="4" fill="#ffffff" fill-opacity="0.85" stroke="none"/>
+            <rect x="117" y="112" width="22" height="36" rx="7" fill="#8a4b1e" stroke-width="7"/>
+            <rect x="108" y="130" width="40" height="28" rx="9" fill="url(#bPackGold)" stroke-width="7"/>
+            <rect x="120" y="139" width="16" height="10" rx="3" fill="#8a4b1e" stroke-width="4"/>
+          </g>
+        </g>
+      </svg>
+    </sc-if>
+    <sc-if value="{{isBook}}" hint-placeholder-val="{{false}}">
+      <svg data-export="hudB_book" viewBox="0 0 256 256" width="100%" height="100%" aria-hidden="true">
+        <defs>
+          <filter id="bShBook" x="-20%" y="-20%" width="140%" height="145%" color-interpolation-filters="sRGB">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="5"/>
+            <feOffset dy="8" result="b"/>
+            <feFlood flood-color="#1b1030" flood-opacity="0.45"/>
+            <feComposite in2="b" operator="in"/>
+            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <linearGradient id="bBookCover" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#74bdff"/><stop offset="1" stop-color="#2c74e0"/></linearGradient>
+          <linearGradient id="bBookSpine" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3c84f2"/><stop offset="1" stop-color="#1c55bd"/></linearGradient>
+          <linearGradient id="bBookPages" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffbf0"/><stop offset="1" stop-color="#f1dca8"/></linearGradient>
+          <linearGradient id="bBookStar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe98f"/><stop offset="1" stop-color="#f4aa1c"/></linearGradient>
+        </defs>
+        <g filter="url(#bShBook)">
+          <g transform="translate(0,-10) rotate(5 128 140)" stroke="#2b1b3d" stroke-width="9" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M76 50 L196 56 C208 57 212 64 211 76 L205 212 C204 224 197 230 186 229 L76 224 Z" fill="url(#bBookPages)"/>
+            <path d="M201 78 L196 206 M191 77 L187 210" fill="none" stroke="#dcbf80" stroke-width="3"/>
+            <path d="M48 54 C48 42 56 36 68 36 L176 40 C188 41 194 47 194 58 L188 202 C188 214 181 220 170 220 L66 218 C55 218 48 212 48 200 Z" fill="url(#bBookCover)"/>
+            <path d="M48 54 C48 42 56 36 68 36 L80 36.5 L78 218.3 L66 218 C55 218 48 212 48 200 Z" fill="url(#bBookSpine)"/>
+            <path d="M50 72 L79 72 M50 184 L78 184" fill="none" stroke-width="6"/>
+            <rect x="94" y="56" width="84" height="140" rx="14" fill="none" stroke="#a8d6ff" stroke-width="4"/>
+            <path d="M137 82 L148.8 109.8 L178.8 112.4 L156 132.2 L162.9 161.6 L137 146 L111.1 161.6 L118 132.2 L95.2 112.4 L125.2 109.8 Z" fill="url(#bBookStar)" stroke-width="7"/>
+            <ellipse cx="128" cy="106" rx="7" ry="4" transform="rotate(-50 128 106)" fill="#ffffff" fill-opacity="0.9" stroke="none"/>
+            <ellipse cx="112" cy="58" rx="26" ry="7" transform="rotate(2 112 58)" fill="#ffffff" fill-opacity="0.6" stroke="none"/>
+            <circle cx="148" cy="58" r="4" fill="#ffffff" fill-opacity="0.8" stroke="none"/>
+          </g>
+        </g>
+      </svg>
+    </sc-if>
+    <sc-if value="{{isShop}}" hint-placeholder-val="{{false}}">
+      <svg data-export="hudB_shop" viewBox="0 0 256 256" width="100%" height="100%" aria-hidden="true">
+        <defs>
+          <filter id="bShShop" x="-20%" y="-20%" width="140%" height="145%" color-interpolation-filters="sRGB">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="5"/>
+            <feOffset dy="8" result="b"/>
+            <feFlood flood-color="#1b1030" flood-opacity="0.45"/>
+            <feComposite in2="b" operator="in"/>
+            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <clipPath id="bClipShop">
+            <path d="M44 106 L60 58 C63 47 70 42 82 42 L174 42 C186 42 193 47 196 58 L212 106 A16.8 16.8 0 0 1 178.4 106 A16.8 16.8 0 0 1 144.8 106 A16.8 16.8 0 0 1 111.2 106 A16.8 16.8 0 0 1 77.6 106 A16.8 16.8 0 0 1 44 106 Z"/>
+          </clipPath>
+          <linearGradient id="bShopRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a82"/><stop offset="1" stop-color="#e0303f"/></linearGradient>
+          <linearGradient id="bShopWhite" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ecebf6"/></linearGradient>
+          <linearGradient id="bShopWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eda553"/><stop offset="1" stop-color="#c0722c"/></linearGradient>
+          <linearGradient id="bShopBoard" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc77a"/><stop offset="1" stop-color="#e6963f"/></linearGradient>
+          <linearGradient id="bShopGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe98f"/><stop offset="1" stop-color="#f2ab1e"/></linearGradient>
+        </defs>
+        <g filter="url(#bShShop)">
+          <g transform="translate(0,-8) rotate(-4 128 140)" stroke="#2b1b3d" stroke-width="9" stroke-linejoin="round" stroke-linecap="round">
+            <rect x="68" y="92" width="14" height="70" fill="#9c5b2a" stroke-width="7"/>
+            <rect x="174" y="92" width="14" height="70" fill="#9c5b2a" stroke-width="7"/>
+            <path d="M48 172 C48 162 54 158 64 158 L192 158 C202 158 208 162 208 172 L206 214 C206 224 200 230 190 230 L66 230 C56 230 50 224 50 214 Z" fill="url(#bShopWood)"/>
+            <path d="M62 194 L194 194 M100 198 L100 226 M156 198 L156 226" fill="none" stroke="#a35e24" stroke-width="4"/>
+            <rect x="40" y="146" width="176" height="22" rx="11" fill="url(#bShopBoard)"/>
+            <ellipse cx="80" cy="152" rx="20" ry="4" fill="#ffffff" fill-opacity="0.6" stroke="none"/>
+            <circle cx="104" cy="135" r="13" fill="url(#bShopGold)" stroke-width="7"/>
+            <circle cx="152" cy="136" r="13" fill="url(#bShopGold)" stroke-width="7"/>
+            <circle cx="128" cy="129" r="14" fill="url(#bShopGold)" stroke-width="7"/>
+            <circle cx="123" cy="124" r="3.5" fill="#ffffff" stroke="none"/>
+            <path d="M44 106 L60 58 C63 47 70 42 82 42 L174 42 C186 42 193 47 196 58 L212 106 A16.8 16.8 0 0 1 178.4 106 A16.8 16.8 0 0 1 144.8 106 A16.8 16.8 0 0 1 111.2 106 A16.8 16.8 0 0 1 77.6 106 A16.8 16.8 0 0 1 44 106 Z" fill="url(#bShopWhite)" stroke="none"/>
+            <g clip-path="url(#bClipShop)" stroke="none" fill="url(#bShopRed)">
+              <path d="M89.1 30 L104.7 30 L77.6 106 L77.6 130 L44 130 L44 106 Z"/>
+              <path d="M120.2 30 L135.8 30 L144.8 106 L144.8 130 L111.2 130 L111.2 106 Z"/>
+              <path d="M151.3 30 L166.9 30 L212 106 L212 130 L178.4 130 L178.4 106 Z"/>
+            </g>
+            <path d="M44 106 L60 58 C63 47 70 42 82 42 L174 42 C186 42 193 47 196 58 L212 106 A16.8 16.8 0 0 1 178.4 106 A16.8 16.8 0 0 1 144.8 106 A16.8 16.8 0 0 1 111.2 106 A16.8 16.8 0 0 1 77.6 106 A16.8 16.8 0 0 1 44 106 Z" fill="none"/>
+            <rect x="70" y="32" width="116" height="16" rx="8" fill="#c8323e" stroke-width="7"/>
+            <ellipse cx="78" cy="70" rx="6" ry="16" transform="rotate(20 78 70)" fill="#ffffff" fill-opacity="0.7" stroke="none"/>
+            <circle cx="96" cy="54" r="3.5" fill="#ffffff" fill-opacity="0.9" stroke="none"/>
+          </g>
+        </g>
+      </svg>
+    </sc-if>
+  </div>
+  <div style="position: absolute; left: 50%; top: {{labelTop}}px; transform: translate(-50%, -50%) translateY(0.14em); font-size: {{fs}}px; line-height: 1; color: #ffffff; -webkit-text-stroke: {{stroke}}px #2b1b3d; paint-order: stroke fill; white-space: nowrap; letter-spacing: 0.02em; text-shadow: 0 {{shadow}}px 0 rgba(27, 16, 48, 0.55);">{{label}}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"kind":{"editor":"enum","options":["pack","book","shop"],"default":"pack"},"size":{"editor":"int","min":48,"max":320,"default":200},"$preview":{"width":230,"height":216}}'>
+class Component extends DCLogic {
+renderVals() {
+const size = this.props.size ?? 200;
+const kind = this.props.kind ?? 'pack';
+const w = Math.round(size * 1.15);
+return {
+size: size, w: w, h: Math.round(size * 1.06),
+iconLeft: Math.round((w - size) / 2),
+labelTop: Math.round(size * 0.9),
+fs: Math.round(size * 0.235),
+stroke: Math.max(4, Math.round(size * 0.06)),
+shadow: Math.max(2, Math.round(size * 0.02)),
+isPack: kind === 'pack', isBook: kind === 'book', isShop: kind === 'shop',
+label: kind === 'book' ? 'Index' : kind === 'shop' ? 'Shop' : 'Inventory'
+};
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<!-- The admin side button (2026-10-11), style B "Puffy toy" like hud_buttons_b.html:
+     a game controller. Rendered with svg_render.py -> art/hud_buttons/hudB_admin.png -->
+<html lang="en">
+<head><meta charset="utf-8"><title>Admin button icon</title></head>
+<body style="margin:0;background:#5a8">
+<svg data-export="hudB_admin" viewBox="0 0 256 256" width="256" height="256" aria-hidden="true">
+  <defs>
+    <filter id="bShPad" x="-20%" y="-20%" width="140%" height="145%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="5"/>
+      <feOffset dy="8" result="b"/>
+      <feFlood flood-color="#1b1030" flood-opacity="0.45"/>
+      <feComposite in2="b" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="bPadBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a98bff"/><stop offset="1" stop-color="#6a3fe0"/></linearGradient>
+    <linearGradient id="bPadDark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4b3a7a"/><stop offset="1" stop-color="#2e2350"/></linearGradient>
+    <linearGradient id="bPadYellow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe98f"/><stop offset="1" stop-color="#f2ab1e"/></linearGradient>
+    <linearGradient id="bPadRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a8f"/><stop offset="1" stop-color="#e0303f"/></linearGradient>
+    <linearGradient id="bPadGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ee07a"/><stop offset="1" stop-color="#3aa83a"/></linearGradient>
+    <linearGradient id="bPadBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd0ff"/><stop offset="1" stop-color="#2f86e8"/></linearGradient>
+  </defs>
+  <g filter="url(#bShPad)">
+    <g transform="translate(0,-14) rotate(-6 128 150)" stroke="#2b1b3d" stroke-width="9" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M62 88 C66 74 84 70 100 74 L104 92 L66 96 Z" fill="url(#bPadDark)" stroke-width="7"/>
+      <path d="M194 88 C190 74 172 70 156 74 L152 92 L190 96 Z" fill="url(#bPadDark)" stroke-width="7"/>
+      <path d="M72 86 C50 86 38 100 34 122 L22 184 C18 208 34 224 54 224 C70 224 80 214 90 198 L98 186 L158 186 L166 198 C176 214 186 224 202 224 C222 224 238 208 234 184 L222 122 C218 100 206 86 184 86 Z" fill="url(#bPadBody)"/>
+      <ellipse cx="62" cy="118" rx="10" ry="22" transform="rotate(18 62 118)" fill="#ffffff" fill-opacity="0.45" stroke="none"/>
+      <path d="M96 98 C112 94 144 94 160 98" fill="none" stroke="#ffffff" stroke-opacity="0.55" stroke-width="5"/>
+      <path d="M74 112 L90 112 L90 126 L104 126 L104 142 L90 142 L90 156 L74 156 L74 142 L60 142 L60 126 L74 126 Z" fill="url(#bPadDark)" stroke-width="7"/>
+      <rect x="77" y="116" width="6" height="12" rx="3" fill="#ffffff" fill-opacity="0.35" stroke="none"/>
+      <circle cx="176" cy="114" r="11" fill="url(#bPadYellow)" stroke-width="6.5"/>
+      <circle cx="196" cy="134" r="11" fill="url(#bPadRed)" stroke-width="6.5"/>
+      <circle cx="176" cy="154" r="11" fill="url(#bPadGreen)" stroke-width="6.5"/>
+      <circle cx="156" cy="134" r="11" fill="url(#bPadBlue)" stroke-width="6.5"/>
+      <circle cx="172" cy="110" r="3" fill="#ffffff" stroke="none"/>
+      <circle cx="192" cy="130" r="3" fill="#ffffff" stroke="none"/>
+      <circle cx="172" cy="150" r="3" fill="#ffffff" stroke="none"/>
+      <circle cx="152" cy="130" r="3" fill="#ffffff" stroke="none"/>
+      <circle cx="106" cy="174" r="15" fill="url(#bPadDark)" stroke-width="7"/>
+      <circle cx="150" cy="174" r="15" fill="url(#bPadDark)" stroke-width="7"/>
+      <circle cx="102" cy="169" r="4" fill="#ffffff" fill-opacity="0.5" stroke="none"/>
+      <circle cx="146" cy="169" r="4" fill="#ffffff" fill-opacity="0.5" stroke="none"/>
+      <circle cx="128" cy="128" r="6" fill="#ffd23f" stroke-width="4"/>
+    </g>
+  </g>
+</svg>
+</body>
+</html>
