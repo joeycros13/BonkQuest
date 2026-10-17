@@ -15,7 +15,7 @@ A Roblox action game: fight enemies with real-time melee weapons across themed w
 
 ## Working on the code
 
-The code is synced into Studio with [Rojo](https://rojo.space) 7.7.0 (installed through Aftman).
+The code is synced into Studio with [Rojo](https://rojo.space) 7.7.1 (installed through Aftman).
 
 1. Open `place/DiceBattles.rbxlx` in Roblox Studio.
 2. In this folder, run:
