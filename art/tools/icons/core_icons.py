@@ -1,4 +1,4 @@
-"""DiceBattles secret-core icons (2026-10-13): the finishing pass for the raw renders made by the
+"""Bonk Quest secret-core icons (2026-10-13): the finishing pass for the raw renders made by the
 Blender text block "shared_secretcores_icons" (the three mirrored quad cores, rendered to raw/).
 Same recipe as art/weapon_icons.py in the roblox-studio-connection worktree: crop to a square, add
 the chunky ink outline round the silhouette and a soft shadow down and to the right. Saves 512 px

@@ -1,4 +1,4 @@
-"""DiceBattles "Transcendent" rarity tile (2026-10-12): the Worldheart Blade's tier.
+"""Bonk Quest "Transcendent" rarity tile (2026-10-12): the Worldheart Blade's tier.
 
 Same shape as the v3 rarity tiles (inventory_ui_v3: 256 px, a darker lip, a soft light
 spot, faint stripes, a dashed inner border, a light top line). The user's pick: a dark

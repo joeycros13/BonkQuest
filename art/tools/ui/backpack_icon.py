@@ -1,4 +1,4 @@
-"""Cartoon backpack icon for DiceBattles, v3: a three-quarter view.
+"""Cartoon backpack icon for Bonk Quest, v3: a three-quarter view.
 
 The pack is turned a little so the front AND its right side panel show. Every
 outline is a smooth curve (artkit.blob / stroke), and the shapes bulge: a

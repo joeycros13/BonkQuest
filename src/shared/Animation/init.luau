@@ -1,5 +1,5 @@
 --!strict
--- Animation: DiceBattles' own animation system. Require this one module and
+-- Animation: Bonk Quest's own animation system. Require this one module and
 -- reach everything through it:
 --
 --   local Animation = require(ReplicatedStorage.Shared.Animation)

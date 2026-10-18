@@ -1,4 +1,4 @@
-"""DiceBattles Inventory theme v3: bright aqua cartoon, after the user's reference.
+"""Bonk Quest Inventory theme v3: bright aqua cartoon, after the user's reference.
 
 A light aqua window (a touch see-through) with soft gradients and a faint
 pattern, a cyan header, rounded inset panels, rarity-coloured item tiles with a

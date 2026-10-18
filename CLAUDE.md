@@ -1,18 +1,20 @@
-# DiceBattles
+# Bonk Quest
+
+The game was called DiceBattles until 2026-10-17 (the dice duel it was named after is gone); the user renamed it **Bonk Quest** (logo A "Bonk Burst", art in `art/branding/`).
 
 A Roblox game. Code is synced into Studio by Rojo; the map, UI and models are built live in Studio through the Roblox Studio MCP tools and in Blender through the Blender MCP.
 
 ## Where things live (folder layout since 2026-10-17)
 
 ```
-C:\FirstRobloxGame\           the git repo (GitHub joeycros13/DiceBattles), branch main
+C:\FirstRobloxGame\           the git repo (GitHub joeycros13/BonkQuest), branch main
   CLAUDE.md  README.md  default.project.json  aftman.toml  .gitignore  .gitattributes
   src\        game code: shared\ server\ client\  (Rojo syncs it into Studio)
   art\        meshes\ (FBX + offsets JSON)  icons\ (weapons, materials, armor, cores)
               ui\ (hud, inventory, shop, quest, index, tiles; _older\ = superseded rounds)
               portraits\ (quest, enemies, worlds)  tools\ (the Python/HTML/SVG generators)
   blender\    models.blend            NOT in git; backed up to Google Drive
-  place\      DiceBattles.rbxlx       the live place; NOT in git; backed up to Google Drive
+  place\      BonkQuest.rbxlx       the live place; NOT in git; backed up to Google Drive
   .claude\worktrees\   one per Claude session (managed by the app; not in git)
 ```
 
@@ -30,7 +32,7 @@ C:\FirstRobloxGame\           the git repo (GitHub joeycros13/DiceBattles), bran
 
 ## Studio
 
-- Studio opens `place\DiceBattles.rbxlx`. Find the Studio instance with `list_roblox_studios` every session; its id changes whenever Studio reopens.
+- Studio opens `place\BonkQuest.rbxlx`. Find the Studio instance with `list_roblox_studios` every session; its id changes whenever Studio reopens.
 - Map, UI and model work uses `execute_luau` in the **Edit** datamodel. Edit mode is unavailable while a playtest runs, so stop play first.
 - Changes live in Studio's memory until the user saves. Remind them to save the place (Ctrl+S) after a batch of work.
 

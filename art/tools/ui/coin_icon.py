@@ -1,4 +1,4 @@
-"""Cartoon gold coin icon for DiceBattles (transparent PNG).
+"""Cartoon gold coin icon for Bonk Quest (transparent PNG).
 
 Drawn at 4x and downsampled for clean anti-aliased edges. Style matches the
 HUD icons: chunky warm-dark outline, flat cel shading, one glossy highlight.
