@@ -114,24 +114,31 @@ function BonkPop.show(position: Vector3, size: number, isBoss: boolean?)
 		}):Play()
 	end
 
-	-- Out: after the hold, float up, shrink and fade.
-	local outInfo = TweenInfo.new(fadeSeconds, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, popSeconds + hold)
-	TweenService:Create(billboard, outInfo, {
-		StudsOffsetWorldSpace = Vector3.new(0, number(source, "Rise", 2.5), 0),
-	}):Play()
-	if popScale then
-		TweenService:Create(popScale, outInfo, { Scale = scale * number(source, "ShrinkTo", 0.75) }):Play()
-	end
-	for _, image in rays do
-		TweenService:Create(image, outInfo, { ImageTransparency = 1 }):Play()
-	end
-	for _, label in labels do
-		TweenService:Create(label, outInfo, { TextTransparency = 1 }):Play()
-		local stroke = label:FindFirstChildOfClass("UIStroke")
-		if stroke then
-			TweenService:Create(stroke, outInfo, { Transparency = 1 }):Play()
+	-- Out: after the hold, float up, shrink and fade. Started by a task.delay,
+	-- not a tween DelayTime: playing a delayed tween on PopScale.Scale cancels
+	-- the pop-in at once, so the word sat at its PopFrom size (found 2026-10-17).
+	task.delay(popSeconds + hold, function()
+		if not billboard.Parent then
+			return
 		end
-	end
+		local outInfo = TweenInfo.new(fadeSeconds, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+		TweenService:Create(billboard, outInfo, {
+			StudsOffsetWorldSpace = Vector3.new(0, number(source, "Rise", 2.5), 0),
+		}):Play()
+		if popScale then
+			TweenService:Create(popScale, outInfo, { Scale = scale * number(source, "ShrinkTo", 0.75) }):Play()
+		end
+		for _, image in rays do
+			TweenService:Create(image, outInfo, { ImageTransparency = 1 }):Play()
+		end
+		for _, label in labels do
+			TweenService:Create(label, outInfo, { TextTransparency = 1 }):Play()
+			local stroke = label:FindFirstChildOfClass("UIStroke")
+			if stroke then
+				TweenService:Create(stroke, outInfo, { Transparency = 1 }):Play()
+			end
+		end
+	end)
 	task.delay(lifetime + 0.05, function()
 		billboard:Destroy()
 		spot:Destroy()
