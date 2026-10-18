@@ -1,4 +1,4 @@
-"""DiceBattles weapon icons (2026-10-09): the hotbar and Inventory pictures.
+"""Bonk Quest weapon icons (2026-10-09): the hotbar and Inventory pictures.
 
 The raw pictures are cel-shaded renders of the real weapon meshes from Blender
 (art/meshes/plants.blend, scene "Icons", text block "icon_render": toon

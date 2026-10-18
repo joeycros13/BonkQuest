@@ -14,6 +14,8 @@ local UTIL_ORDER = {
 	"DamagePopup",
 	"HudFly",
 	"FontDrop",
+	-- the comic "BONK!" when an enemy is defeated
+	"BonkPop",
 	"Format",
 	-- the shared weapon tile every screen clones
 	"WeaponTile",

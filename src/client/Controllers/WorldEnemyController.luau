@@ -64,6 +64,7 @@ local FOLLOW_RATE = 12
 
 local deps: any = nil
 local DamagePopup: any = nil
+local BonkPop: any = nil
 local barTemplate: BillboardGui? = nil
 local bossBarTemplate: BillboardGui? = nil
 local EnemyAnimator: any = nil
@@ -319,6 +320,8 @@ local function showDefeat(enemy: Enemy)
 		-- bigger bodies pop a little lower
 		Effects.sound(pop, at, { pitch = math.random(95, 108) / 100 / math.sqrt(scale) })
 	end
+	-- and the comic "BONK!" over the top of the body (2026-10-17, Bonk Quest)
+	BonkPop.show(enemy.anchor.Position + Vector3.new(0, enemy.height / 2, 0), enemy.height / 4, enemy.isBoss)
 end
 
 -- Mirror the authoritative attributes onto the bar and alive state.
@@ -631,6 +634,7 @@ end
 function WorldEnemyController.init(injected: any)
 	deps = injected
 	DamagePopup = deps.Util.DamagePopup
+	BonkPop = deps.Util.BonkPop
 	EnemyAnimator = deps.Controllers.EnemyAnimator
 end
 

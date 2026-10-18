@@ -1,4 +1,4 @@
-"""DiceBattles Weapons Shop skins (the "Counter list" layout picked on the
+"""Bonk Quest Weapons Shop skins (the "Counter list" layout picked on the
 Claude Design canvas, 2026-10-07), in the Inventory v3 style.
 
   shop_bg.png      the window (1280x720): aqua glass, diamonds, cyan header,

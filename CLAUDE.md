@@ -1,18 +1,20 @@
-# DiceBattles
+# Bonk Quest
+
+The game was called DiceBattles until 2026-10-17 (the dice duel it was named after is gone); the user renamed it **Bonk Quest** (logo A "Bonk Burst", art in `art/branding/`).
 
 A Roblox game. Code is synced into Studio by Rojo; the map, UI and models are built live in Studio through the Roblox Studio MCP tools and in Blender through the Blender MCP.
 
 ## Where things live (folder layout since 2026-10-17)
 
 ```
-C:\FirstRobloxGame\           the git repo (GitHub joeycros13/DiceBattles), branch main
+C:\FirstRobloxGame\           the git repo (GitHub joeycros13/BonkQuest), branch main
   CLAUDE.md  README.md  default.project.json  aftman.toml  .gitignore  .gitattributes
   src\        game code: shared\ server\ client\  (Rojo syncs it into Studio)
   art\        meshes\ (FBX + offsets JSON)  icons\ (weapons, materials, armor, cores)
               ui\ (hud, inventory, shop, quest, index, tiles; _older\ = superseded rounds)
               portraits\ (quest, enemies, worlds)  tools\ (the Python/HTML/SVG generators)
   blender\    models.blend            NOT in git; backed up to Google Drive
-  place\      DiceBattles.rbxlx       the live place; NOT in git; backed up to Google Drive
+  place\      BonkQuest.rbxlx       the live place; NOT in git; backed up to Google Drive
   .claude\worktrees\   one per Claude session (managed by the app; not in git)
 ```
 
@@ -27,11 +29,12 @@ C:\FirstRobloxGame\           the git repo (GitHub joeycros13/DiceBattles), bran
 - `.gitattributes` keeps `.luau` / `.json` / `.toml` LF (`core.autocrlf` is on here, and Rojo copies bytes as-is).
 - The ServerStorage dev modules (`W2Swap`, `W3Swap`, `W3RimSolver`, `DevTools/*`…) and `StarterCharacter.Animate` stay in the place file only.
 - Pre-Rojo Studio backup: `ServerStorage.CodeBackup_2026-10-17_PreRojo`.
-- **Studio plugin:** the only one is the local Rojo from `rojo plugin install`. Its version must match the CLI's: to update, bump `aftman.toml`, run `aftman install` and `rojo plugin install`, then restart Studio and `rojo serve`. Studio's plugin manager is in the top text menu, **Plugins → Manage Plugins**.
+- **Studio plugin:** the only one is the local Rojo from `rojo plugin install`, kept at the CLI's version. To update: bump `aftman.toml`, run `aftman install` and `rojo plugin install`, then restart Studio and `rojo serve`. Studio's plugin manager is in the top text menu, **Plugins → Manage Plugins**.
+- **Restart `rojo serve` after changing `default.project.json`;** a running server keeps the project name it started with. If it fails with "Could not start the Rojo server on 127.0.0.1:34872 … os error 10048", an old server is still running: find its PID with `netstat -ano` and stop it.
 
 ## Studio
 
-- Studio opens `place\DiceBattles.rbxlx`. Find the Studio instance with `list_roblox_studios` every session; its id changes whenever Studio reopens.
+- Studio opens `place\BonkQuest.rbxlx`. Find the Studio instance with `list_roblox_studios` every session; its id changes whenever Studio reopens.
 - Map, UI and model work uses `execute_luau` in the **Edit** datamodel. Edit mode is unavailable while a playtest runs, so stop play first.
 - Changes live in Studio's memory until the user saves. Remind them to save the place (Ctrl+S) after a batch of work.
 
@@ -88,7 +91,7 @@ C:\FirstRobloxGame\           the git repo (GitHub joeycros13/DiceBattles), bran
 - **No stamina (user, 2026-10-11):** sprinting is unlimited (`Balance.Sprint.speedMultiplier` only). The card's `Stamina` bar was deleted and `XP` moved up into its place.
 - **Numbers read with commas everywhere (2026-10-11):** `Client.Util.Format` (`commas`, `ratio`) for coins, EXP, the level badge, health, enemy health bars, quest counts and reward chips, like the shop.
 - **World banner (2026-10-11):** `Client.UI.WorldBannerUI` + hand-built `StarterGui/WorldBanner` (`Banner` CanvasGroup with `PopScale`, `Subtitle` "World 2", `Title` + `TitleShadow` = the world's `name`; `InSeconds` / `HoldSeconds` / `OutSeconds` / `PopFrom`). Shows on join and whenever the player walks into another world. A world's footprint is the X/Z box of its `Ground` parts (parts over 400 studs, World 1's Baseplate, ignored), smallest first.
-- **Defeat burst (2026-10-11, user: kills were too quiet):** `WorldEnemyController.showDefeat`: `Poof` + new `DeathPop` stars (EffectPresets) + a `Shockwave` ring, sized by the body, and `ReplicatedStorage/Assets/Sounds/EnemyPop` (Creator Store "Cartoon Pop - Daily Sounds", `106984966606682`). Not for bodies already dead on join (`ready`).
+- **Defeat burst (2026-10-11, user: kills were too quiet):** `WorldEnemyController.showDefeat`: `Poof` + new `DeathPop` stars (EffectPresets) + a `Shockwave` ring, sized by the body, and `ReplicatedStorage/Assets/Sounds/EnemyPop` (Creator Store "Cartoon Pop - Daily Sounds", `106984966606682`). Not for bodies already dead on join (`ready`). **BONK! pop (2026-10-17):** `Client.Util.BonkPop` clones the hand-built `ReplicatedStorage/Assets/UI/BonkPop` (BillboardGui: `Content` with `PopScale`, `Rays` (the popup rays image, orange, 2.3×) and `RaysInner` (yellow, 1.6×, spinning the other way), `Shadow`, `Label`, Luckiest Guy white with ink stroke) over the body's top: it slams in with an overshoot at a random tilt (`TiltMax`), holds, then rises, shrinks and fades. Attributes `Words` (comma list), `Lifetime`, `PopSeconds`, `PopFrom`, `Hold`, `Rise`, `Height`, `RaysSpin`, `ShrinkTo`, `SizeMin` / `SizeMax`, `BossScale`.
 - **Questlines, one per world (lines run side by side; each player has a step in every line).** A giver is a model tagged `QuestGiver` (plus `AmbientIdle`) whose `QuestLine` attribute names its line; adding a line = `lines.<Id>` + `Quests.order` + a giver. Full checklist: the `add-questline` skill.
 
   | Line | World | Giver | Levels | Step 8 item | Step 10 weapon |
