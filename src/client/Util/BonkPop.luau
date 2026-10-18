@@ -6,8 +6,8 @@
 -- its own.
 --
 -- The look is hand-built: ReplicatedStorage/Assets/UI/BonkPop, a BillboardGui
--- holding `Content` (with its `PopScale` UIScale), and in it `Rays`, `Shadow`
--- and `Label`. Its attributes set the motion: Words (comma list, one picked
+-- holding `Content` (with its `PopScale` UIScale), and in it `Rays` (orange,
+-- big), `RaysInner` (yellow, turning the other way), `Shadow` and `Label`. Its attributes set the motion: Words (comma list, one picked
 -- per pop), Lifetime, PopSeconds, PopFrom, Hold, Rise, Height, TiltMax,
 -- RaysSpin (degrees over the life), ShrinkTo, SizeMin / SizeMax and BossScale.
 -- This only copies it and animates it.
@@ -75,7 +75,13 @@ function BonkPop.show(position: Vector3, size: number, isBoss: boolean?)
 	billboard.Adornee = spot
 	local content = billboard:FindFirstChild("Content") :: GuiObject?
 	local popScale = content and content:FindFirstChild("PopScale") :: UIScale?
-	local rays = content and content:FindFirstChild("Rays") :: ImageLabel?
+	local rays: { ImageLabel } = {}
+	for _, name in { "Rays", "RaysInner" } do
+		local image = content and content:FindFirstChild(name)
+		if image and image:IsA("ImageLabel") then
+			table.insert(rays, image)
+		end
+	end
 	local labels: { TextLabel } = {}
 	local tilt = (math.random() * 2 - 1) * number(source, "TiltMax", 12)
 	local word = pickWord(source)
@@ -99,10 +105,12 @@ function BonkPop.show(position: Vector3, size: number, isBoss: boolean?)
 			Scale = scale,
 		}):Play()
 	end
-	if rays then
-		rays.Rotation = math.random(0, 359)
-		TweenService:Create(rays, TweenInfo.new(lifetime, Enum.EasingStyle.Linear), {
-			Rotation = rays.Rotation + number(source, "RaysSpin", 70),
+	local spin = number(source, "RaysSpin", 70)
+	for i, image in rays do
+		local turn = if i % 2 == 1 then spin else -spin
+		image.Rotation = math.random(0, 359)
+		TweenService:Create(image, TweenInfo.new(lifetime, Enum.EasingStyle.Linear), {
+			Rotation = image.Rotation + turn,
 		}):Play()
 	end
 
@@ -114,8 +122,8 @@ function BonkPop.show(position: Vector3, size: number, isBoss: boolean?)
 	if popScale then
 		TweenService:Create(popScale, outInfo, { Scale = scale * number(source, "ShrinkTo", 0.75) }):Play()
 	end
-	if rays then
-		TweenService:Create(rays, outInfo, { ImageTransparency = 1 }):Play()
+	for _, image in rays do
+		TweenService:Create(image, outInfo, { ImageTransparency = 1 }):Play()
 	end
 	for _, label in labels do
 		TweenService:Create(label, outInfo, { TextTransparency = 1 }):Play()
