@@ -100,7 +100,9 @@ def logo(base, cx, cy, k):
     d.rounded_rectangle((rx + 44 * k, ry + 8 * k, rx + 426 * k, ry + 96 * k), radius=14 * k, fill=TEAL, outline=INK,
                         width=int(7 * k))
     quest, mid = spaced_text(None, "QUEST", 76 * k, 8 * k, CREAM, 5 * k, 6 * k)
-    base.alpha_composite(quest, (int(cx - quest.width / 2), int(ry + 52 * k - mid)))  # box centre: y 8..96
+    # centre the letters + their 6-unit drop shadow as one block (box centre: y 8..96); centring the letters alone
+    # read as too low (user, 2026-10-17), centring the whole bounding box (shadow + Q tail) as too high
+    base.alpha_composite(quest, (int(cx - quest.width / 2), int(ry + 52 * k - mid - 3 * k)))
 
 
 def icon(px=512):
