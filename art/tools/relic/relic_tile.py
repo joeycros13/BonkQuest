@@ -1,4 +1,4 @@
-"""DiceBattles "Relic" rarity tile (2026-10-12): the Rusty Blade's tier.
+"""Bonk Quest "Relic" rarity tile (2026-10-12): the Rusty Blade's tier.
 
 Same shape as the v3 rarity tiles (inventory_ui_v3.rarity_tile: 256 px, a darker
 lip, a soft light spot, faint stripes, a dashed inner border, a light top line).

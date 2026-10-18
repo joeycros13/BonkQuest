@@ -1,4 +1,4 @@
-"""DiceBattles backpack icon, v4: a real 3D model rendered in cartoon style.
+"""Bonk Quest backpack icon, v4: a real 3D model rendered in cartoon style.
 
 The bag is built from rounded 3D shapes (superquadrics for the body and
 pockets, swept tubes for the straps and handle), viewed from above and from

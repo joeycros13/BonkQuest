@@ -1,4 +1,4 @@
-"""Shared helpers for the DiceBattles icon and UI scripts (PIL only, no numpy).
+"""Shared helpers for the Bonk Quest icon and UI scripts (PIL only, no numpy).
 
 Everything is drawn on a supersampled RGBA canvas through masks:
   canvas.fill(mask, color)                 flat colour inside a mask

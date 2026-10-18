@@ -1,4 +1,4 @@
-"""Hotbar slot background for DiceBattles: a soft, see-through glossy bubble.
+"""Hotbar slot background for Bonk Quest: a soft, see-through glossy bubble.
 
 Frosted face (lighter on top), soft drop shadow, thin soft outline, bright
 inner rim along the top and a gloss highlight. Uses artkit.py.

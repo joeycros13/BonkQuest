@@ -1,4 +1,4 @@
-# DiceBattles
+# Bonk Quest
 
 A Roblox action game: fight enemies with real-time melee weapons across themed worlds (Sunny Meadows, Redwood Forest, Crystal Caverns), collect weapon drops and crafting materials, craft armour, and follow each world's questline.
 
@@ -9,7 +9,7 @@ A Roblox action game: fight enemies with real-time melee weapons across themed w
 | `src/` | All game code: `shared/`, `server/`, `client/` | yes |
 | `art/` | FBX meshes and offsets, icons, UI art, portraits, and the scripts that generate them | yes |
 | `blender/` | `models.blend`, the source of every mesh | no (Google Drive backup) |
-| `place/` | `DiceBattles.rbxlx`, the live place opened in Roblox Studio | no (Google Drive backup) |
+| `place/` | `BonkQuest.rbxlx`, the live place opened in Roblox Studio | no (Google Drive backup) |
 
 `CLAUDE.md` has the detailed project notes.
 
@@ -17,7 +17,7 @@ A Roblox action game: fight enemies with real-time melee weapons across themed w
 
 The code is synced into Studio with [Rojo](https://rojo.space) 7.7.1 (installed through Aftman).
 
-1. Open `place/DiceBattles.rbxlx` in Roblox Studio.
+1. Open `place/BonkQuest.rbxlx` in Roblox Studio.
 2. In this folder, run:
 
    ```bash

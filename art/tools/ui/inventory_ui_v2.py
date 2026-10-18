@@ -1,4 +1,4 @@
-"""DiceBattles Inventory theme v2: modern cartoon.
+"""Bonk Quest Inventory theme v2: modern cartoon.
 
 Warm cream panels, a teal header, chunky dark outlines (the HUD's ink), flat
 colours with a solid darker "lip" under buttons and cards instead of gloss,

@@ -1,4 +1,4 @@
-"""DiceBattles Inventory theme: midnight indigo, gold trim, scattered-dice pattern.
+"""Bonk Quest Inventory theme: midnight indigo, gold trim, scattered-dice pattern.
 
 Draws every skin the Inventory window uses, each at its element's on-screen
 aspect ratio (so they are used with ScaleType.Stretch and nothing distorts):

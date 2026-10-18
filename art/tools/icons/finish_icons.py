@@ -1,4 +1,4 @@
-"""DiceBattles World 3 weapon icon re-render (2026-10-17; copied from the 2026-10-16 W1 version): the finishing pass for the raw renders made by the Blender
+"""Bonk Quest World 3 weapon icon re-render (2026-10-17; copied from the 2026-10-16 W1 version): the finishing pass for the raw renders made by the Blender
 text blocks "w1_icons_rerender" (the nine World 1 weapons, the Rusty Blade, the three Worldheart tiers)
 and "shared_secretcores_icons" (the three cores), after the World 1 skill pass.
 Same recipe as art/weapon_icons.py (roblox-studio-connection worktree): crop to a square, a chunky ink
