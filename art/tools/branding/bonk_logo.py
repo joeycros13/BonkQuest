@@ -68,7 +68,11 @@ def spaced_text(size, text, font_px, spacing, fill, stroke, shadow):
         for ch, w in zip(text, widths):
             d.text((x, pad + dy), ch, font=font, fill=col, stroke_width=int(stroke), stroke_fill=INK)
             x += w + spacing
-    return img.crop(img.getbbox())
+    # the letters' own middle (capital height, ignoring the drop shadow and the Q's tail), so text can be
+    # centred in a box by its letters rather than by its bounding box (user, 2026-10-17: centre QUEST)
+    t, b = font.getbbox("E")[1], font.getbbox("E")[3]
+    box = img.getbbox()
+    return img.crop(box), pad + (t + b) / 2 - box[1]
 
 
 def paste_center(base, img, cx, cy):
@@ -85,7 +89,7 @@ def logo(base, cx, cy, k):
     outlined_polygon(d, outer, ORANGE, 10 * k)
     d.polygon(inner, fill=YELLOW)
     # BONK! (white, stroke 8 out, shadow 12, spacing 6, rotated 4 deg counter-clockwise)
-    bonk = spaced_text(None, "BONK!", 188 * k, 6 * k, WHITE, 8 * k, 12 * k)
+    bonk, _ = spaced_text(None, "BONK!", 188 * k, 6 * k, WHITE, 8 * k, 12 * k)
     bonk = bonk.rotate(4, resample=Image.BICUBIC, expand=True)
     paste_center(base, bonk, cx, cy - 92 * k)
     # QUEST ribbon (470x112 box centred 92k below the logo centre)
@@ -95,8 +99,8 @@ def logo(base, cx, cy, k):
     outlined_polygon(d, P([(470, 30), (410, 30), (410, 104), (470, 104), (444, 67)]), TEAL_DARK, 6 * k)
     d.rounded_rectangle((rx + 44 * k, ry + 8 * k, rx + 426 * k, ry + 96 * k), radius=14 * k, fill=TEAL, outline=INK,
                         width=int(7 * k))
-    quest = spaced_text(None, "QUEST", 76 * k, 8 * k, CREAM, 5 * k, 6 * k)
-    paste_center(base, quest, cx, ry + 50 * k)
+    quest, mid = spaced_text(None, "QUEST", 76 * k, 8 * k, CREAM, 5 * k, 6 * k)
+    base.alpha_composite(quest, (int(cx - quest.width / 2), int(ry + 52 * k - mid)))  # box centre: y 8..96
 
 
 def icon(px=512):
