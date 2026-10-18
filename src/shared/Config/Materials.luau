@@ -14,7 +14,9 @@
 --   name    shown in the Crafting panel, the Materials view and the drop pop-up
 --   world   the world it belongs to (the Materials view groups by it)
 --   order   sort order inside its world
---   source  the enemy that drops it (an enemy id), or the questline it comes from
+--   source  the enemy that drops it (an enemy id), the questline it comes from, or for a
+--           gathered material the Config/Gathering node that gives it (with `gathered`)
+--   gathered true for a material broken out of a gathering node (2026-10-18)
 --   rarity  its tile colour, one of Weapons.Rarities (user, 2026-10-12): in each world the
 --           first enemy's material is Common, the second's Uncommon, the third's Rare,
 --           the boss's Epic; quest items are Legendary
@@ -37,6 +39,7 @@ export type MaterialDef = {
 	source: string,
 	quest: boolean?,
 	core: boolean?,
+	gathered: boolean?,
 	color: Color3,
 	icon: string?,
 }
@@ -104,6 +107,28 @@ Materials.Defs = {
 		source = "CornWraith",
 		core = true,
 		color = Color3.fromRGB(184, 50, 58),
+	},
+	-- gathered (2026-10-18): chopped and mined from World 1's nodes (Config/Gathering).
+	-- No icons yet; they show their colour until they're drawn.
+	OakLog = {
+		id = "OakLog",
+		rarity = "Common",
+		name = "Oak Log",
+		world = 1,
+		order = 7,
+		source = "OakTree",
+		gathered = true,
+		color = Color3.fromRGB(150, 104, 62),
+	},
+	Stone = {
+		id = "Stone",
+		rarity = "Common",
+		name = "Stone",
+		world = 1,
+		order = 8,
+		source = "Boulder",
+		gathered = true,
+		color = Color3.fromRGB(150, 150, 146),
 	},
 	-- ==================== World 2 (The Redwood Forest) ====================
 	FoxFur = {

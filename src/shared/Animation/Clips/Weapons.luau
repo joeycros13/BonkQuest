@@ -91,6 +91,10 @@ Weapons.HOLDS = {
 	WoodsmansAxe = { hand = { 1.1, -0.9, -0.75 }, dir = { -0.75, 0.65, -0.2 }, roll = 0, two = 1 },
 	Greatclub = { hand = { 1.1, -0.9, -0.75 }, dir = { -0.75, 0.65, -0.2 }, roll = 0, two = 1 },
 	HeartwoodStaff = { hand = { 1.1, -0.9, -0.75 }, dir = { -0.75, 0.65, -0.2 }, roll = 0, two = 1 },
+	-- ==================== gathering tools (Config/Tools, 2026-10-18) ====================
+	-- one-handed for now: the Dagger's hold, until they get their own
+	WoodenAxe = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
+	WoodenPickaxe = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
 	-- the 10-stud Pinecone Staff (6.3 ahead of the hand, 3.8 behind): held level across
 	-- the front, head out to the right and a touch back, the butt crossing in front of
 	-- the body to the left hand (behind the grip, off = -1.6). The staff stays across the
@@ -381,7 +385,9 @@ local function offGripOf(def: any): Vector3
 	local point = Vector3.new(0, 0, -1.9)
 	local assets = ReplicatedStorage:FindFirstChild("Assets")
 	local folder = assets and assets:FindFirstChild("Weapons")
-	local model = folder and folder:FindFirstChild(def.id)
+	-- gathering tools (Config/Tools) keep their models in Assets/Tools
+	local tools = assets and assets:FindFirstChild("Tools")
+	local model = (folder and folder:FindFirstChild(def.id)) or (tools and tools:FindFirstChild(def.id))
 	local grip = model and (model :: Model).PrimaryPart
 	local attachment = grip and grip:FindFirstChild("OffGrip")
 	if attachment and attachment:IsA("Attachment") then

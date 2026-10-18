@@ -22,6 +22,11 @@
 --     `current()` is the weapon in hand (nil while put away), `selected()` the
 --     hotbar's; `equip` selects a weapon and takes it out, `toggleHolster` puts
 --     the selected one away or takes it out. MeleeService owns all of it.
+--   * Tools (2026-10-18): the hand can hold a gathering tool instead (Config/Tools; the
+--     character's "Tool" attribute, the player's "HeldTool" kind). `holdTool(kind)` takes
+--     the best one of a kind out (or puts it away), `tool()` is the one in hand. A tool
+--     swings with the same clips, rate limit and SwingSeq as a weapon, but its "Hit"
+--     moment only reaches onSwingLanded listeners (GatherController), never enemies.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -30,6 +35,7 @@ local UserInputService = game:GetService("UserInputService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Weapons = require(Shared:WaitForChild("Config"):WaitForChild("Weapons"))
 local Infuse = require(Shared:WaitForChild("Config"):WaitForChild("Infuse"))
+local Tools = require(Shared:WaitForChild("Config"):WaitForChild("Tools"))
 local Animation = require(Shared:WaitForChild("Animation"))
 local Character = Animation.Character
 local WeaponClips = Animation.Clips.Weapons
@@ -43,6 +49,7 @@ local swingRemote: RemoteEvent? = nil
 local hitRemote: RemoteEvent? = nil
 local equipRemote: RemoteEvent? = nil
 local holsterRemote: RemoteEvent? = nil
+local holdToolRemote: RemoteEvent? = nil
 
 local player = Players.LocalPlayer
 local changedEvent = Instance.new("BindableEvent")
@@ -77,6 +84,11 @@ local function alive(model: Model): boolean
 	return humanoid ~= nil and humanoid.Health > 0
 end
 
+-- Whatever the character holds: its weapon, or a gathering tool (both swing the same way).
+local function heldDef(model: Model): any
+	return Weapons.get(model:GetAttribute("Weapon")) or Tools.get(model:GetAttribute("Tool"))
+end
+
 -- The slash trail for whatever the character holds right now (made lazily).
 local function trailOf(rig: Rig): any?
 	local held = rig.model:FindFirstChild("EquippedWeapon")
@@ -95,7 +107,7 @@ end
 
 -- Play the hold clip for the current weapon (or none: no weapon, dead).
 local function sync(rig: Rig)
-	local def = Weapons.get(rig.model:GetAttribute("Weapon"))
+	local def = heldDef(rig.model)
 	local want = if def and alive(rig.model) then WeaponClips.hold(def) else nil
 	if rig.hold and rig.hold.clip ~= want then
 		rig.hold:Stop()
@@ -208,6 +220,9 @@ local function adopt(model: Model, cull: boolean): Rig
 	model:GetAttributeChangedSignal("Weapon"):Connect(function()
 		sync(rig)
 	end)
+	model:GetAttributeChangedSignal("Tool"):Connect(function()
+		sync(rig)
+	end)
 	local humanoid = model:FindFirstChildOfClass("Humanoid")
 	if humanoid then
 		humanoid.Died:Connect(function()
@@ -240,10 +255,13 @@ local function watchCharacter(owner: Player, character: Model)
 		character:GetAttributeChangedSignal("Weapon"):Connect(function()
 			changedEvent:Fire()
 		end)
+		character:GetAttributeChangedSignal("Tool"):Connect(function()
+			changedEvent:Fire()
+		end)
 	else
 		-- Other players' swings arrive as a counter bump from the server.
 		character:GetAttributeChangedSignal("SwingSeq"):Connect(function()
-			local def = Weapons.get(character:GetAttribute("Weapon"))
+			local def = heldDef(character)
 			if def and alive(character) then
 				startSwing(rig, def)
 			end
@@ -318,11 +336,16 @@ local function aimAssist(root: BasePart, def: Weapons.WeaponDef)
 end
 
 -- The swing's "Hit" marker: check what it touched and tell the server.
-local function landSwing(character: Model, root: BasePart, def: Weapons.WeaponDef)
-	if player.Character ~= character or character:GetAttribute("Weapon") ~= def.id or not alive(character) then
+local function landSwing(character: Model, root: BasePart, def: any)
+	local held = heldDef(character)
+	if player.Character ~= character or not held or held.id ~= def.id or not alive(character) then
 		return
 	end
 	landedEvent:Fire(root, def)
+	-- a tool's swing is for the trees and rocks (GatherController), never enemies
+	if def.kind then
+		return
+	end
 	local hits = findHits(root, def)
 	if #hits == 0 or not hitRemote then
 		return
@@ -347,6 +370,19 @@ end
 -- The selected weapon, the one in the hotbar, in hand or not.
 function WeaponController.selected(): Weapons.WeaponDef?
 	return Infuse.adjust(player, Weapons.get(player:GetAttribute("SelectedWeapon")) or Weapons.get(Weapons.default))
+end
+
+-- The gathering tool in hand (nil while none is out).
+function WeaponController.tool(): Tools.ToolDef?
+	local character = player.Character
+	return if character then Tools.get(character:GetAttribute("Tool")) else nil
+end
+
+-- Take out the best tool of a kind (a hotbar tool slot), or put it away if it is out.
+function WeaponController.holdTool(kind: string)
+	if holdToolRemote then
+		holdToolRemote:FireServer(kind)
+	end
 end
 
 function WeaponController.isHolstered(): boolean
@@ -399,7 +435,7 @@ end
 
 function WeaponController.swing()
 	local character = player.Character
-	local def = WeaponController.current()
+	local def: any = WeaponController.current() or WeaponController.tool()
 	local root = character and character:FindFirstChild("HumanoidRootPart")
 	if not (character and def and alive(character) and root and root:IsA("BasePart")) then
 		return
@@ -414,7 +450,10 @@ function WeaponController.swing()
 	end
 	lastSwing = now
 
-	aimAssist(root, def)
+	-- the turn toward the nearest enemy is for weapons only
+	if not def.kind then
+		aimAssist(root, def)
+	end
 	if swingRemote then
 		swingRemote:FireServer(def.id)
 	end
@@ -438,6 +477,7 @@ function WeaponController.init(injected: any)
 	hitRemote = deps.Remotes.getEvent("WeaponHit")
 	equipRemote = deps.Remotes.getEvent("EquipWeapon")
 	holsterRemote = deps.Remotes.getEvent("HolsterWeapon")
+	holdToolRemote = deps.Remotes.getEvent("HoldTool")
 end
 
 function WeaponController.start()
@@ -445,7 +485,7 @@ function WeaponController.start()
 	for _, other in Players:GetPlayers() do
 		watchPlayer(other)
 	end
-	for _, name in { "SelectedWeapon", "Holstered" } do
+	for _, name in { "SelectedWeapon", "Holstered", "HeldTool", "OwnedTools" } do
 		player:GetAttributeChangedSignal(name):Connect(function()
 			changedEvent:Fire()
 		end)

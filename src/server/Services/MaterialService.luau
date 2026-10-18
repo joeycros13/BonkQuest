@@ -2,6 +2,8 @@
 -- MaterialService: the crafting materials each player holds (Config/Materials),
 -- for the armour sets in Config/Armor (2026-10-12).
 --
+-- Gathering: trees and rocks broken by GatherService give theirs through `drop`.
+--
 -- Kills: every kill rolls the enemy's `materials` table (Config/Worlds); each
 -- entry rolls on its own and drops min..max of its material. Quest items come
 -- from QuestService (give), once per player. Secret-weapon cores (`core`) drop
@@ -153,19 +155,21 @@ local function onKill(enemy: any, killer: Player?)
 			end
 		end
 	end
+	MaterialService.drop(killer, items, bodyPosition(enemy.instance) or enemy.origin, enemy.instance)
+end
+
+-- Give the player these materials and show them (the side toast). Kills and gathering
+-- nodes (GatherService) both come through here.
+function MaterialService.drop(player: Player, items: { { id: string, amount: number } }, position: Vector3, body: Instance?)
 	if #items == 0 then
 		return
 	end
 	-- announce first, like the coin spill, so the client can hold its counts
 	if dropped then
-		dropped:FireClient(killer, {
-			body = enemy.instance,
-			position = bodyPosition(enemy.instance) or enemy.origin,
-			items = items,
-		})
+		dropped:FireClient(player, { body = body, position = position, items = items })
 	end
 	for _, item in items do
-		MaterialService.add(killer, item.id, item.amount)
+		MaterialService.add(player, item.id, item.amount)
 	end
 end
 

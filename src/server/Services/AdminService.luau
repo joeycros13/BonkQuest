@@ -20,7 +20,8 @@
 --   heal    {}           refill health
 --   material { id, amount } add (or take) a crafting material (Config/Materials)
 --   armor   { id, remove? } give an armour set (Config/Armor), or take it away
--- material and armor have no panel buttons yet; call them through the remote
+--   tool    { id, remove? } give a gathering tool (Config/Tools), or take it away
+-- material, armor and tool have no panel buttons yet; call them through the remote
 -- (testing the crafting, 2026-10-12).
 -- Everything goes through the owning services, so it is saved like normal play.
 
@@ -32,6 +33,7 @@ local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
 local Admin = require(Config:WaitForChild("Admin"))
 local Armor = require(Config:WaitForChild("Armor"))
 local Materials = require(Config:WaitForChild("Materials"))
+local Tools = require(Config:WaitForChild("Tools"))
 local Weapons = require(Config:WaitForChild("Weapons"))
 local Enemies = require(Config:WaitForChild("Enemies"))
 local Leveling = require(Config:WaitForChild("Leveling"))
@@ -236,6 +238,23 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 			end
 		end
 		return true, Text.giveAllDone:format(weapons, armor, Admin.giveAllMaterials)
+	end,
+	tool = function(player, request)
+		local def = Tools.get(request.id)
+		if not def then
+			return false, Text.unknown
+		end
+		local ToolService = deps.Services.ToolService
+		if request.remove then
+			if ToolService.revoke(player, def.id) then
+				return true, Text.armorRemoved:format(def.name)
+			end
+			return false, Text.removeMissing:format(def.name)
+		end
+		if ToolService.grant(player, def.id) then
+			return true, Text.armorDone:format(def.name)
+		end
+		return false, Text.giveHave:format(def.name)
 	end,
 	armor = function(player, request)
 		local def = Armor.get(request.id)

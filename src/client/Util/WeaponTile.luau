@@ -101,7 +101,9 @@ function WeaponTile.showModel(viewport: ViewportFrame, id: string)
 	viewport:ClearAllChildren()
 	local assets = ReplicatedStorage:FindFirstChild("Assets")
 	local folder = assets and assets:FindFirstChild("Weapons")
-	local template = folder and folder:FindFirstChild(id)
+	-- gathering tools (Config/Tools) keep their models in Assets/Tools
+	local tools = assets and assets:FindFirstChild("Tools")
+	local template = (folder and folder:FindFirstChild(id)) or (tools and tools:FindFirstChild(id))
 	if not (template and template:IsA("Model")) then
 		return
 	end

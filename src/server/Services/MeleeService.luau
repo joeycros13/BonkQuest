@@ -38,6 +38,15 @@
 --
 -- Positions are published as FightPos / FightLook attributes through
 -- WorldEnemyService; clients smooth toward them.
+--
+-- Tools (2026-10-18). The hand can hold a gathering tool instead (Config/Tools; the
+-- hotbar's Slot2.. take one out through Remotes.HoldTool { kind }): the player's best
+-- tool of that kind (ToolService.best), welded into the hand like a weapon. One thing
+-- in hand: taking a tool out puts the weapon away and taking the weapon out puts the
+-- tool away. While a tool is out the character's "Tool" attribute names it (and
+-- "Weapon" is unset) and the player's "HeldTool" names its kind. A tool swing is
+-- rate-limited and mirrored through SwingSeq like a weapon's, but never hits enemies;
+-- GatherService takes its hits on trees and rocks.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -50,6 +59,7 @@ local Balance = require(Config:WaitForChild("Balance"))
 local Enemies = require(Config:WaitForChild("Enemies"))
 local MapLayout = require(Config:WaitForChild("MapLayout"))
 local Weapons = require(Config:WaitForChild("Weapons"))
+local Tools = require(Config:WaitForChild("Tools"))
 -- the Worldheart Blade's damage / speed / reach follow the cores in it (Infuse.adjust)
 local Infuse = require(Config:WaitForChild("Infuse"))
 local Weld = require(Shared:WaitForChild("Animation"):WaitForChild("Weld"))
@@ -68,6 +78,7 @@ local TEST_START_WEAPONS: { string } = if RunService:IsStudio() then (Balance.Me
 
 local deps: any = nil
 local WorldEnemyService: any = nil
+local ToolService: any = nil
 
 local EQUIPPED_NAME = "EquippedWeapon"
 -- How far above an enemy's feet the ground probe starts. Steps and ramps lower
@@ -97,7 +108,8 @@ local MAX_HEIGHT_GAP = 8
 
 type PlayerState = {
 	weapon: string, -- the selected weapon (the hotbar's)
-	holstered: boolean, -- put away: nothing in hand
+	holstered: boolean, -- the weapon is put away (a tool may be out instead)
+	tool: string?, -- the kind of tool in hand (Config/Tools), nil for none
 	owned: { [string]: boolean },
 	lastSwing: number,
 	swingTime: number?, -- start of the swing awaiting its WeaponHit
@@ -267,6 +279,7 @@ end
 local function publishHand(player: Player, state: PlayerState)
 	player:SetAttribute("SelectedWeapon", state.weapon)
 	player:SetAttribute("Holstered", state.holstered)
+	player:SetAttribute("HeldTool", state.tool)
 end
 
 local function stateOf(player: Player): PlayerState
@@ -288,7 +301,7 @@ local function stateOf(player: Player): PlayerState
 				end
 			end
 		end
-		state = { weapon = selected, holstered = true, owned = owned, lastSwing = 0, swingTime = nil, swingHit = false }
+		state = { weapon = selected, holstered = true, tool = nil, owned = owned, lastSwing = 0, swingTime = nil, swingHit = false }
 		playerStates[player] = state
 		publishOwned(player, state)
 		publishHand(player, state)
@@ -340,7 +353,34 @@ local function attach(character: Model, id: string): boolean
 		end
 	end
 	model.Parent = character
+	character:SetAttribute("Tool", nil)
 	character:SetAttribute("Weapon", id)
+	return true
+end
+
+-- Weld a tool (Config/Tools; its model in ReplicatedStorage/Assets/Tools) into the
+-- right hand in place of whatever is held.
+local function attachTool(character: Model, def: Tools.ToolDef): boolean
+	local assets = ReplicatedStorage:FindFirstChild(MapLayout.AssetsFolder)
+	local folder = assets and assets:FindFirstChild("Tools")
+	local template = folder and folder:FindFirstChild(def.id)
+	if not (template and template:IsA("Model")) then
+		warn(`[MeleeService] no tool model ReplicatedStorage/Assets/Tools/{def.id}`)
+		return false
+	end
+	local old = character:FindFirstChild(EQUIPPED_NAME)
+	if old then
+		old:Destroy()
+	end
+	local model = template:Clone()
+	model.Name = EQUIPPED_NAME
+	if not Weld.toSocket(model, character, "RightHand", nil, "HandWeld") then
+		model:Destroy()
+		return false
+	end
+	model.Parent = character
+	character:SetAttribute("Weapon", nil)
+	character:SetAttribute("Tool", def.id)
 	return true
 end
 
@@ -351,6 +391,7 @@ local function holster(character: Model)
 		held:Destroy()
 	end
 	character:SetAttribute("Weapon", nil)
+	character:SetAttribute("Tool", nil)
 end
 
 -- Select a weapon (it becomes the hotbar's) and put it in hand.
@@ -361,6 +402,7 @@ function MeleeService.equip(player: Player, id: any): boolean
 	end
 	state.weapon = id
 	state.holstered = false
+	state.tool = nil
 	state.swingTime = nil
 	publishHand(player, state)
 	local character = player.Character
@@ -391,6 +433,7 @@ end
 function MeleeService.setHolstered(player: Player, holstered: any)
 	local state = stateOf(player)
 	state.holstered = holstered == true
+	state.tool = nil
 	state.swingTime = nil
 	publishHand(player, state)
 	local character = player.Character
@@ -401,6 +444,50 @@ function MeleeService.setHolstered(player: Player, holstered: any)
 		holster(character)
 	else
 		attach(character, state.weapon)
+	end
+end
+
+-- Take out the best tool of a kind (a hotbar tool slot), or put it away if that kind
+-- is already in hand (or `kind` is nil, or the player owns none of it). The weapon is
+-- put away either way.
+function MeleeService.holdTool(player: Player, kind: any)
+	local state = stateOf(player)
+	local def = if type(kind) == "string" then ToolService.best(player, kind) else nil
+	local character = player.Character
+	state.holstered = true
+	state.swingTime = nil
+	if not def or state.tool == kind then
+		state.tool = nil
+		publishHand(player, state)
+		if character then
+			holster(character)
+		end
+		return
+	end
+	state.tool = kind
+	publishHand(player, state)
+	if character then
+		attachTool(character, def)
+	end
+end
+
+-- The tool in hand may have changed (one taken away, a better one bought): hold the
+-- slot's best tool now, or put it away if none is left.
+function MeleeService.refreshTool(player: Player)
+	local state = stateOf(player)
+	if not state.tool then
+		return
+	end
+	local def = ToolService.best(player, state.tool)
+	local character = player.Character
+	if not def then
+		state.tool = nil
+		publishHand(player, state)
+		if character then
+			holster(character)
+		end
+	elseif character and character:GetAttribute("Tool") ~= def.id then
+		attachTool(character, def)
 	end
 end
 
@@ -556,8 +643,10 @@ end
 
 function MeleeService.WeaponSwing(player: Player, weaponId: any)
 	local state = stateOf(player)
-	local def = Infuse.adjust(player, Weapons.get(weaponId))
-	if not def or state.holstered or state.weapon ~= weaponId or not isAlive(player) then
+	-- a tool swing: rate-limited and shown to others the same way, never a WeaponHit
+	local tool = if state.tool then ToolService.best(player, state.tool) else nil
+	local def: any = if tool then (if tool.id == weaponId then tool else nil) else Infuse.adjust(player, Weapons.get(weaponId))
+	if not def or not isAlive(player) or (not tool and (state.holstered or state.weapon ~= weaponId)) then
 		return
 	end
 	local now = os.clock()
@@ -679,6 +768,7 @@ end
 function MeleeService.init(injected: any)
 	deps = injected
 	WorldEnemyService = deps.Services.WorldEnemyService
+	ToolService = deps.Services.ToolService
 	-- Saved from the published attributes, which outlive this service's own
 	-- state while the player is leaving.
 	deps.Services.PlayerDataService.register("weapons", {
@@ -717,6 +807,9 @@ function MeleeService.start()
 	deps.Remotes.getEvent("HolsterWeapon").OnServerEvent:Connect(function(player: Player, holstered: any)
 		MeleeService.setHolstered(player, holstered)
 	end)
+	deps.Remotes.getEvent("HoldTool").OnServerEvent:Connect(function(player: Player, kind: any)
+		MeleeService.holdTool(player, kind)
+	end)
 	deps.Remotes.getEvent("WeaponSwing").OnServerEvent:Connect(function(player: Player, id: any)
 		MeleeService.WeaponSwing(player, id)
 	end)
@@ -734,6 +827,7 @@ function MeleeService.start()
 	local function onCharacter(player: Player, character: Model)
 		local state = stateOf(player)
 		state.holstered = true
+		state.tool = nil
 		publishHand(player, state)
 		local waitUntil = os.clock() + 10
 		while character:GetAttribute("AvatarReady") ~= true and os.clock() < waitUntil and player.Character == character do
@@ -757,6 +851,15 @@ function MeleeService.start()
 			end
 			task.defer(function()
 				local humanoid = character:FindFirstChildOfClass("Humanoid")
+				-- a tool out: put the same tool back
+				local toolKind = stateOf(player).tool
+				if toolKind then
+					local tool = ToolService.best(player, toolKind)
+					if tool and player.Character == character and humanoid and humanoid.Health > 0 and not character:FindFirstChild(EQUIPPED_NAME) then
+						attachTool(character, tool)
+					end
+					return
+				end
 				local current = Weapons.get(stateOf(player).weapon)
 				local holdsModel = current ~= nil and not current.unarmed
 				local drawn = not stateOf(player).holstered

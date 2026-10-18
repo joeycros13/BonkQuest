@@ -12,6 +12,12 @@
 --     Clicking it or pressing 1 takes the weapon out or puts it away
 --     (WeaponController.toggleHolster).
 --   * The slot isn't highlighted while the weapon is out (the user's call).
+--   * Tool slots (2026-10-18): Slot2.. are copies of Slot1, one per gathering tool kind
+--     (their "ToolKind" attribute, Config/Tools.Kinds order: Axe, Pickaxe, Shovel, Rod
+--     on keys 2-5). A slot shows only once the player owns a tool of its kind, and
+--     shows their best one (highest tier) the same way Slot1 shows the weapon. Clicking
+--     it or pressing its key takes that tool out (putting the weapon away) or puts it
+--     back (WeaponController.holdTool).
 --   * The side buttons (Inventory, Index, Shop) are bubbly drawn icons with no
 --     circle behind them, and a Label (plus a LabelShadow) centred on the
 --     drawing's bottom edge; Util.FontDrop centres the Luckiest Guy text.
@@ -29,6 +35,8 @@ local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
+local Tools = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("Tools"))
+
 local HotbarUI = {}
 
 local PanelWindow: any = nil
@@ -44,6 +52,10 @@ local player = Players.LocalPlayer
 local hotbar: Instance? = nil
 -- The weapon the slot's viewport currently shows.
 local shownWeapon: string? = nil
+-- slot name -> the tool it currently shows ("" for none)
+local shownTools: { [string]: string } = {}
+-- number keys for the tool slots: Two is Slot2 (Tools.Kinds[1]) and so on
+local TOOL_KEYS = { Enum.KeyCode.Two, Enum.KeyCode.Three, Enum.KeyCode.Four, Enum.KeyCode.Five, Enum.KeyCode.Six }
 
 local function slot(name: string): GuiButton?
 	local found = hotbar and hotbar:FindFirstChild(name)
@@ -59,32 +71,62 @@ local WeaponTile = require(script.Parent.Parent:WaitForChild("Util"):WaitForChil
 -- the 3D view of a weapon (shared with every screen: Util.WeaponTile)
 local showWeapon = WeaponTile.showModel
 
+-- Show an item (weapon or tool) in a slot: its rarity skin, and its drawn icon or,
+-- without one, its 3D view.
+local function fill(button: GuiButton, def: any)
+	-- the rarity skin comes from the shared weapon tile (Util.WeaponTile), so the
+	-- slot always matches the Inventory and the Index
+	local skin = button:FindFirstChild("Skin", true)
+	if skin and skin:IsA("ImageLabel") then
+		skin.Image = WeaponTile.skin(def.rarity)
+	end
+	local picture = button:FindFirstChild("Picture", true)
+	local icon = iconOf(button)
+	local drawn = def.icon ~= nil and picture ~= nil and picture:IsA("ImageLabel")
+	if picture and picture:IsA("ImageLabel") then
+		picture.Visible = drawn
+		picture.Image = def.icon or ""
+	end
+	if icon then
+		icon.Visible = not drawn
+		if not drawn then
+			showWeapon(icon, def.id)
+		end
+	end
+end
+
+-- Each tool slot: shown with the best tool of its kind, or hidden if the player has none.
+local function refreshTools()
+	if not hotbar then
+		return
+	end
+	local owned = Tools.owned(player)
+	for _, child in hotbar:GetChildren() do
+		local kind = child:GetAttribute("ToolKind")
+		if not (type(kind) == "string" and child:IsA("GuiButton")) then
+			continue
+		end
+		local best = Tools.bestOf(owned, kind)
+		child.Visible = best ~= nil
+		local id = if best then best.id else ""
+		if shownTools[child.Name] ~= id then
+			shownTools[child.Name] = id
+			if best then
+				fill(child, best)
+			end
+		end
+	end
+end
+
 local function refresh()
+	refreshTools()
 	local selected = WeaponController.selected()
 	local button = slot("Slot1")
 	if not (button and selected) or selected.id == shownWeapon then
 		return
 	end
 	shownWeapon = selected.id
-	-- the rarity skin comes from the shared weapon tile (Util.WeaponTile), so the
-	-- slot always matches the Inventory and the Index
-	local skin = button:FindFirstChild("Skin", true)
-	if skin and skin:IsA("ImageLabel") then
-		skin.Image = WeaponTile.skin(selected.rarity)
-	end
-	local picture = button:FindFirstChild("Picture", true)
-	local icon = iconOf(button)
-	local drawn = selected.icon ~= nil and picture ~= nil and picture:IsA("ImageLabel")
-	if picture and picture:IsA("ImageLabel") then
-		picture.Visible = drawn
-		picture.Image = selected.icon or ""
-	end
-	if icon then
-		icon.Visible = not drawn
-		if not drawn then
-			showWeapon(icon, selected.id)
-		end
-	end
+	fill(button, selected)
 end
 
 local function tuning(name: string, fallback: number): number
@@ -161,6 +203,17 @@ function HotbarUI.start()
 			wireHover(weaponSlot)
 			weaponSlot.Activated:Connect(WeaponController.toggleHolster)
 		end
+		for _, child in found:GetChildren() do
+			local kind = child:GetAttribute("ToolKind")
+			if type(kind) == "string" and child:IsA("GuiButton") then
+				wireHover(child)
+				child.Activated:Connect(function()
+					if not player:GetAttribute("InputLocked") then
+						WeaponController.holdTool(kind)
+					end
+				end)
+			end
+		end
 
 		WeaponController.onChanged(refresh)
 		refresh()
@@ -173,6 +226,12 @@ function HotbarUI.start()
 		end
 		if input.KeyCode == Enum.KeyCode.One then
 			WeaponController.toggleHolster()
+			return
+		end
+		local index = table.find(TOOL_KEYS, input.KeyCode)
+		local kind = index and Tools.Kinds[index]
+		if kind and Tools.bestOf(Tools.owned(player), kind) then
+			WeaponController.holdTool(kind)
 		end
 	end)
 end
