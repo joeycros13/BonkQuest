@@ -44,6 +44,7 @@ local FUNCTION_NAMES: { string } = {
 	"AdminAction", -- { action = string, ... } -> (ok: boolean, message: string): the admin panel (AdminService)
 	"CraftArmor", -- (id: string) -> (ok: boolean, reason: string?): craft a set at the Crafting stall (CraftingService)
 	"BuyWeapon", -- (id: string) -> (ok: boolean, reason: string?): buy a weapon at the Weapons stall (MerchantService)
+	"BuyTool", -- (id: string) -> (ok: boolean, reason: string?): buy a gathering tool at the Weapons stall's Tools tab (StallService)
 	"InfuseCore", -- (core: string) -> (ok: boolean, reason: string?): set a core into the blade at an Infuser (InfuseService)
 	"TravelToWorld", -- (world: number) -> (ok: boolean, reason: string?): teleport to an unlocked world's spawn (PortalService, the Worlds menu)
 }

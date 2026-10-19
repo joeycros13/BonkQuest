@@ -28,7 +28,7 @@ Talkers.Defs = {
 	-- from the shopkeeper, and without one he sends you to buy it.
 	Fisherman = {
 		id = "Fisherman",
-		npc = { name = "Finn", short = "Finn", portrait = "" },
+		npc = { name = "Finn", short = "Finn", portrait = "rbxassetid://136031819587344" },
 		talk = function(player: Player): Talk
 			if not owns(player, "Rod") then
 				return {

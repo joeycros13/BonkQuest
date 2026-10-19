@@ -40,7 +40,7 @@ local FishingRingUI = {}
 local player = Players.LocalPlayer
 local deps: any = nil
 
-type Ring = { n: number, startAt: number, difficulty: Fishing.Difficulty, done: boolean }
+type Ring = { n: number, startAt: number, difficulty: Fishing.Difficulty, done: boolean, started: boolean }
 
 local gui: LayerCollector? = nil
 local warned = false
@@ -173,12 +173,15 @@ function FishingRingUI.begin(of: number, adornee: BasePart?)
 end
 
 -- Start ring `n` after `delay` seconds, closing over `closeSeconds`, the zone 1 +- `zone`.
+-- Until then the last ring's hit stays on screen (the yellow band, the closer where it was
+-- clicked): the user wanted a clear half second between a hit and the next ring (2026-10-19).
 function FishingRingUI.ring(n: number, delay: number, closeSeconds: number, zone: number)
 	if not ensure() then
 		return
 	end
 	local difficulty = { closeSeconds = closeSeconds, zone = zone }
-	active = { n = n, startAt = os.clock() + delay, difficulty = difficulty, done = false }
+	local first = active == nil
+	active = { n = n, startAt = os.clock() + delay, difficulty = difficulty, done = false, started = false }
 	local inside = 1 - zone
 	local band = find({ "Ring", "Zone", "Band" })
 	local zoneFrame = find({ "Ring", "Zone" })
@@ -193,14 +196,12 @@ function FishingRingUI.ring(n: number, delay: number, closeSeconds: number, zone
 	if outer and outer:IsA("GuiObject") then
 		outer.Size = UDim2.fromScale((1 + zone) / inside, (1 + zone) / inside)
 	end
-	setBand(attr("ZoneIdle", Color3.fromRGB(91, 191, 74)))
-	local scale = closerScale()
-	if scale then
-		scale.Scale = Fishing.ringStart
-	end
-	local closer = find({ "Ring", "Closer" })
-	if closer and closer:IsA("GuiObject") then
-		closer.Visible = false
+	if first then
+		setBand(attr("ZoneIdle", Color3.fromRGB(91, 191, 74)))
+		local closer = find({ "Ring", "Closer" })
+		if closer and closer:IsA("GuiObject") then
+			closer.Visible = false
+		end
 	end
 end
 
@@ -270,6 +271,11 @@ function FishingRingUI.start()
 		local scale = closerScale()
 		if now < ring.startAt then
 			return
+		end
+		if not ring.started then
+			-- the gap is over: back to the idle band and a fresh closer
+			ring.started = true
+			setBand(attr("ZoneIdle", Color3.fromRGB(91, 191, 74)))
 		end
 		if closer and closer:IsA("GuiObject") then
 			closer.Visible = true

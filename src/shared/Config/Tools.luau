@@ -20,12 +20,11 @@
 --   power     taken off a node's hp per hit
 --   rarity    its tile skin (the hotbar slot, the Inventory)
 --   price     coins at that world's shop (placeholder)
---   icon      its drawn picture (none yet: the hotbar falls back to the 3D view)
+--   icon      its drawn picture (cel-shaded render like the weapons', art/icons/tools; without one
+--             the hotbar falls back to the 3D view)
 -- Swinging reuses the weapon animation system (Animation.Clips.Weapons keys holds by id
 -- and swings by `swing`), so each tool has the same swing fields a weapon has:
 --   handed, cooldown, hitTime, reach, arc, maxTargets, swing
-
-local RunService = game:GetService("RunService")
 
 local Tools = {}
 
@@ -72,6 +71,7 @@ Tools.Defs = {
 		power = 10,
 		rarity = "Common",
 		price = 50,
+		icon = "rbxassetid://120793441722751",
 		handed = 1,
 		cooldown = 0.8,
 		hitTime = 0.52,
@@ -91,6 +91,7 @@ Tools.Defs = {
 		power = 10,
 		rarity = "Common",
 		price = 50,
+		icon = "rbxassetid://123876463543492",
 		handed = 1,
 		cooldown = 0.9,
 		hitTime = 0.58,
@@ -113,6 +114,7 @@ Tools.Defs = {
 		power = 0,
 		rarity = "Common",
 		price = 75,
+		icon = "rbxassetid://91808020801922",
 		handed = 2,
 		cooldown = 1.0,
 		hitTime = 0.56,
@@ -124,9 +126,10 @@ Tools.Defs = {
 	},
 } :: { [string]: ToolDef }
 
--- Studio only (testing, 2026-10-18): every player owns these from the start. Empty it
--- once tools can be bought.
-Tools.testStartTools = if RunService:IsStudio() then { "WoodenAxe", "WoodenPickaxe", "WoodenRod" } else {}
+-- Studio only (testing): every player owns these from the start. Emptied 2026-10-19 now
+-- that tools are sold on the Weapons stall's Tools tab (the admin `tool` action still
+-- grants one for a test).
+Tools.testStartTools = {} :: { string }
 
 function Tools.get(id: any): ToolDef?
 	return if type(id) == "string" then Tools.Defs[id] else nil

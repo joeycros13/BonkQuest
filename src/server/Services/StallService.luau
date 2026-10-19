@@ -8,8 +8,11 @@
 --   * Weapons stall: Remotes.BuyWeapon(id) buys a weapon that has a `price` in
 --     Config/Weapons (Common..Epic only); the coins are spent and the weapon is
 --     granted (MeleeService) with the Index's pop-up (IndexService.showWeapon).
+--     Its Tools tab (2026-10-19): Remotes.BuyTool(id) buys a gathering tool with a
+--     `price` in Config/Tools, sold at its own world's stall; the coins are spent and
+--     the tool is granted (ToolService), which shows its hotbar slot.
 --
--- Both are RemoteFunctions returning (ok, reason). reason is one of:
+-- All are RemoteFunctions returning (ok, reason). reason is one of:
 --   "unknown"    no such item, or it isn't for sale
 --   "owned"      the player has it already
 --   "level"      their level is too low
@@ -29,6 +32,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = Shared:WaitForChild("Config")
 local Armor = require(Config:WaitForChild("Armor"))
 local MapLayout = require(Config:WaitForChild("MapLayout"))
+local Tools = require(Config:WaitForChild("Tools"))
 local Weapons = require(Config:WaitForChild("Weapons"))
 
 local StallService = {}
@@ -133,6 +137,35 @@ function StallService.buy(player: Player, id: any): (boolean, string?)
 	return true, nil
 end
 
+-- Why the player can't buy tool `def` right now, or nil when they can.
+function StallService.buyToolBlocker(player: Player, def: Tools.ToolDef): string?
+	if not def.price then
+		return "unknown"
+	elseif deps.Services.ToolService.owns(player, def.id) then
+		return "owned"
+	elseif deps.Services.CoinService.get(player) < def.price then
+		return "coins"
+	elseif not StallService.atStall(player, "Weapons", def.world) then
+		return "range"
+	end
+	return nil
+end
+
+function StallService.buyTool(player: Player, id: any): (boolean, string?)
+	local def = Tools.get(id)
+	if not def then
+		return false, "unknown"
+	end
+	local blocker = StallService.buyToolBlocker(player, def)
+	if blocker then
+		return false, blocker
+	end
+	deps.Services.CoinService.add(player, -(def.price :: number))
+	deps.Services.ToolService.grant(player, def.id)
+	task.spawn(deps.Services.PlayerDataService.saveNow, player)
+	return true, nil
+end
+
 function StallService.init(injected: any)
 	deps = injected
 end
@@ -143,6 +176,9 @@ function StallService.start()
 	end
 	deps.Remotes.getFunction("BuyWeapon").OnServerInvoke = function(player: Player, id: any)
 		return StallService.buy(player, id)
+	end
+	deps.Remotes.getFunction("BuyTool").OnServerInvoke = function(player: Player, id: any)
+		return StallService.buyTool(player, id)
 	end
 end
 

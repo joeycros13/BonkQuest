@@ -111,10 +111,11 @@ Materials.Defs = {
 		core = true,
 		color = Color3.fromRGB(184, 50, 58),
 	},
-	-- gathered (2026-10-18): chopped and mined from World 1's nodes (Config/Gathering).
-	-- No icons yet; they show their colour until they're drawn.
+	-- gathered (2026-10-18): chopped and mined from World 1's nodes (Config/Gathering). Icons drawn
+	-- 2026-10-19 (art/tools/icons/w1_gather_icons.html).
 	OakLog = {
 		id = "OakLog",
+		icon = "rbxassetid://104043389166635",
 		rarity = "Common",
 		name = "Oak Log",
 		world = 1,
@@ -125,6 +126,7 @@ Materials.Defs = {
 	},
 	Stone = {
 		id = "Stone",
+		icon = "rbxassetid://118574059729672",
 		rarity = "Common",
 		name = "Stone",
 		world = 1,
@@ -134,9 +136,10 @@ Materials.Defs = {
 		color = Color3.fromRGB(150, 150, 146),
 	},
 	-- fished (2026-10-18): caught at the pond (Config/Fishing). Every fish is the same dark
-	-- shadow in the water; only these icons differ (none drawn yet: they show their colour).
+	-- shadow in the water; only these icons differ (w1_gather_icons.html, 2026-10-19).
 	Minnow = {
 		id = "Minnow",
+		icon = "rbxassetid://135916252607286",
 		rarity = "Common",
 		name = "Minnow",
 		world = 1,
@@ -148,6 +151,7 @@ Materials.Defs = {
 	},
 	Sunfish = {
 		id = "Sunfish",
+		icon = "rbxassetid://101784354405776",
 		rarity = "Uncommon",
 		name = "Sunfish",
 		world = 1,
@@ -159,6 +163,7 @@ Materials.Defs = {
 	},
 	GoldenCarp = {
 		id = "GoldenCarp",
+		icon = "rbxassetid://105639157556378",
 		rarity = "Rare",
 		name = "Golden Carp",
 		world = 1,

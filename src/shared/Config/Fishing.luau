@@ -49,7 +49,7 @@ Fishing.biteSeconds = { 1, 2 } -- how long the bobber stays under (user: 1-2 s)
 
 -- The rings
 Fishing.rings = 3
-Fishing.ringGap = 0.45 -- seconds between one ring's click and the next ring
+Fishing.ringGap = 0.5 -- seconds from one ring's hit (the band turns yellow) to the next ring (user, 2026-10-19)
 Fishing.ringStart = 1.7 -- closer scale at the start of a ring
 Fishing.ringEnd = 0.4 -- closer scale when the ring has closed (a miss)
 -- Seconds of slack on the server's ring check, for network lag both ways.

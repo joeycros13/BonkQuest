@@ -210,10 +210,16 @@ function DialogueUI.say(conv: Conversation): string
 	return if cancelled then "later" else choice
 end
 
-function DialogueUI.setSpeaker(name: string, portrait: string)
+-- Who is talking, set before the card opens so it never shows the last speaker for a
+-- moment (user, 2026-10-11 for the name and photo; 2026-10-19 for the tag, which used to
+-- wait for say() and showed the last NPC's "Quest 3 of 10" / "Fishing Lesson").
+function DialogueUI.setSpeaker(name: string, portrait: string, tag: string?)
 	if window then
 		find("NpcName").Text = name
 		find("Photo").Image = portrait
+		local label = find("QuestTag")
+		label.Visible = tag ~= nil
+		label.Text = tag or ""
 	end
 end
 

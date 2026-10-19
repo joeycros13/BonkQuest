@@ -66,7 +66,9 @@ local function infuserNear(player: Player, world: number): Instance?
 		return nil
 	end
 	for _, inst in CollectionService:GetTagged(TAG) do
-		if inst:GetAttribute("World") == world then
+		-- only the altars in the map: backup copies in ServerStorage keep the tag, and the client
+		-- can't see them, so the reveal had no altar to play over (2026-10-19)
+		if inst:GetAttribute("World") == world and inst:IsDescendantOf(workspace) then
 			local at = if inst:IsA("Model") then inst:GetPivot().Position elseif inst:IsA("BasePart") then inst.Position else nil
 			if at then
 				local offset = root.Position - at
