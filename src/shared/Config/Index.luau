@@ -23,6 +23,7 @@
 
 local Worlds = require(script.Parent.Worlds)
 local Armor = require(script.Parent.Armor)
+local Fishing = require(script.Parent.Fishing)
 local Gathering = require(script.Parent.Gathering)
 local Materials = require(script.Parent.Materials)
 local Quests = require(script.Parent.Quests)
@@ -143,6 +144,10 @@ function Index.materialSource(materialId: string): MaterialSource?
 	if mat.quest then
 		local line = Quests.lines[mat.source]
 		return { name = if line and line.npc then line.npc.short else mat.source, quest = true }
+	end
+	if mat.fished then
+		local spot = Fishing.spot(mat.source)
+		return if spot then { name = spot.name, chance = Fishing.chanceAt(spot, materialId), quest = false } else nil
 	end
 	if mat.gathered then
 		local node = Gathering.get(mat.source)

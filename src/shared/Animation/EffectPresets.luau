@@ -82,6 +82,24 @@ return {
 		},
 		light = { Color = Color3.fromRGB(170, 230, 255), Brightness = 4, Range = 18, Time = 0.25 },
 	},
+	-- Water: the bobber landing, a fish biting or leaping out (FishingController).
+	Splash = {
+		kind = "burst",
+		count = 14,
+		emitter = {
+			Texture = SMOKE,
+			Color = colors(Color3.fromRGB(235, 248, 255), Color3.fromRGB(170, 215, 240)),
+			Size = seq(0.5, 1.4),
+			Transparency = seq(0.2, 1),
+			Lifetime = NumberRange.new(0.35, 0.6),
+			Speed = NumberRange.new(6, 11),
+			SpreadAngle = Vector2.new(35, 35),
+			Drag = 2,
+			Acceleration = Vector3.new(0, -30, 0),
+			RotSpeed = NumberRange.new(-60, 60),
+			EmissionDirection = Enum.NormalId.Top,
+		},
+	},
 	-- Heavy footfalls, a charge, landing.
 	Dust = {
 		kind = "burst",

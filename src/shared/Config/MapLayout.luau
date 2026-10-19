@@ -33,6 +33,7 @@
 --   Interactable  Station, Radius
 --   GatherNode    Node (a Config/Gathering id); NodeId is set at runtime by GatherService
 --   QuestGiver    QuestLine
+--   Talker        TalkerId (a Config/Talkers id)
 --   EnemySpawn    Archetype, RespawnSeconds, WanderRadius
 --   BossSpawn     BossId, RespawnSeconds, WanderRadius
 --   WorldEnemy    (runtime, published by WorldEnemyService; the only replication
@@ -59,6 +60,7 @@ MapLayout.Tags = {
 	AmbientIdle = "AmbientIdle", -- shopkeeper that idles (breathes, looks around, waves)
 	Critter = "Critter", -- ambient animal (deer, squirrel, owl); CritterController animates it by its Kind attribute
 	QuestGiver = "QuestGiver", -- NPC model you talk to for a questline (Config/Quests)
+	Talker = "Talker", -- NPC model you talk to without a questline; its TalkerId attribute names a Config/Talkers def
 	TeleportZone = "TeleportZone", -- invisible box; standing in it sends you to its ObjectValue "Target" part (PortalService)
 	GatherNode = "GatherNode", -- a tree / rock you break for materials; its Node attribute names a Config/Gathering def (GatherService)
 }

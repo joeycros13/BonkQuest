@@ -360,6 +360,7 @@ end
 -- ==================== public ====================
 
 local lastSwing = 0
+local clickFilter: ((any) -> boolean)? = nil
 
 -- The weapon in hand (nil while it is put away).
 function WeaponController.current(): Weapons.WeaponDef?
@@ -433,6 +434,40 @@ function WeaponController.equip(id: string)
 	end
 end
 
+-- Let something take the local player's clicks before they become swings: `filter(def)`
+-- returns true to swallow the click (FishingController while a line is out).
+function WeaponController.setClickFilter(filter: ((any) -> boolean)?)
+	clickFilter = filter
+end
+
+-- Play another swing (Animation.Clips.Weapons SWINGS[name]) with what is in hand, on the
+-- local player only (the rod's Reel). Returns the arms track, or nil.
+function WeaponController.playExtra(name: string, seconds: number, hitAt: number?): any?
+	local character = player.Character
+	local def = character and heldDef(character)
+	local rig = character and rigs[character]
+	if not (def and rig and alive(character :: Model)) then
+		return nil
+	end
+	if rig.swing then
+		rig.swing:Stop(0.05)
+	end
+	if rig.swingBody then
+		rig.swingBody:Stop(0.05)
+	end
+	local arms, body = WeaponClips.extra(def, name, hitAt)
+	rig.swing = rig.animator:Play(arms, { speed = 1 / seconds })
+	rig.swingBody = rig.animator:Play(body, { speed = 1 / seconds })
+	return rig.swing
+end
+
+-- The model in the local player's hand (a weapon or tool), or nil.
+function WeaponController.heldModel(): Model?
+	local character = player.Character
+	local held = character and character:FindFirstChild("EquippedWeapon")
+	return if held and held:IsA("Model") then held else nil
+end
+
 function WeaponController.swing()
 	local character = player.Character
 	local def: any = WeaponController.current() or WeaponController.tool()
@@ -442,6 +477,11 @@ function WeaponController.swing()
 	end
 	-- no swinging while talking to an NPC (QuestController sets this)
 	if player:GetAttribute("InputLocked") then
+		return
+	end
+	-- a click something else takes instead of a swing (FishingController: hooking a
+	-- fish, the rings, reeling in)
+	if clickFilter and clickFilter(def) then
 		return
 	end
 	local now = os.clock()

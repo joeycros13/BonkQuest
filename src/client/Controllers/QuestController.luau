@@ -22,6 +22,10 @@
 --   4. eases the camera back and gives everything back.
 -- Accepting and handing in go to QuestService through Remotes.QuestAction.
 --
+-- Talkers (tag Talker, attribute TalkerId; Config/Talkers) get the same prompt, shot and
+-- card, but say their def's lines for the player's state and close on one button: no
+-- quest (Finn the fisherman's lesson, 2026-10-18).
+--
 -- The camera is an Animation.Scheduler Camera system (priority 40, before
 -- CameraFX at 50), bound only while a conversation runs.
 
@@ -35,6 +39,7 @@ local Config = Shared:WaitForChild("Config")
 local Enemies = require(Config:WaitForChild("Enemies"))
 local MapLayout = require(Config:WaitForChild("MapLayout"))
 local Quests = require(Config:WaitForChild("Quests"))
+local Talkers = require(Config:WaitForChild("Talkers"))
 local Animation = require(Shared:WaitForChild("Animation"))
 
 local QuestController = {}
@@ -236,11 +241,29 @@ local function converse(line: Quests.Line)
 	end
 end
 
+-- Who a model is and how its conversation runs: a quest giver's line, or a talker's def.
+local function speaker(giver: Instance): ({ name: string, short: string, portrait: string }?, (() -> ())?)
+	local line = Quests.get(giver:GetAttribute("QuestLine"))
+	if line then
+		return line.npc, function()
+			converse(line)
+		end
+	end
+	local def = Talkers.get(giver:GetAttribute("TalkerId"))
+	if def then
+		return def.npc, function()
+			local said = def.talk(player)
+			deps.UI.DialogueUI.say({ lines = said.lines, tag = said.tag, later = said.later })
+		end
+	end
+	return nil, nil
+end
+
 local function talk(giver: Model, prompt: ProximityPrompt)
 	local camera = Workspace.CurrentCamera
 	local shot = faceShot(giver)
-	local line = Quests.get(giver:GetAttribute("QuestLine"))
-	if talking or not (camera and shot and line) then
+	local npc, run = speaker(giver)
+	if talking or not (camera and shot and npc and run) then
 		return
 	end
 	talking = true
@@ -263,7 +286,7 @@ local function talk(giver: Model, prompt: ProximityPrompt)
 
 	-- The speaker goes in before the card opens: it used to be set only once the camera had eased in, so for
 	-- that moment the card showed whoever spoke last (or the card's default, Dale) (user, 2026-10-11).
-	deps.UI.DialogueUI.setSpeaker((line :: Quests.Line).npc.name, (line :: Quests.Line).npc.portrait)
+	deps.UI.DialogueUI.setSpeaker((npc :: any).name, (npc :: any).portrait)
 	deps.UI.DialogueUI.open()
 	-- walked (or was knocked, or teleported) away from the giver: end the talk
 	local anchor = giver.PrimaryPart or giver:FindFirstChild("Torso") or giver:FindFirstChild("HumanoidRootPart")
@@ -279,7 +302,7 @@ local function talk(giver: Model, prompt: ProximityPrompt)
 		end
 	end)
 	moveCamera(shot :: CFrame, EASE_IN)
-	local ok, err = pcall(converse, line :: Quests.Line)
+	local ok, err = pcall(run :: () -> ())
 	if not ok then
 		warn("[QuestController] conversation failed: " .. tostring(err))
 	end
@@ -301,8 +324,8 @@ end
 -- ==================== givers ====================
 
 local function adopt(giver: Instance)
-	local line = Quests.get(giver:GetAttribute("QuestLine"))
-	if not giver:IsA("Model") or not line then
+	local npc = speaker(giver)
+	if not giver:IsA("Model") or not npc then
 		return
 	end
 	local anchor = giver.PrimaryPart or giver:FindFirstChild("Torso")
@@ -312,13 +335,13 @@ local function adopt(giver: Instance)
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.Name = "TalkPrompt"
 	prompt.ActionText = "Talk"
-	prompt.ObjectText = line.npc.name
+	prompt.ObjectText = npc.name
 	prompt.KeyboardKeyCode = PROMPT_KEY
 	prompt.HoldDuration = 0
 	prompt.MaxActivationDistance = PROMPT_DISTANCE
 	prompt.RequiresLineOfSight = false
 	prompt.Style = Enum.ProximityPromptStyle.Custom
-	prompt:SetAttribute("ShortName", line.npc.short)
+	prompt:SetAttribute("ShortName", npc.short)
 	prompt.Parent = anchor
 	prompt.Triggered:Connect(function()
 		task.spawn(talk, giver, prompt)
@@ -346,11 +369,12 @@ function QuestController.start()
 			game:GetService("ContentProvider"):PreloadAsync(images)
 		end)
 	end)
-	local tag = MapLayout.Tags.QuestGiver
-	for _, giver in CollectionService:GetTagged(tag) do
-		adopt(giver)
+	for _, tag in { MapLayout.Tags.QuestGiver, MapLayout.Tags.Talker } do
+		for _, giver in CollectionService:GetTagged(tag) do
+			adopt(giver)
+		end
+		CollectionService:GetInstanceAddedSignal(tag):Connect(adopt)
 	end
-	CollectionService:GetInstanceAddedSignal(tag):Connect(adopt)
 end
 
 return QuestController

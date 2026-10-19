@@ -101,11 +101,32 @@ Tools.Defs = {
 		-- the World 3 pickaxes' swing: up over the shoulder, then down into the rock
 		swing = "Mine",
 	},
+	-- Fishing (Config/Fishing): held in one hand, cast with both (handed 2 gives the cast
+	-- its left hand; the hold leaves it free). Its swing is the cast, and the swing's "Hit"
+	-- marker is the moment the line is let go. A rod never breaks nodes (power 0).
+	WoodenRod = {
+		id = "WoodenRod",
+		name = "Wooden Rod",
+		kind = "Rod",
+		tier = 1,
+		world = 1,
+		power = 0,
+		rarity = "Common",
+		price = 75,
+		handed = 2,
+		cooldown = 1.0,
+		hitTime = 0.56,
+		reach = 0,
+		arc = 0,
+		maxTargets = 0,
+		knockback = 0,
+		swing = "Cast",
+	},
 } :: { [string]: ToolDef }
 
 -- Studio only (testing, 2026-10-18): every player owns these from the start. Empty it
 -- once tools can be bought.
-Tools.testStartTools = if RunService:IsStudio() then { "WoodenAxe", "WoodenPickaxe" } else {}
+Tools.testStartTools = if RunService:IsStudio() then { "WoodenAxe", "WoodenPickaxe", "WoodenRod" } else {}
 
 function Tools.get(id: any): ToolDef?
 	return if type(id) == "string" then Tools.Defs[id] else nil

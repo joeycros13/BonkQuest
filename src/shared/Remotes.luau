@@ -26,6 +26,7 @@ local EVENT_NAMES: { string } = {
 	"SecretCrystalHit", -- (order: number): a swing reached World 3's secret crystal #order (SecretService)
 	"GatherHit", -- (nodeIds: { string }): a tool swing reached these gathering nodes (GatherService)
 	"HoldTool", -- (kind: string?): take out the best tool of that kind, or put it away (MeleeService, Config/Tools)
+	"FishAction", -- { action = "cast", at = Vector3 } | { action = "hook" | "reel" } | { action = "ring", n = number, ok = boolean }: fishing (FishingService)
 
 	-- Replication (server -> client)
 	"IndexDiscovered", -- { kind = "Enemy" | "Weapon", id = string }: show the NEW popup
@@ -35,6 +36,7 @@ local EVENT_NAMES: { string } = {
 	"TeleportFade", -- ("out" | "in", seconds): fade the screen to black and back around a teleport (PortalService)
 	"GatherState", -- { id = string, hp = number, max = number, broken = boolean, hit = boolean? }: one of this player's gathering nodes changed (GatherService)
 	"CoreInfused", -- { core = string, awakened = boolean, infuser = Instance }: play the infusion reveal (InfuseService)
+	"FishState", -- { state = "Cast" | "Approach" | "Bite" | "Surface" | "Ring" | "Caught" | "Escaped" | "Reeled", ... }: this player's fishing (FishingService)
 }
 
 -- RemoteFunctions (request/response).

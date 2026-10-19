@@ -17,6 +17,8 @@
 --   source  the enemy that drops it (an enemy id), the questline it comes from, or for a
 --           gathered material the Config/Gathering node that gives it (with `gathered`)
 --   gathered true for a material broken out of a gathering node (2026-10-18)
+--   fished  true for a fish (2026-10-18), with `gathered`: `source` is the Config/Fishing
+--           spot it bites at
 --   rarity  its tile colour, one of Weapons.Rarities (user, 2026-10-12): in each world the
 --           first enemy's material is Common, the second's Uncommon, the third's Rare,
 --           the boss's Epic; quest items are Legendary
@@ -40,6 +42,7 @@ export type MaterialDef = {
 	quest: boolean?,
 	core: boolean?,
 	gathered: boolean?,
+	fished: boolean?,
 	color: Color3,
 	icon: string?,
 }
@@ -129,6 +132,41 @@ Materials.Defs = {
 		source = "Boulder",
 		gathered = true,
 		color = Color3.fromRGB(150, 150, 146),
+	},
+	-- fished (2026-10-18): caught at the pond (Config/Fishing). Every fish is the same dark
+	-- shadow in the water; only these icons differ (none drawn yet: they show their colour).
+	Minnow = {
+		id = "Minnow",
+		rarity = "Common",
+		name = "Minnow",
+		world = 1,
+		order = 9,
+		source = "SunnyPond",
+		gathered = true,
+		fished = true,
+		color = Color3.fromRGB(150, 176, 190),
+	},
+	Sunfish = {
+		id = "Sunfish",
+		rarity = "Uncommon",
+		name = "Sunfish",
+		world = 1,
+		order = 10,
+		source = "SunnyPond",
+		gathered = true,
+		fished = true,
+		color = Color3.fromRGB(240, 170, 60),
+	},
+	GoldenCarp = {
+		id = "GoldenCarp",
+		rarity = "Rare",
+		name = "Golden Carp",
+		world = 1,
+		order = 11,
+		source = "SunnyPond",
+		gathered = true,
+		fished = true,
+		color = Color3.fromRGB(246, 200, 64),
 	},
 	-- ==================== World 2 (The Redwood Forest) ====================
 	FoxFur = {
