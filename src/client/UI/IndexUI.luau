@@ -346,7 +346,12 @@ local function recipeRow(rowTemplate: GuiObject, ingredient: Armor.Ingredient): 
 	if source and source.quest then
 		setText(row, "Chance", attribute(rowTemplate, "QuestText", "Quest"), attribute(rowTemplate, "Color_Legendary", nil))
 	else
-		setText(row, "Chance", if source and source.chance then Index.percent(source.chance) else "", attribute(rowTemplate, "ChanceColor", nil))
+		-- an enemy drop shows this player's luck (cores never take luck; fish odds aren't drops)
+		local chance = source and source.chance
+		if chance and not (mat.core or mat.fished or mat.gathered) then
+			chance = luckyChance(chance)
+		end
+		setText(row, "Chance", if chance then Index.percent(chance) else "", attribute(rowTemplate, "ChanceColor", nil))
 	end
 	return row
 end

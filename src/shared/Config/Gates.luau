@@ -28,7 +28,7 @@ Gates.list = {
 		world = 2,
 		model = "World2Gate",
 		level = 10,
-		coins = 5000,
+		coins = 2500, -- the 30-minute World 1 (2026-10-19)
 		materials = { { id = "OakLog", count = 20 }, { id = "Stone", count = 20 } },
 	},
 	-- behind World 2's boss ruins, centred on them; a copy of the forest gate for now

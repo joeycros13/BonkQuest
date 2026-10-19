@@ -24,8 +24,8 @@ local World: WorldTypes.WorldDef = {
 			portrait = "rbxassetid://119866244895251", -- calm face (2026-10-11)
 			-- Quick, weak pecks.
 			melee = { damage = 6, cooldown = 1.2, windup = 0.25, range = 1.5, chaseSpeed = 15, armor = 0, move = "peck" },
-			-- Placeholder coins and drop rates; tune freely.
-			coins = { min = 3, max = 6 },
+			-- Coins and rates are tuned for a ~30-minute World 1 (2026-10-19; see Balance).
+			coins = { min = 6, max = 12 },
 			exp = 8,
 			drops = {
 				{ weapon = "Sickle", chance = 0.20 },
@@ -44,7 +44,7 @@ local World: WorldTypes.WorldDef = {
 			portrait = "rbxassetid://105217136953827", -- calm face (2026-10-11)
 			-- Slow, heavy horn charges with a long reach.
 			melee = { damage = 16, cooldown = 2.0, windup = 0.45, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "gore" },
-			coins = { min = 12, max = 20 },
+			coins = { min = 24, max = 40 },
 			exp = 30,
 			drops = {
 				{ weapon = "Machete", chance = 0.25 },
@@ -63,14 +63,14 @@ local World: WorldTypes.WorldDef = {
 			hp = 220,
 			portrait = "rbxassetid://73569429526048", -- calm face (2026-10-12)
 			melee = { damage = 20, cooldown = 2.2, windup = 0.78, range = 1.6, chaseSpeed = 16, armor = 0.1, move = "slam" },
-			coins = { min = 20, max = 30 },
+			coins = { min = 40, max = 60 },
 			exp = 45,
 			drops = {
 				{ weapon = "Shovel", chance = 0.15 },
 				{ weapon = "Scythe", chance = 0.10 },
 			},
 			-- the second armour set
-			materials = { { id = "Horsehair", chance = 0.4, min = 1, max = 1 } },
+			materials = { { id = "Horsehair", chance = 0.5, min = 1, max = 1 } },
 		},
 		-- SECRET (2026-10-12): the Corn Wraith haunts the hidden cellar under the farm
 		-- (drop down the silo). A floating corn-cob head with a leaf crown over a mass of
@@ -86,7 +86,7 @@ local World: WorldTypes.WorldDef = {
 			melee = { damage = 15, cooldown = 1.7, windup = 0.48, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
 			coins = { min = 25, max = 40 },
 			exp = 60,
-			-- the Farm Core: about 1%, once per player (trial numbers)
+			-- the Farm Core: 1%, once per player; luck never changes a core's chance
 			materials = { { id = "FarmCore", chance = 0.01, min = 1, max = 1 } },
 		},
 	},
@@ -103,15 +103,18 @@ local World: WorldTypes.WorldDef = {
 			-- Pitchfork jabs with the longest reach; armour halves weapon damage so the
 			-- fight outlasts the Bull's.
 			melee = { damage = 22, cooldown = 2.2, windup = 0.5, range = 1.2, chaseSpeed = 11, armor = 0.5, move = "stab" },
-			coins = { min = 45, max = 70 },
+			coins = { min = 90, max = 140 },
+			-- back sooner than other bosses (Balance.WorldEnemy.bossRespawnSeconds) so the
+			-- questline's six kills don't stall the 30-minute run
+			respawn = 35,
 			exp = 120,
 			drops = {
 				{ weapon = "Pitchfork", chance = 0.25 },
 				{ weapon = "Scythe", chance = 0.20 },
 				-- Legendary: his own pumpkin head on a stake
-				{ weapon = "PumpkinMace", chance = 0.05 },
-				-- the secret Corn Cob (hidden in the Index until found)
-				{ weapon = "CornCob", chance = 0.02 },
+				{ weapon = "PumpkinMace", chance = 0.03 },
+				-- the secret Corn Cob (0.1%, the user's rate for secrets)
+				{ weapon = "CornCob", chance = 0.001 },
 			},
 			materials = { { id = "GoldenStraw", chance = 0.5, min = 1, max = 1 } },
 		},

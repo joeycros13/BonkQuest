@@ -270,7 +270,8 @@ local function register(marker: Instance, worldId: number, index: number, isBoss
 		respawnSeconds = numberAttribute(
 			marker,
 			"RespawnSeconds",
-			if isBoss then Balance.WorldEnemy.bossRespawnSeconds else Balance.WorldEnemy.respawnSeconds
+			(def and def.respawn)
+				or (if isBoss then Balance.WorldEnemy.bossRespawnSeconds else Balance.WorldEnemy.respawnSeconds)
 		),
 		wanderRadius = wanderRadius,
 		aiState = "Idle",

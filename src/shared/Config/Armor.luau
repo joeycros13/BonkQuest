@@ -71,7 +71,7 @@ Armor.Defs = {
 		level = 8,
 		coins = 750,
 		recipe = {
-			{ id = "Horsehair", count = 10 },
+			{ id = "Horsehair", count = 8 },
 			{ id = "GoldenStraw", count = 3 },
 			{ id = "LuckyHorseshoe", count = 1 },
 			{ id = "Stone", count = 12 }, -- gathered (2026-10-19, user)

@@ -52,6 +52,9 @@ export type EnemyDef = {
 	materials: { MaterialDropDef }?, -- crafting materials a kill can drop
 	coins: CoinRange?, -- coins a kill gives (none if absent)
 	exp: number?, -- EXP a kill gives (ExpService; none if absent)
+	-- seconds until it comes back after a kill (default Balance.WorldEnemy; a
+	-- marker's RespawnSeconds attribute still wins)
+	respawn: number?,
 	-- The Index picture: the model turned a little right, seen a little from
 	-- above, on a transparent background (art/portraits/enemies/portrait_<id>.png).
 	portrait: string?,
