@@ -225,6 +225,91 @@ return {
 			RotSpeed = NumberRange.new(-200, 200),
 		},
 	},
+	-- The Weathervane Spear's Gust (impact = "Gust", 2026-10-19): WeaponController fires
+	-- GustWind across the front of the sweep, right to left, each burst aimed outward
+	-- (Front), pale streaks of wind that shoot out and stretch thin; GustDust kicks a
+	-- little dust off the ground under them.
+	GustWind = {
+		kind = "burst",
+		count = 6,
+		emitter = {
+			Texture = SMOKE,
+			EmissionDirection = Enum.NormalId.Front,
+			Color = colors(Color3.fromRGB(244, 252, 255), Color3.fromRGB(196, 232, 244)),
+			Size = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 0.6),
+				NumberSequenceKeypoint.new(0.3, 1.6),
+				NumberSequenceKeypoint.new(1, 2.4),
+			}),
+			Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 0.2),
+				NumberSequenceKeypoint.new(0.5, 0.45),
+				NumberSequenceKeypoint.new(1, 1),
+			}),
+			Lifetime = NumberRange.new(0.35, 0.55),
+			Speed = NumberRange.new(26, 38),
+			SpreadAngle = Vector2.new(8, 10),
+			Drag = 6,
+			RotSpeed = NumberRange.new(-260, 260),
+		},
+	},
+	GustDust = {
+		kind = "burst",
+		count = 4,
+		emitter = {
+			Texture = SMOKE,
+			EmissionDirection = Enum.NormalId.Front,
+			Color = colors(Color3.fromRGB(214, 196, 158), Color3.fromRGB(176, 156, 120)),
+			Size = seq(1.2, 3.2),
+			Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 0.25),
+				NumberSequenceKeypoint.new(1, 1),
+			}),
+			Lifetime = NumberRange.new(0.45, 0.7),
+			Speed = NumberRange.new(10, 16),
+			SpreadAngle = Vector2.new(18, 10),
+			Drag = 5,
+			Acceleration = Vector3.new(0, 2, 0),
+		},
+	},
+	-- The Pumpkin King's Mace (impact = "Pumpkin", 2026-10-19): orange sparks and a glow
+	-- where the head lands, and cream pumpkin seeds that jump and fall back.
+	PumpkinSparks = {
+		kind = "burst",
+		count = 22,
+		emitter = {
+			Texture = SPARKLE,
+			Color = colors(Color3.fromRGB(255, 196, 64), Color3.fromRGB(240, 110, 24)),
+			LightEmission = 1,
+			Size = seq(0.9, 0.2),
+			Transparency = seq(0, 1),
+			Lifetime = NumberRange.new(0.3, 0.55),
+			Speed = NumberRange.new(16, 28),
+			SpreadAngle = Vector2.new(60, 60),
+			Acceleration = Vector3.new(0, -30, 0),
+			RotSpeed = NumberRange.new(-180, 180),
+		},
+		light = { Color = Color3.fromRGB(255, 150, 40), Brightness = 3, Range = 12, Time = 0.25 },
+	},
+	PumpkinSeeds = {
+		kind = "burst",
+		count = 12,
+		emitter = {
+			Texture = SMOKE,
+			Color = colors(Color3.fromRGB(250, 238, 200), Color3.fromRGB(232, 214, 168)),
+			Size = seq(0.35, 0.3),
+			Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 0),
+				NumberSequenceKeypoint.new(0.8, 0),
+				NumberSequenceKeypoint.new(1, 1),
+			}),
+			Lifetime = NumberRange.new(0.6, 0.9),
+			Speed = NumberRange.new(12, 20),
+			SpreadAngle = Vector2.new(45, 45),
+			Acceleration = Vector3.new(0, -60, 0),
+			RotSpeed = NumberRange.new(-300, 300),
+		},
+	},
 	SlamRing = {
 		kind = "shockwave",
 		color = Color3.fromRGB(255, 236, 196),

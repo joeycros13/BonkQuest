@@ -62,6 +62,14 @@ local MAX_HEIGHT_GAP = 8
 
 -- The ground slam (impact = "Slam"): dust bursts around the spot.
 local SLAM_DUST_DIRECTIONS = 10
+-- The Gust (impact = "Gust", the Weathervane Spear, 2026-10-19): wind bursts fanned
+-- across the front, right to left like the sweep, a beat apart.
+local GUST_BURSTS = 6
+local GUST_SPREAD = 60 -- degrees either side of straight ahead
+local GUST_STEP = 0.03 -- seconds between bursts
+-- A weapon with Mood parts (the Pumpkin King's Mace's faces, 2026-10-19) turns Angry from
+-- the trail coming on until this long after it goes off, then Calm again.
+local MOOD_HOLD = 0.25
 
 local rad = math.rad
 
@@ -78,6 +86,8 @@ type Rig = {
 }
 
 local rigs: { [Model]: Rig } = {}
+-- the swing that last turned a character's weapon angry (setMood)
+local moodTrack: { [Model]: any } = setmetatable({}, { __mode = "k" }) :: any
 
 local function alive(model: Model): boolean
 	local humanoid = model:FindFirstChildOfClass("Humanoid")
@@ -151,6 +161,61 @@ local function slamSpot(rig: Rig): Vector3?
 	return if hit then hit.Position else nil
 end
 
+-- Wind across the front of a sweep: bursts fanned from the right to the left, each aimed
+-- outward, with a puff of dust on the ground under each.
+local function gust(rig: Rig)
+	local root = rig.model:FindFirstChild("HumanoidRootPart")
+	if not (root and root:IsA("BasePart")) then
+		return
+	end
+	local look = root.CFrame.LookVector * Vector3.new(1, 0, 1)
+	if look.Magnitude < 0.01 then
+		return
+	end
+	look = look.Unit
+	for i = 0, GUST_BURSTS - 1 do
+		task.delay(i * GUST_STEP, function()
+			local angle = -GUST_SPREAD + 2 * GUST_SPREAD * i / (GUST_BURSTS - 1)
+			local dir = CFrame.Angles(0, math.rad(angle), 0):VectorToWorldSpace(look)
+			local from = root.Position + dir * 3 + Vector3.new(0, 0.4, 0)
+			Effects.burst(CFrame.lookAt(from, from + dir), "GustWind")
+			local low = root.Position + dir * 4 - Vector3.new(0, 2.6, 0)
+			Effects.burst(CFrame.lookAt(low, low + dir + Vector3.new(0, 0.1, 0)), "GustDust")
+		end)
+	end
+end
+
+-- The mace's head lands: orange sparks with a glow, and seeds that jump and fall back.
+local function pumpkin(rig: Rig)
+	local spot = slamSpot(rig)
+	if not spot then
+		return
+	end
+	Effects.burst(spot + Vector3.new(0, 0.6, 0), "PumpkinSparks")
+	Effects.burst(spot + Vector3.new(0, 0.4, 0), "PumpkinSeeds")
+end
+
+-- Show the parts of `held` whose Mood attribute is `mood` and hide the other moods'.
+local function setMood(held: Instance, mood: string)
+	for _, part in held:GetDescendants() do
+		if part:IsA("BasePart") then
+			local m = part:GetAttribute("Mood")
+			if type(m) == "string" then
+				part.Transparency = if m == mood then 0 else 1
+			end
+		end
+	end
+end
+
+local function hasMood(held: Instance): boolean
+	for _, part in held:GetDescendants() do
+		if part:IsA("BasePart") and type(part:GetAttribute("Mood")) == "string" then
+			return true
+		end
+	end
+	return false
+end
+
 local function slam(rig: Rig)
 	local spot = slamSpot(rig)
 	if not spot then
@@ -179,12 +244,31 @@ local function startSwing(rig: Rig, def: Weapons.WeaponDef): any
 	-- carry on through the attack.
 	rig.swingBody = rig.animator:Play(WeaponClips.swingBody(def), { speed = speed })
 	rig.swing = track
-	if def.impact == "Slam" then
+	local impact = if def.impact == "Slam" then slam elseif def.impact == "Gust" then gust elseif def.impact == "Pumpkin" then pumpkin else nil
+	if impact then
 		track:GetMarkerReachedSignal("Hit"):Once(function()
 			if rig.swing == track then
-				slam(rig)
+				impact(rig)
 			end
 		end)
+	end
+	-- the mace's face: angry through the strike, calm again after
+	local held = rig.model:FindFirstChild("EquippedWeapon")
+	if held and held:IsA("Model") and hasMood(held) then
+		local function calm()
+			task.delay(MOOD_HOLD, function()
+				-- unless a newer swing has turned it angry again
+				if moodTrack[rig.model] == track then
+					setMood(held, "Calm")
+				end
+			end)
+		end
+		track:GetMarkerReachedSignal("TrailOn"):Connect(function()
+			moodTrack[rig.model] = track
+			setMood(held, "Angry")
+		end)
+		track:GetMarkerReachedSignal("TrailOff"):Connect(calm)
+		track.Stopped:Connect(calm)
 	end
 	local trail = trailOf(rig)
 	if trail then
