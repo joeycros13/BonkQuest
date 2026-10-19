@@ -84,6 +84,7 @@ class World:
             self.nodes.setdefault(n["node"], []).append(n["pos"])
         self.gather = {gid: dict(g, drops=listify(g["drops"])) for gid, g in data["gathering"].items()}
         self.places = data["map"]["places"]
+        self.healZones = data["map"].get("healZones", [])
         self.weapons = {w: v for w, v in data["weapons"].items()}
         self.tools = data["tools"]
         self.armor = {a: dict(v, recipe=listify(v["recipe"])) for a, v in data["armor"].items()}
@@ -146,6 +147,12 @@ class Run:
         self.deaths = 0
         self.rests = 0.0
         self.got = {}              # weapon -> (time, how)
+        self.zoneReady = 0.0       # when a heal zone (the fountain) can heal again
+        self.fountainUses = 0
+        self.earlyDeaths = 0
+        self.earlyRest = 0.0
+        self.levelHeals = 0
+        self.fights = []           # (time, enemy, share of max HP it took)
         self.kills = {}
 
     # --- helpers -----------------------------------------------------------
@@ -174,7 +181,12 @@ class Run:
         return self.w.armor[self.wearing]["defense"] if self.wearing else 0.0
 
     def add_exp(self, n):
+        before = self.level()
         self.exp += n
+        if self.level() > before:
+            # a level up heals to full (ExpService)
+            self.hp = self.maxhp()
+            self.levelHeals += 1
 
     # --- combat ------------------------------------------------------------
     def best_weapon(self, enemy):
@@ -230,6 +242,31 @@ class Run:
                 na += m["cooldown"]
         return end, taken
 
+    def use_fountain(self, markers, rest_seconds):
+        """Heal at a heal zone instead of resting, if the detour is quicker."""
+        if not self.w.healZones:
+            return False
+        target = min(markers, key=lambda m: dist(self.pos, m["pos"]))["pos"]
+        best = None
+        for z in self.w.healZones:
+            go = dist(self.pos, z["pos"]) * PLAYER["detour"] / self.w.speed
+            back = dist(z["pos"], target) * PLAYER["detour"] / self.w.speed
+            direct = dist(self.pos, target) * PLAYER["detour"] / self.w.speed
+            wait = max(0, self.zoneReady - (self.t + go))
+            extra = go + wait + back - direct
+            if best is None or extra < best[0]:
+                best = (extra, z, wait)
+        extra, z, wait = best
+        if extra >= rest_seconds:
+            return False
+        self.walk(z["pos"], "walking to the fountain")
+        if wait > 0:
+            self.spend("waiting for the fountain", wait)
+        self.hp = self.maxhp()
+        self.zoneReady = self.t + z["cooldown"]
+        self.fountainUses += 1
+        return True
+
     def beatable(self, enemy):
         _, expect = self.fight(enemy, self.best_weapon(enemy), dry=True)
         return expect < self.maxhp() * PLAYER["tooStrong"]
@@ -243,8 +280,10 @@ class Run:
         _, expect = self.fight(enemy, weapon, dry=True)
         if expect >= self.hp * PLAYER["restBelow"] and expect < self.maxhp():
             need = (expect * 1.1 - self.hp) / (self.maxhp() * PLAYER["regen"])
-            if need > 0:
+            if need > 0 and not self.use_fountain(markers, need):
                 self.rests += need
+                if self.t < 600:
+                    self.earlyRest += need
                 self.spend("resting", need)
         # pick a target: the nearest one alive, or the next to come back
         best = None
@@ -262,11 +301,14 @@ class Run:
         if taken >= self.hp:
             # died partway: respawn at the plaza, walk back, the enemy is back to full
             self.deaths += 1
+            if self.t < 600:
+                self.earlyDeaths += 1
             self.spend("fighting " + enemy, seconds * (self.hp / max(1, taken)))
             self.spend("dying", w.respawnTime)
             self.pos = list(w.places["spawn"])
             self.hp = self.maxhp()
             return False
+        self.fights.append((self.t, enemy, taken / self.maxhp()))
         self.hp -= taken
         self.spend("fighting " + enemy, seconds)
         self.dead[(enemy, i)] = self.t + w.respawn[enemy]
@@ -650,10 +692,44 @@ def apply_overrides(data, sets):
                 for x in listify(a["recipe"]):
                     if x["id"] == parts[2]:
                         x["count"] = num(val)
+        elif parts[0] == "level":
+            data["leveling"][{"first": "first", "step": "step", "hp": "healthPerLevel"}[parts[1]]] = num(val)
+        elif parts[0] == "quest":
+            data["quest"]["steps"][parts[1]][parts[2]] = num(val)
         elif parts[0] == "player":
             PLAYER[parts[1]] = num(val)
         else:
             sys.exit("unknown --set " + s)
+
+
+def curve_total(lv, level):
+    return sum(lv["first"] + lv["step"] * (l - lv["start"]) for l in range(lv["start"], level))
+
+
+def curve_level(lv, total):
+    level = lv["start"]
+    while curve_total(lv, level + 1) <= total:
+        level += 1
+    return level
+
+
+def remap(data, old):
+    """Move every level requirement to the level that needs the same total EXP on the
+    new curve, so requirements arrive at the same point in the run. Prints the map."""
+    new = data["leveling"]
+    def m(level):
+        return curve_level(new, curve_total(old, level))
+    changes = []
+    for a in data["armor"].values():
+        changes.append(("armour " + a["id"], a["level"], m(a["level"])))
+        a["level"] = m(a["level"])
+    for k, st in data["quest"]["steps"].items():
+        if st["kind"] == "level":
+            changes.append(("quest step " + k, st["level"], m(st["level"])))
+            st["level"] = m(st["level"])
+    changes.append(("gate", data["gate"]["level"], m(data["gate"]["level"])))
+    data["gate"]["level"] = m(data["gate"]["level"])
+    print("  level requirements moved:", ", ".join("%s %d -> %d" % c for c in changes))
 
 
 def pct(xs, p):
@@ -669,9 +745,13 @@ def main():
     ap.add_argument("--rod", action="store_true", help="count the fishing rod as a tool to buy")
     ap.add_argument("--set", action="append", default=[])
     ap.add_argument("--trace", action="store_true")
+    ap.add_argument("--remap", action="store_true", help="after level.* changes, move level requirements to the same EXP")
     a = ap.parse_args()
     data = load(a.world)
+    old_curve = dict(data["leveling"])
     apply_overrides(data, a.set)
+    if a.remap:
+        remap(data, old_curve)
     world = World(data, rod=a.rod)
     rng = random.Random(a.seed)
     if a.trace:
@@ -692,6 +772,13 @@ def main():
     for k, v in sorted(acts.items(), key=lambda kv: -kv[1]):
         print("    %-28s %5.1f" % (k, v))
     print("  kills (average):", ", ".join("%s %.0f" % (e, sum(r.kills.get(e, 0) for r in runs) / len(runs)) for e in world.enemies))
+    early = [f for r in runs for f in r.fights if f[0] < 600]
+    print("  first 10 minutes: a fight takes %.0f%% of max HP on average (bulls %.0f%%), deaths %.2f, resting %.1f min" % (
+        100 * statistics.mean(f[2] for f in early) if early else 0,
+        100 * statistics.mean([f[2] for f in early if f[1] == "Bull"] or [0]),
+        statistics.mean(r.earlyDeaths for r in runs),
+        statistics.mean(r.earlyRest for r in runs) / 60))
+    print("  fountain uses %.1f, level-up heals %.1f" % (statistics.mean(r.fountainUses for r in runs), statistics.mean(r.levelHeals for r in runs)))
     print("  deaths %.2f, resting %.1f min, final level %.1f, coins left %.0f" % (
         statistics.mean(r.deaths for r in runs), statistics.mean(r.rests for r in runs) / 60,
         statistics.mean(r.level() for r in runs), statistics.mean(r.coins for r in runs)))

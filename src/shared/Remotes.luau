@@ -37,6 +37,7 @@ local EVENT_NAMES: { string } = {
 	"GatherState", -- { id = string, hp = number, max = number, broken = boolean, hit = boolean? }: one of this player's gathering nodes changed (GatherService)
 	"CoreInfused", -- { core = string, awakened = boolean, infuser = Instance }: play the infusion reveal (InfuseService)
 	"FishState", -- { state = "Cast" | "Approach" | "Bite" | "Surface" | "Ring" | "Caught" | "Escaped" | "Reeled", ... }: this player's fishing (FishingService)
+	"HealZone", -- { kind = "healed", amount } | { kind = "cooldown", seconds }: the healing fountain (HealZoneService)
 }
 
 -- RemoteFunctions (request/response).

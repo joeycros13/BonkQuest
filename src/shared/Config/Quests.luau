@@ -8,8 +8,9 @@
 --                   the final reward is the Firefly Lantern (LanternFlail)
 --   ExplorerCaverns Explorer Pip, "Into the Crystal Caverns" (World 3, 2026-10-17,
 --                   picked on the design canvas); the final reward is the Diamond
---                   Pickaxe. Level steps follow the other lines: first armour set + 1
---                   (20), then the second set's level (23).
+--                   Pickaxe. Level steps follow the other lines: the first comes at the
+--                   same EXP as before the 2026-10-19 curve (36), the second at the
+--                   second set's level (42).
 -- Lines run side by side: each player has a step in every line, published as
 -- per-line attributes (Quests.attr). A giver model (tagged QuestGiver) names its
 -- line in its "QuestLine" attribute. Add a line to `lines` and `order` and give it
@@ -151,16 +152,16 @@ lines.DaleFarm = {
 		},
 		{
 			kind = "level",
-			level = 5,
-			objective = "Reach level 5",
-			track = "Reach {Level 5}",
+			level = 9,
+			objective = "Reach level 9",
+			track = "Reach {Level 9}",
 			-- + the Rusty Blade (Relic), the start of the secret super weapon (2026-10-12)
 			reward = { coins = 50, weapon = "RustyBlade" },
 			offer = {
 				"Them bulls'll only get meaner from here. You gotta toughen up.",
-				"Go get some practice in and [reach level 5]. Come back when you're ready.",
+				"Go get some practice in and [reach level 9]. Come back when you're ready.",
 			},
-			reminder = { "Keep at it! [Reach level 5] first." },
+			reminder = { "Keep at it! [Reach level 9] first." },
 			complete = {
 				"Now that's a seasoned fighter if I ever saw one!",
 				"Here, I dug this old blade up behind the barn. Rusty as anything... but that empty socket's always made me wonder.",
@@ -213,15 +214,15 @@ lines.DaleFarm = {
 		},
 		{
 			kind = "level",
-			level = 8,
-			objective = "Reach level 8",
-			track = "Reach {Level 8}",
+			level = 14,
+			objective = "Reach level 14",
+			track = "Reach {Level 14}",
 			reward = { coins = 100 },
 			offer = {
 				"Bad news. That old scarecrow's stitched himself back together.",
-				"He comes back stronger every time. Go [reach level 8] so you can stand up to him.",
+				"He comes back stronger every time. Go [reach level 14] so you can stand up to him.",
 			},
-			reminder = { "Keep trainin'! [Reach level 8]." },
+			reminder = { "Keep trainin'! [Reach level 14]." },
 			complete = { "Look at ya! The strongest farmhand this meadow's ever seen." },
 		},
 		{
@@ -321,15 +322,15 @@ lines.RangerRedwoods = {
 		},
 		{
 			kind = "level",
-			level = 12,
-			objective = "Reach level 12",
-			track = "Reach {Level 12}",
+			level = 22,
+			objective = "Reach level 22",
+			track = "Reach {Level 22}",
 			reward = { coins = 150 },
 			offer = {
 				"Deeper in, the bears are waking up angry. You're not ready for them yet.",
-				"Train up and [reach level 12]. I'll be right here by the fire.",
+				"Train up and [reach level 22]. I'll be right here by the fire.",
 			},
-			reminder = { "Keep training. [Reach level 12] first." },
+			reminder = { "Keep training. [Reach level 22] first." },
 			complete = { "Look at you. Strong enough to stare down a grizzly." },
 		},
 		{
@@ -378,15 +379,15 @@ lines.RangerRedwoods = {
 		},
 		{
 			kind = "level",
-			level = 15,
-			objective = "Reach level 15",
-			track = "Reach {Level 15}",
+			level = 27,
+			objective = "Reach level 27",
+			track = "Reach {Level 27}",
 			reward = { coins = 300 },
 			offer = {
 				"Bad news. Roots don't die easily. The treant is growing back, stronger than before.",
-				"You'll need to be stronger too. [Reach level 15].",
+				"You'll need to be stronger too. [Reach level 27].",
 			},
-			reminder = { "Keep at it. [Reach level 15]." },
+			reminder = { "Keep at it. [Reach level 27]." },
 			complete = { "The strongest warden these woods have ever had." },
 		},
 		{
@@ -487,15 +488,15 @@ lines.ExplorerCaverns = {
 		},
 		{
 			kind = "level",
-			level = 20,
-			objective = "Reach level 20",
-			track = "Reach {Level 20}",
+			level = 36,
+			objective = "Reach level 36",
+			track = "Reach {Level 36}",
 			reward = { coins = 350 },
 			offer = {
 				"The tunnel ends at a sheer drop. Whatever's down there isn't for beginners.",
-				"Come back when you [reach level 20].",
+				"Come back when you [reach level 36].",
 			},
-			reminder = { "Toughen up a bit first. [Reach level 20]." },
+			reminder = { "Toughen up a bit first. [Reach level 36]." },
 			complete = { "Look at you! Tougher than a stalagmite." },
 		},
 		{
@@ -544,15 +545,15 @@ lines.ExplorerCaverns = {
 		},
 		{
 			kind = "level",
-			level = 23,
-			objective = "Reach level 23",
-			track = "Reach {Level 23}",
+			level = 42,
+			objective = "Reach level 42",
+			track = "Reach {Level 42}",
 			reward = { coins = 750 },
 			offer = {
 				"Fresh tracks lead past her hall, deeper than any map. We'll need you at your best.",
-				"[Reach level 23] first.",
+				"[Reach level 42] first.",
 			},
-			reminder = { "Not yet, not yet. [Reach level 23]." },
+			reminder = { "Not yet, not yet. [Reach level 42]." },
 			complete = { "Ready? Me too. Let's finish this." },
 		},
 		{

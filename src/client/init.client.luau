@@ -55,6 +55,8 @@ local CONTROLLER_ORDER = {
 	"GatherController",
 	-- casting, the bobber and the line, bites and the reel-in (FishingRingUI draws the rings)
 	"FishingController",
+	-- the healing fountain's sparkles and "+HP" popup (HealZoneService heals)
+	"HealZoneController",
 }
 
 local UI_ORDER = {

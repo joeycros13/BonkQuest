@@ -4,7 +4,7 @@
 --
 -- The look is hand-built: ReplicatedStorage/Assets/UI/DamagePopup, a BillboardGui
 -- with a "Label". Its attributes set the colours per kind of hit (EnemyHitColor,
--- PlayerHitColor) and the motion (Lifetime, Rise, Spread). This only copies it
+-- PlayerHitColor, HealHitColor, InfoHitColor) and the motion (Lifetime, Rise, Spread). This only copies it
 -- and animates it.
 
 local Players = game:GetService("Players")
@@ -13,7 +13,8 @@ local TweenService = game:GetService("TweenService")
 
 local DamagePopup = {}
 
-export type Kind = "Enemy" | "Player"
+-- Heal / Info: the healing fountain's "+HP" and "ready in" notes (HealZoneController)
+export type Kind = "Enemy" | "Player" | "Heal" | "Info"
 
 local template: BillboardGui? = nil
 

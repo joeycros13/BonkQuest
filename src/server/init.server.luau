@@ -46,6 +46,8 @@ local SERVICE_ORDER = {
 	"GatherService",
 	-- casting a rod for fish (Config/Fishing), through ToolService and MaterialService
 	"FishingService",
+	-- the healing fountain: walk-in zones that heal to full on a cooldown
+	"HealZoneService",
 }
 
 print("[Server] bootstrap starting")

@@ -27,12 +27,12 @@ Gates.list = {
 		id = "World2",
 		world = 2,
 		model = "World2Gate",
-		level = 10,
+		level = 18, -- 10 before the 2026-10-19 level curve (the same EXP)
 		coins = 2500, -- the 30-minute World 1 (2026-10-19)
 		materials = { { id = "OakLog", count = 20 }, { id = "Stone", count = 20 } },
 	},
 	-- behind World 2's boss ruins, centred on them; a copy of the forest gate for now
-	{ id = "World3", world = 3, model = "World3Gate", level = 20, coins = 25000 },
+	{ id = "World3", world = 3, model = "World3Gate", level = 36, coins = 25000 }, -- level 20 before 2026-10-19
 } :: { Gate }
 
 -- How close (studs from the sign board) a player must stand to buy.

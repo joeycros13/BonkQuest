@@ -21,8 +21,10 @@
 --                    (colour from its Color_<Rarity> attributes), Blurb,
 --                    DefenseCard / HealthCard (Value) for a set, EffectCard / LastsCard
 --                    for a potion (EffectCard's StatIcon is the potion's own picture),
---                    Ingredients (one row per recipe material or potion: Slot/Icon,
---                    ItemName, Count "have / need", Bar/Fill), Level ("Level N" for a
+--                    Ingredients (a ScrollingFrame, one row per recipe material or potion:
+--                    Slot/Icon, ItemName, Count "have / need", Bar/Fill; its RowShare /
+--                    GapShare attributes are a row's and a gap's share of the visible
+--                    height, so a long recipe scrolls instead of running under Craft), Level ("Level N" for a
 --                    set; for a potion "Have ×N" from its HaveFormat), Cost, Craft
 --   Craft            Craft (Brew for a potion: TextBrew) when everything is met;
 --                    otherwise locked with why (level, then materials, then coins); an
@@ -206,6 +208,42 @@ local function addRow(rows: Instance, index: number, item: { id: string, count: 
 	row.Parent = rows
 end
 
+-- Size the recipe list's canvas to its rows. The canvas is the list's measured height
+-- times how many visible heights the rows need (a ScrollingFrame's CanvasSize scale is
+-- a share of its parent, not of itself, so it's set from the measurement), and the rows
+-- and gaps are shares of the canvas shrunk by the same factor: a row stays RowShare of
+-- what you see however many there are. Refitted when the screen changes size.
+local fitted: { [ScrollingFrame]: boolean } = {}
+local function fitRows(rows: Instance)
+	if not rows:IsA("ScrollingFrame") then
+		return
+	end
+	local list = {}
+	for _, child in rows:GetChildren() do
+		if child:IsA("GuiObject") then
+			table.insert(list, child)
+		end
+	end
+	local share = rows:GetAttribute("RowShare") or 0.3
+	local gap = rows:GetAttribute("GapShare") or 0.04
+	local canvas = math.max(1, #list * share + math.max(0, #list - 1) * gap)
+	rows.CanvasSize = UDim2.new(0, 0, 0, math.floor(rows.AbsoluteSize.Y * canvas + 0.5))
+	for _, row in list do
+		row.Size = UDim2.fromScale(1, share / canvas)
+	end
+	local layout = rows:FindFirstChildOfClass("UIListLayout")
+	if layout then
+		layout.Padding = UDim.new(gap / canvas, 0)
+	end
+	-- (a refresh while open keeps the scroll; a shorter list clamps it by itself)
+	if not fitted[rows] then
+		fitted[rows] = true
+		rows:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+			fitRows(rows)
+		end)
+	end
+end
+
 local function clearRows(rows: Instance)
 	for _, child in rows:GetChildren() do
 		if child:IsA("GuiObject") then
@@ -256,6 +294,7 @@ local function fillDetail(def: Armor.ArmorDef, counts: { [string]: number })
 		local have = if crafted then item.count else counts[item.id] or 0
 		addRow(rows, index, item, have, have >= item.count, crafted)
 	end
+	fitRows(rows)
 
 	local levelMet = crafted or number("Level", 1) >= def.level
 	info.Level.Label.Text = "Level " .. def.level
@@ -302,6 +341,7 @@ local function fillPotion(def: Potions.PotionDef, counts: { [string]: number }, 
 		local have = held(item.id, counts, potions)
 		addRow(rows, index, item, have, have >= item.count, false)
 	end
+	fitRows(rows)
 
 	local have = potions[def.id] or 0
 	info.Level.Label.Text = (info.Level:GetAttribute("HaveFormat") or "Have ×%s"):format(Format.commas(have))

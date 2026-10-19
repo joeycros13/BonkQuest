@@ -14,9 +14,9 @@
 -- Remotes.ExpDropped first, so it can hold the EXP bar while
 -- Balance.Exp.piecesMin..piecesMax blue stars fling out and fly to it.
 --
--- Max health follows the level (Leveling.maxHealth: 100, +10 per level up;
--- user, 2026-10-11). A new character starts full; a level up adds the new HP
--- to current health straight away. An admin can override the max for the
+-- Max health follows the level (Leveling.maxHealth: 100, +15 per level up since
+-- 2026-10-19; user, 2026-10-11). A new character starts full; a level up heals to the new
+-- max at once (user, 2026-10-19: early HP is scarce and regen is slow). An admin can override the max for the
 -- session (player attribute MaxHealthOverride, AdminService). Worn armour adds
 -- its bonus HP on top of the level's (player attribute ArmorHealth, ArmorService;
 -- 2026-10-12).
@@ -172,8 +172,13 @@ function ExpService.start()
 		if player:GetAttribute("ExpTotal") == nil then
 			ExpService.add(player, 0)
 		end
+		local shownLevel = player:GetAttribute("Level")
 		player:GetAttributeChangedSignal("Level"):Connect(function()
-			ExpService.applyHealth(player)
+			local level = player:GetAttribute("Level")
+			-- a level up fills health; anything else (an admin setting it lower) only caps it
+			local up = type(level) == "number" and type(shownLevel) == "number" and level > shownLevel
+			shownLevel = level
+			ExpService.applyHealth(player, up)
 		end)
 		player.CharacterAdded:Connect(function(character)
 			onCharacter(player, character)

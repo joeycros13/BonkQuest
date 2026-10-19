@@ -91,7 +91,7 @@ local data: any = {
 	balance = { sprint = Balance.Sprint.speedMultiplier, leash = Balance.Melee.leashRange, gatherHealAfter = Gathering.healAfter },
 	walkSpeed = game.StarterPlayer.CharacterWalkSpeed,
 	respawnTime = game.Players.RespawnTime,
-	map = { markers = {}, nodes = {}, places = {} },
+	map = { markers = {}, nodes = {}, places = {}, healZones = {} },
 }
 for _, g in Gates.list do
 	if g.world == WORLD + 1 then
@@ -129,6 +129,12 @@ for _, n in (folder:FindFirstChild("Gathering") or Instance.new("Folder")):GetCh
 	table.insert(data.map.nodes, { node = n:GetAttribute("Node"), pos = pos(n) })
 end
 data.map.places.spawn = pos(folder.Spawns:FindFirstChild("PlayerSpawn"))
+data.map.healZones = {}
+for _, zone in game:GetService("CollectionService"):GetTagged("HealZone") do
+	if zone:IsDescendantOf(folder) then
+		table.insert(data.map.healZones, { pos = pos(zone), cooldown = zone:GetAttribute("Cooldown") or 30 })
+	end
+end
 local merchants = folder.Structures:FindFirstChild("Merchants")
 if merchants then
 	for _, stall in merchants:GetChildren() do
