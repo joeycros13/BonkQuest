@@ -17,11 +17,17 @@ local World: WorldTypes.WorldDef = {
 	-- the Index world card and Worlds-menu banner (2026-10-17, no enemies, past the stalls
 	-- looking at the boarded-up mine entrance; art/portraits/worlds/world_W03_2026-10-17.png)
 	profile = "rbxassetid://125541783517148",
+	-- Respawn seconds by kind (the user's rule, 2026-10-19): every enemy of a tier
+	-- comes back after the same time in its world; bosses and the secret enemy
+	-- after `boss` / `secret`. A spawn marker's RespawnSeconds attribute still wins.
+	respawn = { small = 10, medium = 15, elite = 20, boss = 30, secret = 30 },
+
 	enemies = {
 		-- Minion: a small bat that hovers low at the front of every lane and in the
 		-- halls; swoops down for a bite (ServerStorage/Assets/Enemies/CaveBat).
 		CaveBat = {
 			id = "CaveBat",
+			tier = "small",
 			name = "Cave Bat",
 			portrait = "rbxassetid://72271902069536", -- calm face (2026-10-13)
 			hp = 240,
@@ -38,6 +44,7 @@ local World: WorldTypes.WorldDef = {
 		-- punch (ServerStorage/Assets/Enemies/PebbleGolem).
 		PebbleGolem = {
 			id = "PebbleGolem",
+			tier = "medium",
 			name = "Pebble Golem",
 			portrait = "rbxassetid://92185614445143", -- calm face (2026-10-13)
 			hp = 550,
@@ -55,6 +62,7 @@ local World: WorldTypes.WorldDef = {
 		-- hall; an overhead double-fist slam (ServerStorage/Assets/Enemies/CrystalGolem).
 		CrystalGolem = {
 			id = "CrystalGolem",
+			tier = "elite",
 			name = "Crystal Golem",
 			portrait = "rbxassetid://84986641261720", -- calm face (2026-10-13)
 			hp = 1100,

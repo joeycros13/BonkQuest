@@ -14,11 +14,17 @@ local World: WorldTypes.WorldDef = {
 	-- the Index world card (re-shot 2026-10-19 for the grown map, no enemies; art/portraits/worlds/world_W01_2026-10-19.png)
 	profile = "rbxassetid://89359546830130",
 
+	-- Respawn seconds by kind (the user's rule, 2026-10-19): every enemy of a tier
+	-- comes back after the same time in its world; bosses and the secret enemy
+	-- after `boss` / `secret`. A spawn marker's RespawnSeconds attribute still wins.
+	respawn = { small = 10, medium = 15, elite = 20, boss = 30, secret = 30 },
+
 	enemies = {
 		-- Minion: the weakest world enemy, in flocks along the front of every path
 		-- (ServerStorage/Assets/Enemies/Chicken).
 		Chicken = {
 			id = "Chicken",
+			tier = "small",
 			name = "Angry Chicken",
 			hp = 40,
 			portrait = "rbxassetid://119866244895251", -- calm face (2026-10-11)
@@ -39,6 +45,7 @@ local World: WorldTypes.WorldDef = {
 		-- (ServerStorage/Assets/Enemies/Bull).
 		Bull = {
 			id = "Bull",
+			tier = "medium",
 			name = "Raging Bull",
 			hp = 140,
 			portrait = "rbxassetid://105217136953827", -- calm face (2026-10-11)
@@ -59,6 +66,7 @@ local World: WorldTypes.WorldDef = {
 		-- Horsehair, goes in the second World 1 armour set (ServerStorage/Assets/Enemies/Stallion).
 		Stallion = {
 			id = "Stallion",
+			tier = "elite",
 			name = "Wild Stallion",
 			hp = 220,
 			portrait = "rbxassetid://73569429526048", -- calm face (2026-10-12)
@@ -104,15 +112,12 @@ local World: WorldTypes.WorldDef = {
 			-- fight outlasts the Bull's.
 			melee = { damage = 22, cooldown = 2.2, windup = 0.5, range = 1.2, chaseSpeed = 11, armor = 0.5, move = "stab" },
 			coins = { min = 90, max = 140 },
-			-- back sooner than other bosses (Balance.WorldEnemy.bossRespawnSeconds) so the
-			-- questline's six kills don't stall the 30-minute run
-			respawn = 35,
 			exp = 120,
 			drops = {
 				{ weapon = "Pitchfork", chance = 0.25 },
 				{ weapon = "Scythe", chance = 0.20 },
 				-- Legendary: his own pumpkin head on a stake
-				{ weapon = "PumpkinMace", chance = 0.03 },
+				{ weapon = "PumpkinMace", chance = 0.05 },
 				-- the secret Corn Cob (0.1%, the user's rate for secrets)
 				{ weapon = "CornCob", chance = 0.001 },
 			},

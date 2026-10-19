@@ -20,11 +20,17 @@ local World: WorldTypes.WorldDef = {
 	-- the Index world card (2026-10-12, no enemies; art/index/world_W02_2026-10-12.png)
 	profile = "rbxassetid://110979330411375",
 
+	-- Respawn seconds by kind (the user's rule, 2026-10-19): every enemy of a tier
+	-- comes back after the same time in its world; bosses and the secret enemy
+	-- after `boss` / `secret`. A spawn marker's RespawnSeconds attribute still wins.
+	respawn = { small = 10, medium = 15, elite = 20, boss = 30, secret = 30 },
+
 	enemies = {
 		-- Minion: quick and common, at the front of both lanes
 		-- (ServerStorage/Assets/Enemies/Fox).
 		Fox = {
 			id = "Fox",
+			tier = "small",
 			name = "Snarling Fox",
 			portrait = "rbxassetid://102792357956654", -- calm face (2026-10-11)
 			hp = 110,
@@ -43,6 +49,7 @@ local World: WorldTypes.WorldDef = {
 		-- (ServerStorage/Assets/Enemies/Boar).
 		Boar = {
 			id = "Boar",
+			tier = "medium",
 			name = "Wild Boar",
 			portrait = "rbxassetid://105726195455752", -- calm face (2026-10-11)
 			hp = 260,
@@ -60,6 +67,7 @@ local World: WorldTypes.WorldDef = {
 		-- (ServerStorage/Assets/Enemies/Bear).
 		Bear = {
 			id = "Bear",
+			tier = "elite",
 			name = "Grizzly Bear",
 			portrait = "rbxassetid://117018743106247", -- calm face (2026-10-11)
 			hp = 550,

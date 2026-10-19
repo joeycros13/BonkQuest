@@ -52,9 +52,8 @@ export type EnemyDef = {
 	materials: { MaterialDropDef }?, -- crafting materials a kill can drop
 	coins: CoinRange?, -- coins a kill gives (none if absent)
 	exp: number?, -- EXP a kill gives (ExpService; none if absent)
-	-- seconds until it comes back after a kill (default Balance.WorldEnemy; a
-	-- marker's RespawnSeconds attribute still wins)
-	respawn: number?,
+	-- a regular enemy's kind, which sets its respawn time (WorldDef.respawn)
+	tier: ("small" | "medium" | "elite")?,
 	-- The Index picture: the model turned a little right, seen a little from
 	-- above, on a transparent background (art/portraits/enemies/portrait_<id>.png).
 	portrait: string?,
@@ -75,6 +74,8 @@ export type WorldEnemyDef = {
 	archetype: string,
 }
 
+export type RespawnDef = { small: number, medium: number, elite: number, boss: number, secret: number }
+
 export type WorldDef = {
 	id: number,
 	name: string, -- display name, e.g. "The Sunny Meadows"
@@ -84,6 +85,8 @@ export type WorldDef = {
 	enemies: { [string]: EnemyDef },
 	bosses: { [string]: EnemyDef },
 	worldEnemy: WorldEnemyDef?,
+	-- seconds until a defeated enemy comes back, by tier (Balance.WorldEnemy if absent)
+	respawn: RespawnDef?,
 }
 
 return {}
