@@ -22,6 +22,8 @@
 --   armor   { id, remove? } give an armour set (Config/Armor), or take it away
 --   tool    { id, remove? } give a gathering tool (Config/Tools), or take it away
 --   potion  { id, amount } add (or take) potions (Config/Potions; the panel's Potions page)
+--   quest   { line, step } put a questline on a step, on offer (one past the last finishes it)
+--   questSkip { line }   move a questline on one step (no rewards; quest items are handed over)
 --   potionsEnd {}        end every running potion
 -- material and armor have no panel buttons yet; call them through the remote (tool is on the
 -- panel's Tools page since 2026-10-19)
@@ -37,6 +39,7 @@ local Admin = require(Config:WaitForChild("Admin"))
 local Armor = require(Config:WaitForChild("Armor"))
 local Materials = require(Config:WaitForChild("Materials"))
 local Potions = require(Config:WaitForChild("Potions"))
+local Quests = require(Config:WaitForChild("Quests"))
 local Tools = require(Config:WaitForChild("Tools"))
 local Weapons = require(Config:WaitForChild("Weapons"))
 local Enemies = require(Config:WaitForChild("Enemies"))
@@ -225,6 +228,30 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 		amount = math.max(amount, -PotionService.get(player, def.id))
 		PotionService.add(player, def.id, amount)
 		return true, Text.materialDone:format(commas(amount), def.name)
+	end,
+	quest = function(player, request)
+		local line = Quests.get(request.line)
+		if not line then
+			return false, Text.unknown
+		elseif type(request.step) ~= "number" then
+			return false, Text.badNumber
+		end
+		local step, done = deps.Services.QuestService.setStep(player, line.id, request.step)
+		if not step then
+			return false, Text.unknown
+		end
+		return true, if done then Text.questDone:format(line.name) else Text.questSet:format(line.name, step, #line.steps)
+	end,
+	questSkip = function(player, request)
+		local line = Quests.get(request.line)
+		local now = line and deps.Services.QuestService.stepOf(player, line.id)
+		if not (line and now) then
+			return false, Text.unknown
+		elseif now > #line.steps then
+			return false, Text.questAlreadyDone:format(line.name)
+		end
+		local step, done = deps.Services.QuestService.setStep(player, line.id, now + 1)
+		return true, if done then Text.questDone:format(line.name) else Text.questSet:format(line.name, step :: number, #line.steps)
 	end,
 	potionsEnd = function(player, _request)
 		deps.Services.PotionService.clearRunning(player)

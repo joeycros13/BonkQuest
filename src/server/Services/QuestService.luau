@@ -277,6 +277,32 @@ local function jumpTo(player: Player, s: State, step: any)
 	end
 end
 
+-- The admin panel's Quests tab (2026-10-19): put a line on `step` (1..#steps; one past
+-- the end finishes it), on offer. No step rewards are paid, but quest items from steps
+-- before it are handed over (backfillItems), so the second armour set still works.
+-- Returns the step it landed on and whether the line is done, or nil for an unknown line.
+function QuestService.setStep(player: Player, lineId: any, step: any): (number?, boolean)
+	local s = states[player] and states[player][lineId]
+	if not s or type(step) ~= "number" then
+		return nil, false
+	end
+	local n = #s.line.steps
+	step = math.clamp(math.floor(step), 1, n + 1)
+	s.step = step
+	s.state = if step > n then "Done" else "Offer"
+	s.progress, s.coinsSeen = 0, coins(player)
+	s.matSeen = Materials.counts(player)
+	publish(player, s)
+	backfillItems(player, s)
+	return step, step > n
+end
+
+-- The step a line is on (for the admin panel's Skip), or nil.
+function QuestService.stepOf(player: Player, lineId: any): number?
+	local s = states[player] and states[player][lineId]
+	return s and s.step
+end
+
 local function onPlayer(player: Player)
 	if states[player] then
 		return

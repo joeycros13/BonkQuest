@@ -32,6 +32,10 @@
 --     MaterialCards (count on the pill); Give / Take send the `potion` action;
 --   PageMobs/List: Templates/WorldHeader, then a Templates/MobRow per enemy kind
 --     (Portrait, MobName, Note, Respawn);
+--   PageQuests/List (2026-10-19): a Templates/QuestRow per questline (Portrait = the
+--     giver, Texts/LineName, Texts/Note "Step 6 of 10 · Active", Amount = a step number,
+--     Go = the `quest` action to that step (one past the last finishes the line), Skip =
+--     `questSkip`, one step on);
 --   Status/Label: the last result. It always keeps its room (idle = see-through),
 --     so a message never resizes the page (gui attributes StatusOk,
 --     StatusError, StatusSeconds).
@@ -49,6 +53,7 @@ local Admin = require(Config:WaitForChild("Admin"))
 local Armor = require(Config:WaitForChild("Armor"))
 local Materials = require(Config:WaitForChild("Materials"))
 local Potions = require(Config:WaitForChild("Potions"))
+local Quests = require(Config:WaitForChild("Quests"))
 local Tools = require(Config:WaitForChild("Tools"))
 local Weapons = require(Config:WaitForChild("Weapons"))
 local Worlds = require(Config:WaitForChild("Worlds"))
@@ -568,6 +573,57 @@ local function renderPotions()
 	end
 end
 
+-- ==================== quests page ====================
+
+local function renderQuests()
+	local pageFrame = find("PageQuests")
+	local list = pageFrame and pageFrame:FindFirstChild("List")
+	local templates = gui and gui:FindFirstChild("Templates")
+	local rowTemplate = templates and templates:FindFirstChild("QuestRow")
+	if not (list and rowTemplate) then
+		return
+	end
+	for index, id in Quests.order do
+		local line = Quests.get(id)
+		if not line then
+			continue
+		end
+		local row = list:FindFirstChild(id)
+		if not row then
+			row = rowTemplate:Clone()
+			row.Name = id
+			row.Visible = true
+			row.Parent = list
+			local box = find("Amount", row)
+			setLabel(find("Go", row), Text.goTo)
+			setLabel(find("Skip", row), Text.skip)
+			wireButton(find("Go", row), function()
+				local step = tonumber(box and box.Text or "")
+				if not step then
+					status(false, Text.badNumber)
+					return
+				end
+				ask({ action = "quest", line = id, step = step })
+			end)
+			wireButton(find("Skip", row), function()
+				ask({ action = "questSkip", line = id })
+			end)
+		end
+		row.LayoutOrder = index
+		find("Portrait", row).Image = line.npc.portrait
+		find("LineName", row).Text = line.name
+		local step = player:GetAttribute(Quests.attr("Step", id))
+		local state = player:GetAttribute(Quests.attr("State", id))
+		local n = #line.steps
+		find("Note", row).Text = if type(step) == "number" and step > n then Text.questFinished:format(n)
+			else Text.questNote:format(if type(step) == "number" then step else 1, n, tostring(state or "Offer"))
+		local box = find("Amount", row)
+		if box and box:IsA("TextBox") and not box:IsFocused() then
+			box.Text = tostring(if type(step) == "number" then math.min(step, n + 1) else 1)
+		end
+	end
+end
+
 -- ==================== mobs page ====================
 
 local function tally(): { [string]: { total: number, dead: number } }
@@ -659,7 +715,7 @@ end
 
 local function showPage(name: string)
 	page = name
-	for _, n in { "PagePlayer", "PageWeapons", "PageArmor", "PageTools", "PageMaterials", "PagePotions", "PageMobs" } do
+	for _, n in { "PagePlayer", "PageWeapons", "PageArmor", "PageTools", "PageMaterials", "PagePotions", "PageQuests", "PageMobs" } do
 		local p = find(n)
 		if p then
 			p.Visible = n == name
@@ -684,6 +740,8 @@ local function showPage(name: string)
 		renderMaterials()
 	elseif name == "PagePotions" then
 		renderPotions()
+	elseif name == "PageQuests" then
+		renderQuests()
 	else
 		renderMobs()
 	end
@@ -699,8 +757,12 @@ local function fitCanvas(list: Instance?)
 	if not layout then
 		return
 	end
+	-- a list whose first row has an outline (Quests) has top / bottom padding, so the outline
+	-- isn't clipped; the canvas makes room for it
+	local padding = list:FindFirstChildOfClass("UIPadding")
 	local function fit()
-		list.CanvasSize = UDim2.fromOffset(0, math.ceil(layout.AbsoluteContentSize.Y) + 4)
+		local extra = if padding then padding.PaddingTop.Offset + padding.PaddingBottom.Offset else 0
+		list.CanvasSize = UDim2.fromOffset(0, math.ceil(layout.AbsoluteContentSize.Y + extra) + 4)
 	end
 	layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(fit)
 	fit()
@@ -823,7 +885,7 @@ function AdminUI.start()
 			pill.BackgroundTransparency = 1
 			setLabel(pill, "")
 		end
-		for _, name in { "PageWeapons", "PageArmor", "PageTools", "PageMaterials", "PagePotions", "PageMobs" } do
+		for _, name in { "PageWeapons", "PageArmor", "PageTools", "PageMaterials", "PagePotions", "PageQuests", "PageMobs" } do
 			fitCanvas(find(name):FindFirstChild("List"))
 		end
 		showPage(page)
@@ -837,6 +899,11 @@ function AdminUI.start()
 		player:GetAttributeChangedSignal("OwnedTools"):Connect(renderTools)
 		player:GetAttributeChangedSignal("Materials"):Connect(renderMaterials)
 		player:GetAttributeChangedSignal("Potions"):Connect(renderPotions)
+		for _, id in Quests.order do
+			for _, field in { "Step", "State" } do
+				player:GetAttributeChangedSignal(Quests.attr(field, id)):Connect(renderQuests)
+			end
+		end
 		-- the Health card's badge follows the character's max HP
 		local function watchHealth(character: Model)
 			local h = character:WaitForChild("Humanoid", 10)

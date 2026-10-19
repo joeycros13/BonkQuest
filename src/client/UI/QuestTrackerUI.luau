@@ -15,6 +15,11 @@
 --   Verb        the words before {braces} in the step's `track` ("DEFEAT")
 --   Target      the part in braces, in red ("Angry Chickens")
 --   Count       "3 / 5", or the line's returnNote once done
+--   Chips       a "bring" step with several materials (2026-10-19, option A on the
+--               Quest Tracker Materials canvas): instead of Count, one clone of
+--               QuestTracker/Templates/MaterialChip per item (Icon, Count "5/8" in
+--               its Format), coloured from its ShortFill / ShortText / DoneFill /
+--               DoneText attributes; the badge shows the first item still short
 --   Guide       turns the guide arrow on / off (GuideController); shown only
 --               when there is somewhere to point. While held down it sits
 --               pressed into its lip (GuideLip) and darkens by PressDarken,
@@ -111,7 +116,18 @@ local function iconFor(line: Quests.Line, step: Quests.Step, ready: boolean): st
 	elseif step.kind == "level" then
 		return attr("LevelIcon") or ""
 	elseif Quests.material(step) then
-		local def = Materials.get(Quests.material(step))
+		local id = Quests.material(step)
+		if step.kind == "bring" then
+			-- the first item still short
+			local held = Materials.counts(player)
+			for _, item in step.items or {} do
+				if (held[item.id] or 0) < item.count then
+					id = item.id
+					break
+				end
+			end
+		end
+		local def = Materials.get(id)
 		return def and def.icon or ""
 	end
 	return attr("CoinIcon") or ""
@@ -174,6 +190,47 @@ local function displayedProgress(stepIndex: number, step: Quests.Step, state: st
 end
 
 local lastKey: string? = nil
+
+-- One chip per material of a "bring" step: its icon and "held/needed", green once met.
+local function renderChips(chips: Instance, items: { { id: string, count: number } })
+	local gui = chips:FindFirstAncestorWhichIsA("ScreenGui")
+	local templates = gui and gui:FindFirstChild("Templates")
+	local template = templates and templates:FindFirstChild("MaterialChip")
+	for _, child in chips:GetChildren() do
+		if child:IsA("GuiObject") then
+			local keep = false
+			for _, item in items do
+				if child.Name == item.id then
+					keep = true
+				end
+			end
+			if not keep then
+				child:Destroy()
+			end
+		end
+	end
+	if not template then
+		return
+	end
+	local held = Materials.counts(player)
+	for index, item in items do
+		local chip = chips:FindFirstChild(item.id) :: any
+		if not chip then
+			chip = template:Clone()
+			chip.Name = item.id
+			chip.Visible = true
+			local def = Materials.get(item.id)
+			chip.Icon.Image = def and def.icon or ""
+			chip.Parent = chips
+		end
+		chip.LayoutOrder = index
+		local have = math.min(held[item.id] or 0, item.count)
+		local met = have >= item.count
+		chip.BackgroundColor3 = template:GetAttribute(if met then "DoneFill" else "ShortFill") or chip.BackgroundColor3
+		chip.Count.TextColor3 = template:GetAttribute(if met then "DoneText" else "ShortText") or chip.Count.TextColor3
+		chip.Count.Text = (template:GetAttribute("Format") or "%s/%s"):format(Format.commas(have), Format.commas(item.count))
+	end
+end
 
 local function render()
 	local frame = tracker
@@ -261,6 +318,13 @@ local function render()
 	local targetLabel = frame:FindFirstChild("Target") :: TextLabel
 	targetLabel.Text = name
 	local countLabel = frame:FindFirstChild("Count") :: TextLabel
+	local chips = frame:FindFirstChild("Chips")
+	local byItem = not ready and step.kind == "bring" and chips ~= nil and #(step.items or {}) > 1
+	countLabel.Visible = not byItem
+	if chips and chips:IsA("GuiObject") then
+		chips.Visible = byItem
+		renderChips(chips, if byItem then step.items or {} else {})
+	end
 	if ready then
 		countLabel.Text = line.returnNote
 	else
@@ -305,6 +369,8 @@ function QuestTrackerUI.start()
 	end
 	-- walking into another world can switch the tracked line
 	player:GetAttributeChangedSignal("CurrentWorld"):Connect(refresh)
+	-- a bring step's chips and badge follow the materials held
+	player:GetAttributeChangedSignal("Materials"):Connect(refresh)
 	local guide = frame:FindFirstChild("Guide")
 	if guide and guide:IsA("GuiButton") then
 		-- Held down, the button sits on its lip; it flips on release.
