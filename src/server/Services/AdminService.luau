@@ -21,6 +21,8 @@
 --   material { id, amount } add (or take) a crafting material (Config/Materials)
 --   armor   { id, remove? } give an armour set (Config/Armor), or take it away
 --   tool    { id, remove? } give a gathering tool (Config/Tools), or take it away
+--   potion  { id, amount } add (or take) potions (Config/Potions; the panel's Potions page)
+--   potionsEnd {}        end every running potion
 -- material and armor have no panel buttons yet; call them through the remote (tool is on the
 -- panel's Tools page since 2026-10-19)
 -- (testing the crafting, 2026-10-12).
@@ -34,6 +36,7 @@ local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
 local Admin = require(Config:WaitForChild("Admin"))
 local Armor = require(Config:WaitForChild("Armor"))
 local Materials = require(Config:WaitForChild("Materials"))
+local Potions = require(Config:WaitForChild("Potions"))
 local Tools = require(Config:WaitForChild("Tools"))
 local Weapons = require(Config:WaitForChild("Weapons"))
 local Enemies = require(Config:WaitForChild("Enemies"))
@@ -210,6 +213,23 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 		MaterialService.add(player, def.id, amount)
 		return true, Text.materialDone:format(commas(amount), def.name)
 	end,
+	potion = function(player, request)
+		local def = Potions.get(request.id)
+		local amount = amountOf(request)
+		if not def then
+			return false, Text.unknown
+		elseif not amount then
+			return false, Text.badNumber
+		end
+		local PotionService = deps.Services.PotionService
+		amount = math.max(amount, -PotionService.get(player, def.id))
+		PotionService.add(player, def.id, amount)
+		return true, Text.materialDone:format(commas(amount), def.name)
+	end,
+	potionsEnd = function(player, _request)
+		deps.Services.PotionService.clearRunning(player)
+		return true, Text.potionsEnded
+	end,
 	-- Give All (user, 2026-10-12): every weapon (the Rusty Blade and every Worldheart tier at once:
 	-- only possible from here), every gathering tool (2026-10-19), every armour set, and
 	-- Admin.giveAllMaterials of each material (one of each core). Admins only, like every action.
@@ -243,7 +263,15 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 				MaterialService.add(player, def.id, want - have)
 			end
 		end
-		return true, Text.giveAllDone:format(weapons, tools, armor, Admin.giveAllMaterials)
+		-- and Admin.giveAllPotions of every potion that can be brewed (2026-10-19)
+		local PotionService = deps.Services.PotionService
+		for _, def in Potions.list() do
+			local have = PotionService.get(player, def.id)
+			if def.recipe and have < Admin.giveAllPotions then
+				PotionService.add(player, def.id, Admin.giveAllPotions - have)
+			end
+		end
+		return true, Text.giveAllDone:format(weapons, tools, armor, Admin.giveAllMaterials, Admin.giveAllPotions)
 	end,
 	tool = function(player, request)
 		local def = Tools.get(request.id)

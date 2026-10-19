@@ -14,11 +14,18 @@
 -- LowColor (the timer turns red near the end). Wording: Config/Shop.BoostHud,
 -- names: Config/Shop.Boosts. On touch screens the stack sits above the Attack
 -- button.
+--
+-- Brewed potions (Config/Potions, 2026-10-19) share the stack: a chip named
+-- "Potion_<kind>" per running potion, from PotionService's "Potion_<kind>" (seconds
+-- left), "PotionTier_<kind>" and "PotionOrder_<kind>" (a stamp from the same counter
+-- as the boosts', so the two kinds stack in the order they started). Its colour and
+-- picture are the potion's own (`color`, `icon`), its name "Strength II".
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
+local Potions = require(Config:WaitForChild("Potions"))
 local Shop = require(Config:WaitForChild("Shop"))
 
 local BoostHudUI = {}
@@ -40,6 +47,62 @@ local function clock(seconds: number): string
 	return Shop.BoostHud.timeFormat:format(s // 60, s % 60)
 end
 
+-- One chip: made from the template if it isn't there yet, then placed and timed.
+local function showChip(stack: Instance, template: Instance, name: string, look: { color: Color3?, icon: string?, title: string }, left: number, order: any)
+	local chip = stack:FindFirstChild(name) :: any
+	if not chip then
+		chip = template:Clone()
+		chip.Name = name
+		chip.Visible = true
+		if look.color then
+			chip.BackgroundColor3 = look.color
+		end
+		local icon = chip:FindFirstChild("Icon")
+		if icon and icon:IsA("ImageLabel") and look.icon then
+			icon.Image = look.icon
+		end
+		local label = chip:FindFirstChild("BoostName", true)
+		if label and label:IsA("TextLabel") then
+			label.Text = look.title
+		end
+		chip.Parent = stack
+	end
+	-- bottom-aligned list, ascending top to bottom: the oldest (smallest
+	-- stamp) gets the largest LayoutOrder, so it sits at the bottom
+	chip.LayoutOrder = -(if type(order) == "number" then order else 0)
+	local timer = chip:FindFirstChild("Timer", true)
+	if timer and timer:IsA("TextLabel") then
+		timer.Text = clock(left)
+		local low = left <= attr(template, "LowSeconds", 60)
+		timer.TextColor3 = if low then attr(template, "LowColor", Color3.new(1, 0.35, 0.35)) else Color3.new(1, 1, 1)
+	end
+end
+
+local function renderPotions(stack: Instance, template: Instance)
+	for _, kind in Potions.Kinds do
+		local tier, left = Potions.running(player, kind)
+		local def = tier and Potions.get(kind .. tier)
+		local name = "Potion_" .. kind
+		if not def then
+			local chip = stack:FindFirstChild(name)
+			if chip then
+				chip:Destroy()
+			end
+			continue
+		end
+		-- a stronger tier replacing a weaker one gets a fresh chip (its name and picture)
+		local chip = stack:FindFirstChild(name)
+		if chip and chip:GetAttribute("Tier") ~= tier then
+			chip:Destroy()
+		end
+		showChip(stack, template, name, { color = def.color, icon = def.icon, title = kind .. " " .. Potions.Numerals[def.tier] }, left, player:GetAttribute("PotionOrder_" .. kind))
+		local shown = stack:FindFirstChild(name)
+		if shown then
+			shown:SetAttribute("Tier", tier)
+		end
+	end
+end
+
 local function render()
 	local stack = gui and gui:FindFirstChild("Stack")
 	local templates = gui and gui:FindFirstChild("Templates")
@@ -47,41 +110,19 @@ local function render()
 	if not (stack and template) then
 		return
 	end
+	renderPotions(stack, template)
 	for id, boost in Shop.Boosts do
 		local left = player:GetAttribute("Boost_" .. id)
 		local order = player:GetAttribute("BoostOrder_" .. id)
 		local running = type(left) == "number" and left > 0
-		local chip = stack:FindFirstChild(id)
 		if not running then
+			local chip = stack:FindFirstChild(id)
 			if chip then
 				chip:Destroy()
 			end
 			continue
 		end
-		if not chip then
-			chip = template:Clone()
-			chip.Name = id
-			chip.Visible = true
-			chip.BackgroundColor3 = attr(template, "Color_" .. id, chip.BackgroundColor3)
-			local icon = chip:FindFirstChild("Icon")
-			if icon and icon:IsA("ImageLabel") then
-				icon.Image = attr(template, "Icon_" .. id, icon.Image)
-			end
-			local name = chip:FindFirstChild("BoostName", true)
-			if name and name:IsA("TextLabel") then
-				name.Text = boost.name
-			end
-			chip.Parent = stack
-		end
-		-- bottom-aligned list, ascending top to bottom: the oldest (smallest
-		-- stamp) gets the largest LayoutOrder, so it sits at the bottom
-		chip.LayoutOrder = -(if type(order) == "number" then order else 0)
-		local timer = chip:FindFirstChild("Timer", true)
-		if timer and timer:IsA("TextLabel") then
-			timer.Text = clock(left :: number)
-			local low = (left :: number) <= attr(template, "LowSeconds", 60)
-			timer.TextColor3 = if low then attr(template, "LowColor", Color3.new(1, 0.35, 0.35)) else Color3.new(1, 1, 1)
-		end
+		showChip(stack, template, id, { color = attr(template, "Color_" .. id, nil), icon = attr(template, "Icon_" .. id, nil), title = boost.name }, left :: number, order)
 	end
 end
 
@@ -122,6 +163,11 @@ function BoostHudUI.start()
 		for id in Shop.Boosts do
 			player:GetAttributeChangedSignal("Boost_" .. id):Connect(render)
 			player:GetAttributeChangedSignal("BoostOrder_" .. id):Connect(render)
+		end
+		for _, kind in Potions.Kinds do
+			for _, prefix in { "Potion_", "PotionTier_", "PotionOrder_" } do
+				player:GetAttributeChangedSignal(prefix .. kind):Connect(render)
+			end
 		end
 		render()
 		place()

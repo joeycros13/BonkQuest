@@ -32,6 +32,8 @@ local SERVICE_ORDER = {
 	"ShopService",
 	-- the Crafting and Weapons stalls: crafting armour and buying weapons
 	"StallService",
+	-- potions: brewed at the Crafters (StallService), timers stamped by ShopService
+	"PotionService",
 	-- the admin panel: coins, EXP, levels, weapons and respawns through the services above
 	"AdminService",
 	-- walk-in teleport zones (the secret rooms' entrances and exits)

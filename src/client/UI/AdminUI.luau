@@ -28,6 +28,8 @@
 --     Admin.Text.materialStep at a time, the count on the tile's pill);
 --   PageTools/List (2026-10-19): the gathering tools (Config/Tools) per world, on
 --     WeaponCards with their kind on the pill; Give / Remove send the `tool` action;
+--   PagePotions/List (2026-10-19): every potion (Config/Potions) per tier, on
+--     MaterialCards (count on the pill); Give / Take send the `potion` action;
 --   PageMobs/List: Templates/WorldHeader, then a Templates/MobRow per enemy kind
 --     (Portrait, MobName, Note, Respawn);
 --   Status/Label: the last result. It always keeps its room (idle = see-through),
@@ -46,6 +48,7 @@ local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
 local Admin = require(Config:WaitForChild("Admin"))
 local Armor = require(Config:WaitForChild("Armor"))
 local Materials = require(Config:WaitForChild("Materials"))
+local Potions = require(Config:WaitForChild("Potions"))
 local Tools = require(Config:WaitForChild("Tools"))
 local Weapons = require(Config:WaitForChild("Weapons"))
 local Worlds = require(Config:WaitForChild("Worlds"))
@@ -245,27 +248,27 @@ end
 
 -- A world's section in a page's list: its header, then a grid of cards whose
 -- height follows its content. Made once, reused on every render.
-local function worldSection(list: Instance, worldId: number, order: number): Instance?
+-- A header and a card grid in a page's list, named by `key` ("3" for World 3, "T2").
+local function sectionFor(list: Instance, key: string, title: string, order: number): Instance?
 	local templates = gui and gui:FindFirstChild("Templates")
 	local headerTemplate = templates and templates:FindFirstChild("WorldHeader")
 	local sectionTemplate = templates and templates:FindFirstChild("CardSection")
 	if not (headerTemplate and sectionTemplate) then
 		return nil
 	end
-	local header = list:FindFirstChild("Header" .. worldId)
+	local header = list:FindFirstChild("Header" .. key)
 	if not header then
 		header = headerTemplate:Clone()
-		header.Name = "Header" .. worldId
+		header.Name = "Header" .. key
 		header.Visible = true
 		header.Parent = list
 	end
-	local world = Worlds.get(worldId)
 	header.LayoutOrder = order
-	header.Text = Text.worldHeader:format(worldId, world and world.name or "")
-	local section = list:FindFirstChild("Cards" .. worldId)
+	header.Text = title
+	local section = list:FindFirstChild("Cards" .. key)
 	if not section then
 		section = sectionTemplate:Clone()
-		section.Name = "Cards" .. worldId
+		section.Name = "Cards" .. key
 		section.Visible = true
 		section.Parent = list
 		local layout = section:FindFirstChildWhichIsA("UIGridStyleLayout")
@@ -279,6 +282,11 @@ local function worldSection(list: Instance, worldId: number, order: number): Ins
 	end
 	section.LayoutOrder = order + 1
 	return section
+end
+
+local function worldSection(list: Instance, worldId: number, order: number): Instance?
+	local world = Worlds.get(worldId)
+	return sectionFor(list, tostring(worldId), Text.worldHeader:format(worldId, world and world.name or ""), order)
 end
 
 -- The page's List, and the worlds that have something to list, in world order.
@@ -515,6 +523,51 @@ local function renderMaterials()
 	end
 end
 
+-- ==================== potions page ====================
+
+local function renderPotions()
+	local list = pageList("PagePotions")
+	if not list then
+		return
+	end
+	local counts = Potions.counts(player)
+	local step = Text.potionStep or 1
+	for tier, band in Potions.Bands do
+		local section = sectionFor(list, "T" .. tier, Text.tierHeader:format(Potions.Numerals[tier], band.from, band.to), tier * 2)
+		if not section then
+			return
+		end
+		local index = 0
+		for _, def in Potions.list() do
+			if def.tier ~= tier then
+				continue
+			end
+			index += 1
+			local id = def.id
+			local c = card(section, id, "MaterialCard", def, { statText = "" }, function(c)
+				wireButton(c:FindFirstChild("Give", true), function()
+					ask({ action = "potion", id = id, amount = step })
+				end)
+				wireButton(c:FindFirstChild("Take", true), function()
+					ask({ action = "potion", id = id, amount = -step })
+				end)
+				setLabel(c:FindFirstChild("Give", true), Text.giveMany:format(step))
+				setLabel(c:FindFirstChild("Take", true), Text.takeMany:format(step))
+				styleAction(c:FindFirstChild("Give", true), "Give")
+				styleAction(c:FindFirstChild("Take", true), "Remove")
+			end)
+			if c then
+				c.LayoutOrder = index
+				local value = c:FindFirstChild("Stat", true)
+				value = value and value:FindFirstChild("Value", true)
+				if value and value:IsA("TextLabel") then
+					value.Text = Text.materialCount:format(Format.commas(counts[id] or 0))
+				end
+			end
+		end
+	end
+end
+
 -- ==================== mobs page ====================
 
 local function tally(): { [string]: { total: number, dead: number } }
@@ -606,7 +659,7 @@ end
 
 local function showPage(name: string)
 	page = name
-	for _, n in { "PagePlayer", "PageWeapons", "PageArmor", "PageTools", "PageMaterials", "PageMobs" } do
+	for _, n in { "PagePlayer", "PageWeapons", "PageArmor", "PageTools", "PageMaterials", "PagePotions", "PageMobs" } do
 		local p = find(n)
 		if p then
 			p.Visible = n == name
@@ -629,6 +682,8 @@ local function showPage(name: string)
 		renderTools()
 	elseif name == "PageMaterials" then
 		renderMaterials()
+	elseif name == "PagePotions" then
+		renderPotions()
 	else
 		renderMobs()
 	end
@@ -768,7 +823,7 @@ function AdminUI.start()
 			pill.BackgroundTransparency = 1
 			setLabel(pill, "")
 		end
-		for _, name in { "PageWeapons", "PageArmor", "PageTools", "PageMaterials", "PageMobs" } do
+		for _, name in { "PageWeapons", "PageArmor", "PageTools", "PageMaterials", "PagePotions", "PageMobs" } do
 			fitCanvas(find(name):FindFirstChild("List"))
 		end
 		showPage(page)
@@ -781,6 +836,7 @@ function AdminUI.start()
 		player:GetAttributeChangedSignal("OwnedArmor"):Connect(renderArmor)
 		player:GetAttributeChangedSignal("OwnedTools"):Connect(renderTools)
 		player:GetAttributeChangedSignal("Materials"):Connect(renderMaterials)
+		player:GetAttributeChangedSignal("Potions"):Connect(renderPotions)
 		-- the Health card's badge follows the character's max HP
 		local function watchHealth(character: Model)
 			local h = character:WaitForChild("Humanoid", 10)

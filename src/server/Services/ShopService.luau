@@ -52,6 +52,12 @@ local function nextStamp(): number
 	return stamps
 end
 
+-- The same stamps for PotionService's timers, so the BoostHud stacks potions and boosts in
+-- the order they started.
+function ShopService.nextStamp(): number
+	return nextStamp()
+end
+
 local deps: any = nil
 local PlayerDataService: any = nil
 local states: { [Player]: State } = {}

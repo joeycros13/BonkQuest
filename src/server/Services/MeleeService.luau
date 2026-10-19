@@ -62,6 +62,7 @@ local Weapons = require(Config:WaitForChild("Weapons"))
 local Tools = require(Config:WaitForChild("Tools"))
 -- the Worldheart Blade's damage / speed / reach follow the cores in it (Infuse.adjust)
 local Infuse = require(Config:WaitForChild("Infuse"))
+local Potions = require(Config:WaitForChild("Potions"))
 local Weld = require(Shared:WaitForChild("Animation"):WaitForChild("Weld"))
 
 local MeleeService = {}
@@ -545,7 +546,9 @@ local function beginAttack(enemy: any, fight: Fight, melee: any, now: number)
 		if gap <= reach and math.abs(root.Position.Y - fight.position.Y) < MAX_HEIGHT_GAP then
 			local defense = target:GetAttribute("ArmorDefense")
 			defense = if type(defense) == "number" then math.clamp(defense, 0, 0.9) else 0
-			humanoid:TakeDamage(math.max(1, math.floor(melee.damage * (1 - defense) + 0.5)))
+			-- a Stoneskin potion cuts what armour lets through (Config/Potions)
+			local skin = Potions.multiplier(target, "Stoneskin")
+			humanoid:TakeDamage(math.max(1, math.floor(melee.damage * (1 - defense) * skin + 0.5)))
 		end
 	end)
 end
@@ -708,7 +711,7 @@ function MeleeService.WeaponHit(player: Player, targets: any)
 		landed += 1
 		-- some weapons (the Toadstool Mace) ignore armour (def.ignoreArmor)
 		local armor = if def.ignoreArmor then 0 else (melee.armor or 0)
-		local died = WorldEnemyService.damage(enemy.id, def.damage * damageMultiplier(player) * (1 - armor), player)
+		local died = WorldEnemyService.damage(enemy.id, def.damage * damageMultiplier(player) * Potions.multiplier(player, "Strength") * (1 - armor), player)
 		if died then
 			fights[enemy.id] = nil
 		else

@@ -6,14 +6,20 @@
 -- The sprint animation itself is PlayerAnimator's (it sees the extra speed);
 -- this only adds a small camera FOV push, as an Animation.CameraFX zoom layer
 -- ("Sprint") that eases in and out.
+--
+-- A Swiftness potion (Config/Potions, 2026-10-19) multiplies both walking and
+-- sprinting, so the walk speed is set every step from StarterPlayer's
+-- CharacterWalkSpeed x the potion x the sprint multiplier.
 
 local Players = game:GetService("Players")
+local StarterPlayer = game:GetService("StarterPlayer")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Balance = require(Shared:WaitForChild("Config"):WaitForChild("Balance"))
+local Potions = require(Shared:WaitForChild("Config"):WaitForChild("Potions"))
 local CameraFX = require(Shared:WaitForChild("Animation")).CameraFX
 
 local SprintController = {}
@@ -28,7 +34,6 @@ local player = Players.LocalPlayer
 
 local held = false -- a sprint key is down
 local sprinting = false
-local baseSpeed: number? = nil
 
 local function canSprint(humanoid: Humanoid): boolean
 	return held
@@ -51,16 +56,16 @@ local function step(dt: number)
 	if want ~= sprinting then
 		sprinting = want
 		if sprinting then
-			baseSpeed = humanoid.WalkSpeed
-			humanoid.WalkSpeed = humanoid.WalkSpeed * Balance.Sprint.speedMultiplier
 			CameraFX.zoom("Sprint", FOV_PUSH, FOV_SPEED)
 		else
-			if baseSpeed then
-				humanoid.WalkSpeed = baseSpeed
-				baseSpeed = nil
-			end
 			CameraFX.release("Sprint")
 		end
+	end
+	local speed = StarterPlayer.CharacterWalkSpeed
+		* Potions.multiplier(player, "Swiftness")
+		* (if sprinting then Balance.Sprint.speedMultiplier else 1)
+	if math.abs(humanoid.WalkSpeed - speed) > 0.01 then
+		humanoid.WalkSpeed = speed
 	end
 end
 
@@ -89,7 +94,6 @@ function SprintController.start()
 
 	local function onCharacter(character: Model)
 		sprinting = false
-		baseSpeed = nil
 		CameraFX.release("Sprint")
 	end
 	player.CharacterAdded:Connect(onCharacter)

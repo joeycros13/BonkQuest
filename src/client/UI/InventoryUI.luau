@@ -21,7 +21,12 @@
 --     tiles only show what is owned (the user's call): tools come out of their hotbar
 --     slot, which always holds the best one of its kind.
 --   * Damage / Health / Defense cards under the character.
---   * TopBar: the Filter dropdown (All / Weapons / Tools / Armor / Materials) and the
+--   * Potions (Config/Potions, 2026-10-19): one tile per potion held ("×3"). Clicking one
+--     opens the tile's hand-built DrinkMenu (the user's pick, option A on the Potions UI
+--     canvas): Effect (what it does), Drink (Remotes.DrinkPotion) and Cancel. A refusal
+--     shows on Effect in words (full health, a stronger one running, the Health cooldown
+--     from the DrinkMenu's CooldownText and the "PotionHealReady" attribute).
+--   * TopBar: the Filter dropdown (All / Weapons / Tools / Armor / Potions / Materials) and the
 --     SearchBox (matches names) narrow the grid.
 --   * BottomBar: Equip Best equips the highest-damage weapon and the highest-defense
 --     set owned. Sell Mode makes clicks pick weapon tiles instead (SellMark + Sell*
@@ -43,6 +48,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = Shared:WaitForChild("Config")
 local Armor = require(Config:WaitForChild("Armor"))
 local Materials = require(Config:WaitForChild("Materials"))
+local Potions = require(Config:WaitForChild("Potions"))
 local Tools = require(Config:WaitForChild("Tools"))
 local Weapons = require(Config:WaitForChild("Weapons"))
 
@@ -61,11 +67,12 @@ local GUI_TIMEOUT = 15
 local player = Players.LocalPlayer
 
 -- What each filter option shows.
-local FILTER_SHOWS: { [string]: { weapons: boolean?, tools: boolean?, armor: boolean?, materials: boolean? } } = {
-	All = { weapons = true, tools = true, armor = true, materials = true },
+local FILTER_SHOWS: { [string]: { weapons: boolean?, tools: boolean?, armor: boolean?, potions: boolean?, materials: boolean? } } = {
+	All = { weapons = true, tools = true, armor = true, potions = true, materials = true },
 	Weapons = { weapons = true },
 	Tools = { tools = true },
 	Armor = { armor = true },
+	Potions = { potions = true },
 	Materials = { materials = true },
 }
 local EMPTY_TEXT: { [string]: string } = {
@@ -73,6 +80,7 @@ local EMPTY_TEXT: { [string]: string } = {
 	Weapons = "No weapons",
 	Tools = "No tools yet: buy them at the Weaponsmith",
 	Armor = "No armor yet",
+	Potions = "No potions yet: brew them at the Crafter",
 	Materials = "No materials yet",
 }
 
@@ -80,6 +88,9 @@ local panel: ScreenGui? = nil
 local hud: ScreenGui? = nil
 
 local filter = "All"
+local openPotion: string? = nil -- the potion whose tile shows its DrinkMenu
+local drinking = false
+local drinkNote: { [string]: string } = {} -- a refusal shown on that potion's Effect line
 local query = ""
 local sellMode = false
 local selected: { [string]: boolean } = {}
@@ -282,6 +293,80 @@ local function fitCanvas(grid: ScrollingFrame)
 	end
 end
 
+-- Why a drink was refused, in words for the Effect line.
+local function refusal(reason: string?): string
+	if reason == "full" then
+		return "Already at full health"
+	elseif reason == "weaker" then
+		return "A stronger one is running"
+	elseif reason == "cooldown" then
+		return "Not yet"
+	elseif reason == "dead" then
+		return "Not while knocked out"
+	end
+	return "Can't drink that now"
+end
+
+-- A potion tile: a click opens its DrinkMenu (Drink / Cancel on the tile itself).
+local function wireDrinkMenu(tile: GuiObject, def: Potions.PotionDef)
+	local menu = tile:FindFirstChild("DrinkMenu")
+	if not (menu and menu:IsA("GuiObject")) then
+		return
+	end
+	local open = openPotion == def.id
+	menu.Visible = open
+	local effect = menu:FindFirstChild("Effect")
+	if effect and effect:IsA("TextLabel") then
+		local text = drinkNote[def.id] or Potions.describe(def)
+		local ready = player:GetAttribute("PotionHealReady")
+		if def.kind == "Health" and not drinkNote[def.id] and type(ready) == "number" then
+			local left = math.ceil(ready - workspace:GetServerTimeNow())
+			if left > 0 then
+				text = (attribute(menu, "CooldownText", "Ready in %ds") :: string):format(left)
+			end
+		end
+		effect.Text = text
+	end
+	if tile:IsA("GuiButton") then
+		tile.Activated:Connect(function()
+			if sellMode then
+				return
+			end
+			openPotion = if openPotion == def.id then nil else def.id
+			drinkNote[def.id] = nil
+			renderGrid()
+		end)
+	end
+	local cancel = menu:FindFirstChild("Cancel")
+	if cancel and cancel:IsA("GuiButton") then
+		cancel.Activated:Connect(function()
+			openPotion = nil
+			drinkNote[def.id] = nil
+			renderGrid()
+		end)
+	end
+	local drink = menu:FindFirstChild("Drink")
+	if drink and drink:IsA("GuiButton") then
+		drink.Activated:Connect(function()
+			if drinking then
+				return
+			end
+			drinking = true
+			local ok, okDrink, reason = pcall(function()
+				return deps.Remotes.getFunction("DrinkPotion"):InvokeServer(def.id)
+			end)
+			drinking = false
+			if ok and okDrink then
+				openPotion = nil
+				drinkNote[def.id] = nil
+			else
+				drinkNote[def.id] = refusal(if ok then reason else nil)
+			end
+			renderGrid()
+		end)
+	end
+end
+
 renderGrid = function()
 	local grid = find("Grid", "ScrollingFrame")
 	if not grid then
@@ -331,11 +416,22 @@ renderGrid = function()
 			end
 		end
 	end
+	local held = Potions.counts(player)
+	if shows.potions then
+		for _, def in Potions.list() do
+			if (held[def.id] or 0) > 0 and matches(def.name) then
+				table.insert(entries, { kind = "potion", def = def, rank = rank(def.rarity), typeRank = 4, strength = def.tier * 10 - def.order % 10 })
+			end
+		end
+	end
+	if openPotion and (held[openPotion] or 0) <= 0 then
+		openPotion = nil
+	end
 	local counts = Materials.counts(player)
 	if shows.materials then
 		for _, def in Materials.list() do
 			if (counts[def.id] or 0) > 0 and matches(def.name) then
-				table.insert(entries, { kind = "material", def = def, rank = rank(def.rarity), typeRank = 4, strength = -(def.world * 100 + def.order) })
+				table.insert(entries, { kind = "material", def = def, rank = rank(def.rarity), typeRank = 5, strength = -(def.world * 100 + def.order) })
 			end
 		end
 	end
@@ -364,6 +460,8 @@ renderGrid = function()
 			tile = WeaponTile.new(def, { statText = ("Tier %d"):format(def.tier) })
 		elseif entry.kind == "armor" then
 			tile = WeaponTile.new(def, { statText = math.floor(def.defense * 100 + 0.5) .. "% Def" })
+		elseif entry.kind == "potion" then
+			tile = WeaponTile.new(def, { statText = "×" .. Format.commas(held[def.id] or 0) })
 		else
 			tile = WeaponTile.new(def, { statText = "×" .. Format.commas(counts[def.id] or 0) })
 		end
@@ -392,6 +490,9 @@ renderGrid = function()
 			-- shown only (user, 2026-10-19): tools are taken out from their hotbar slot,
 			-- which always holds the best one of its kind, so a tile does nothing
 			styleTile(tile, false, false)
+		elseif entry.kind == "potion" then
+			styleTile(tile, false, false)
+			wireDrinkMenu(tile, def)
 		elseif entry.kind == "armor" then
 			-- the worn set is badged; clicking wears it, or takes it off
 			styleTile(tile, worn ~= nil and worn.id == def.id, false)
@@ -612,7 +713,7 @@ local function wirePanel(gui: ScreenGui)
 		renderGrid()
 		renderButtons()
 	end)
-	for _, name in { "OwnedArmor", "EquippedArmor", "Materials", "OwnedTools" } do
+	for _, name in { "OwnedArmor", "EquippedArmor", "Materials", "OwnedTools", "Potions" } do
 		player:GetAttributeChangedSignal(name):Connect(renderGrid)
 	end
 	-- the max-health change lands just after the armour's own attributes

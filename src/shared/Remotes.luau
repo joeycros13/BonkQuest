@@ -45,6 +45,8 @@ local FUNCTION_NAMES: { string } = {
 	"CraftArmor", -- (id: string) -> (ok: boolean, reason: string?): craft a set at the Crafting stall (CraftingService)
 	"BuyWeapon", -- (id: string) -> (ok: boolean, reason: string?): buy a weapon at the Weapons stall (MerchantService)
 	"BuyTool", -- (id: string) -> (ok: boolean, reason: string?): buy a gathering tool at the Weapons stall's Tools tab (StallService)
+	"BrewPotion", -- (id: string) -> (ok: boolean, reason: string?): brew a potion at the Crafter's Potions tab (PotionService)
+	"DrinkPotion", -- (id: string) -> (ok: boolean, reason: string?): drink a held potion from the Inventory (PotionService)
 	"InfuseCore", -- (core: string) -> (ok: boolean, reason: string?): set a core into the blade at an Infuser (InfuseService)
 	"TravelToWorld", -- (world: number) -> (ok: boolean, reason: string?): teleport to an unlocked world's spawn (PortalService, the Worlds menu)
 }
