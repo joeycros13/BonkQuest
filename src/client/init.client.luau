@@ -53,6 +53,8 @@ local CONTROLLER_ORDER = {
 	"SecretCrystalController",
 	-- trees and rocks you break with your weapon for materials
 	"GatherController",
+	-- casting, the bobber and the line, bites and the reel-in (FishingRingUI draws the rings)
+	"FishingController",
 }
 
 local UI_ORDER = {
@@ -78,6 +80,8 @@ local UI_ORDER = {
 	"InfuserUI",
 	-- the Worlds menu: teleport to any unlocked world (HUD globe button)
 	"WorldsUI",
+	-- the fishing minigame's closing rings (FishingController starts them)
+	"FishingRingUI",
 }
 
 print("[Client] bootstrap starting")

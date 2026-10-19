@@ -42,6 +42,8 @@ local SERVICE_ORDER = {
 	"SecretService",
 	-- trees and rocks to break for materials, through MaterialService
 	"GatherService",
+	-- casting a rod for fish (Config/Fishing), through ToolService and MaterialService
+	"FishingService",
 }
 
 print("[Server] bootstrap starting")

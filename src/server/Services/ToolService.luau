@@ -1,8 +1,9 @@
 --!strict
 -- ToolService: which gathering tools each player owns (Config/Tools, 2026-10-18).
 --
--- Tools are bought at each world's shop (not wired yet) or given by the admin panel's
--- remote. The set is published as the player's "OwnedTools" attribute (comma-separated
+-- Tools are bought on each world's Weapons stall Tools tab (StallService.buyTool) or
+-- given by the admin panel. Gaining one re-checks the hand (MeleeService.refreshTool),
+-- so a better tool of the kind in hand replaces it at once. The set is published as the player's "OwnedTools" attribute (comma-separated
 -- ids; read it with Tools.owned) and saved as the "tools" section of PlayerDataService:
 --   { owned = { id, ... } }
 -- Holding a tool is MeleeService's job (one thing in hand); it asks `best` for the tool
@@ -62,6 +63,9 @@ function ToolService.grant(player: Player, id: string): boolean
 	end
 	set[id] = true
 	publish(player, set)
+	-- a better tool of the kind in hand comes straight out in its place (user,
+	-- 2026-10-19); the hotbar slot shows the best one by itself
+	deps.Services.MeleeService.refreshTool(player)
 	return true
 end
 

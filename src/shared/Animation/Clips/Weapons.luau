@@ -10,6 +10,8 @@
 --   WeaponClips.swingBody(def)  the body of the same swing (twist, lean, lunge), an
 --                               ADDITIVE clip -- play it alongside, at the same
 --                               speed, so walking, bob and foot planting carry on.
+--   WeaponClips.extra(def, name) another swing played with the def's hold and hands
+--                               (the fishing rod's Reel): arms clip, body clip
 --   WeaponClips.report(def)     how well the poses can actually be reached
 -- Clips are built once per weapon and cached.
 --
@@ -95,6 +97,10 @@ Weapons.HOLDS = {
 	-- one-handed for now: the Dagger's hold, until they get their own
 	WoodenAxe = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
 	WoodenPickaxe = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
+	-- the fishing rod: one hand at the hip, the rod pointing out ahead and up toward the
+	-- water (user, 2026-10-18: one-handed normally, both hands only for the cast). The
+	-- reel hangs under the rod (roll 0: the model's -Y is down).
+	WoodenRod = { hand = { 1.45, -0.75, -0.45 }, dir = { 0, 0.45, -1 }, roll = 0, two = 0 },
 	-- the 10-stud Pinecone Staff (6.3 ahead of the hand, 3.8 behind): held level across
 	-- the front, head out to the right and a touch back, the butt crossing in front of
 	-- the body to the left hand (behind the grip, off = -1.6). The staff stays across the
@@ -326,6 +332,30 @@ Weapons.SWINGS = {
 		{ u = 0.78, hand = { 0.55, -0.02, -1.42 }, dir = { -0.02, -0.26, -1 }, two = 1, off = -0.55, wp = 7, rz = 0.3 },
 		RECOVER_2H,
 		{ u = 1, off = 1.9, ease = "out" },
+	},
+	-- ==================== fishing (Config/Fishing, 2026-10-18) ====================
+	-- The cast: the left hand comes onto the cork behind the right (off -0.55, toward the
+	-- butt), both hands take the rod back over the head with a lean back, then whip it
+	-- forward; the line is let go at the "Hit" marker (the rod's hitTime, 0.56), with the
+	-- rod tip still high so the bobber flies out in an arc. The left hand lets go on the way
+	-- back to the one-handed hold.
+	Cast = {
+		{ u = 0 },
+		{ u = 0.14, hand = { 0.3, -0.2, -1.2 }, dir = { 0, 0.7, -1 }, two = 1, off = -0.55 },
+		{ u = 0.4, hand = { 0.1, 1.8, -0.55 }, dir = { 0.05, 0.6, 0.8 }, two = 1, off = -0.55, wy = -8, wp = -7 },
+		{ u = 0.56, hand = { 0.2, 1.0, -1.35 }, dir = { 0, 0.5, -1 }, two = 1, off = -0.55, wy = 4, wp = 8, ease = "out" },
+		{ u = 0.72, hand = { 0.3, 0.35, -1.45 }, dir = { 0, 0.1, -1 }, two = 1, off = -0.55, wy = 3, wp = 6, rz = 0.3 },
+		{ u = 0.88, hand = { 0.9, -0.4, -1.0 }, dir = { 0, 0.35, -1 }, two = 0, off = -0.55 },
+		{ u = 1 },
+	},
+	-- Landing a fish (FishingController plays it through WeaponClips.extra): both hands,
+	-- the rod yanked up and back so the line pulls the fish out of the water.
+	Reel = {
+		{ u = 0 },
+		{ u = 0.22, hand = { 0.3, -0.25, -1.2 }, dir = { 0, 0.3, -1 }, two = 1, off = -0.55, wp = 4 },
+		{ u = 0.5, hand = { 0.25, 1.25, -0.95 }, dir = { 0, 1, 0.2 }, two = 1, off = -0.55, wp = -9, wy = -4, ease = "out" },
+		{ u = 0.78, hand = { 0.3, 1.0, -1.05 }, dir = { 0, 1, 0.1 }, two = 1, off = -0.55, wp = -5 },
+		{ u = 1 },
 	},
 } :: { [string]: { Key } }
 
@@ -565,8 +595,11 @@ function Weapons.hold(def: any): any
 	return clip
 end
 
-local function build(def: any)
-	local keys = Weapons.SWINGS[def.swing] or { { u = 0 }, { u = 1 } }
+-- Builds the arms and body clips of one swing: the def's own (`swing`), or another named
+-- swing held the same way (`extra`, cached under "<id>/<swing>").
+local function build(def: any, swingName: string?, hitAt: number?)
+	local cacheKey = if swingName then def.id .. "/" .. swingName else def.id
+	local keys = Weapons.SWINGS[swingName or def.swing] or { { u = 0 }, { u = 1 } }
 	local hold = holdOf(def)
 	local arms: { [string]: { any } } = {}
 	local body: { any } = {}
@@ -579,9 +612,9 @@ local function build(def: any)
 		end
 		table.insert(body, { t = u, cf = solved.body, ease = "Linear" })
 	end
-	local hit = def.hitTime or 0.5
-	swingCache[def.id] = Clip.new({
-		name = "Swing_" .. def.id,
+	local hit = hitAt or def.hitTime or 0.5
+	swingCache[cacheKey] = Clip.new({
+		name = "Swing_" .. cacheKey,
 		priority = "Action",
 		length = 1,
 		fadeIn = 0.04,
@@ -593,8 +626,8 @@ local function build(def: any)
 			{ t = math.min(1, hit + TRAIL_AFTER), name = "TrailOff" },
 		},
 	})
-	bodyCache[def.id] = Clip.new({
-		name = "SwingBody_" .. def.id,
+	bodyCache[cacheKey] = Clip.new({
+		name = "SwingBody_" .. cacheKey,
 		priority = "Action",
 		additive = true,
 		length = 1,
@@ -616,6 +649,16 @@ function Weapons.swingBody(def: any): any
 		build(def)
 	end
 	return bodyCache[def.id]
+end
+
+-- Another swing in SWINGS played with this def's hold and hands (the rod's Reel): the arms
+-- clip and its additive body clip, a "Hit" marker at `hitAt` (default 0.5).
+function Weapons.extra(def: any, swingName: string, hitAt: number?): (any, any)
+	local key = def.id .. "/" .. swingName
+	if not swingCache[key] then
+		build(def, swingName, hitAt)
+	end
+	return swingCache[key], bodyCache[key]
 end
 
 -- The pose at one point of a swing (u) or the hold (u = nil), solved: channel

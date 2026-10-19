@@ -13,12 +13,15 @@
 --     worn armour model on the character changes.
 --   * Items (right): shared WeaponTiles (Util.WeaponTile) for every owned weapon
 --     (OwnedWeapons, MeleeService), owned armour set (OwnedArmor, ArmorService) and
---     material held (Materials, MaterialService), sorted by rarity (highest first),
---     then type (weapons, armour, materials), then strength. The selected
+--     material held (Materials, MaterialService), plus every gathering tool owned
+--     (OwnedTools, ToolService; 2026-10-19), sorted by rarity (highest first),
+--     then type (weapons, tools, armour, materials), then strength. The selected
 --     weapon and the worn set get the EquippedBadge; clicking a weapon puts it in
---     hand, clicking a set wears it (again takes it off: Remotes.EquipArmor).
+--     hand, clicking a set wears it (again takes it off: Remotes.EquipArmor). Tool
+--     tiles only show what is owned (the user's call): tools come out of their hotbar
+--     slot, which always holds the best one of its kind.
 --   * Damage / Health / Defense cards under the character.
---   * TopBar: the Filter dropdown (All / Weapons / Armor / Materials) and the
+--   * TopBar: the Filter dropdown (All / Weapons / Tools / Armor / Materials) and the
 --     SearchBox (matches names) narrow the grid.
 --   * BottomBar: Equip Best equips the highest-damage weapon and the highest-defense
 --     set owned. Sell Mode makes clicks pick weapon tiles instead (SellMark + Sell*
@@ -40,6 +43,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = Shared:WaitForChild("Config")
 local Armor = require(Config:WaitForChild("Armor"))
 local Materials = require(Config:WaitForChild("Materials"))
+local Tools = require(Config:WaitForChild("Tools"))
 local Weapons = require(Config:WaitForChild("Weapons"))
 
 local InventoryUI = {}
@@ -57,15 +61,17 @@ local GUI_TIMEOUT = 15
 local player = Players.LocalPlayer
 
 -- What each filter option shows.
-local FILTER_SHOWS: { [string]: { weapons: boolean?, armor: boolean?, materials: boolean? } } = {
-	All = { weapons = true, armor = true, materials = true },
+local FILTER_SHOWS: { [string]: { weapons: boolean?, tools: boolean?, armor: boolean?, materials: boolean? } } = {
+	All = { weapons = true, tools = true, armor = true, materials = true },
 	Weapons = { weapons = true },
+	Tools = { tools = true },
 	Armor = { armor = true },
 	Materials = { materials = true },
 }
 local EMPTY_TEXT: { [string]: string } = {
 	All = "Nothing here yet",
 	Weapons = "No weapons",
+	Tools = "No tools yet: buy them at the Weaponsmith",
 	Armor = "No armor yet",
 	Materials = "No materials yet",
 }
@@ -249,6 +255,33 @@ local function styleTile(tile: GuiObject, equipped: boolean, picked: boolean)
 	end
 end
 
+-- The grid's canvas follows its UIGridLayout (2026-10-19, user: the bottom row was cut
+-- off): AutomaticCanvasSize ignores aspect-ratio cells, like the Index's rows. The gap
+-- above the first row and below the last is the same as the gap at the sides (user,
+-- 2026-10-19), measured from the tiles. Inside a ScrollingFrame a UIPadding's scale is a
+-- share of the CANVAS, so the top / bottom padding is set as gap / canvas.
+local function fitCanvas(grid: ScrollingFrame)
+	local layout = grid:FindFirstChildOfClass("UIGridLayout")
+	if not layout then
+		return
+	end
+	-- the left gap: from the grid's edge to the leftmost tile
+	local left = math.huge
+	for _, child in grid:GetChildren() do
+		if child:IsA("GuiObject") and child.Visible then
+			left = math.min(left, child.AbsolutePosition.X)
+		end
+	end
+	local gap = if left < math.huge then math.max(0, left - grid.AbsolutePosition.X) else 0
+	local height = math.ceil(layout.AbsoluteContentSize.Y + 2 * gap)
+	grid.CanvasSize = UDim2.new(0, 0, 0, height)
+	local padding = grid:FindFirstChildOfClass("UIPadding")
+	if padding and height > 0 then
+		padding.PaddingTop = UDim.new(gap / height, 0)
+		padding.PaddingBottom = UDim.new(gap / height, 0)
+	end
+end
+
 renderGrid = function()
 	local grid = find("Grid", "ScrollingFrame")
 	if not grid then
@@ -283,10 +316,18 @@ renderGrid = function()
 			end
 		end
 	end
+	if shows.tools then
+		for id in Tools.owned(player) do
+			local def = Tools.get(id)
+			if def and matches(def.name) then
+				table.insert(entries, { kind = "tool", def = def, rank = rank(def.rarity), typeRank = 2, strength = def.tier })
+			end
+		end
+	end
 	if shows.armor then
 		for _, def in sets do
 			if matches(def.name) then
-				table.insert(entries, { kind = "armor", def = def, rank = rank(def.rarity), typeRank = 2, strength = def.defense })
+				table.insert(entries, { kind = "armor", def = def, rank = rank(def.rarity), typeRank = 3, strength = def.defense })
 			end
 		end
 	end
@@ -294,7 +335,7 @@ renderGrid = function()
 	if shows.materials then
 		for _, def in Materials.list() do
 			if (counts[def.id] or 0) > 0 and matches(def.name) then
-				table.insert(entries, { kind = "material", def = def, rank = rank(def.rarity), typeRank = 3, strength = -(def.world * 100 + def.order) })
+				table.insert(entries, { kind = "material", def = def, rank = rank(def.rarity), typeRank = 4, strength = -(def.world * 100 + def.order) })
 			end
 		end
 	end
@@ -319,6 +360,8 @@ renderGrid = function()
 		local tile: GuiObject? = nil
 		if entry.kind == "weapon" then
 			tile = WeaponTile.new(def)
+		elseif entry.kind == "tool" then
+			tile = WeaponTile.new(def, { statText = ("Tier %d"):format(def.tier) })
 		elseif entry.kind == "armor" then
 			tile = WeaponTile.new(def, { statText = math.floor(def.defense * 100 + 0.5) .. "% Def" })
 		else
@@ -345,6 +388,10 @@ renderGrid = function()
 					end
 				end)
 			end
+		elseif entry.kind == "tool" then
+			-- shown only (user, 2026-10-19): tools are taken out from their hotbar slot,
+			-- which always holds the best one of its kind, so a tile does nothing
+			styleTile(tile, false, false)
 		elseif entry.kind == "armor" then
 			-- the worn set is badged; clicking wears it, or takes it off
 			styleTile(tile, worn ~= nil and worn.id == def.id, false)
@@ -457,6 +504,17 @@ end
 local function wirePanel(gui: ScreenGui)
 	panel = gui
 
+	local grid = find("Grid", "ScrollingFrame")
+	local gridLayout = grid and grid:FindFirstChildOfClass("UIGridLayout")
+	if grid and gridLayout then
+		gridLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+			fitCanvas(grid)
+		end)
+		grid:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+			fitCanvas(grid)
+		end)
+	end
+
 	-- Filter dropdown.
 	local filterButton = find("Filter", "GuiButton")
 	local options = find("Options", "GuiObject")
@@ -554,7 +612,7 @@ local function wirePanel(gui: ScreenGui)
 		renderGrid()
 		renderButtons()
 	end)
-	for _, name in { "OwnedArmor", "EquippedArmor", "Materials" } do
+	for _, name in { "OwnedArmor", "EquippedArmor", "Materials", "OwnedTools" } do
 		player:GetAttributeChangedSignal(name):Connect(renderGrid)
 	end
 	-- the max-health change lands just after the armour's own attributes

@@ -11,7 +11,7 @@
 -- saw text cut off): the Window stacks Header / HeaderLine / Body; Body puts
 -- Tabs beside Content; Content stacks Pages above Status. Pieces are found by
 -- name at any depth:
---   Title, Close; Tabs/Tab<Player|Weapons|Armor|Materials|Mobs> (a "Tab" attribute
+--   Title, Close; Tabs/Tab<Player|Weapons|Armor|Tools|Materials|Mobs> (a "Tab" attribute
 --   naming the page; Label), Hint;
 --   PagePlayer: CoinsCard / ExpCard (Icon, Title, Have, Amount, Add, Take,
 --     Quick1, Quick2), LevelCard (Badge/Label, Title, Amount, Set, LevelUp),
@@ -26,6 +26,8 @@
 --     attributes). Weapons are sorted by damage, weakest first; armour by
 --     order; materials use Templates/MaterialCard (Buttons/Give, Buttons/Take:
 --     Admin.Text.materialStep at a time, the count on the tile's pill);
+--   PageTools/List (2026-10-19): the gathering tools (Config/Tools) per world, on
+--     WeaponCards with their kind on the pill; Give / Remove send the `tool` action;
 --   PageMobs/List: Templates/WorldHeader, then a Templates/MobRow per enemy kind
 --     (Portrait, MobName, Note, Respawn);
 --   Status/Label: the last result. It always keeps its room (idle = see-through),
@@ -44,6 +46,7 @@ local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
 local Admin = require(Config:WaitForChild("Admin"))
 local Armor = require(Config:WaitForChild("Armor"))
 local Materials = require(Config:WaitForChild("Materials"))
+local Tools = require(Config:WaitForChild("Tools"))
 local Weapons = require(Config:WaitForChild("Weapons"))
 local Worlds = require(Config:WaitForChild("Worlds"))
 local Leveling = require(Config:WaitForChild("Leveling"))
@@ -413,6 +416,53 @@ local function renderArmor()
 	end
 end
 
+-- ==================== tools page ====================
+
+local function renderTools()
+	local list = pageList("PageTools")
+	if not list then
+		return
+	end
+	local have = Tools.owned(player)
+	local order = 0
+	for _, worldId in Worlds.Order do
+		local defs = {}
+		for _, def in Tools.Defs do
+			if def.world == worldId then
+				table.insert(defs, def)
+			end
+		end
+		if #defs == 0 then
+			continue
+		end
+		-- the hotbar's order of kinds, then tier
+		table.sort(defs, function(a, b)
+			local ka, kb = table.find(Tools.Kinds, a.kind) or 99, table.find(Tools.Kinds, b.kind) or 99
+			return if ka == kb then a.tier < b.tier else ka < kb
+		end)
+		order += 2
+		local section = worldSection(list, worldId, order)
+		if not section then
+			return
+		end
+		for index, def in defs do
+			local id = def.id
+			local c = card(section, id, "WeaponCard", def, { statText = Tools.KindNames[def.kind] or def.kind }, function(c)
+				wireButton(c:FindFirstChild("Action"), function()
+					ask({ action = "tool", id = id, remove = Tools.owned(player)[id] == true })
+				end)
+			end)
+			if c then
+				c.LayoutOrder = index
+				local state = if have[id] then "Remove" else "Give"
+				local action = c:FindFirstChild("Action")
+				setLabel(action, if state == "Remove" then Text.remove else Text.give)
+				styleAction(action, state)
+			end
+		end
+	end
+end
+
 -- ==================== materials page ====================
 
 local function renderMaterials()
@@ -556,7 +606,7 @@ end
 
 local function showPage(name: string)
 	page = name
-	for _, n in { "PagePlayer", "PageWeapons", "PageArmor", "PageMaterials", "PageMobs" } do
+	for _, n in { "PagePlayer", "PageWeapons", "PageArmor", "PageTools", "PageMaterials", "PageMobs" } do
 		local p = find(n)
 		if p then
 			p.Visible = n == name
@@ -575,6 +625,8 @@ local function showPage(name: string)
 		renderWeapons()
 	elseif name == "PageArmor" then
 		renderArmor()
+	elseif name == "PageTools" then
+		renderTools()
 	elseif name == "PageMaterials" then
 		renderMaterials()
 	else
@@ -716,7 +768,7 @@ function AdminUI.start()
 			pill.BackgroundTransparency = 1
 			setLabel(pill, "")
 		end
-		for _, name in { "PageWeapons", "PageArmor", "PageMaterials", "PageMobs" } do
+		for _, name in { "PageWeapons", "PageArmor", "PageTools", "PageMaterials", "PageMobs" } do
 			fitCanvas(find(name):FindFirstChild("List"))
 		end
 		showPage(page)
@@ -727,6 +779,7 @@ function AdminUI.start()
 		end
 		player:GetAttributeChangedSignal("OwnedWeapons"):Connect(renderWeapons)
 		player:GetAttributeChangedSignal("OwnedArmor"):Connect(renderArmor)
+		player:GetAttributeChangedSignal("OwnedTools"):Connect(renderTools)
 		player:GetAttributeChangedSignal("Materials"):Connect(renderMaterials)
 		-- the Health card's badge follows the character's max HP
 		local function watchHealth(character: Model)

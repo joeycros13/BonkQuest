@@ -21,7 +21,8 @@
 --   material { id, amount } add (or take) a crafting material (Config/Materials)
 --   armor   { id, remove? } give an armour set (Config/Armor), or take it away
 --   tool    { id, remove? } give a gathering tool (Config/Tools), or take it away
--- material, armor and tool have no panel buttons yet; call them through the remote
+-- material and armor have no panel buttons yet; call them through the remote (tool is on the
+-- panel's Tools page since 2026-10-19)
 -- (testing the crafting, 2026-10-12).
 -- Everything goes through the owning services, so it is saved like normal play.
 
@@ -210,16 +211,21 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 		return true, Text.materialDone:format(commas(amount), def.name)
 	end,
 	-- Give All (user, 2026-10-12): every weapon (the Rusty Blade and every Worldheart tier at once:
-	-- only possible from here), every armour set, and Admin.giveAllMaterials of each material
-	-- (one of each core). Admins only, like every action.
+	-- only possible from here), every gathering tool (2026-10-19), every armour set, and
+	-- Admin.giveAllMaterials of each material (one of each core). Admins only, like every action.
 	giveAll = function(player, _request)
 		local MeleeService = deps.Services.MeleeService
 		local IndexService = deps.Services.IndexService
-		local weapons, armor = 0, 0
+		local weapons, tools, armor = 0, 0, 0
 		for id, def in Weapons.Defs do
 			if not def.unarmed and MeleeService.grant(player, id) then
 				IndexService.discoverWeapon(player, id, true)
 				weapons += 1
+			end
+		end
+		for id in Tools.Defs do
+			if deps.Services.ToolService.grant(player, id) then
+				tools += 1
 			end
 		end
 		for _, def in Armor.list() do
@@ -237,7 +243,7 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 				MaterialService.add(player, def.id, want - have)
 			end
 		end
-		return true, Text.giveAllDone:format(weapons, armor, Admin.giveAllMaterials)
+		return true, Text.giveAllDone:format(weapons, tools, armor, Admin.giveAllMaterials)
 	end,
 	tool = function(player, request)
 		local def = Tools.get(request.id)

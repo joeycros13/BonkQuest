@@ -9,7 +9,8 @@
 --        socket, tip up, its socket face turned to the camera
 --   0.8  the core leaves the player and arcs into its socket, spinning
 --   1.75 a violet flash and burst; when it awakens, flakes of rust fall away and the Worldheart
---        Blade takes the Rusty Blade's place, the core set in its guard
+--        Blade takes the Rusty Blade's place, the core set in its guard; a later core turns the
+--        blade into its next tier (Infuse.bladeOf) in the flash
 --   2.9  it fades out; the server then puts the blade in the hand and shows AWAKENED!
 -- All of it is local copies (anchored, no collisions); nothing replicates.
 
@@ -22,6 +23,7 @@ local TweenService = game:GetService("TweenService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = Shared:WaitForChild("Config")
 local Infuse = require(Config:WaitForChild("Infuse"))
+local Materials = require(Config:WaitForChild("Materials"))
 local Effects = require(Shared:WaitForChild("Animation"):WaitForChild("Effects"))
 
 local InfuserController = {}
@@ -31,6 +33,7 @@ local SOCKET_TOP = 2.62 -- the altar's socket ring above its pivot (the ground)
 local HOVER = 1.4 -- the blade's grip this far above the socket ring
 local FLASH_COLOR = Color3.fromHex("b98cff")
 local RUST_COLORS = { Color3.fromHex("a9502a"), Color3.fromHex("74371c"), Color3.fromHex("c9763d") }
+local REVEAL_WAIT = 0.6 -- seconds a new core waits for its reveal before the altar displays show it
 
 local player = Players.LocalPlayer
 local deps: any = nil
@@ -169,8 +172,28 @@ local function refreshAll()
 	end
 end
 
+-- The altar of `world` nearest the player (when the server's altar didn't come through).
+local function altarNear(world: any): Instance?
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	local best, bestDistance = nil, math.huge
+	for _, altar in CollectionService:GetTagged(TAG) do
+		if altar:IsA("Model") and altar:IsDescendantOf(workspace) and (world == nil or altar:GetAttribute("World") == world) then
+			local distance = if root and root:IsA("BasePart") then (altar:GetPivot().Position - root.Position).Magnitude else 0
+			if distance < bestDistance then
+				best, bestDistance = altar, distance
+			end
+		end
+	end
+	return best
+end
+
 local function play(info: any)
 	local altar = info.infuser
+	if not (typeof(altar) == "Instance" and altar:IsA("Model") and altar.Parent) then
+		local def = Materials.get(info.core)
+		altar = altarNear(def and def.world)
+	end
 	if playing or not (altar and altar:IsA("Model") and altar.Parent) then
 		return
 	end
@@ -186,13 +209,19 @@ local function play(info: any)
 	local function pose(height: number): CFrame
 		return CFrame.new(top + Vector3.new(0, height, 0)) * CFrame.Angles(0, yaw, 0) * CFrame.Angles(math.rad(90), 0, 0)
 	end
-	local blade = bladeCopy(if awakened then Infuse.BLADE else Infuse.AWAKENED)
+	-- the blade as it was (the Rusty Blade, or the Worldheart tier for the cores already in it)
+	local before = 0
+	for id in Infuse.infused(player) do
+		if id ~= core then
+			before += 1
+		end
+	end
+	local blade = bladeCopy(if awakened then Infuse.BLADE else Infuse.bladeOf(before))
 	if not blade then
 		playing = false
 		return
 	end
 	if not awakened then
-		-- the cores already in it
 		for id in Infuse.infused(player) do
 			if id ~= core then
 				setGem(blade, id)
@@ -292,13 +321,29 @@ local function play(info: any)
 		end
 		blade = awake
 		for id in Infuse.infused(player) do
-			setGem(blade, id)
+			if id ~= Infuse.FIRST then
+				setGem(blade, id)
+			end
 		end
 		setGem(blade, Infuse.FIRST)
 		blade:PivotTo(at)
 		blade.Parent = workspace
 	else
+		-- the next tier takes its place in the flash, the new core set with the others
+		local at = blade:GetPivot()
+		local upgraded = bladeCopy(Infuse.bladeOf(before + 1))
+		if upgraded then
+			blade:Destroy()
+			blade = upgraded
+			for id in Infuse.infused(player) do
+				if id ~= core then
+					setGem(blade, id)
+				end
+			end
+			blade:PivotTo(at)
+		end
 		setGem(blade, core)
+		blade.Parent = workspace
 	end
 
 	-- hold, then fade away (the server puts the real one in the hand)
@@ -357,10 +402,15 @@ function InfuserController.start()
 	CollectionService:GetInstanceAddedSignal(TAG):Connect(addPrompt)
 	refreshAll()
 	CollectionService:GetInstanceAddedSignal(TAG):Connect(refreshDisplay)
+	-- The reveal has priority over the display (user, 2026-10-19): the new core reaches the
+	-- attribute a moment before Remotes.CoreInfused, so wait a beat before showing it; by then
+	-- the reveal has started, and it refreshes every altar when it ends.
 	player:GetAttributeChangedSignal("InfusedCores"):Connect(function()
-		if not playing then
-			refreshAll()
-		end
+		task.delay(REVEAL_WAIT, function()
+			if not playing then
+				refreshAll()
+			end
+		end)
 	end)
 	CollectionService:GetInstanceRemovedSignal(TAG):Connect(function(model)
 		clearDisplay(model)
