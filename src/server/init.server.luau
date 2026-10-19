@@ -34,6 +34,8 @@ local SERVICE_ORDER = {
 	"StallService",
 	-- potions: brewed at the Crafters (StallService), timers stamped by ShopService
 	"PotionService",
+	-- stat upgrades at the World 1 Upgrades stand: coins through CoinService, health through ExpService
+	"UpgradeService",
 	-- the admin panel: coins, EXP, levels, weapons and respawns through the services above
 	"AdminService",
 	-- walk-in teleport zones (the secret rooms' entrances and exits)

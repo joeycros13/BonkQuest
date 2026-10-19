@@ -61,7 +61,7 @@ Armor.Defs = {
 			{ id = "OakLog", count = 8 }, -- gathered (2026-10-19, user)
 		},
 		defense = 0.10,
-		health = 40,
+		health = 35,
 	},
 	HarvestKnight = {
 		id = "HarvestKnight",
@@ -81,7 +81,7 @@ Armor.Defs = {
 			{ id = "OakLog", count = 6 },
 		},
 		defense = 0.18,
-		health = 100,
+		health = 75,
 	},
 	-- ==================== World 2 (The Redwood Forest) ====================
 	WoodlandHide = {
@@ -99,7 +99,7 @@ Armor.Defs = {
 			{ id = "BoarTusk", count = 10 },
 		},
 		defense = 0.25,
-		health = 145,
+		health = 110,
 	},
 	HeartwoodBark = {
 		id = "HeartwoodBark",
@@ -117,7 +117,7 @@ Armor.Defs = {
 			{ id = "RangerBadge", count = 1 },
 		},
 		defense = 0.32,
-		health = 220,
+		health = 160,
 	},
 	-- ==================== World 3 (The Crystal Caverns), 2026-10-13 ====================
 	-- Trial numbers carrying on World 2's climb. No icons drawn yet.
@@ -136,7 +136,7 @@ Armor.Defs = {
 			{ id = "GolemPebble", count = 10 },
 		},
 		defense = 0.38,
-		health = 305,
+		health = 220,
 	},
 	CrystalQueen = {
 		id = "CrystalQueen",
@@ -154,7 +154,7 @@ Armor.Defs = {
 			{ id = "MinersLantern", count = 1 },
 		},
 		defense = 0.44,
-		health = 395,
+		health = 280,
 	},
 } :: { [string]: ArmorDef }
 

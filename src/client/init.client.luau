@@ -66,6 +66,8 @@ local UI_ORDER = {
 	"HotbarUI",
 	"ShopUI",
 	"CraftingUI",
+	-- the World 1 Upgrades stand (Config/Upgrades, UpgradeService)
+	"UpgradesUI",
 	"RobuxShopUI",
 	"IndexUI",
 	"IndexPopup",

@@ -49,6 +49,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = Shared:WaitForChild("Config")
 local Index = require(Config:WaitForChild("Index"))
 local Armor = require(Config:WaitForChild("Armor"))
+local Upgrades = require(Config:WaitForChild("Upgrades"))
 local Materials = require(Config:WaitForChild("Materials"))
 local Weapons = require(Config:WaitForChild("Weapons"))
 local Worlds = require(Config:WaitForChild("Worlds"))
@@ -220,7 +221,7 @@ end
 -- boosts multiply together, ShopService), capped at 100% like the server's roll.
 function IndexUI.luckyChance(chance: number): number
 	local luck = Players.LocalPlayer:GetAttribute("LuckBoost")
-	luck = if type(luck) == "number" and luck > 0 then luck else 1
+	luck = (if type(luck) == "number" and luck > 0 then luck else 1) * Upgrades.value(Players.LocalPlayer, "Luck")
 	return math.min(1, chance * luck)
 end
 local luckyChance = IndexUI.luckyChance
@@ -963,7 +964,7 @@ local function wirePanel(gui: ScreenGui)
 		end
 	end)
 	-- LuckBoost changes the drop chances shown
-	for _, name in { "IndexKills", "IndexWeapons", "IndexArmor", "LuckBoost" } do
+	for _, name in { "IndexKills", "IndexWeapons", "IndexArmor", "LuckBoost", Upgrades.attr("Luck") } do
 		player:GetAttributeChangedSignal(name):Connect(function()
 			if gui.Enabled then
 				render()

@@ -29,7 +29,7 @@ HERE = Path(__file__).parent
 # The player: the only numbers here that aren't the game's.
 PLAYER = {
     "detour": 1.3,           # walking routes vs a straight line (paths, hills, fences)
-    "sprint": True,          # sprinting is unlimited, so players run everywhere
+    "sprint": False,         # no base sprint since 2026-10-19 (an upgrade, outside the run)
     "hitRate": 0.85,         # share of swings that land (misses, enemies wandering)
     "engageSeconds": 1.0,    # lining up the first swing once in range
     "talkSeconds": 15,       # one Dale visit: hand in, read, take the next step

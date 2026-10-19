@@ -29,6 +29,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
 local Gathering = require(Config:WaitForChild("Gathering"))
 local Tools = require(Config:WaitForChild("Tools"))
+local Upgrades = require(Config:WaitForChild("Upgrades"))
 
 local GatherService = {}
 
@@ -89,12 +90,17 @@ local function send(player: Player, id: string, def: Gathering.NodeDef, state: N
 	end
 end
 
--- Roll a node's drops: each entry on its own.
-local function rollDrops(def: Gathering.NodeDef): { { id: string, amount: number } }
+-- Roll a node's drops: each entry on its own. The Gathering upgrade (Config/Upgrades)
+-- is a chance of 1 extra of each material.
+local function rollDrops(def: Gathering.NodeDef, player: Player): { { id: string, amount: number } }
+	local bonus = Upgrades.value(player, "Gathering")
 	local items = {}
 	for _, drop in def.drops do
 		if random:NextNumber() < drop.chance then
 			local amount = random:NextInteger(drop.min, math.max(drop.min, drop.max))
+			if amount > 0 and random:NextNumber() < bonus then
+				amount += 1
+			end
 			if amount > 0 then
 				table.insert(items, { id = drop.id, amount = amount })
 			end
@@ -108,7 +114,7 @@ local function breakNode(player: Player, id: string, model: Model, def: Gatherin
 	state.brokenUntil = os.clock() + def.respawn
 	send(player, id, def, state, true)
 	local cf, size = model:GetBoundingBox()
-	deps.Services.MaterialService.drop(player, rollDrops(def), cf.Position + Vector3.new(0, size.Y / 2, 0), model)
+	deps.Services.MaterialService.drop(player, rollDrops(def, player), cf.Position + Vector3.new(0, size.Y / 2, 0), model)
 
 	local until_ = state.brokenUntil
 	task.delay(def.respawn, function()

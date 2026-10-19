@@ -19,12 +19,9 @@ Balance.WorldEnemy = {
 	bossRespawnSeconds = 60,
 }
 
--- === Sprinting (SprintController) ===
--- Hold Shift (gamepad: left stick) to run faster, for as long as you like:
--- stamina was removed on 2026-10-11 (the user's call: unlimited sprinting).
-Balance.Sprint = {
-	speedMultiplier = 1.5, -- sprint speed = normal walk speed x this
-}
+-- === Sprinting ===
+-- There's no base sprint any more (2026-10-19, the user's call): the Sprint
+-- upgrade unlocks it and sets its speed (Config/Upgrades, SprintController).
 
 -- === Real-time weapon combat (MeleeService) ===
 -- Per-weapon numbers live in Config/Weapons, per-enemy ones in each enemy's

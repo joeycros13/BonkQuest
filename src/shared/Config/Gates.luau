@@ -27,7 +27,7 @@ Gates.list = {
 		id = "World2",
 		world = 2,
 		model = "World2Gate",
-		level = 18, -- 10 before the 2026-10-19 level curve (the same EXP)
+		level = 25, -- the user's pick (2026-10-19); 10 on the old curve, then 18
 		coins = 2500, -- the 30-minute World 1 (2026-10-19)
 		materials = { { id = "OakLog", count = 20 }, { id = "Stone", count = 20 } },
 	},

@@ -23,6 +23,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = Shared:WaitForChild("Config")
 local Balance = require(Config:WaitForChild("Balance"))
 local Enemies = require(Config:WaitForChild("Enemies"))
+local Upgrades = require(Config:WaitForChild("Upgrades"))
 
 local CoinService = {}
 
@@ -77,8 +78,10 @@ local function onKill(enemy: any, killer: Player?)
 		return
 	end
 	local amount = random:NextInteger(range.min, math.max(range.min, range.max))
+	-- passes and boosts (CoinBoost) times the Coins upgrade (Config/Upgrades)
 	local boost = killer:GetAttribute("CoinBoost")
-	if type(boost) == "number" and boost > 0 then
+	boost = (if type(boost) == "number" and boost > 0 then boost else 1) * Upgrades.value(killer, "Coins")
+	if boost ~= 1 then
 		amount = math.max(1, math.floor(amount * boost + 0.5))
 	end
 	-- Announce the spill before the balance changes: the client holds its

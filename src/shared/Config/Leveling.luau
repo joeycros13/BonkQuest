@@ -22,10 +22,11 @@ function Leveling.need(level: number): number
 	return Leveling.FIRST + Leveling.STEP * (level - Leveling.START)
 end
 
--- Max health: 100 at level 1, and every level up adds 15 (10 until 2026-10-19).
--- With the quicker curve that's about half again more HP at each point of a world.
+-- Max health: 100 at level 1, and every level up adds 10 (the user, 2026-10-19; it
+-- was 15 for a day). With the quicker curve that's still more HP at each point of a
+-- world than the old one gave.
 Leveling.BASE_HEALTH = 100
-Leveling.HEALTH_PER_LEVEL = 15
+Leveling.HEALTH_PER_LEVEL = 10
 
 function Leveling.maxHealth(level: number): number
 	return Leveling.BASE_HEALTH + Leveling.HEALTH_PER_LEVEL * (math.max(level, Leveling.START) - Leveling.START)

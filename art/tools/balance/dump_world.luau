@@ -88,7 +88,8 @@ local data: any = {
 	armor = pick(Armor.Defs),
 	gathering = pick(Gathering.Nodes),
 	leveling = { start = Leveling.START, first = Leveling.FIRST, step = Leveling.STEP, baseHealth = Leveling.BASE_HEALTH, healthPerLevel = Leveling.HEALTH_PER_LEVEL },
-	balance = { sprint = Balance.Sprint.speedMultiplier, leash = Balance.Melee.leashRange, gatherHealAfter = Gathering.healAfter },
+	-- no base sprint since 2026-10-19 (the Sprint upgrade unlocks it; upgrades are outside the run)
+	balance = { sprint = 1, leash = Balance.Melee.leashRange, gatherHealAfter = Gathering.healAfter },
 	walkSpeed = game.StarterPlayer.CharacterWalkSpeed,
 	respawnTime = game.Players.RespawnTime,
 	map = { markers = {}, nodes = {}, places = {}, healZones = {} },

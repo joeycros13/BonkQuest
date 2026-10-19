@@ -1,7 +1,9 @@
 --!strict
--- SprintController: hold Shift (gamepad: left stick) to sprint, at
--- Balance.Sprint.speedMultiplier x the walk speed, while moving. Sprinting is
--- unlimited: stamina and its HUD bar were removed on 2026-10-11 (user's call).
+-- SprintController: hold Shift (gamepad: left stick) to sprint while moving.
+-- Sprinting is unlocked by the Sprint upgrade (Config/Upgrades, 2026-10-19: no base
+-- sprint any more, the user's call): level 1 sprints at 1.2x the walk speed and each
+-- level adds 0.04. Without it Shift does nothing. Sprinting is unlimited: stamina and
+-- its HUD bar were removed on 2026-10-11 (user's call).
 --
 -- The sprint animation itself is PlayerAnimator's (it sees the extra speed);
 -- this only adds a small camera FOV push, as an Animation.CameraFX zoom layer
@@ -18,7 +20,7 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
-local Balance = require(Shared:WaitForChild("Config"):WaitForChild("Balance"))
+local Upgrades = require(Shared:WaitForChild("Config"):WaitForChild("Upgrades"))
 local Potions = require(Shared:WaitForChild("Config"):WaitForChild("Potions"))
 local CameraFX = require(Shared:WaitForChild("Animation")).CameraFX
 
@@ -37,6 +39,8 @@ local sprinting = false
 
 local function canSprint(humanoid: Humanoid): boolean
 	return held
+		-- no sprint until the first Sprint upgrade
+		and Upgrades.value(player, "Sprint") > 0
 		and humanoid.Health > 0
 		and humanoid.MoveDirection.Magnitude > MOVING
 		-- talking to an NPC (QuestController)
@@ -63,7 +67,7 @@ local function step(dt: number)
 	end
 	local speed = StarterPlayer.CharacterWalkSpeed
 		* Potions.multiplier(player, "Swiftness")
-		* (if sprinting then Balance.Sprint.speedMultiplier else 1)
+		* (if sprinting then Upgrades.value(player, "Sprint") else 1)
 	if math.abs(humanoid.WalkSpeed - speed) > 0.01 then
 		humanoid.WalkSpeed = speed
 	end

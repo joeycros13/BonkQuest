@@ -38,6 +38,7 @@ local Config = Shared:WaitForChild("Config")
 local Weapons = require(Config:WaitForChild("Weapons"))
 local Index = require(Config:WaitForChild("Index"))
 local Armor = require(Config:WaitForChild("Armor"))
+local Upgrades = require(Config:WaitForChild("Upgrades"))
 
 local IndexService = {}
 
@@ -243,7 +244,7 @@ local function onKill(enemy: any, killer: Player?)
 		announce(killer, "Enemy", id)
 	end
 	local luck = killer:GetAttribute("LuckBoost")
-	luck = if type(luck) == "number" and luck > 0 then luck else 1
+	luck = (if type(luck) == "number" and luck > 0 then luck else 1) * Upgrades.value(killer, "Luck")
 	for _, drop in Index.dropsOf(id) do
 		if random:NextNumber() < math.min(1, drop.chance * luck) and MeleeService.grant(killer, drop.weapon) then
 			-- the first find is NEW; one already in the Index (sold or removed, now

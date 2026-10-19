@@ -35,6 +35,8 @@ local UserInputService = game:GetService("UserInputService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Weapons = require(Shared:WaitForChild("Config"):WaitForChild("Weapons"))
 local Infuse = require(Shared:WaitForChild("Config"):WaitForChild("Infuse"))
+-- the Attack Speed upgrade shortens the swing (Upgrades.adjust)
+local Upgrades = require(Shared:WaitForChild("Config"):WaitForChild("Upgrades"))
 local Tools = require(Shared:WaitForChild("Config"):WaitForChild("Tools"))
 local Animation = require(Shared:WaitForChild("Animation"))
 local Character = Animation.Character
@@ -449,12 +451,12 @@ local clickFilter: ((any) -> boolean)? = nil
 -- The weapon in hand (nil while it is put away).
 function WeaponController.current(): Weapons.WeaponDef?
 	local character = player.Character
-	return if character then Infuse.adjust(player, Weapons.get(character:GetAttribute("Weapon"))) else nil
+	return if character then Upgrades.adjust(player, Infuse.adjust(player, Weapons.get(character:GetAttribute("Weapon")))) else nil
 end
 
 -- The selected weapon, the one in the hotbar, in hand or not.
 function WeaponController.selected(): Weapons.WeaponDef?
-	return Infuse.adjust(player, Weapons.get(player:GetAttribute("SelectedWeapon")) or Weapons.get(Weapons.default))
+	return Upgrades.adjust(player, Infuse.adjust(player, Weapons.get(player:GetAttribute("SelectedWeapon")) or Weapons.get(Weapons.default)))
 end
 
 -- The gathering tool in hand (nil while none is out).

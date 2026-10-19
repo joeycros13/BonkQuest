@@ -63,6 +63,8 @@ local Tools = require(Config:WaitForChild("Tools"))
 -- the Worldheart Blade's damage / speed / reach follow the cores in it (Infuse.adjust)
 local Infuse = require(Config:WaitForChild("Infuse"))
 local Potions = require(Config:WaitForChild("Potions"))
+-- stat upgrades (Config/Upgrades): Attack, Defense and Attack Speed
+local Upgrades = require(Config:WaitForChild("Upgrades"))
 local Weld = require(Shared:WaitForChild("Animation"):WaitForChild("Weld"))
 
 local MeleeService = {}
@@ -548,7 +550,9 @@ local function beginAttack(enemy: any, fight: Fight, melee: any, now: number)
 			defense = if type(defense) == "number" then math.clamp(defense, 0, 0.9) else 0
 			-- a Stoneskin potion cuts what armour lets through (Config/Potions)
 			local skin = Potions.multiplier(target, "Stoneskin")
-			humanoid:TakeDamage(math.max(1, math.floor(melee.damage * (1 - defense) * skin + 0.5)))
+			-- and the Defense upgrade cuts it again (Config/Upgrades)
+			local guard = Upgrades.value(target, "Defense")
+			humanoid:TakeDamage(math.max(1, math.floor(melee.damage * (1 - defense) * skin * guard + 0.5)))
 		end
 	end)
 end
@@ -648,7 +652,7 @@ function MeleeService.WeaponSwing(player: Player, weaponId: any)
 	local state = stateOf(player)
 	-- a tool swing: rate-limited and shown to others the same way, never a WeaponHit
 	local tool = if state.tool then ToolService.best(player, state.tool) else nil
-	local def: any = if tool then (if tool.id == weaponId then tool else nil) else Infuse.adjust(player, Weapons.get(weaponId))
+	local def: any = if tool then (if tool.id == weaponId then tool else nil) else Upgrades.adjust(player, Infuse.adjust(player, Weapons.get(weaponId)))
 	if not def or not isAlive(player) or (not tool and (state.holstered or state.weapon ~= weaponId)) then
 		return
 	end
@@ -666,7 +670,7 @@ end
 
 function MeleeService.WeaponHit(player: Player, targets: any)
 	local state = stateOf(player)
-	local def = Infuse.adjust(player, Weapons.get(state.weapon))
+	local def = Upgrades.adjust(player, Infuse.adjust(player, Weapons.get(state.weapon)))
 	local now = os.clock()
 	if state.holstered or not (def and state.swingTime and not state.swingHit) or now - state.swingTime > def.cooldown + HIT_GRACE then
 		return
@@ -711,7 +715,7 @@ function MeleeService.WeaponHit(player: Player, targets: any)
 		landed += 1
 		-- some weapons (the Toadstool Mace) ignore armour (def.ignoreArmor)
 		local armor = if def.ignoreArmor then 0 else (melee.armor or 0)
-		local died = WorldEnemyService.damage(enemy.id, def.damage * damageMultiplier(player) * Potions.multiplier(player, "Strength") * (1 - armor), player)
+		local died = WorldEnemyService.damage(enemy.id, def.damage * damageMultiplier(player) * Potions.multiplier(player, "Strength") * Upgrades.value(player, "Attack") * (1 - armor), player)
 		if died then
 			fights[enemy.id] = nil
 		else
