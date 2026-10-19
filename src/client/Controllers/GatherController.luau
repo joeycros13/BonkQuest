@@ -435,6 +435,33 @@ end
 
 -- ==================== lifecycle ====================
 
+-- The nearest node standing for this player that drops `material` (the guide arrow on a
+-- "gather" or "bring" quest step, 2026-10-19), or nil.
+function GatherController.nearest(material: string, from: Vector3): Vector3?
+	local best: Vector3? = nil
+	local bestDistance = math.huge
+	for _, node in nodes do
+		if node.broken or not node.model.Parent then
+			continue
+		end
+		local drops = false
+		for _, drop in node.def.drops do
+			if drop.id == material then
+				drops = true
+				break
+			end
+		end
+		if drops then
+			local position = node.model:GetPivot().Position
+			local distance = ((position - from) * Vector3.new(1, 0, 1)).Magnitude
+			if distance < bestDistance then
+				best, bestDistance = position, distance
+			end
+		end
+	end
+	return best
+end
+
 function GatherController.init(injected: any)
 	hitRemote = injected.Remotes.getEvent("GatherHit")
 	WeaponController = injected.Controllers.WeaponController

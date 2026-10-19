@@ -22,6 +22,11 @@
 --              "earn"  earn `amount` coins, counted from accepting
 --              "level" reach level `level`
 --              "give"  hand Dale `amount` coins (taken when handing in)
+--              "gather" gather `count` of material `target` (a Config/Materials id),
+--                      counted from accepting (2026-10-19: chopping, mining)
+--              "bring" hand over `items` ({ { id, count } } materials, taken when
+--                      handing in); progress is the total held toward the total
+--                      needed. Fish never go in quests (user: they're for potions)
 --   objective  the red objective line in the dialogue's Objective box
 --   track      the tracker line: the words before {braces} become the small
 --              label ("DEFEAT"), the part in braces the red name (the enemy or
@@ -44,6 +49,7 @@ export type Step = {
 	kind: string,
 	target: string?,
 	count: number?,
+	items: { { id: string, count: number } }?,
 	amount: number?,
 	level: number?,
 	objective: string,
@@ -101,17 +107,19 @@ lines.DaleFarm = {
 			complete = { "Well I'll be! Five fewer feathered menaces. Here, take this for your trouble." },
 		},
 		{
-			kind = "earn",
-			amount = 75,
-			objective = "Earn 75 coins",
-			track = "Earn {Coins}",
+			-- 2026-10-19 (user): was "earn 75 coins"; teaches the axe early
+			kind = "gather",
+			target = "OakLog",
+			count = 5,
+			objective = "Chop 5 Oak Logs",
+			track = "Chop {Oak Logs}",
 			reward = { coins = 30, exp = 30 },
 			offer = {
-				"Now, a farmhand's gotta have some coin in their pocket.",
-				"Go on and [earn 75 coins] out there. Them critters drop plenty when you whack 'em.",
+				"Now, a farmhand's gotta keep the stove burnin'.",
+				"Grab an axe from the weaponsmith on the plaza, then [chop 5 Oak Logs] from them big oaks by the cliffs.",
 			},
-			reminder = { "Still savin' up? [Earn 75 coins] and come see me." },
-			complete = { "Look at you, jinglin' like a sleigh bell! Here's a little extra." },
+			reminder = { "Stove's gettin' cold! [Chop 5 Oak Logs] and come see me." },
+			complete = { "Now that's a fine stack of firewood! Here's a little somethin' for the sweat." },
 		},
 		{
 			kind = "kill",
@@ -159,16 +167,17 @@ lines.DaleFarm = {
 			},
 		},
 		{
-			kind = "give",
-			amount = 200,
-			objective = "Give Dale 200 coins",
-			track = "Bring Dale {200 Coins}",
-			reward = { exp = 100 },
+			-- 2026-10-19 (user): was "give 200 coins"; the logs and stone are taken at hand-in
+			kind = "bring",
+			items = { { id = "OakLog", count = 8 }, { id = "Stone", count = 8 } },
+			objective = "Bring Dale 8 Oak Logs and 8 Stone",
+			track = "Bring Dale {Logs and Stone}",
+			reward = { coins = 80, exp = 100 },
 			offer = {
-				"I hate to ask, but them bulls flattened my barn door.",
-				"Could you [bring me 200 coins] for the repairs? I'll pay ya back in kind.",
+				"I hate to ask, but them bulls flattened my barn door and knocked the wall stones loose.",
+				"Could you [bring me 8 Oak Logs and 8 Stone] for the repairs? A pickaxe'll crack them boulders.",
 			},
-			reminder = { "No rush... but my barn door's still flat. [Bring me 200 coins]." },
+			reminder = { "No rush... but my barn door's still flat. [Bring me 8 Oak Logs and 8 Stone]." },
 			complete = { "Bless ya! That door'll be standin' by sundown. Here, it ain't much, but it's honest." },
 		},
 		{
@@ -610,12 +619,29 @@ end
 
 -- How much progress finishes a step.
 function Quests.goal(step: Step): number
-	if step.kind == "kill" then
+	if step.kind == "kill" or step.kind == "gather" then
 		return step.count or 1
 	elseif step.kind == "level" then
 		return step.level or 1
+	elseif step.kind == "bring" then
+		local total = 0
+		for _, item in step.items or {} do
+			total += item.count
+		end
+		return math.max(total, 1)
 	end
 	return step.amount or 1
+end
+
+-- The material a gather / bring step is about (its icon on the dialogue and tracker).
+function Quests.material(step: Step): string?
+	if step.kind == "gather" then
+		return step.target
+	elseif step.kind == "bring" then
+		local first = step.items and step.items[1]
+		return first and first.id
+	end
+	return nil
 end
 
 return Quests

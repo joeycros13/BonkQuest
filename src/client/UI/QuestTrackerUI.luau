@@ -45,6 +45,7 @@ local TweenService = game:GetService("TweenService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = Shared:WaitForChild("Config")
 local Enemies = require(Config:WaitForChild("Enemies"))
+local Materials = require(Config:WaitForChild("Materials"))
 local Quests = require(Config:WaitForChild("Quests"))
 
 local Format = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("Format"))
@@ -109,6 +110,9 @@ local function iconFor(line: Quests.Line, step: Quests.Step, ready: boolean): st
 		return if def and def.portrait then def.portrait else ""
 	elseif step.kind == "level" then
 		return attr("LevelIcon") or ""
+	elseif Quests.material(step) then
+		local def = Materials.get(Quests.material(step))
+		return def and def.icon or ""
 	end
 	return attr("CoinIcon") or ""
 end
@@ -161,9 +165,9 @@ local function displayedProgress(stepIndex: number, step: Quests.Step, state: st
 		shown = deps.UI.PlayerCardUI.Exp.shownLevel()
 	end
 	shown = math.clamp(shown, 0, goal)
-	-- Latch only what the server agrees is done. "give" can fall back if coins
-	-- are spent, so it never latches.
-	if shown >= goal and state == "Ready" and step.kind ~= "give" then
+	-- Latch only what the server agrees is done. "give" and "bring" can fall back if
+	-- coins or materials are spent, so they never latch.
+	if shown >= goal and state == "Ready" and step.kind ~= "give" and step.kind ~= "bring" then
 		caughtUp[stepIndex] = true
 	end
 	return shown

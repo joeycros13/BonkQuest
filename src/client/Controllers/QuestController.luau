@@ -37,6 +37,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = Shared:WaitForChild("Config")
 local Enemies = require(Config:WaitForChild("Enemies"))
+local Materials = require(Config:WaitForChild("Materials"))
 local MapLayout = require(Config:WaitForChild("MapLayout"))
 local Quests = require(Config:WaitForChild("Quests"))
 local Talkers = require(Config:WaitForChild("Talkers"))
@@ -179,6 +180,9 @@ local function iconFor(step: Quests.Step): string
 		return if def and def.portrait then def.portrait else ""
 	elseif step.kind == "level" then
 		return attr("LevelIcon")
+	elseif Quests.material(step) then
+		local def = Materials.get(Quests.material(step))
+		return def and def.icon or ""
 	end
 	return attr("CoinIcon")
 end

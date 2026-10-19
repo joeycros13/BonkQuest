@@ -38,6 +38,8 @@ function GateService.blocker(player: Player, gate: Gates.Gate): string?
 		return "level"
 	elseif deps.Services.CoinService.get(player) < gate.coins then
 		return "coins"
+	elseif gate.materials and not deps.Services.MaterialService.has(player, gate.materials) then
+		return "materials"
 	end
 	local board = signOf(gate)
 	local character = player.Character
@@ -52,6 +54,9 @@ local function buy(player: Player, payload: any)
 	local id = type(payload) == "table" and payload.id
 	local gate = type(id) == "string" and Gates.byId(id) or nil
 	if not gate or GateService.blocker(player, gate) then
+		return
+	end
+	if gate.materials and not deps.Services.MaterialService.take(player, gate.materials) then
 		return
 	end
 	deps.Services.CoinService.add(player, -gate.coins)

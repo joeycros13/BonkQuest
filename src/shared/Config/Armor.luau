@@ -55,6 +55,7 @@ Armor.Defs = {
 		recipe = {
 			{ id = "ChickenFeather", count = 15 },
 			{ id = "BullHide", count = 10 },
+			{ id = "OakLog", count = 8 }, -- gathered (2026-10-19, user)
 		},
 		defense = 0.10,
 		health = 20,
@@ -73,6 +74,8 @@ Armor.Defs = {
 			{ id = "Horsehair", count = 10 },
 			{ id = "GoldenStraw", count = 3 },
 			{ id = "LuckyHorseshoe", count = 1 },
+			{ id = "Stone", count = 12 }, -- gathered (2026-10-19, user)
+			{ id = "OakLog", count = 6 },
 		},
 		defense = 0.18,
 		health = 40,
