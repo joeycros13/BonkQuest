@@ -51,6 +51,8 @@ local CONTROLLER_ORDER = {
 	"InfuserController",
 	-- World 3's secret: the three breathing crystals and their colour code
 	"SecretCrystalController",
+	-- trees and rocks you break with your weapon for materials
+	"GatherController",
 }
 
 local UI_ORDER = {

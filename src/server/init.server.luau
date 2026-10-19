@@ -22,6 +22,8 @@ local SERVICE_ORDER = {
 	"MaterialService",
 	-- armour sets: bonus HP through ExpService
 	"ArmorService",
+	-- gathering tools owned (axes, pickaxes...); MeleeService holds them
+	"ToolService",
 	-- after CoinService / ExpService / MaterialService: it pays rewards through them
 	"QuestService",
 	-- world gates: spends coins and unlocks worlds through the services above
@@ -38,6 +40,8 @@ local SERVICE_ORDER = {
 	"InfuseService",
 	-- World 3's secret crystal code: opens the front mineshaft for whoever solves it
 	"SecretService",
+	-- trees and rocks to break for materials, through MaterialService
+	"GatherService",
 }
 
 print("[Server] bootstrap starting")

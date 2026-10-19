@@ -14,6 +14,7 @@
 --   |   |   |-- Spawns              PlayerSpawn + EnemySpawns/ + BossSpawns/
 --   |   |   |-- Enemies             filled at runtime by WorldEnemyService
 --   |   |   |-- Bosses              filled at runtime by WorldEnemyService
+--   |   |   |-- Gathering           trees and rocks to break for materials (tag GatherNode)
 --   |   |   `-- Ambience            lights, particles, sound emitters
 --   |   `-- W02_...                 the same folders
 --   |-- Shared                      Gates/, owned by no single world
@@ -30,6 +31,7 @@
 -- Attributes, by the tag that implies them (authored in Studio unless runtime):
 --   WorldRoot     WorldId, DisplayName, Order
 --   Interactable  Station, Radius
+--   GatherNode    Node (a Config/Gathering id); NodeId is set at runtime by GatherService
 --   QuestGiver    QuestLine
 --   EnemySpawn    Archetype, RespawnSeconds, WanderRadius
 --   BossSpawn     BossId, RespawnSeconds, WanderRadius
@@ -58,6 +60,7 @@ MapLayout.Tags = {
 	Critter = "Critter", -- ambient animal (deer, squirrel, owl); CritterController animates it by its Kind attribute
 	QuestGiver = "QuestGiver", -- NPC model you talk to for a questline (Config/Quests)
 	TeleportZone = "TeleportZone", -- invisible box; standing in it sends you to its ObjectValue "Target" part (PortalService)
+	GatherNode = "GatherNode", -- a tree / rock you break for materials; its Node attribute names a Config/Gathering def (GatherService)
 }
 
 -- === Asset libraries ===

@@ -24,6 +24,8 @@ local EVENT_NAMES: { string } = {
 	"GateBuy", -- { id = string }: buy a world gate (GateService, Config/Gates)
 	"EquipArmor", -- (id: string?): wear an owned armour set, nil takes it off (ArmorService)
 	"SecretCrystalHit", -- (order: number): a swing reached World 3's secret crystal #order (SecretService)
+	"GatherHit", -- (nodeIds: { string }): a tool swing reached these gathering nodes (GatherService)
+	"HoldTool", -- (kind: string?): take out the best tool of that kind, or put it away (MeleeService, Config/Tools)
 
 	-- Replication (server -> client)
 	"IndexDiscovered", -- { kind = "Enemy" | "Weapon", id = string }: show the NEW popup
@@ -31,6 +33,7 @@ local EVENT_NAMES: { string } = {
 	"ExpDropped", -- same shape: the blue EXP stars
 	"MaterialsDropped", -- { body = Instance?, position = Vector3, items = { { id, amount } }, afterTalk = boolean? }: crafting materials (MaterialService)
 	"TeleportFade", -- ("out" | "in", seconds): fade the screen to black and back around a teleport (PortalService)
+	"GatherState", -- { id = string, hp = number, max = number, broken = boolean, hit = boolean? }: one of this player's gathering nodes changed (GatherService)
 	"CoreInfused", -- { core = string, awakened = boolean, infuser = Instance }: play the infusion reveal (InfuseService)
 }
 

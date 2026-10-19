@@ -23,6 +23,7 @@
 
 local Worlds = require(script.Parent.Worlds)
 local Armor = require(script.Parent.Armor)
+local Gathering = require(script.Parent.Gathering)
 local Materials = require(script.Parent.Materials)
 local Quests = require(script.Parent.Quests)
 local Weapons = require(script.Parent.Weapons)
@@ -142,6 +143,15 @@ function Index.materialSource(materialId: string): MaterialSource?
 	if mat.quest then
 		local line = Quests.lines[mat.source]
 		return { name = if line and line.npc then line.npc.short else mat.source, quest = true }
+	end
+	if mat.gathered then
+		local node = Gathering.get(mat.source)
+		for _, drop in (node and node.drops or {}) :: { any } do
+			if drop.id == materialId then
+				return { name = (node :: any).name, chance = drop.chance, quest = false }
+			end
+		end
+		return nil
 	end
 	local enemy = Worlds.enemyDefs()[mat.source]
 	for _, drop in (enemy and enemy.materials or {}) :: { any } do
