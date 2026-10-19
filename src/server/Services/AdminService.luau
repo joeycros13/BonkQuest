@@ -263,11 +263,12 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 				MaterialService.add(player, def.id, want - have)
 			end
 		end
-		-- and Admin.giveAllPotions of every potion that can be brewed (2026-10-19)
+		-- and Admin.giveAllPotions of every potion, Tier III too though it has no recipe yet
+		-- (user, 2026-10-19)
 		local PotionService = deps.Services.PotionService
 		for _, def in Potions.list() do
 			local have = PotionService.get(player, def.id)
-			if def.recipe and have < Admin.giveAllPotions then
+			if have < Admin.giveAllPotions then
 				PotionService.add(player, def.id, Admin.giveAllPotions - have)
 			end
 		end

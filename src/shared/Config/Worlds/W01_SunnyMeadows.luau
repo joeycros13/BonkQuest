@@ -11,8 +11,8 @@ local World: WorldTypes.WorldDef = {
 	id = 1,
 	name = "The Sunny Meadows",
 	folder = "W01_SunnyMeadows",
-	-- the Index world card (re-shot 2026-10-12 after the replant, no enemies; art/index/world_W01_2026-10-12.png)
-	profile = "rbxassetid://93255533879177",
+	-- the Index world card (re-shot 2026-10-19 for the grown map, no enemies; art/portraits/worlds/world_W01_2026-10-19.png)
+	profile = "rbxassetid://89359546830130",
 
 	enemies = {
 		-- Minion: the weakest world enemy, in flocks along the front of every path

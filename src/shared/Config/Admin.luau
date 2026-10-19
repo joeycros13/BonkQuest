@@ -27,7 +27,7 @@ Admin.maxHealth = 1e6
 
 -- Give All tops every material up to this many (and each secret-weapon core to 1).
 Admin.giveAllMaterials = 100
-Admin.giveAllPotions = 10 -- of every potion with a recipe (2026-10-19)
+Admin.giveAllPotions = 10 -- of every potion, all three tiers (2026-10-19)
 
 -- The Damage card's multiplier range (your own weapon damage, this session only).
 Admin.minDamage = 0.1
