@@ -25,6 +25,9 @@
 --   quest   { line, step } put a questline on a step, on offer (one past the last finishes it)
 --   questSkip { line }   move a questline on one step (no rewards; quest items are handed over)
 --   potionsEnd {}        end every running potion
+--   upgrade { id, level } set an upgrade's level (Config/Upgrades), remote only
+--   lbReset { period }   pay a Daily / Weekly period's leaderboard rewards now from this
+--                        server's boards (testing; real resets need DataStores)
 -- material and armor have no panel buttons yet; call them through the remote (tool is on the
 -- panel's Tools page since 2026-10-19)
 -- (testing the crafting, 2026-10-12).
@@ -106,7 +109,7 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 		end
 		local CoinService = deps.Services.CoinService
 		amount = math.max(amount, -CoinService.get(player))
-		CoinService.add(player, amount)
+		CoinService.add(player, amount, "admin")
 		return true, Text.coinsDone:format(commas(amount))
 	end,
 	exp = function(player, request)
@@ -256,6 +259,21 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 	potionsEnd = function(player, _request)
 		deps.Services.PotionService.clearRunning(player)
 		return true, Text.potionsEnded
+	end,
+	upgrade = function(player, request)
+		local level = tonumber(request.level)
+		if type(request.id) ~= "string" or not level then
+			return false, Text.badNumber
+		end
+		deps.Services.UpgradeService.set(player, request.id, level)
+		return true, ("%s -> level %d"):format(request.id, level)
+	end,
+	lbReset = function(_player, request)
+		if request.period ~= "Daily" and request.period ~= "Weekly" then
+			return false, "Daily or Weekly"
+		end
+		local paid = deps.Services.LeaderboardService.payLocal(request.period)
+		return true, ("Paid %d %s rewards"):format(paid, request.period)
 	end,
 	-- Give All (user, 2026-10-12): every weapon (the Rusty Blade and every Worldheart tier at once:
 	-- only possible from here), every gathering tool (2026-10-19), every armour set, and

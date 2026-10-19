@@ -37,6 +37,14 @@ local deps: any = nil
 local dropped: RemoteEvent? = nil
 local random = Random.new()
 
+-- Level-ups (gained > 0 levels) for listeners: the leaderboards (2026-10-19). Not
+-- fired for the level a save loads with.
+local levelListeners: { (Player, number) -> () } = {}
+
+function ExpService.onLevelUp(callback: (Player, number) -> ())
+	table.insert(levelListeners, callback)
+end
+
 function ExpService.get(player: Player): number
 	local value = player:GetAttribute("ExpTotal")
 	return if type(value) == "number" then value else 0
@@ -180,6 +188,11 @@ function ExpService.start()
 			local level = player:GetAttribute("Level")
 			-- a level up fills health; anything else (an admin setting it lower) only caps it
 			local up = type(level) == "number" and type(shownLevel) == "number" and level > shownLevel
+			if up then
+				for _, listener in levelListeners do
+					task.spawn(listener, player, (level :: number) - (shownLevel :: number))
+				end
+			end
 			shownLevel = level
 			ExpService.applyHealth(player, up)
 		end)

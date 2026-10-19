@@ -91,15 +91,17 @@ local function send(player: Player, id: string, def: Gathering.NodeDef, state: N
 end
 
 -- Roll a node's drops: each entry on its own. The Gathering upgrade (Config/Upgrades)
--- is a chance of 1 extra of each material.
+-- multiplies the amount; the leftover fraction is a chance of one more (2 x 1.3 = 2.6:
+-- 3 most of the time, 2 sometimes).
 local function rollDrops(def: Gathering.NodeDef, player: Player): { { id: string, amount: number } }
-	local bonus = Upgrades.value(player, "Gathering")
+	local yield = Upgrades.value(player, "Gathering")
 	local items = {}
 	for _, drop in def.drops do
 		if random:NextNumber() < drop.chance then
 			local amount = random:NextInteger(drop.min, math.max(drop.min, drop.max))
-			if amount > 0 and random:NextNumber() < bonus then
-				amount += 1
+			if amount > 0 and yield ~= 1 then
+				local scaled = amount * yield
+				amount = math.floor(scaled) + (if random:NextNumber() < scaled % 1 then 1 else 0)
 			end
 			if amount > 0 then
 				table.insert(items, { id = drop.id, amount = amount })

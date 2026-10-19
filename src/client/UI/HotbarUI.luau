@@ -46,7 +46,7 @@ local PanelWindow: any = nil
 local WeaponController: any = nil
 local FontDrop: any = nil
 
-local SIDE_BUTTONS = { "InventoryButton", "IndexButton", "ShopButton", "AdminButton" }
+local SIDE_BUTTONS = { "InventoryButton", "IndexButton", "ShopButton", "AdminButton", "StatsButton", "LeaderboardButton" }
 
 local GUI_TIMEOUT = 15
 local INVENTORY = "Inventory"

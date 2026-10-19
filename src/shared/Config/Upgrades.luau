@@ -21,10 +21,15 @@
 --   Regen        extra share of max HP healed each second, on top of Roblox's 1%
 --   Coins        x kill coins
 --   Exp          x kill EXP
---   Gathering    chance a broken tree or rock gives 1 extra of each material
--- Every number here is a starting point to tune; prices are placeholders. Icons are
--- drafts from the Upgrades Stand canvas (art/tools/icons/upgrade_icons.html ->
--- art/icons/upgrades/); Coins reuses the game's coin icon.
+--   Gathering    x the materials a broken tree or rock gives (the fraction rolled)
+-- Every upgrade is SHOWN as a multiplier (the user, 2026-10-19: "easier tracking";
+-- the Stats panel shows the same totals): Defense and Attack Speed as how much
+-- tougher / faster you are (1 / the value), Regen against Roblox's base 1% a second.
+-- Every number here is a starting point to tune; prices are placeholders. Icons: set A
+-- "puffy toy" (2026-10-19, the user's pick on https://claude.ai/artifact/G9vG6k7KNs8rGrbRmBtUKf),
+-- rendered from art/tools/icons/upgrade_icons_v2.dc.html by svg_render.py and trimmed to
+-- art/icons/upgrades/ (the first drafts are in art/icons/upgrades/_older/). The Stats
+-- panel shows the same icons.
 
 local Upgrades = {}
 
@@ -34,8 +39,10 @@ export type UpgradeDef = {
 	icon: string,
 	base: number, -- the value at level 0
 	step: number, -- added per level
-	-- "x" shows a multiplier ("1.24x"); "pct" a +/- percentage of 1; "chance" a percentage
-	show: "x" | "pct" | "chance",
+	-- how the value shows as a multiplier: "x" as it is, "inverse" as 1 / it (a smaller
+	-- damage taken or swing time reads as a bigger defense or speed), "regen" as the
+	-- total regen over Roblox's base
+	show: "x" | "inverse" | "regen",
 	format: string, -- the effect line, with %s for the number (Text below has the words)
 	costScale: number?, -- this upgrade's prices x this (Sprint is cheap: the first thing to buy)
 	order: number,
@@ -49,16 +56,16 @@ Upgrades.STEP_PRICES = { 100, 250, 500 }
 Upgrades.WORLD_SCALE = { 1, 4, 12, 30, 70, 150, 300, 600 }
 
 Upgrades.Defs = {
-	Sprint = { id = "Sprint", name = "Sprint", icon = "rbxassetid://133657076483457", base = 1.16, step = 0.04, show = "x", format = "%s sprint speed", costScale = 0.5, order = 1 },
-	Luck = { id = "Luck", name = "Luck", icon = "rbxassetid://71553566848568", base = 1, step = 0.05, show = "pct", format = "%s drop chance", order = 2 },
-	Health = { id = "Health", name = "Health", icon = "rbxassetid://126439160849271", base = 1, step = 0.05, show = "pct", format = "%s max health", order = 3 },
-	Defense = { id = "Defense", name = "Defense", icon = "rbxassetid://130133800515570", base = 1, step = -0.01, show = "pct", format = "%s damage taken", order = 4 },
-	Attack = { id = "Attack", name = "Attack", icon = "rbxassetid://125895155638993", base = 1, step = 0.03, show = "pct", format = "%s weapon damage", order = 5 },
-	AttackSpeed = { id = "AttackSpeed", name = "Attack Speed", icon = "rbxassetid://126067788507477", base = 1, step = -0.015, show = "pct", format = "%s swing time", order = 6 },
-	Regen = { id = "Regen", name = "Regen", icon = "rbxassetid://79324169628749", base = 0, step = 0.0025, show = "chance", format = "%s of max health a second", order = 7 },
-	Coins = { id = "Coins", name = "Coins", icon = "rbxassetid://87196228547336", base = 1, step = 0.04, show = "pct", format = "%s kill coins", order = 8 },
-	Exp = { id = "Exp", name = "EXP", icon = "rbxassetid://106494265163275", base = 1, step = 0.04, show = "pct", format = "%s kill EXP", order = 9 },
-	Gathering = { id = "Gathering", name = "Gathering", icon = "rbxassetid://124807108306585", base = 0, step = 0.1, show = "chance", format = "%s chance of a bonus material", order = 10 },
+	Sprint = { id = "Sprint", name = "Sprint", icon = "rbxassetid://73296530776054", base = 1.16, step = 0.04, show = "x", format = "%s sprint speed", costScale = 0.5, order = 1 },
+	Luck = { id = "Luck", name = "Luck", icon = "rbxassetid://140530795448870", base = 1, step = 0.05, show = "x", format = "%s luck", order = 2 },
+	Health = { id = "Health", name = "Health", icon = "rbxassetid://82838416987322", base = 1, step = 0.05, show = "x", format = "%s max health", order = 3 },
+	Defense = { id = "Defense", name = "Defense", icon = "rbxassetid://87669341236749", base = 1, step = -0.01, show = "inverse", format = "%s defense", order = 4 },
+	Attack = { id = "Attack", name = "Attack", icon = "rbxassetid://101904574763468", base = 1, step = 0.03, show = "x", format = "%s damage", order = 5 },
+	AttackSpeed = { id = "AttackSpeed", name = "Attack Speed", icon = "rbxassetid://94360279558290", base = 1, step = -0.015, show = "inverse", format = "%s attack speed", order = 6 },
+	Regen = { id = "Regen", name = "Regen", icon = "rbxassetid://111410183445207", base = 0, step = 0.0025, show = "regen", format = "%s regen", order = 7 },
+	Coins = { id = "Coins", name = "Coins", icon = "rbxassetid://114082700684383", base = 1, step = 0.04, show = "x", format = "%s coins", order = 8 },
+	Exp = { id = "Exp", name = "EXP", icon = "rbxassetid://72394547070909", base = 1, step = 0.04, show = "x", format = "%s EXP", order = 9 },
+	Gathering = { id = "Gathering", name = "Gathering", icon = "rbxassetid://75333539272846", base = 1, step = 0.1, show = "x", format = "%s materials", order = 10 },
 } :: { [string]: UpgradeDef }
 
 -- Every word the panel shows (the user's rule: UI text lives in code).
@@ -73,7 +80,6 @@ Upgrades.Text = {
 	buy = "Upgrade",
 	maxWorld = "Max for World %d · unlock World %d",
 	maxAll = "Fully upgraded",
-	none = "None yet",
 	noSprint = "No sprint yet",
 	-- refusals (BuyUpgrade's reason)
 	coins = "Not enough coins",
@@ -162,31 +168,31 @@ function Upgrades.adjust(player: Player, def: any): any
 	return copy
 end
 
--- The effect line for a level ("+10% drop chance", "1.24x sprint speed").
+-- Roblox's own Health script heals this share of max HP a second (Regen shows against it).
+Upgrades.BASE_REGEN = 0.01
+
+-- What a level reads as, as a multiplier (see UpgradeDef.show).
+function Upgrades.multiplier(def: UpgradeDef, level: number): number
+	local v = Upgrades.at(def, level)
+	if def.show == "inverse" then
+		return 1 / v
+	elseif def.show == "regen" then
+		return (Upgrades.BASE_REGEN + v) / Upgrades.BASE_REGEN
+	end
+	return v
+end
+
+-- "×1.24"
+function Upgrades.times(n: number): string
+	return ("×%.2f"):format(n)
+end
+
+-- The effect line for a level ("×1.10 luck", "×1.24 sprint speed").
 function Upgrades.describe(def: UpgradeDef, level: number): string
 	if def.id == "Sprint" and level <= 0 then
 		return Upgrades.Text.noSprint
 	end
-	if level <= 0 and def.base == 0 then
-		return Upgrades.Text.none
-	end
-	local v = Upgrades.at(def, level)
-	local number: string
-	if def.show == "x" then
-		number = ("%.2fx"):format(v)
-	elseif def.show == "pct" then
-		local pct = (v - 1) * 100
-		number = (if pct >= 0 then "+" else "-") .. Upgrades.trim(math.abs(pct)) .. "%"
-	else
-		number = Upgrades.trim(v * 100) .. "%"
-	end
-	return def.format:format(number)
-end
-
--- "1.5" stays "1.5", "10.0" becomes "10"
-function Upgrades.trim(n: number): string
-	local s = ("%.2f"):format(n):gsub("0+$", ""):gsub("%.$", "")
-	return s
+	return def.format:format(Upgrades.times(Upgrades.multiplier(def, level)))
 end
 
 return Upgrades

@@ -68,6 +68,10 @@ local UI_ORDER = {
 	"CraftingUI",
 	-- the World 1 Upgrades stand (Config/Upgrades, UpgradeService)
 	"UpgradesUI",
+	-- the HUD's Stats panel: every multiplier and where it comes from
+	"StatsUI",
+	-- the HUD's Leaderboards panel (LeaderboardService)
+	"LeaderboardUI",
 	"RobuxShopUI",
 	"IndexUI",
 	"IndexPopup",

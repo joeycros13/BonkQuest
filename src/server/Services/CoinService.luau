@@ -36,8 +36,23 @@ function CoinService.get(player: Player): number
 	return if type(value) == "number" then value else 0
 end
 
-function CoinService.add(player: Player, amount: number)
-	player:SetAttribute("Coins", CoinService.get(player) + math.floor(amount))
+-- Coins earned (kills, quest rewards...) are announced to onEarned listeners (the
+-- leaderboards, 2026-10-19). `source` "shop" (Robux bundles), "admin" and "reward"
+-- (leaderboard rewards) add coins without counting as earned; spending is negative.
+local earnedListeners: { (Player, number) -> () } = {}
+
+function CoinService.onEarned(callback: (Player, number) -> ())
+	table.insert(earnedListeners, callback)
+end
+
+function CoinService.add(player: Player, amount: number, source: string?)
+	local whole = math.floor(amount)
+	player:SetAttribute("Coins", CoinService.get(player) + whole)
+	if whole > 0 and source == nil then
+		for _, listener in earnedListeners do
+			task.spawn(listener, player, whole)
+		end
+	end
 end
 
 -- Coins that come from somewhere other than a kill (a quest reward from Dale,

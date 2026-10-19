@@ -37,6 +37,7 @@ local EVENT_NAMES: { string } = {
 	"GatherState", -- { id = string, hp = number, max = number, broken = boolean, hit = boolean? }: one of this player's gathering nodes changed (GatherService)
 	"CoreInfused", -- { core = string, awakened = boolean, infuser = Instance }: play the infusion reveal (InfuseService)
 	"FishState", -- { state = "Cast" | "Approach" | "Bite" | "Surface" | "Ring" | "Caught" | "Escaped" | "Reeled", ... }: this player's fishing (FishingService)
+	"LeaderboardReward", -- { text, rank }: a leaderboard reward was granted (LeaderboardService), shown in chat
 	"HealZone", -- { kind = "healed", amount } | { kind = "cooldown", seconds }: the healing fountain (HealZoneService)
 }
 
@@ -46,6 +47,7 @@ local FUNCTION_NAMES: { string } = {
 	"CraftArmor", -- (id: string) -> (ok: boolean, reason: string?): craft a set at the Crafting stall (CraftingService)
 	"BuyWeapon", -- (id: string) -> (ok: boolean, reason: string?): buy a weapon at the Weapons stall (MerchantService)
 	"BuyTool", -- (id: string) -> (ok: boolean, reason: string?): buy a gathering tool at the Weapons stall's Tools tab (StallService)
+	"GetLeaderboard", -- (stat: string, period: string) -> { rows, you, resetsAt }: a leaderboard's top 50 (LeaderboardService)
 	"BuyUpgrade", -- (id: string) -> (ok: boolean, reason: string?): buy the next level of an upgrade at the Upgrades stand (UpgradeService)
 	"BrewPotion", -- (id: string) -> (ok: boolean, reason: string?): brew a potion at the Crafter's Potions tab (PotionService)
 	"DrinkPotion", -- (id: string) -> (ok: boolean, reason: string?): drink a held potion from the Inventory (PotionService)

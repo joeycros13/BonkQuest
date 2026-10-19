@@ -137,7 +137,7 @@ end
 local function grantBundle(player: Player, id: string)
 	local bundle = Shop.Bundles[id]
 	if bundle then
-		deps.Services.CoinService.add(player, Shop.bundleCoins(bundle, PlayerDataService.highestWorld(player)))
+		deps.Services.CoinService.add(player, Shop.bundleCoins(bundle, PlayerDataService.highestWorld(player)), "shop")
 	end
 end
 
@@ -145,7 +145,7 @@ local function grantStarter(player: Player)
 	local s = stateOf(player)
 	local pack = Shop.StarterPack
 	s.starterPack = true
-	deps.Services.CoinService.add(player, pack.coins)
+	deps.Services.CoinService.add(player, pack.coins, "shop")
 	if pack.boost then
 		ShopService.addBoost(player, pack.boost, pack.boostSeconds)
 	end
