@@ -3,13 +3,17 @@
 -- https://claude.ai/artifact/E7RQQXPYH2ZCKBB6V4YaWk), opened from the HUD's
 -- WeaponHud/SideButtons/StatsButton. Every stat shows as its total MULTIPLIER, never a
 -- percentage (the user's rule), with a chip for each thing that feeds it:
---   Max Health    the number: (level's HP + armour) x the Health upgrade
+--   Max Health    the number: (level's HP + armour) x the Health upgrade (flat bonuses
+--                 first, then multipliers)
 --   Luck / Coins / EXP   the shop's passes and boosts (LuckBoost / CoinBoost / ExpBoost,
 --                 ShopService) x the upgrade
 --   Damage        the Strength potion x the Attack upgrade
 --   Defense       how much tougher: 1 / (armour's damage x Stoneskin x the Defense upgrade)
 --   Attack Speed, Regen, Gathering   the upgrade (Upgrades.multiplier)
 --   Sprint        the Sprint upgrade x a Swiftness potion ("Locked" before Sprint 1)
+-- An admin's own test settings show as an "Admin" chip, only while one is set: the
+-- damage multiplier (DamageMultiplier) and the max-health override (MaxHealthOverride,
+-- which replaces the whole max), so the panel matches what they really have.
 -- Hand-built StarterGui/StatsPanel (Panel = "Stats"): Window/World/Label, Window/Sheet
 -- (a UIGridLayout) filled with Templates/StatRow clones (Tile/Icon, StatName, Parts,
 -- Total; UpColor / SameColor attributes), each Parts holding Templates/PartChip clones
@@ -44,7 +48,9 @@ local Text = {
 	shop = "Passes & boosts %s",
 	potion = "%s %s",
 	armourDefense = "Armour %s",
-	base = "Base 1%% a second",
+	base = "Base 1% a second",
+	adminX = "Admin %s",
+	adminOverride = "Admin override",
 	names = {
 		Health = "Max Health", Luck = "Luck", Attack = "Damage", Coins = "Coins", Defense = "Defense",
 		Exp = "EXP", AttackSpeed = "Attack Speed", Regen = "Regen", Sprint = "Sprint", Gathering = "Gathering",
@@ -93,8 +99,12 @@ local function measure(id: string): (string, { string }, boolean)
 		if up then
 			table.insert(parts, Text.upgrade:format(times(upgradeX(id))))
 		end
+		local override = number("MaxHealthOverride", 0) > 0
+		if override then
+			table.insert(parts, Text.adminOverride)
+		end
 		local max = if humanoid then humanoid.MaxHealth else Leveling.maxHealth(level)
-		return Format.commas(math.floor(max + 0.5)), parts, armour > 0 or up
+		return Format.commas(math.floor(max + 0.5)), parts, armour > 0 or up or override
 	elseif id == "Luck" or id == "Coins" or id == "Exp" then
 		local shop = number(({ Luck = "LuckBoost", Coins = "CoinBoost", Exp = "ExpBoost" })[id], 1)
 		if shop ~= 1 then
@@ -114,7 +124,11 @@ local function measure(id: string): (string, { string }, boolean)
 		if up then
 			table.insert(parts, Text.upgrade:format(times(upgradeX(id))))
 		end
-		local total = strength * upgradeX(id)
+		local admin = number("DamageMultiplier", 1)
+		if admin ~= 1 then
+			table.insert(parts, Text.adminX:format(times(admin)))
+		end
+		local total = strength * upgradeX(id) * admin
 		return times(total), parts, total > 1.0001
 	elseif id == "Defense" then
 		local armour = 1 - math.clamp(number("ArmorDefense", 0), 0, 0.9)
