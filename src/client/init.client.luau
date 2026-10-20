@@ -11,6 +11,8 @@ local Remotes = require(Shared:WaitForChild("Remotes"))
 local UTIL_ORDER = {
 	-- first: sizes every pixel-only UI value (outlines, text caps...) for this screen
 	"Responsive",
+	-- the hover and click effect on every clickable button (an "FxScale" UIScale on it)
+	"ButtonFx",
 	"DamagePopup",
 	"HudFly",
 	"FontDrop",
@@ -68,6 +70,8 @@ local UI_ORDER = {
 	"CraftingUI",
 	-- the World 1 Upgrades stand (Config/Upgrades, UpgradeService)
 	"UpgradesUI",
+	-- the World 1 Daily Rewards stand and promo codes (Config/DailyRewards, DailyRewardService)
+	"DailyRewardsUI",
 	-- the HUD's Stats panel: every multiplier and where it comes from
 	"StatsUI",
 	-- the HUD's Leaderboards panel (LeaderboardService)

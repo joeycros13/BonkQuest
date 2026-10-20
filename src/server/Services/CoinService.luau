@@ -58,8 +58,9 @@ end
 -- Coins that come from somewhere other than a kill (a quest reward from Dale,
 -- 2026-10-11): the same spill, thrown out at `position`, then added. With
 -- `afterTalk` the client holds the spill until its conversation closes, so the
--- coins land in front of the player rather than behind the dialogue card.
-function CoinService.spill(player: Player, amount: number, position: Vector3, afterTalk: boolean?)
+-- coins land in front of the player rather than behind the dialogue card. `source` is
+-- CoinService.add's ("reward" for the daily rewards, so they don't count as earned).
+function CoinService.spill(player: Player, amount: number, position: Vector3, afterTalk: boolean?, source: string?)
 	if amount <= 0 then
 		return
 	end
@@ -71,7 +72,7 @@ function CoinService.spill(player: Player, amount: number, position: Vector3, af
 			afterTalk = afterTalk == true,
 		})
 	end
-	CoinService.add(player, amount)
+	CoinService.add(player, amount, source)
 end
 
 local function bodyPosition(body: Instance): Vector3?

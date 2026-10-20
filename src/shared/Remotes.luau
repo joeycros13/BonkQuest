@@ -49,6 +49,8 @@ local FUNCTION_NAMES: { string } = {
 	"BuyTool", -- (id: string) -> (ok: boolean, reason: string?): buy a gathering tool at the Weapons stall's Tools tab (StallService)
 	"GetLeaderboard", -- (stat: string, period: string) -> { rows, you, resetsAt }: a leaderboard's top 50 (LeaderboardService)
 	"BuyUpgrade", -- (id: string) -> (ok: boolean, reason: string?): buy the next level of an upgrade at the Upgrades stand (UpgradeService)
+	"ClaimDaily", -- () -> (ok: boolean, reason or reward words): claim today's daily reward at the Daily Rewards stand (DailyRewardService)
+	"RedeemCode", -- (code: string) -> (ok: boolean, words: string): redeem a promo code at the Daily Rewards stand (DailyRewardService)
 	"BrewPotion", -- (id: string) -> (ok: boolean, reason: string?): brew a potion at the Crafter's Potions tab (PotionService)
 	"DrinkPotion", -- (id: string) -> (ok: boolean, reason: string?): drink a held potion from the Inventory (PotionService)
 	"InfuseCore", -- (core: string) -> (ok: boolean, reason: string?): set a core into the blade at an Infuser (InfuseService)

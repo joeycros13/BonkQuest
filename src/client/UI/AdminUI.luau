@@ -7,10 +7,12 @@
 -- through PanelWindow (Panel = "Admin"). Every request goes to
 -- Remotes.AdminAction, which the server checks again.
 --
--- The panel is laid out entirely by layouts (rebuilt 2026-10-11 after the user
--- saw text cut off): the Window stacks Header / HeaderLine / Body; Body puts
--- Tabs beside Content; Content stacks Pages above Status. Pieces are found by
--- name at any depth:
+-- The panel has the Inventory's look (2026-10-20, the user: "the same look as the
+-- inventory"): the Window wears the drawn aqua window (Skin, art/tools/ui/admin_window.py)
+-- with its Shadow, the Header sits on the drawn cyan band, and Body lies on the two drawn
+-- panels, Tabs beside Content (Body's list); Content stacks Pages above Status. Every
+-- button is a pill (a Skin image and a Label on its face), like the rest of the game.
+-- Pieces are found by name at any depth:
 --   Title, Close; Tabs/Tab<Player|Weapons|Armor|Tools|Materials|Mobs> (a "Tab" attribute
 --   naming the page; Label), Hint;
 --   PagePlayer: CoinsCard / ExpCard (Icon, Title, Have, Amount, Add, Take,
@@ -22,8 +24,8 @@
 --     (2026-10-12, like the mobs): a Templates/WorldHeader, then a
 --     Templates/CardSection grid (its height follows its cards) of
 --     Templates/WeaponCard -- the shared tile (Util.WeaponTile) in its Tile slot,
---     plus Action (Give / Remove / Starter: <state>Face / <state>Dark
---     attributes). Weapons are sorted by damage, weakest first; armour by
+--     plus Action (Give / Remove / Starter: the pill in the template's <state>Skin
+--     attribute). Weapons are sorted by damage, weakest first; armour by
 --     order; materials use Templates/MaterialCard (Buttons/Give, Buttons/Take:
 --     Admin.Text.materialStep at a time, the count on the tile's pill);
 --   PageTools/List (2026-10-19): the gathering tools (Config/Tools) per world, on
@@ -39,13 +41,12 @@
 --   Status/Label: the last result. It always keeps its room (idle = see-through),
 --     so a message never resizes the page (gui attributes StatusOk,
 --     StatusError, StatusSeconds).
--- Buttons have Label children and a PressScale; TabSelected / TabIdle colour
--- the tabs. Every word comes from Config/Admin.Text.
+-- Buttons have Label children (their hover and press: Util.ButtonFx); the gui's SkinTabSelected /
+-- SkinTabIdle pills dress the tabs. Every word comes from Config/Admin.Text.
 
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
@@ -63,7 +64,6 @@ local MapLayout = require(Config:WaitForChild("MapLayout"))
 local AdminUI = {}
 
 local PANEL = "Admin"
-local PRESS = 0.93
 local Text = Admin.Text
 local player = Players.LocalPlayer
 
@@ -135,26 +135,11 @@ local function ask(request: { [string]: any })
 	end
 end
 
--- A pressed button dips (its PressScale) and runs `fn`.
+-- A pressed button runs `fn` (its hover and press look come from Util.ButtonFx, like every button).
 local function wireButton(button: Instance?, fn: () -> ())
 	if not (button and button:IsA("GuiButton")) then
 		return
 	end
-	local scale = button:FindFirstChild("PressScale")
-	local function dip(to: number)
-		if scale and scale:IsA("UIScale") then
-			TweenService:Create(scale, TweenInfo.new(0.07, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Scale = to }):Play()
-		end
-	end
-	button.MouseButton1Down:Connect(function()
-		dip(PRESS)
-	end)
-	button.MouseButton1Up:Connect(function()
-		dip(1)
-	end)
-	button.MouseLeave:Connect(function()
-		dip(1)
-	end)
 	button.Activated:Connect(fn)
 end
 
@@ -166,15 +151,11 @@ local function read(box: Instance?): number?
 	return tonumber((box.Text:gsub("[,%s]", "")))
 end
 
-local function recolour(button: Instance?, face: Color3, dark: Color3)
-	if not (button and button:IsA("GuiButton")) then
-		return
-	end
-	button.BackgroundColor3 = face
-	local label = button:FindFirstChild("Label")
-	local stroke = label and label:FindFirstChildOfClass("UIStroke")
-	if stroke then
-		stroke.Color = dark
+-- A button is a pill (its Skin image); a state swaps which pill it wears.
+local function reskin(button: Instance?, image: string?)
+	local skin = button and button:FindFirstChild("Skin")
+	if skin and skin:IsA("ImageLabel") and image then
+		skin.Image = image
 	end
 end
 
@@ -328,7 +309,7 @@ local function styleAction(action: Instance?, state: string)
 	local templates = gui and gui:FindFirstChild("Templates")
 	local template = templates and templates:FindFirstChild("WeaponCard")
 	if template then
-		recolour(action, attr(template, state .. "Face", Color3.new(1, 1, 1)), attr(template, state .. "Dark", Color3.new(0, 0, 0)))
+		reskin(action, attr(template, state .. "Skin", nil))
 	end
 end
 
@@ -725,7 +706,8 @@ local function showPage(name: string)
 	for _, tab in if tabs then tabs:GetChildren() else {} do
 		if tab:IsA("GuiButton") and tab:GetAttribute("Tab") then
 			local on = tab:GetAttribute("Tab") == name
-			tab.BackgroundColor3 = attr(gui :: ScreenGui, if on then "TabSelected" else "TabIdle", tab.BackgroundColor3)
+			tab:SetAttribute("Selected", on) -- the open tab stays grown (Util.ButtonFx)
+			reskin(tab, attr(gui :: ScreenGui, if on then "SkinTabSelected" else "SkinTabIdle", nil))
 		end
 	end
 	if name == "PagePlayer" then

@@ -26,6 +26,8 @@
 --   questSkip { line }   move a questline on one step (no rewards; quest items are handed over)
 --   potionsEnd {}        end every running potion
 --   upgrade { id, level } set an upgrade's level (Config/Upgrades), remote only
+--   daily { streak, yesterday }  set the Daily Rewards streak; yesterday = the last claim was
+--                        yesterday (the next claim climbs), else it's forgotten (testing)
 --   lbReset { period }   pay a Daily / Weekly period's leaderboard rewards now from this
 --                        server's boards (testing; real resets need DataStores)
 -- material and armor have no panel buttons yet; call them through the remote (tool is on the
@@ -267,6 +269,14 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 		end
 		deps.Services.UpgradeService.set(player, request.id, level)
 		return true, ("%s -> level %d"):format(request.id, level)
+	end,
+	-- daily { streak?, yesterday? }: set the Daily Rewards streak (testing); yesterday = true makes
+	-- the last claim yesterday (so the next one climbs), else the claim is forgotten (claim today)
+	daily = function(player, request)
+		local service = deps.Services.DailyRewardService
+		local streak = if type(request.streak) == "number" then request.streak else 0
+		service.set(player, streak, if request.yesterday then service.today() - 1 else nil)
+		return true, ("Daily streak %d%s"):format(streak, if request.yesterday then ", last claim yesterday" else "")
 	end,
 	lbReset = function(_player, request)
 		if request.period ~= "Daily" and request.period ~= "Weekly" then

@@ -25,7 +25,7 @@
 -- Luckiest Guy labels are centred by Util.FontDrop (each has a UIPadding).
 -- Motion while the shop is open: every "Rays" image turns slowly (RAYS_TURN
 -- seconds a turn), a card grows a little under the pointer (its "HoverScale"),
--- and a Buy button dips while pressed (its "PressScale").
+-- and every button grows on hover and squashes on a press (Util.ButtonFx, its "FxScale").
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -40,7 +40,6 @@ local PANEL_ID = "RobuxShop"
 local GUI_TIMEOUT = 15
 local RAYS_TURN = 14
 local CARD_HOVER = 1.04
-local BUY_PRESS = 0.92
 local player = Players.LocalPlayer
 
 local deps: any = nil
@@ -96,6 +95,8 @@ local function styleBuy(button: Instance, price: number?, owned: boolean)
 	if skin and skin:IsA("ImageLabel") then
 		skin.Image = attribute(button, if owned then "SkinOwned" else "SkinBuy", skin.Image)
 	end
+	-- an owned pass can't be bought again: no hover or press (Util.ButtonFx)
+	button.Active = not owned
 end
 
 -- How many more coins per Robux a bundle gives than the smallest one, in %.
@@ -227,6 +228,14 @@ local function wireItems()
 					if price and price:IsA("GuiObject") then
 						local top = Responsive.px(attribute(button, "FaceTop", 0))
 						local bottom = Responsive.px(attribute(button, "FaceBottom", 0))
+						-- a pill skin's borders follow its own height (its PillSlice source rows), so
+						-- FaceTop / FaceBottom are source rows of the skin's height (2026-10-20)
+						local skin = button:FindFirstChild("Skin")
+						local rows = skin and skin:GetAttribute("PillSlice")
+						if skin and skin:IsA("GuiObject") and type(rows) == "number" then
+							top = skin.AbsoluteSize.Y * attribute(button, "FaceTop", 0) / rows
+							bottom = skin.AbsoluteSize.Y * attribute(button, "FaceBottom", 0) / rows
+						end
 						local withIcon = robux ~= nil and robux:IsA("GuiObject") and robux.Visible
 						price.Position = UDim2.new(0, if withIcon then -math.floor(size * 0.1 + 0.5) else 0, 0, top)
 						price.Size = UDim2.new(1, 0, 1, -(top + bottom))
@@ -239,15 +248,7 @@ local function wireItems()
 				robux:GetPropertyChangedSignal("Visible"):Connect(fit)
 			end
 			fit()
-			local press = button:FindFirstChild("PressScale")
-			button.MouseButton1Down:Connect(function()
-				tweenScale(press, BUY_PRESS, 0.06)
-			end)
-			for _, signal in { button.MouseButton1Up, button.MouseLeave } do
-				signal:Connect(function()
-					tweenScale(press, 1, 0.1)
-				end)
-			end
+			-- its hover grow and press squash: Util.ButtonFx (its FxScale)
 			button.Activated:Connect(function()
 				local kind, id = item:GetAttribute("ShopKind"), item:GetAttribute("ShopId")
 				local _, owned = itemInfo(kind, id)
@@ -314,18 +315,6 @@ function RobuxShopUI.start()
 		deps.Util.FontDrop.watch(panel)
 		wireItems()
 		render()
-		local close = panel:FindFirstChild("Close", true)
-		if close and close:IsA("GuiButton") then
-			local press = close:FindFirstChild("PressScale")
-			close.MouseButton1Down:Connect(function()
-				tweenScale(press, BUY_PRESS, 0.06)
-			end)
-			for _, signal in { close.MouseButton1Up, close.MouseLeave } do
-				signal:Connect(function()
-					tweenScale(press, 1, 0.1)
-				end)
-			end
-		end
 		-- the rays behind every item turn while the shop is open
 		local spins: { Tween } = {}
 		local function setSpinning(on: boolean)

@@ -38,6 +38,8 @@ local SERVICE_ORDER = {
 	"UpgradeService",
 	-- the 9 leaderboards and their reset rewards (coins, EXP, potions, boosts, materials through the services above)
 	"LeaderboardService",
+	-- the Daily Rewards stand and promo codes (Config/DailyRewards), rewards through the services above
+	"DailyRewardService",
 	-- the admin panel: coins, EXP, levels, weapons and respawns through the services above
 	"AdminService",
 	-- walk-in teleport zones (the secret rooms' entrances and exits)

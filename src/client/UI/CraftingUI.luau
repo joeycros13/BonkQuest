@@ -158,10 +158,19 @@ local function setButton(button: any, look: string, words: string)
 	if stroke and typeof(color) == "Color3" then
 		stroke.Color = color
 	end
+	-- a locked button can't be clicked, so it gets no hover or press (Util.ButtonFx)
+	button.Active = look ~= "Locked"
 end
 
 local function rebuildSets()
 	local list = window.Sets
+	-- Sets is a grid (each tile grows round its own middle); its cell is the tab's tile
+	-- size, the Sets frame's Cell_Armor / Cell_Potions attributes
+	local grid = list:FindFirstChildOfClass("UIGridLayout")
+	local cell = list:GetAttribute(if tab == "Potions" then "Cell_Potions" else "Cell_Armor")
+	if grid and typeof(cell) == "UDim2" then
+		grid.CellSize = cell
+	end
 	for _, child in list:GetChildren() do
 		if child:IsA("GuiButton") then
 			child:Destroy()
@@ -365,6 +374,7 @@ local function styleTabs()
 		local name = button:GetAttribute("Tab")
 		if button:IsA("GuiButton") and type(name) == "string" then
 			local on = name == tab
+			button:SetAttribute("Selected", on) -- the open tab stays grown (Util.ButtonFx)
 			local fill = gui:GetAttribute(if on then "TabSelectedFill" else "TabIdleFill")
 			if typeof(fill) == "Color3" then
 				button.BackgroundColor3 = fill
@@ -422,6 +432,7 @@ function CraftingUI.refresh()
 			local tile = button:FindFirstChild("Tile") :: any
 			local on = entry.id == selected
 			button.Pointer.Visible = on and tab ~= "Potions"
+			button:SetAttribute("Selected", on) -- stays grown (Util.ButtonFx)
 			tile.SelectScale.Scale = if on then 1 else button:GetAttribute("IdleScale") or 0.86
 			local dim = button:GetAttribute("IdleColor") or Color3.new(0.8, 0.8, 0.8)
 			tile.ImageColor3 = if on then Color3.new(1, 1, 1) else dim

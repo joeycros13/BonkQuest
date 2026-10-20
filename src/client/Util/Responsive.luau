@@ -17,7 +17,8 @@
 --   UIStroke.Thickness                  only FixedSize outlines (never under 1)
 --   UITextSizeConstraint Max/MinTextSize caps kept on wrapping, multi-line text
 --   ScrollingFrame.ScrollBarThickness
---   Image SliceScale (ScaleType Slice)   9-slice borders are drawn in pixels
+--   Image SliceScale (ScaleType Slice)   9-slice borders are drawn in pixels (a pill
+--                                        button skin, PillSlice attribute, follows its own height)
 --   the Offset part of UICorner.CornerRadius, UIPadding, UIListLayout.Padding
 --     and UIGridLayout.CellPadding
 --   BillboardGui.Size offsets           in-world bars and prompts drawn in pixels
@@ -46,6 +47,7 @@ local MIN_FACTOR, MAX_FACTOR = 0.25, 4
 -- Resizes are rare, and the rescan only touches PlayerGui and billboards.
 local changed = Instance.new("BindableEvent")
 local current = 1
+local pillWatched: { [Instance]: boolean } = {}
 
 function Responsive.factor(): number
 	return current
@@ -106,6 +108,29 @@ local function apply(inst: Instance): boolean
 		inst.ScrollBarThickness = math.max(if b > 0 then 2 else 0, math.floor(b * current + 0.5))
 		return true
 	elseif (inst:IsA("ImageLabel") or inst:IsA("ImageButton")) and inst.ScaleType == Enum.ScaleType.Slice then
+		local pill = inst:GetAttribute("PillSlice")
+		if type(pill) == "number" and pill > 0 then
+			-- a pill button skin (2026-10-20): its corners are the image's whole height, so the
+			-- slice scale follows the image's own height and both ends stay perfect semicircles
+			-- (PillSlice = the source rows the two corners cover)
+			local img = inst :: ImageLabel
+			if not pillWatched[img] then
+				-- (a table, not an attribute: a template's clone would carry the attribute but not the connection)
+				pillWatched[img] = true
+				img.Destroying:Connect(function()
+					pillWatched[img] = nil
+				end)
+				img:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+					if img.AbsoluteSize.Y > 0 then
+						img.SliceScale = img.AbsoluteSize.Y / pill
+					end
+				end)
+			end
+			if img.AbsoluteSize.Y > 0 then
+				img.SliceScale = img.AbsoluteSize.Y / pill
+			end
+			return true
+		end
 		local b = base(inst, "SliceScale", inst.SliceScale)
 		inst.SliceScale = b * current
 		return true

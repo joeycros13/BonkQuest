@@ -8,7 +8,8 @@
 --   Window/List       a ScrollingFrame of Templates/UpgradeRow clones, one per upgrade
 --                     (Icon, UpgradeName, Pips/Pip1..3 for this world's three levels;
 --                     IdleFill / SelectedFill / PipOn / PipOff attributes). Its canvas
---                     follows the UIListLayout.
+--                     follows its layout (a one-column UIGridLayout since 2026-10-20, so a
+--                     hovered or selected row grows round its own middle).
 --   Window/World      Label: the highest world unlocked (it sets the cap)
 --   Window/Coins      Amount (deep): the player's coins
 --   Window/Detail/Card/Stage/Preview   the selected upgrade's icon
@@ -63,6 +64,8 @@ local function setButton(button: any, look: string, words: string)
 	if stroke and typeof(color) == "Color3" then
 		stroke.Color = color
 	end
+	-- a locked button can't be clicked, so it gets no hover or press (Util.ButtonFx)
+	button.Active = look ~= "Locked"
 end
 
 -- Pips for the three levels a world holds: owned (On), still to buy (Open), out of reach (Locked).
@@ -79,7 +82,7 @@ end
 
 local function fitList()
 	local list = window.List
-	local layout = list:FindFirstChildOfClass("UIListLayout")
+	local layout = list:FindFirstChildWhichIsA("UIGridStyleLayout")
 	local pad = list:FindFirstChildOfClass("UIPadding")
 	local extra = if pad then pad.PaddingTop.Offset + pad.PaddingBottom.Offset else 0
 	if layout then
@@ -107,7 +110,7 @@ local function build()
 		end)
 		row.Parent = list
 	end
-	local layout = list:FindFirstChildOfClass("UIListLayout")
+	local layout = list:FindFirstChildWhichIsA("UIGridStyleLayout")
 	if layout then
 		layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(fitList)
 	end
@@ -147,6 +150,7 @@ function UpgradesUI.refresh()
 		if def and row:IsA("GuiButton") then
 			local level = Upgrades.level(player, def.id)
 			row.BackgroundColor3 = row:GetAttribute(if def.id == selected then "SelectedFill" else "IdleFill") or row.BackgroundColor3
+			row:SetAttribute("Selected", def.id == selected) -- stays grown (Util.ButtonFx)
 			paintPips(row.Pips, from, level, true, row)
 		end
 	end

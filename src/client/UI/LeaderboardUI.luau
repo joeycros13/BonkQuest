@@ -86,11 +86,13 @@ local function styleTabs()
 	for _, b in window.Tabs:GetChildren() do
 		if b:IsA("GuiButton") then
 			b.BackgroundColor3 = gui:GetAttribute(if b:GetAttribute("Stat") == stat then "TabSelected" else "TabIdle") or b.BackgroundColor3
+			b:SetAttribute("Selected", b:GetAttribute("Stat") == stat) -- stays grown (Util.ButtonFx)
 		end
 	end
 	for _, b in window.Periods:GetChildren() do
 		if b:IsA("GuiButton") then
 			local on = b:GetAttribute("Period") == period
+			b:SetAttribute("Selected", on) -- stays grown (Util.ButtonFx)
 			b.BackgroundColor3 = gui:GetAttribute(if on then "PillSelected" else "PillIdle") or b.BackgroundColor3
 			b.Label.TextColor3 = gui:GetAttribute(if on then "PillSelectedText" else "PillIdleText") or b.Label.TextColor3
 		end
