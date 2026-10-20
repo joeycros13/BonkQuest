@@ -181,6 +181,11 @@ local function onCast(player: Player, at: any)
 		finish(player, "Reeled")
 		return
 	end
+	-- a rod only fishes its own world's water or older (FishingController shows "Needs a Stone Rod")
+	if rod.tier < (spot.tier or 1) then
+		finish(player, "Reeled")
+		return
+	end
 	local session: Session = {
 		token = 0,
 		phase = "Waiting",

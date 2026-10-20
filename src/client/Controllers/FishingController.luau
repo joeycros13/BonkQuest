@@ -7,7 +7,8 @@
 --     (ReplicatedStorage/Assets/Fishing/Bobber) leaves the rod tip and flies
 --     Fishing.castDistance ahead in an arc. Over water (a part tagged Fishing.Tag) it
 --     splashes down and floats, and the server hears where; over land it thuds down,
---     "Cast into the water!" pops up and the line comes back in.
+--     "Cast into the water!" pops up and the line comes back in. Water whose spot needs a
+--     better rod (Config/Fishing `tier`) is treated like land, with "Needs a Stone Rod".
 --   * The line is a Beam from the rod tip (the rod Grip's "Tip" attachment) to the
 --     bobber's "Line" attachment, sagging while slack and pulled straight while a fish
 --     fights. Both ends are attachments in Terrain, moved every frame, so the sag always
@@ -73,7 +74,8 @@ type Line = {
 	from: Vector3,
 	to: Vector3,
 	surface: number, -- the water's top under the bobber
-	wet: boolean, -- landed on fishing water
+	wet: boolean, -- landed on fishing water the rod can fish
+	needs: string?, -- landed on water that needs a better rod: the popup's words
 	flyStart: number,
 	mode: string, -- "fly" | "float" | "reel"
 	depth: number, -- current depth under the float line (eased toward `sink`)
@@ -239,8 +241,8 @@ local function reelIn()
 end
 
 -- The landing spot for a cast: the ground or water straight under a point the cast
--- distance ahead. Returns the point, and whether it is fishing water.
-local function landingSpot(root: BasePart): (Vector3, boolean)
+-- distance ahead. Returns the point, whether it is fishing water, and its spot.
+local function landingSpot(root: BasePart): (Vector3, boolean, Fishing.Spot?)
 	local look = root.CFrame.LookVector
 	local flat = Vector3.new(look.X, 0, look.Z)
 	flat = if flat.Magnitude > 1e-3 then flat.Unit else Vector3.new(0, 0, -1)
@@ -250,9 +252,10 @@ local function landingSpot(root: BasePart): (Vector3, boolean)
 	params.FilterDescendantsInstances = { player.Character :: Instance, MapLayout.runtimeFolder() }
 	local hit = workspace:Raycast(ahead + Vector3.new(0, 12, 0), Vector3.new(0, -40, 0), params)
 	if not hit then
-		return ahead - Vector3.new(0, 3, 0), false
+		return ahead - Vector3.new(0, 3, 0), false, nil
 	end
-	return hit.Position, CollectionService:HasTag(hit.Instance, Fishing.Tag)
+	local wet = CollectionService:HasTag(hit.Instance, Fishing.Tag)
+	return hit.Position, wet, if wet then Fishing.spot(hit.Instance:GetAttribute("Spot")) else nil
 end
 
 local function launch()
@@ -265,7 +268,14 @@ local function launch()
 	end
 	clearLine()
 	clearShadow()
-	local to, wet = landingSpot(root)
+	local to, wet, spot = landingSpot(root)
+	-- a rod only fishes its own world's water or older
+	local needs: string? = nil
+	local rod = WeaponController.tool()
+	if wet and spot and rod and (rod.tier or 1) < (spot.tier or 1) then
+		wet = false
+		needs = "Needs a " .. Fishing.rodFor(spot)
+	end
 	local bobber = template:Clone()
 	noCollide(bobber)
 	bobber:PivotTo(CFrame.new(from))
@@ -300,6 +310,7 @@ local function launch()
 		to = to,
 		surface = to.Y,
 		wet = wet,
+		needs = needs,
 		flyStart = os.clock(),
 		mode = "fly",
 		depth = 0,
@@ -322,8 +333,14 @@ local function landed(current: Line)
 			phase = "Waiting"
 		end
 	else
-		Effects.burst(current.to, "Dust", { count = 5 })
-		popup(rootPart(), "Cast into the water!")
+		if current.needs then
+			-- water this rod can't fish: it splashes, then the line comes back in
+			Effects.burst(current.to, "Splash")
+			popup(rootPart(), current.needs)
+		else
+			Effects.burst(current.to, "Dust", { count = 5 })
+			popup(rootPart(), "Cast into the water!")
+		end
 		task.delay(0.5, function()
 			if line == current then
 				reelIn()

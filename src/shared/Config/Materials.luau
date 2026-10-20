@@ -252,6 +252,34 @@ Materials.Defs = {
 		core = true,
 		color = Color3.fromRGB(30, 140, 74),
 	},
+	-- fished (2026-10-20): caught in World 2's creek and pond (Config/Fishing "RedwoodPond",
+	-- a Stone Rod or better). Icons: art/tools/icons/w2_fish_icons.html, the World 1 fish's shape.
+	Trout = {
+		id = "Trout",
+		icon = "rbxassetid://93149400962088",
+		rarity = "Common",
+		name = "Trout",
+		world = 2,
+		sell = 6,
+		order = 7,
+		source = "RedwoodPond",
+		gathered = true,
+		fished = true,
+		color = Color3.fromRGB(127, 154, 72),
+	},
+	RainbowTrout = {
+		id = "RainbowTrout",
+		icon = "rbxassetid://112485612041250",
+		rarity = "Rare",
+		name = "Rainbow Trout",
+		world = 2,
+		sell = 18,
+		order = 8,
+		source = "RedwoodPond",
+		gathered = true,
+		fished = true,
+		color = Color3.fromRGB(240, 122, 160),
+	},
 	-- ==================== World 3 (The Crystal Caverns) ====================
 	-- (2026-10-13; no icons drawn yet, so the drop pop-up shows each colour)
 	BatWing = {

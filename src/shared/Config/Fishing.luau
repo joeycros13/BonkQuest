@@ -19,6 +19,10 @@
 --   4. Landed: the line pulls back and the fish pops up out of the water; it goes into
 --      the player's materials (MaterialService.drop, the side toast).
 --
+-- A spot needs a rod of its `tier` or better (the user, 2026-10-20: tools only work for their
+-- own world; a World 1 rod in a World 2 pond doesn't, and "Needs a Stone Rod" pops up, like
+-- a weak axe on a tree). FishingService refuses the cast; FishingController shows the popup.
+--
 -- Every fish is the same model in the water, a dark shadow (ReplicatedStorage/Assets/
 -- Fishing/FishShadow); only the icons differ (user, 2026-10-18).
 --
@@ -31,7 +35,7 @@ local Fishing = {}
 
 export type Difficulty = { closeSeconds: number, zone: number }
 export type FishEntry = { id: string, weight: number }
-export type Spot = { id: string, name: string, world: number, fish: { FishEntry } }
+export type Spot = { id: string, name: string, world: number, tier: number, fish: { FishEntry } }
 
 Fishing.Tag = "FishingWater"
 
@@ -67,6 +71,8 @@ Fishing.Fish = {
 	Minnow = "Easy",
 	Sunfish = "Medium",
 	GoldenCarp = "Hard",
+	Trout = "Medium",
+	RainbowTrout = "Hard",
 } :: { [string]: string }
 
 Fishing.Spots = {
@@ -75,16 +81,41 @@ Fishing.Spots = {
 		id = "SunnyPond",
 		name = "The Pond",
 		world = 1,
+		tier = 1,
 		fish = {
 			{ id = "Minnow", weight = 60 },
 			{ id = "Sunfish", weight = 30 },
 			{ id = "GoldenCarp", weight = 10 },
 		},
 	},
+	-- World 2's creek and pond: one water part (Ground/Creek/Water), so the whole creek fishes
+	-- too. The approved table's fish (memory tools-per-world): Trout and the rare Rainbow Trout.
+	RedwoodPond = {
+		id = "RedwoodPond",
+		name = "The Creek",
+		world = 2,
+		tier = 2,
+		fish = {
+			{ id = "Trout", weight = 75 },
+			{ id = "RainbowTrout", weight = 25 },
+		},
+	},
 } :: { [string]: Spot }
 
 function Fishing.spot(id: any): Spot?
 	return if type(id) == "string" then Fishing.Spots[id] else nil
+end
+
+-- The rod a spot needs: the name of the lowest-tier rod that can fish it ("Stone Rod").
+function Fishing.rodFor(spot: Spot): string
+	local Tools = require(script.Parent:WaitForChild("Tools"))
+	local best: any = nil
+	for _, def in Tools.Defs do
+		if def.kind == "Rod" and def.tier >= spot.tier and (best == nil or def.tier < best.tier) then
+			best = def
+		end
+	end
+	return if best then best.name else "better rod"
 end
 
 function Fishing.difficultyOf(fishId: string): Difficulty
