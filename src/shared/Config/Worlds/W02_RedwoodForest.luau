@@ -13,6 +13,11 @@
 
 local WorldTypes = require(script.Parent.Parent.WorldTypes)
 
+-- World 2 balance (2026-10-20, the user: World 2's enemies match World 1's, Chicken -> Fox, Bull -> Boar,
+-- Stallion -> Bear): HP x ~6.9 (the Birch Hatchet's damage per second over the Sickle's, so fights last as
+-- long), damage tuned so an early fight costs ~14% of health like World 1, EXP equal to the World 1
+-- counterpart, coins tuned with art/tools/balance/world_sim.py --world 2 for ~45 min from arriving to buying
+-- the World 3 gate (typical 44.4). Old numbers in the comments.
 local World: WorldTypes.WorldDef = {
 	id = 2,
 	name = "The Redwood Forest",
@@ -33,11 +38,11 @@ local World: WorldTypes.WorldDef = {
 			tier = "small",
 			name = "Snarling Fox",
 			portrait = "rbxassetid://102792357956654", -- calm face (2026-10-11)
-			hp = 110,
+			hp = 276, -- 110
 			-- Quick pounces with a snap at the end.
-			melee = { damage = 10, cooldown = 1.0, windup = 0.5, range = 1.5, chaseSpeed = 17, armor = 0, move = "pounce" },
-			coins = { min = 15, max = 25 },
-			exp = 35,
+			melee = { damage = 20, cooldown = 1.0, windup = 0.5, range = 1.5, chaseSpeed = 17, armor = 0, move = "pounce" },
+			coins = { min = 22, max = 45 }, -- 15-25
+			exp = 10, -- 35
 			drops = {
 				{ weapon = "Hatchet", chance = 0.20 },
 				{ weapon = "Cleaver", chance = 0.05 },
@@ -52,10 +57,10 @@ local World: WorldTypes.WorldDef = {
 			tier = "medium",
 			name = "Wild Boar",
 			portrait = "rbxassetid://105726195455752", -- calm face (2026-10-11)
-			hp = 260,
-			melee = { damage = 20, cooldown = 1.8, windup = 0.55, range = 1.5, chaseSpeed = 15, armor = 0.15, move = "charge" },
-			coins = { min = 30, max = 45 },
-			exp = 70,
+			hp = 966, -- 260
+			melee = { damage = 38, cooldown = 1.8, windup = 0.55, range = 1.5, chaseSpeed = 15, armor = 0.15, move = "charge" },
+			coins = { min = 90, max = 150 }, -- 30-45
+			exp = 38, -- 70
 			drops = {
 				{ weapon = "Cleaver", chance = 0.20 },
 				{ weapon = "Quarterstaff", chance = 0.15 },
@@ -70,10 +75,10 @@ local World: WorldTypes.WorldDef = {
 			tier = "elite",
 			name = "Grizzly Bear",
 			portrait = "rbxassetid://117018743106247", -- calm face (2026-10-11)
-			hp = 550,
-			melee = { damage = 32, cooldown = 2.4, windup = 0.78, range = 1.6, chaseSpeed = 13, armor = 0.2, move = "slam" },
-			coins = { min = 60, max = 90 },
-			exp = 150,
+			hp = 1520, -- 550
+			melee = { damage = 50, cooldown = 2.4, windup = 0.78, range = 1.6, chaseSpeed = 13, armor = 0.2, move = "slam" },
+			coins = { min = 150, max = 226 }, -- 60-90
+			exp = 56, -- 150
 			drops = {
 				{ weapon = "Mace", chance = 0.15 },
 				{ weapon = "WoodsmansAxe", chance = 0.10 },
@@ -112,16 +117,16 @@ local World: WorldTypes.WorldDef = {
 			hp = 1200,
 			-- Two attacks, picked 50/50, same damage and timing (user, 2026-10-11): the
 			-- knee-up stomp and an overhead double-arm smash.
-			melee = { damage = 40, cooldown = 2.4, windup = 0.72, range = 1.5, chaseSpeed = 10, armor = 0.3, move = "stomp", moves = { "stomp", "smash" } },
-			coins = { min = 150, max = 220 },
-			exp = 400,
+			melee = { damage = 70, cooldown = 2.4, windup = 0.72, range = 1.5, chaseSpeed = 10, armor = 0.3, move = "stomp", moves = { "stomp", "smash" } },
+			coins = { min = 338, max = 526 }, -- 150-220
+			exp = 150, -- 400
 			drops = {
 				{ weapon = "WoodsmansAxe", chance = 0.20 },
 				{ weapon = "Greatclub", chance = 0.20 },
 				-- Legendary: the treant's living heart
 				{ weapon = "HeartwoodStaff", chance = 0.05 },
 				-- the secret Marshmallow Stick (hidden in the Index until found)
-				{ weapon = "MarshmallowStick", chance = 0.02 },
+				{ weapon = "MarshmallowStick", chance = 0.001 }, -- secrets drop at 0.1% (the user's rule); 2% until 2026-10-20
 			},
 			materials = { { id = "HeartwoodSap", chance = 0.5, min = 1, max = 1 } },
 		},

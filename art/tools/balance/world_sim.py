@@ -20,6 +20,11 @@ Left out on purpose (the user's rule, 2026-10-19): game passes, boosts and luck,
 potions (drinking and brewing), the secret weapon and the secret core, and the
 secret enemy.
 
+World 2 and later start where a typical player arrives (--from 1, 2026-10-20): the previous
+world's weapons and armour are loaded so the carried gear works (--start-weapons, --start-armor,
+--start-wear, --start-level, --start-coins; the defaults are World 1's gate-goal result: level 25,
+about 1,000 coins, the Weathervane Spear, Harvest Knight worn).
+
 Every game number comes from world<N>.json, which dump_world.luau writes from
 the real configs and the map in Studio. Only the player's behaviour is assumed;
 those numbers are in PLAYER below.
@@ -52,7 +57,12 @@ PLAYER = {
 
 
 def load(world):
-    return json.load(open(HERE / f"world{world}.json", encoding="utf-8"))
+    data = json.load(open(HERE / f"world{world}.json", encoding="utf-8"))
+    # Luau's JSONEncode writes an empty table as [] (World 2 has no gathering or tools yet)
+    for k in ("gathering", "tools", "armor", "weapons"):
+        if isinstance(data.get(k), list):
+            data[k] = {}
+    return data
 
 
 def listify(t):
@@ -99,7 +109,7 @@ class World:
         self.weapons = {w: v for w, v in data["weapons"].items()}
         self.tools = data["tools"]
         self.armor = {a: dict(v, recipe=listify(v["recipe"])) for a, v in data["armor"].items()}
-        self.gate = dict(data["gate"], materials=listify(data["gate"]["materials"]))
+        self.gate = dict(data["gate"], materials=listify(data["gate"].get("materials")))
         self.quest = [data["quest"]["steps"][k] for k in sorted(data["quest"]["steps"], key=int)]
         for s in self.quest:
             if "items" in s:
@@ -118,8 +128,8 @@ class World:
         return bool(w.get("secret")) or w.get("rarity") in ("Secret", "Relic", "Transcendent")
 
     def counts(self, w):
-        # every weapon a player collects in this world, minus the starter and secrets
-        return not w.get("starter") and not self.secret_weapon(w["id"])
+        # every weapon a player collects in this world, minus the starter, secrets and carried gear
+        return not w.get("starter") and not w.get("carried") and not self.secret_weapon(w["id"])
 
     # level curve
     def level_of(self, total):
@@ -137,6 +147,9 @@ class World:
 
 
 # ---------------------------------------------------------------------------
+START = {}
+
+
 class Run:
     def __init__(self, world, rng, overrides=None, trace=False):
         self.w, self.rng, self.trace_on = world, rng, trace
@@ -167,6 +180,13 @@ class Run:
         self.levelHeals = 0
         self.fights = []           # (time, enemy, share of max HP it took)
         self.kills = {}
+        if START:
+            self.weapons |= set(START.get("weapons", []))
+            self.armor |= set(START.get("armor", []))
+            self.wearing = START.get("wear") or self.wearing
+            self.exp = world.exp_for(START.get("level", 1))
+            self.coins = START.get("coins", 0)
+            self.hp = self.maxhp()
 
     # --- helpers -----------------------------------------------------------
     def say(self, *a):
@@ -212,7 +232,7 @@ class Run:
     def upgrades(self):
         """Shop weapons not owned that hit harder per second than the best one held."""
         best = self.best_dps()
-        return sorted((x for x, v in self.w.weapons.items() if v.get("price") and x not in self.weapons
+        return sorted((x for x, v in self.w.weapons.items() if v.get("price") and not v.get("carried") and x not in self.weapons
                        and not self.w.secret_weapon(x) and self.dps(x) > best), key=lambda x: self.w.weapons[x]["price"])
 
     def best_weapon(self, enemy):
@@ -340,7 +360,10 @@ class Run:
         self.dead[(enemy, i)] = self.t + w.respawn[enemy]
         e = w.enemies[enemy]
         self.kills[enemy] = self.kills.get(enemy, 0) + 1
-        self.coins += self.rng.randint(e["coins"]["min"], e["coins"]["max"])
+        got = self.rng.randint(e["coins"]["min"], e["coins"]["max"])
+        self.coins += got
+        if self.accepted and self.cur() and self.cur()["kind"] == "earn":
+            self.progress += got
         self.add_exp(e.get("exp", 0))
         for x in e["materials"]:
             if self.rng.random() < x["chance"]:
@@ -407,9 +430,9 @@ class Run:
         if k == "bring":
             return all(self.mats.get(x["id"], 0) >= x["count"] for x in c["items"])
         if k in ("earn",):
-            return self.progress >= c["count"]
+            return self.progress >= c.get("count", c.get("amount", 0))
         if k == "give":
-            return self.coins >= c["count"]
+            return self.coins >= c.get("count", c.get("amount", 0))
         return True
 
     def visit_giver(self):
@@ -431,7 +454,7 @@ class Run:
                 for x in c["items"]:
                     self.mats[x["id"]] -= x["count"]
             if c["kind"] == "give":
-                self.coins -= c["count"]
+                self.coins -= c.get("count", c.get("amount", 0))
             r = c.get("reward", {})
             self.coins += r.get("coins", 0)
             self.add_exp(r.get("exp", 0))
@@ -470,8 +493,8 @@ class Run:
         if not self.gateDone:
             n += self.w.gate["coins"]
         for s in self.w.quest[self.step:]:
-            if s["kind"] == "give":
-                n += s["count"]
+            if s["kind"] in ("give", "earn"):
+                n += s.get("count", s.get("amount", 0))
         return max(0, n - self.coins)
 
     def level_need(self):
@@ -717,6 +740,8 @@ def apply_overrides(data, sets):
             elif parts[2] == "material":
                 for x in listify(e["materials"]):
                     x["chance"] = float(val)
+            elif parts[2] in ("damage", "cooldown", "windup", "armor"):
+                e["melee"][parts[2]] = num(val)
             else:
                 e[parts[2]] = num(val)
         elif parts[0] == "gate":
@@ -785,11 +810,31 @@ def main():
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--rod", action="store_true", help="count the fishing rod as a tool to buy")
     ap.add_argument("--goal", choices=("gate", "all"), default="gate", help="gate: stop at the gate; all: finish the world first")
+    ap.add_argument("--from", dest="prev", type=int, default=None, help="arrive from this world: load its weapons and armour for the carried gear")
+    ap.add_argument("--start-level", type=int, default=25)
+    ap.add_argument("--start-coins", type=int, default=1000)
+    ap.add_argument("--start-weapons", default="WeathervaneSpear")
+    ap.add_argument("--start-armor", default="FarmhandsGear,HarvestKnight")
+    ap.add_argument("--start-wear", default="HarvestKnight")
     ap.add_argument("--set", action="append", default=[])
     ap.add_argument("--trace", action="store_true")
     ap.add_argument("--remap", action="store_true", help="after level.* changes, move level requirements to the same EXP")
     a = ap.parse_args()
     data = load(a.world)
+    if a.prev is None and a.world > 1:
+        a.prev = a.world - 1
+    if a.prev:
+        prev = load(a.prev)
+        for wid, v in prev["weapons"].items():
+            data["weapons"].setdefault(wid, dict(v, carried=True))
+        for aid, v in prev["armor"].items():
+            data["armor"].setdefault(aid, dict(v, carried=True))
+        START.update({
+            "level": a.start_level, "coins": a.start_coins,
+            "weapons": [x for x in a.start_weapons.split(",") if x],
+            "armor": [x for x in a.start_armor.split(",") if x],
+            "wear": a.start_wear or None,
+        })
     old_curve = dict(data["leveling"])
     apply_overrides(data, a.set)
     if a.remap:
