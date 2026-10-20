@@ -1,0 +1,135 @@
+{
+ "frame": "Grip space (the hand at the origin, handle along -Z, head toward -Y), Roblox axes; one-handed, no OffGrip; the rod's Tip like the Wooden Rod's",
+ "tools": {
+  "StoneAxe": {
+   "Edge": {
+    "offset": [
+     -0.0,
+     -0.92,
+     -2.16
+    ],
+    "size": [
+     0.08,
+     0.1,
+     1.2
+    ],
+    "color": "b3b9bf",
+    "faces": 6
+   },
+   "Grip": {
+    "offset": [
+     -0.0,
+     0.0185,
+     0.001
+    ],
+    "size": [
+     0.2685,
+     0.3204,
+     0.8455
+    ],
+    "color": "d98a1f",
+    "faces": 38
+   },
+   "Handle": {
+    "offset": [
+     -0.0,
+     0.0033,
+     -0.9098
+    ],
+    "size": [
+     0.2858,
+     0.3299,
+     3.3869
+    ],
+    "color": "a24a2c",
+    "faces": 38
+   },
+   "Head": {
+    "offset": [
+     -0.0,
+     -0.27,
+     -2.16
+    ],
+    "size": [
+     0.5,
+     1.26,
+     1.16
+    ],
+    "color": "74757c",
+    "faces": 26
+   },
+   "Vine": {
+    "offset": [
+     -0.0,
+     0.0111,
+     -2.165
+    ],
+    "size": [
+     0.3118,
+     0.3788,
+     0.84
+    ],
+    "color": "3f8a3a",
+    "faces": 36
+   }
+  },
+  "StoneRod": {
+   "Grip": {
+    "offset": [
+     -0.0,
+     0.0,
+     0.185
+    ],
+    "size": [
+     0.3178,
+     0.3178,
+     1.53
+    ],
+    "color": "3b2a1e",
+    "faces": 34
+   },
+   "Reel": {
+    "offset": [
+     -0.0,
+     -0.37,
+     -0.22
+    ],
+    "size": [
+     0.16,
+     0.38,
+     0.3614
+    ],
+    "color": "2f8f86",
+    "faces": 12
+   },
+   "Rod": {
+    "offset": [
+     -0.0,
+     0.0041,
+     -2.631
+    ],
+    "size": [
+     0.2728,
+     0.315,
+     4.1422
+    ],
+    "color": "74757c",
+    "faces": 121
+   },
+   "Stone": {
+    "offset": [
+     0.105,
+     -0.2952,
+     -1.8121
+    ],
+    "size": [
+     0.29,
+     0.5589,
+     3.4842
+    ],
+    "color": "4f5359",
+    "faces": 120
+   }
+  }
+ }
+}
