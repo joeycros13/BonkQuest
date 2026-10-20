@@ -466,7 +466,7 @@ local function renderArmorSlip(slip: Instance, def: Armor.ArmorDef)
 		end
 		local coins = cost:FindFirstChild("CoinStat")
 		if coins then
-			setText(coins, "Value", Format.commas(def.coins))
+			setText(coins, "Value", Format.coins(def.coins))
 		end
 	end
 
@@ -516,7 +516,7 @@ local function renderWeaponSlip(slip: Instance, def: any)
 	local cost = slip:FindFirstChild("WeaponCost")
 	local coins = cost and cost:FindFirstChild("CoinStat")
 	if coins and price then
-		setText(coins, "Value", Format.commas(price))
+		setText(coins, "Value", Format.coins(price))
 	end
 
 	local sources = Index.weaponSources(def.id)

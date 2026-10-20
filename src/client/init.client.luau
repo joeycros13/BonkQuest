@@ -94,6 +94,8 @@ local UI_ORDER = {
 	"WorldsUI",
 	-- the fishing minigame's closing rings (FishingController starts them)
 	"FishingRingUI",
+	-- our own player list, top right (name, level, coins; replaces Roblox's)
+	"PlayerListUI",
 }
 
 print("[Client] bootstrap starting")

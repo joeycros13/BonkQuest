@@ -52,13 +52,6 @@ local function attribute(inst: Instance, name: string, fallback: any): any
 	return if value ~= nil then value else fallback
 end
 
--- 12500 -> "12,500"
-local function commas(n: number): string
-	local s = tostring(math.floor(n))
-	local out = s:reverse():gsub("(%d%d%d)", "%1,"):reverse()
-	return (out:gsub("^,", ""))
-end
-
 local function ownsPass(id: string): boolean
 	local list = player:GetAttribute("OwnedPasses")
 	return type(list) == "string" and ("," .. list .. ","):find("," .. id .. ",", 1, true) ~= nil
@@ -161,7 +154,7 @@ local function render()
 		if kind == "Bundle" and Shop.Bundles[id] then
 			local amount = item:FindFirstChild("Amount")
 			if amount and amount:IsA("TextLabel") then
-				amount.Text = commas(Shop.bundleCoins(Shop.Bundles[id], world))
+				amount.Text = deps.Util.Format.coins(Shop.bundleCoins(Shop.Bundles[id], world))
 			end
 			local bonus = item:FindFirstChild("Bonus")
 			if bonus and bonus:IsA("GuiObject") then
@@ -185,7 +178,7 @@ local function render()
 	local amount = balance and balance:FindFirstChild("Amount", true)
 	if amount and amount:IsA("TextLabel") then
 		local coins = player:GetAttribute("Coins")
-		amount.Text = commas(if type(coins) == "number" then coins else 0)
+		amount.Text = deps.Util.Format.coins(if type(coins) == "number" then coins else 0)
 	end
 end
 

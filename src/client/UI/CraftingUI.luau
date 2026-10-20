@@ -283,7 +283,7 @@ end
 local function fillCost(coins: number, met: boolean)
 	local info = window.Detail.Card.Info
 	local costAmount = info.Cost:FindFirstChild("Amount", true)
-	costAmount.Text = Format.commas(coins)
+	costAmount.Text = Format.coins(coins)
 	costAmount.TextColor3 = info.Cost:GetAttribute(if met then "MetColor" else "ShortColor")
 end
 
@@ -421,7 +421,7 @@ function CraftingUI.refresh()
 	local coinsPill = window:FindFirstChild("Coins")
 	local coinsAmount = coinsPill and coinsPill:FindFirstChild("Amount", true)
 	if coinsAmount then
-		coinsAmount.Text = Format.commas(number("Coins", 0))
+		coinsAmount.Text = Format.coins(number("Coins", 0))
 	end
 
 	local counts = Materials.counts(player)

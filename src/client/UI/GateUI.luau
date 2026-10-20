@@ -147,7 +147,7 @@ local function render(gui: SurfaceGui, gate: Gates.Gate, hovered: boolean)
 	setText(banner and banner:FindFirstChild("Label"), Text.banner:format(gate.world))
 	setText(gui:FindFirstChild("Title"), worldName(gate.world))
 	fillRow(gui:FindFirstChild("LevelRow"), Text.level:format(gate.level), unlocked or level >= gate.level, Text.youLevel:format(level), shortColor)
-	fillRow(gui:FindFirstChild("CoinsRow"), Text.coins:format(commas(gate.coins)), unlocked or coins >= gate.coins, Text.youCoins:format(commas(coins)), shortColor)
+	fillRow(gui:FindFirstChild("CoinsRow"), Text.coins:format(deps.Util.Format.coins(gate.coins)), unlocked or coins >= gate.coins, Text.youCoins:format(deps.Util.Format.coins(coins)), shortColor)
 	local held = Materials.counts(player)
 	local items = gate.materials or {}
 	for i = 1, 8 do
@@ -178,7 +178,7 @@ local function render(gui: SurfaceGui, gate: Gates.Gate, hovered: boolean)
 	if buy and content then
 		local ink = attribute(gui, "Ink_" .. state, Color3.new(0, 0, 0))
 		setText(content:FindFirstChild("Label"), if unlocked then Text.unlocked elseif state == "Met" then Text.buy else Text.locked)
-		setText(content:FindFirstChild("Amount"), commas(gate.coins))
+		setText(content:FindFirstChild("Amount"), deps.Util.Format.coins(gate.coins))
 		for _, name in { "Coin", "Amount" } do
 			local piece = content:FindFirstChild(name)
 			if piece and piece:IsA("GuiObject") then

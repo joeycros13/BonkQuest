@@ -182,7 +182,7 @@ local function renderPlayer()
 	local level, into, need = Leveling.fromTotal(number("ExpTotal"))
 	local coinsHave = coinsCard and find("Have", coinsCard)
 	if coinsHave then
-		coinsHave.Text = Text.youHave:format(Format.commas(number("Coins")))
+		coinsHave.Text = Text.youHave:format(Format.coins(number("Coins")))
 	end
 	local expHave = expCard and find("Have", expCard)
 	if expHave then

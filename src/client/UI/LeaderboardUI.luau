@@ -63,7 +63,7 @@ local function valueText(value: number): string
 	if stat == "Levels" and period == "All" then
 		return Text.level:format(Format.commas(value))
 	end
-	return Format.commas(value)
+	return if stat == "Coins" then Format.coins(value) else Format.commas(value)
 end
 
 local function fetch(): any

@@ -140,7 +140,7 @@ function UpgradesUI.refresh()
 	end
 	local coinsAmount = window:FindFirstChild("Coins") and window.Coins:FindFirstChild("Amount", true)
 	if coinsAmount then
-		coinsAmount.Text = Format.commas(number("Coins", 0))
+		coinsAmount.Text = Format.coins(number("Coins", 0))
 	end
 
 	-- the rows: this world's three levels
@@ -199,7 +199,7 @@ function UpgradesUI.refresh()
 	local amount = detail.Cost:FindFirstChild("Amount", true)
 	detail.Cost.Visible = not maxed and not capped
 	if amount then
-		amount.Text = Format.commas(cost)
+		amount.Text = Format.coins(cost)
 		amount.TextColor3 = detail.Cost:GetAttribute(if number("Coins", 0) >= cost then "MetColor" else "ShortColor") or amount.TextColor3
 	end
 	if maxed then
