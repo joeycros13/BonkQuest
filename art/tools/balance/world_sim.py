@@ -1,7 +1,16 @@
-"""World run simulation: how long a player takes to finish a world.
+"""World run simulation: how long a player takes to reach the next world.
 
 Plays one player from spawning to buying the next world's gate, many times
-with random drops, and reports how long it took. "Finished" means:
+with random drops, and reports how long it took. Two goals:
+
+--goal gate (the default since 2026-10-20, the user's target: a typical free player buys
+the World 2 gate in 30 minutes or more): the run ends the moment the gate is bought. The
+player still plays normally on the way: Dale's steps as they come, the tools, both armour
+sets when it has the level and materials, any weapon that drops, and a shop weapon whenever
+it can afford one that hits harder per second than its best. It never chases a drop-only
+weapon (the Mace) or anything else only for completion.
+
+--goal all (the 2026-10-19 measure): the gate only once the world is finished:
   * every weapon of the world except secrets (drops, shop buys, the quest reward)
   * every armour set of the world, crafted
   * the world's whole questline
@@ -21,6 +30,7 @@ those numbers are in PLAYER below.
   py world_sim.py --trace             # one run, step by step
 """
 import argparse, json, math, random, statistics, sys
+from collections import Counter
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -58,8 +68,9 @@ def dist(a, b):
 
 # ---------------------------------------------------------------------------
 class World:
-    def __init__(self, data, rod=False):
+    def __init__(self, data, rod=False, goal="gate"):
         self.d = data
+        self.goal = goal
         cfg = data["config"]
         self.enemies = {}
         for group, boss in ((cfg["enemies"], False), (cfg["bosses"], True)):
@@ -97,7 +108,9 @@ class World:
         self.speed = data["walkSpeed"] * (data["balance"]["sprint"] if PLAYER["sprint"] else 1)
         self.respawnTime = data["respawnTime"]
         # the goals
-        self.needWeapons = {w for w, v in self.weapons.items() if self.counts(v)}
+        # every weapon a player can collect here (reported either way); only --goal all needs them
+        self.allWeapons = {w for w, v in self.weapons.items() if self.counts(v)}
+        self.needWeapons = set(self.allWeapons) if goal == "all" else set()
         self.needTools = {t for t, v in self.tools.items() if v["kind"] in ("Axe", "Pickaxe") or (rod and v["kind"] == "Rod")}
 
     def secret_weapon(self, wid):
@@ -189,6 +202,19 @@ class Run:
             self.levelHeals += 1
 
     # --- combat ------------------------------------------------------------
+    def dps(self, wid):
+        v = self.w.weapons[wid]
+        return v["damage"] / v["cooldown"]
+
+    def best_dps(self):
+        return max(self.dps(x) for x in self.weapons)
+
+    def upgrades(self):
+        """Shop weapons not owned that hit harder per second than the best one held."""
+        best = self.best_dps()
+        return sorted((x for x, v in self.w.weapons.items() if v.get("price") and x not in self.weapons
+                       and not self.w.secret_weapon(x) and self.dps(x) > best), key=lambda x: self.w.weapons[x]["price"])
+
     def best_weapon(self, enemy):
         e = self.w.enemies[enemy]
         armor = e["melee"].get("armor", 0)
@@ -436,6 +462,9 @@ class Run:
 
     def coin_need(self):
         n = sum(self.w.weapons[x].get("price", 0) for x in self.w.needWeapons - self.weapons if self.w.weapons[x].get("price"))
+        if self.w.goal == "gate":
+            ups = self.upgrades()
+            n += self.w.weapons[ups[0]]["price"] if ups else 0
         n += sum(v["coins"] for a, v in self.w.armor.items() if a not in self.armor)
         n += sum(self.w.tools[t]["price"] for t in self.w.needTools - self.tools)
         if not self.gateDone:
@@ -446,7 +475,7 @@ class Run:
         return max(0, n - self.coins)
 
     def level_need(self):
-        lv = [self.w.gate["level"]] + [v["level"] for a, v in self.w.armor.items() if a not in self.armor]
+        lv = [self.w.gate["level"]] + ([] if self.w.goal == "gate" else [v["level"] for a, v in self.w.armor.items() if a not in self.armor])
         return max(0, self.w.exp_for(max(lv)) - self.exp)
 
     def drop_only_missing(self):
@@ -467,6 +496,10 @@ class Run:
                 did = True
         # the gate's coins come last: keep them only once everything else is bought
         missing = sorted((x for x in w.needWeapons - self.weapons if w.weapons[x].get("price")), key=lambda x: w.weapons[x]["price"])
+        if w.goal == "gate":
+            # the best upgrade it can afford
+            affordable = [x for x in self.upgrades() if self.coins >= w.weapons[x]["price"]]
+            missing = [max(affordable, key=self.dps)] if affordable else []
         for x in missing:
             if self.coins >= w.weapons[x]["price"]:
                 self.coins -= w.weapons[x]["price"]
@@ -505,6 +538,8 @@ class Run:
         if any(self.coins >= w.tools[t]["price"] for t in w.needTools - self.tools):
             return True
         if any(self.coins >= w.weapons[x]["price"] for x in w.needWeapons - self.weapons if w.weapons[x].get("price")):
+            return True
+        if w.goal == "gate" and any(self.coins >= w.weapons[x]["price"] for x in self.upgrades()):
             return True
         for a, v in w.armor.items():
             if a not in self.armor and self.level() >= v["level"] and self.coins >= v["coins"] and all(self.mats.get(x["id"], 0) >= x["count"] for x in v["recipe"]):
@@ -576,6 +611,9 @@ class Run:
         w = self.w
         self.visit_giver()
         while not self.done() and self.t < limit:
+            if w.goal == "gate" and self.ready_for_gate():
+                self.buy_gate()
+                break
             c = self.cur()
             if c and self.accepted and self.step_ready():
                 self.visit_giver()
@@ -638,6 +676,9 @@ class Run:
 
     def ready_for_gate(self):
         g = self.w.gate
+        if self.w.goal == "gate":
+            return (self.level() >= g["level"] and self.coins >= g["coins"]
+                    and all(self.mats.get(x["id"], 0) >= x["count"] for x in g["materials"]))
         return (self.step >= len(self.w.quest) and not (self.w.needWeapons - self.weapons)
                 and len(self.armor) == len(self.w.armor) and self.w.needTools <= self.tools
                 and self.level() >= g["level"] and self.coins >= g["coins"]
@@ -743,6 +784,7 @@ def main():
     ap.add_argument("--runs", type=int, default=2000)
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--rod", action="store_true", help="count the fishing rod as a tool to buy")
+    ap.add_argument("--goal", choices=("gate", "all"), default="gate", help="gate: stop at the gate; all: finish the world first")
     ap.add_argument("--set", action="append", default=[])
     ap.add_argument("--trace", action="store_true")
     ap.add_argument("--remap", action="store_true", help="after level.* changes, move level requirements to the same EXP")
@@ -752,7 +794,7 @@ def main():
     apply_overrides(data, a.set)
     if a.remap:
         remap(data, old_curve)
-    world = World(data, rod=a.rod)
+    world = World(data, rod=a.rod, goal=a.goal)
     rng = random.Random(a.seed)
     if a.trace:
         r = Run(world, rng, trace=True).play()
@@ -760,8 +802,12 @@ def main():
         return
     runs = [Run(world, rng).play() for _ in range(a.runs)]
     times = [r.t / 60 for r in runs]
-    print("World %d: %d runs (goals: %d weapons, %d armour, %d quest steps, gate)" % (
-        a.world, a.runs, len(world.needWeapons), len(world.armor), len(world.quest)))
+    if a.goal == "gate":
+        print("World %d: %d runs (goal: buy the gate: level %d, %d coins, %s)" % (a.world, a.runs, world.gate["level"], world.gate["coins"],
+              ", ".join("%d %s" % (x["count"], x["id"]) for x in world.gate["materials"])))
+    else:
+        print("World %d: %d runs (goals: %d weapons, %d armour, %d quest steps, gate)" % (
+            a.world, a.runs, len(world.needWeapons), len(world.armor), len(world.quest)))
     print("  finish time  typical (median) %.1f min | fastest quarter %.1f | slowest quarter %.1f | 9 in 10 by %.1f | worst %.1f" % (
         statistics.median(times), pct(times, 25), pct(times, 75), pct(times, 90), max(times)))
     acts = {}
@@ -783,7 +829,12 @@ def main():
         statistics.mean(r.deaths for r in runs), statistics.mean(r.rests for r in runs) / 60,
         statistics.mean(r.level() for r in runs), statistics.mean(r.coins for r in runs)))
     print("  how each weapon was got (share of runs, typical minute):")
-    for wid in sorted(world.needWeapons, key=lambda x: world.weapons[x].get("order", 99)):
+    if a.goal == "gate":
+        best = Counter(max(r.weapons, key=r.dps) for r in runs)
+        print("  at the gate: quest steps done %.1f of %d, armour sets %.1f, best weapon: %s" % (
+            statistics.mean(r.step for r in runs), len(world.quest), statistics.mean(len(r.armor) for r in runs),
+            ", ".join("%s %d%%" % (world.weapons[k]["name"], 100 * n / len(runs)) for k, n in best.most_common())))
+    for wid in sorted(world.allWeapons, key=lambda x: world.weapons[x].get("order", 99)):
         hows = {}
         mins = []
         for r in runs:
