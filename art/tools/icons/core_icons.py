@@ -12,7 +12,7 @@ from PIL import Image, ImageChops, ImageFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RAW = os.path.join(HERE, "raw")
-TILE = r"C:\FirstRobloxGame\.claude\worktrees\laughing-lovelace-33026c\art\cores\tile_core_soil.png"
+TILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "ui", "tiles", "tile_core_soil.png")
 CORES = ["FarmCore", "ForestCore", "CaveCore"]
 INK = (22, 18, 28)
 WORK, FINAL, OUTLINE, SHADOW, MARGIN = 1024, 512, 22, (14, 20), 0.06
@@ -68,7 +68,7 @@ def sheet(icons):
 
 
 BLADES = ["WorldheartBlade", "WorldheartBlade2", "WorldheartBlade3"]   # tiers 1..3, re-rendered with the new gems
-BLADE_TILE = r"C:\FirstRobloxGame\.claude\worktrees\laughing-lovelace-33026c\art\worldheart\tile_transcendent.png"
+BLADE_TILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "ui", "tiles", "tile_transcendent.png")
 
 
 if __name__ == "__main__":
