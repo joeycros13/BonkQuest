@@ -11,7 +11,10 @@
 --     it pokes out. A weapon without an icon falls back to the "Icon" viewport.
 --     Clicking it or pressing 1 takes the weapon out or puts it away
 --     (WeaponController.toggleHolster).
---   * The slot isn't highlighted while the weapon is out (the user's call).
+--   * The slot holding what's in hand (the weapon taken out, or a tool) stays grown
+--     like a hovered one (user, 2026-10-19), so it shows what's in your hand. The
+--     Hotbar's HeldScale attribute sets how big (default: HoverScale). No other
+--     highlight (the user's call).
 --   * Tool slots (2026-10-18): Slot2.. are copies of Slot1, one per gathering tool kind
 --     (their "ToolKind" attribute, Config/Tools.Kinds order: Axe, Pickaxe, Shovel, Rod
 --     on keys 2-5). A slot shows only once the player owns a tool of its kind, and
@@ -43,7 +46,7 @@ local PanelWindow: any = nil
 local WeaponController: any = nil
 local FontDrop: any = nil
 
-local SIDE_BUTTONS = { "InventoryButton", "IndexButton", "ShopButton", "AdminButton" }
+local SIDE_BUTTONS = { "InventoryButton", "IndexButton", "ShopButton", "AdminButton", "StatsButton", "LeaderboardButton" }
 
 local GUI_TIMEOUT = 15
 local INVENTORY = "Inventory"
@@ -118,23 +121,18 @@ local function refreshTools()
 	end
 end
 
-local function refresh()
-	refreshTools()
-	local selected = WeaponController.selected()
-	local button = slot("Slot1")
-	if not (button and selected) or selected.id == shownWeapon then
-		return
-	end
-	shownWeapon = selected.id
-	fill(button, selected)
-end
 
 local function tuning(name: string, fallback: number): number
 	local value = hotbar and hotbar:GetAttribute(name)
 	return if type(value) == "number" then value else fallback
 end
 
--- Grow a slot while the pointer is over it, and ease it back after.
+-- Each wired button's size state: hovered, and (hotbar slots) holding what's in hand.
+type Grow = { hovered: boolean, held: boolean, set: (boolean?) -> () }
+local grows: { [GuiButton]: Grow } = {}
+
+-- Grow a slot while the pointer is over it or while it holds what's in hand, and
+-- ease it back after.
 local function wireHover(button: GuiButton)
 	local content = button:FindFirstChild("Content")
 	local scale = content and content:FindFirstChild("HoverScale")
@@ -142,19 +140,62 @@ local function wireHover(button: GuiButton)
 		return
 	end
 	local tween: Tween? = nil
-	local function to(target: number, time: number)
+	local state: Grow
+	local function set(instant: boolean?)
+		local hover = tuning("HoverScale", 1.15)
+		local target = math.max(if state.hovered then hover else 1, if state.held then tuning("HeldScale", hover) else 1)
+		local growing = target > (scale :: UIScale).Scale
+		local time = if instant then 0 elseif growing then tuning("HoverGrowTime", 0.12) else tuning("HoverShrinkTime", 0.1)
 		if tween then
 			tween:Cancel()
 		end
 		tween = TweenService:Create(scale, TweenInfo.new(time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Scale = target })
 		;(tween :: Tween):Play()
 	end
+	state = { hovered = false, held = false, set = set }
+	grows[button] = state
 	button.MouseEnter:Connect(function()
-		to(tuning("HoverScale", 1.15), tuning("HoverGrowTime", 0.12))
+		state.hovered = true
+		set()
 	end)
 	button.MouseLeave:Connect(function()
-		to(1, tuning("HoverShrinkTime", 0.1))
+		state.hovered = false
+		set()
 	end)
+end
+
+-- Mark the hotbar slot that holds what's in hand: Slot1 while the weapon is out, a
+-- tool slot while its kind is out.
+local function refreshHeld()
+	if not hotbar then
+		return
+	end
+	local heldKind = player:GetAttribute("HeldTool")
+	local weaponOut = player:GetAttribute("Holstered") ~= true and heldKind == nil
+	for _, child in hotbar:GetChildren() do
+		local state = child:IsA("GuiButton") and grows[child]
+		if not state then
+			continue
+		end
+		local kind = child:GetAttribute("ToolKind")
+		local held = if kind ~= nil then kind == heldKind else (child.Name == "Slot1" and weaponOut)
+		if held ~= state.held then
+			state.held = held
+			state.set()
+		end
+	end
+end
+
+local function refresh()
+	refreshTools()
+	refreshHeld()
+	local selected = WeaponController.selected()
+	local button = slot("Slot1")
+	if not (button and selected) or selected.id == shownWeapon then
+		return
+	end
+	shownWeapon = selected.id
+	fill(button, selected)
 end
 
 -- the side buttons' grow-on-hover, for the modules that own the other buttons

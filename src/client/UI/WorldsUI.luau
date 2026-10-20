@@ -95,7 +95,7 @@ local function render()
 	banner.Locked.Visible = status == "locked"
 	if status == "locked" then
 		local gate = gateOf(selected)
-		banner.Locked.Label.Text = if gate then (attr("TextLocked", "Locked · Level %d · %s coins") :: string):format(gate.level, Format.commas(gate.coins)) else "Locked"
+		banner.Locked.Label.Text = if gate then (attr("TextLocked", "Locked · Level %d · %s coins") :: string):format(gate.level, Format.coins(gate.coins)) else "Locked"
 	end
 	banner.Soon.Visible = status == "soon"
 	banner.Soon.Label.Text = attr("TextSoon", "Coming soon")

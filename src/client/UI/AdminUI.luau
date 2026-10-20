@@ -7,10 +7,12 @@
 -- through PanelWindow (Panel = "Admin"). Every request goes to
 -- Remotes.AdminAction, which the server checks again.
 --
--- The panel is laid out entirely by layouts (rebuilt 2026-10-11 after the user
--- saw text cut off): the Window stacks Header / HeaderLine / Body; Body puts
--- Tabs beside Content; Content stacks Pages above Status. Pieces are found by
--- name at any depth:
+-- The panel has the Inventory's look (2026-10-20, the user: "the same look as the
+-- inventory"): the Window wears the drawn aqua window (Skin, art/tools/ui/admin_window.py)
+-- with its Shadow, the Header sits on the drawn cyan band, and Body lies on the two drawn
+-- panels, Tabs beside Content (Body's list); Content stacks Pages above Status. Every
+-- button is a pill (a Skin image and a Label on its face), like the rest of the game.
+-- Pieces are found by name at any depth:
 --   Title, Close; Tabs/Tab<Player|Weapons|Armor|Tools|Materials|Mobs> (a "Tab" attribute
 --   naming the page; Label), Hint;
 --   PagePlayer: CoinsCard / ExpCard (Icon, Title, Have, Amount, Add, Take,
@@ -22,30 +24,37 @@
 --     (2026-10-12, like the mobs): a Templates/WorldHeader, then a
 --     Templates/CardSection grid (its height follows its cards) of
 --     Templates/WeaponCard -- the shared tile (Util.WeaponTile) in its Tile slot,
---     plus Action (Give / Remove / Starter: <state>Face / <state>Dark
---     attributes). Weapons are sorted by damage, weakest first; armour by
+--     plus Action (Give / Remove / Starter: the pill in the template's <state>Skin
+--     attribute). Weapons are sorted by damage, weakest first; armour by
 --     order; materials use Templates/MaterialCard (Buttons/Give, Buttons/Take:
 --     Admin.Text.materialStep at a time, the count on the tile's pill);
 --   PageTools/List (2026-10-19): the gathering tools (Config/Tools) per world, on
 --     WeaponCards with their kind on the pill; Give / Remove send the `tool` action;
+--   PagePotions/List (2026-10-19): every potion (Config/Potions) per tier, on
+--     MaterialCards (count on the pill); Give / Take send the `potion` action;
 --   PageMobs/List: Templates/WorldHeader, then a Templates/MobRow per enemy kind
 --     (Portrait, MobName, Note, Respawn);
+--   PageQuests/List (2026-10-19): a Templates/QuestRow per questline (Portrait = the
+--     giver, Texts/LineName, Texts/Note "Step 6 of 10 · Active", Amount = a step number,
+--     Go = the `quest` action to that step (one past the last finishes the line), Skip =
+--     `questSkip`, one step on);
 --   Status/Label: the last result. It always keeps its room (idle = see-through),
 --     so a message never resizes the page (gui attributes StatusOk,
 --     StatusError, StatusSeconds).
--- Buttons have Label children and a PressScale; TabSelected / TabIdle colour
--- the tabs. Every word comes from Config/Admin.Text.
+-- Buttons have Label children (their hover and press: Util.ButtonFx); the gui's SkinTabSelected /
+-- SkinTabIdle pills dress the tabs. Every word comes from Config/Admin.Text.
 
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
 local Admin = require(Config:WaitForChild("Admin"))
 local Armor = require(Config:WaitForChild("Armor"))
 local Materials = require(Config:WaitForChild("Materials"))
+local Potions = require(Config:WaitForChild("Potions"))
+local Quests = require(Config:WaitForChild("Quests"))
 local Tools = require(Config:WaitForChild("Tools"))
 local Weapons = require(Config:WaitForChild("Weapons"))
 local Worlds = require(Config:WaitForChild("Worlds"))
@@ -55,7 +64,6 @@ local MapLayout = require(Config:WaitForChild("MapLayout"))
 local AdminUI = {}
 
 local PANEL = "Admin"
-local PRESS = 0.93
 local Text = Admin.Text
 local player = Players.LocalPlayer
 
@@ -127,26 +135,11 @@ local function ask(request: { [string]: any })
 	end
 end
 
--- A pressed button dips (its PressScale) and runs `fn`.
+-- A pressed button runs `fn` (its hover and press look come from Util.ButtonFx, like every button).
 local function wireButton(button: Instance?, fn: () -> ())
 	if not (button and button:IsA("GuiButton")) then
 		return
 	end
-	local scale = button:FindFirstChild("PressScale")
-	local function dip(to: number)
-		if scale and scale:IsA("UIScale") then
-			TweenService:Create(scale, TweenInfo.new(0.07, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Scale = to }):Play()
-		end
-	end
-	button.MouseButton1Down:Connect(function()
-		dip(PRESS)
-	end)
-	button.MouseButton1Up:Connect(function()
-		dip(1)
-	end)
-	button.MouseLeave:Connect(function()
-		dip(1)
-	end)
 	button.Activated:Connect(fn)
 end
 
@@ -158,15 +151,11 @@ local function read(box: Instance?): number?
 	return tonumber((box.Text:gsub("[,%s]", "")))
 end
 
-local function recolour(button: Instance?, face: Color3, dark: Color3)
-	if not (button and button:IsA("GuiButton")) then
-		return
-	end
-	button.BackgroundColor3 = face
-	local label = button:FindFirstChild("Label")
-	local stroke = label and label:FindFirstChildOfClass("UIStroke")
-	if stroke then
-		stroke.Color = dark
+-- A button is a pill (its Skin image); a state swaps which pill it wears.
+local function reskin(button: Instance?, image: string?)
+	local skin = button and button:FindFirstChild("Skin")
+	if skin and skin:IsA("ImageLabel") and image then
+		skin.Image = image
 	end
 end
 
@@ -193,7 +182,7 @@ local function renderPlayer()
 	local level, into, need = Leveling.fromTotal(number("ExpTotal"))
 	local coinsHave = coinsCard and find("Have", coinsCard)
 	if coinsHave then
-		coinsHave.Text = Text.youHave:format(Format.commas(number("Coins")))
+		coinsHave.Text = Text.youHave:format(Format.coins(number("Coins")))
 	end
 	local expHave = expCard and find("Have", expCard)
 	if expHave then
@@ -245,27 +234,27 @@ end
 
 -- A world's section in a page's list: its header, then a grid of cards whose
 -- height follows its content. Made once, reused on every render.
-local function worldSection(list: Instance, worldId: number, order: number): Instance?
+-- A header and a card grid in a page's list, named by `key` ("3" for World 3, "T2").
+local function sectionFor(list: Instance, key: string, title: string, order: number): Instance?
 	local templates = gui and gui:FindFirstChild("Templates")
 	local headerTemplate = templates and templates:FindFirstChild("WorldHeader")
 	local sectionTemplate = templates and templates:FindFirstChild("CardSection")
 	if not (headerTemplate and sectionTemplate) then
 		return nil
 	end
-	local header = list:FindFirstChild("Header" .. worldId)
+	local header = list:FindFirstChild("Header" .. key)
 	if not header then
 		header = headerTemplate:Clone()
-		header.Name = "Header" .. worldId
+		header.Name = "Header" .. key
 		header.Visible = true
 		header.Parent = list
 	end
-	local world = Worlds.get(worldId)
 	header.LayoutOrder = order
-	header.Text = Text.worldHeader:format(worldId, world and world.name or "")
-	local section = list:FindFirstChild("Cards" .. worldId)
+	header.Text = title
+	local section = list:FindFirstChild("Cards" .. key)
 	if not section then
 		section = sectionTemplate:Clone()
-		section.Name = "Cards" .. worldId
+		section.Name = "Cards" .. key
 		section.Visible = true
 		section.Parent = list
 		local layout = section:FindFirstChildWhichIsA("UIGridStyleLayout")
@@ -279,6 +268,11 @@ local function worldSection(list: Instance, worldId: number, order: number): Ins
 	end
 	section.LayoutOrder = order + 1
 	return section
+end
+
+local function worldSection(list: Instance, worldId: number, order: number): Instance?
+	local world = Worlds.get(worldId)
+	return sectionFor(list, tostring(worldId), Text.worldHeader:format(worldId, world and world.name or ""), order)
 end
 
 -- The page's List, and the worlds that have something to list, in world order.
@@ -315,7 +309,7 @@ local function styleAction(action: Instance?, state: string)
 	local templates = gui and gui:FindFirstChild("Templates")
 	local template = templates and templates:FindFirstChild("WeaponCard")
 	if template then
-		recolour(action, attr(template, state .. "Face", Color3.new(1, 1, 1)), attr(template, state .. "Dark", Color3.new(0, 0, 0)))
+		reskin(action, attr(template, state .. "Skin", nil))
 	end
 end
 
@@ -515,6 +509,102 @@ local function renderMaterials()
 	end
 end
 
+-- ==================== potions page ====================
+
+local function renderPotions()
+	local list = pageList("PagePotions")
+	if not list then
+		return
+	end
+	local counts = Potions.counts(player)
+	local step = Text.potionStep or 1
+	for tier, band in Potions.Bands do
+		local section = sectionFor(list, "T" .. tier, Text.tierHeader:format(Potions.Numerals[tier], band.from, band.to), tier * 2)
+		if not section then
+			return
+		end
+		local index = 0
+		for _, def in Potions.list() do
+			if def.tier ~= tier then
+				continue
+			end
+			index += 1
+			local id = def.id
+			local c = card(section, id, "MaterialCard", def, { statText = "" }, function(c)
+				wireButton(c:FindFirstChild("Give", true), function()
+					ask({ action = "potion", id = id, amount = step })
+				end)
+				wireButton(c:FindFirstChild("Take", true), function()
+					ask({ action = "potion", id = id, amount = -step })
+				end)
+				setLabel(c:FindFirstChild("Give", true), Text.giveMany:format(step))
+				setLabel(c:FindFirstChild("Take", true), Text.takeMany:format(step))
+				styleAction(c:FindFirstChild("Give", true), "Give")
+				styleAction(c:FindFirstChild("Take", true), "Remove")
+			end)
+			if c then
+				c.LayoutOrder = index
+				local value = c:FindFirstChild("Stat", true)
+				value = value and value:FindFirstChild("Value", true)
+				if value and value:IsA("TextLabel") then
+					value.Text = Text.materialCount:format(Format.commas(counts[id] or 0))
+				end
+			end
+		end
+	end
+end
+
+-- ==================== quests page ====================
+
+local function renderQuests()
+	local pageFrame = find("PageQuests")
+	local list = pageFrame and pageFrame:FindFirstChild("List")
+	local templates = gui and gui:FindFirstChild("Templates")
+	local rowTemplate = templates and templates:FindFirstChild("QuestRow")
+	if not (list and rowTemplate) then
+		return
+	end
+	for index, id in Quests.order do
+		local line = Quests.get(id)
+		if not line then
+			continue
+		end
+		local row = list:FindFirstChild(id)
+		if not row then
+			row = rowTemplate:Clone()
+			row.Name = id
+			row.Visible = true
+			row.Parent = list
+			local box = find("Amount", row)
+			setLabel(find("Go", row), Text.goTo)
+			setLabel(find("Skip", row), Text.skip)
+			wireButton(find("Go", row), function()
+				local step = tonumber(box and box.Text or "")
+				if not step then
+					status(false, Text.badNumber)
+					return
+				end
+				ask({ action = "quest", line = id, step = step })
+			end)
+			wireButton(find("Skip", row), function()
+				ask({ action = "questSkip", line = id })
+			end)
+		end
+		row.LayoutOrder = index
+		find("Portrait", row).Image = line.npc.portrait
+		find("LineName", row).Text = line.name
+		local step = player:GetAttribute(Quests.attr("Step", id))
+		local state = player:GetAttribute(Quests.attr("State", id))
+		local n = #line.steps
+		find("Note", row).Text = if type(step) == "number" and step > n then Text.questFinished:format(n)
+			else Text.questNote:format(if type(step) == "number" then step else 1, n, tostring(state or "Offer"))
+		local box = find("Amount", row)
+		if box and box:IsA("TextBox") and not box:IsFocused() then
+			box.Text = tostring(if type(step) == "number" then math.min(step, n + 1) else 1)
+		end
+	end
+end
+
 -- ==================== mobs page ====================
 
 local function tally(): { [string]: { total: number, dead: number } }
@@ -606,7 +696,7 @@ end
 
 local function showPage(name: string)
 	page = name
-	for _, n in { "PagePlayer", "PageWeapons", "PageArmor", "PageTools", "PageMaterials", "PageMobs" } do
+	for _, n in { "PagePlayer", "PageWeapons", "PageArmor", "PageTools", "PageMaterials", "PagePotions", "PageQuests", "PageMobs" } do
 		local p = find(n)
 		if p then
 			p.Visible = n == name
@@ -616,7 +706,8 @@ local function showPage(name: string)
 	for _, tab in if tabs then tabs:GetChildren() else {} do
 		if tab:IsA("GuiButton") and tab:GetAttribute("Tab") then
 			local on = tab:GetAttribute("Tab") == name
-			tab.BackgroundColor3 = attr(gui :: ScreenGui, if on then "TabSelected" else "TabIdle", tab.BackgroundColor3)
+			tab:SetAttribute("Selected", on) -- the open tab stays grown (Util.ButtonFx)
+			reskin(tab, attr(gui :: ScreenGui, if on then "SkinTabSelected" else "SkinTabIdle", nil))
 		end
 	end
 	if name == "PagePlayer" then
@@ -629,6 +720,10 @@ local function showPage(name: string)
 		renderTools()
 	elseif name == "PageMaterials" then
 		renderMaterials()
+	elseif name == "PagePotions" then
+		renderPotions()
+	elseif name == "PageQuests" then
+		renderQuests()
 	else
 		renderMobs()
 	end
@@ -644,8 +739,12 @@ local function fitCanvas(list: Instance?)
 	if not layout then
 		return
 	end
+	-- a list whose first row has an outline (Quests) has top / bottom padding, so the outline
+	-- isn't clipped; the canvas makes room for it
+	local padding = list:FindFirstChildOfClass("UIPadding")
 	local function fit()
-		list.CanvasSize = UDim2.fromOffset(0, math.ceil(layout.AbsoluteContentSize.Y) + 4)
+		local extra = if padding then padding.PaddingTop.Offset + padding.PaddingBottom.Offset else 0
+		list.CanvasSize = UDim2.fromOffset(0, math.ceil(layout.AbsoluteContentSize.Y + extra) + 4)
 	end
 	layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(fit)
 	fit()
@@ -768,7 +867,7 @@ function AdminUI.start()
 			pill.BackgroundTransparency = 1
 			setLabel(pill, "")
 		end
-		for _, name in { "PageWeapons", "PageArmor", "PageTools", "PageMaterials", "PageMobs" } do
+		for _, name in { "PageWeapons", "PageArmor", "PageTools", "PageMaterials", "PagePotions", "PageQuests", "PageMobs" } do
 			fitCanvas(find(name):FindFirstChild("List"))
 		end
 		showPage(page)
@@ -781,6 +880,12 @@ function AdminUI.start()
 		player:GetAttributeChangedSignal("OwnedArmor"):Connect(renderArmor)
 		player:GetAttributeChangedSignal("OwnedTools"):Connect(renderTools)
 		player:GetAttributeChangedSignal("Materials"):Connect(renderMaterials)
+		player:GetAttributeChangedSignal("Potions"):Connect(renderPotions)
+		for _, id in Quests.order do
+			for _, field in { "Step", "State" } do
+				player:GetAttributeChangedSignal(Quests.attr(field, id)):Connect(renderQuests)
+			end
+		end
 		-- the Health card's badge follows the character's max HP
 		local function watchHealth(character: Model)
 			local h = character:WaitForChild("Humanoid", 10)

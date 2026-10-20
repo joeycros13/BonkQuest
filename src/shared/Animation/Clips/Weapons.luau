@@ -220,6 +220,30 @@ Weapons.SWINGS = {
 		{ u = 0.72, hand = { 1.5, -0.6, -1.1 }, dir = { 1, -0.12, 0 }, roll = 5, ry = 70, wp = 6 },
 		{ u = 1 },
 	},
+	-- Weathervane Spear "Gust" (user's pick, 2026-10-19): one wide level sweep. The right
+	-- hand holds the spear straight out in front (the left lets go: R6 arms can't both
+	-- reach a shaft pointing ahead) and the BODY turns, like the Scythe's: wound up turned
+	-- right with the tip out on the right, then round to the left in one eased sweep that
+	-- is fastest as the tip passes in front (the hit, u ~0.46). A gust rolls out on the hit
+	-- (impact = "Gust").
+	Gust = {
+		{ u = 0 },
+		{ u = 0.24, hand = { 1.4, -0.7, -0.7 }, dir = { -0.05, 0.04, -1 }, two = 0, left = { -1.2, -0.6, -0.9 }, ry = -85, wp = 1 },
+		{ u = 0.7, hand = { 1.2, -0.55, -1.0 }, dir = { -0.05, 0.02, -1 }, two = 0, left = { -1.25, -0.55, -0.7 }, ry = 70, wp = 6 },
+		{ u = 0.84, hand = { 1.2, -0.56, -0.98 }, dir = { -0.05, 0.02, -1 }, two = 0, left = { -1.25, -0.55, -0.7 }, ry = 66, wp = 5 },
+		{ u = 1 },
+	},
+	-- Pumpkin King's Mace "Pumpkin smash" (user's pick, 2026-10-19): raised high over the
+	-- right shoulder, then one heavy diagonal smash down and across to the left, the
+	-- pumpkin head just meeting the ground (impact = "Pumpkin": sparks and seeds there).
+	PumpkinSmash = {
+		{ u = 0 },
+		{ u = 0.38, hand = { 1.75, 1.7, 0.3 }, dir = { 0.6, 1, 0.45 }, wy = -28, wp = -8 },
+		-- (measured: the head's lowest point lands at -3.05, the ground is -3)
+		{ u = 0.58, hand = { 0.55, -0.25, -1.35 }, dir = { -0.5, -0.15, -0.9 }, wy = 20, wp = 8, rz = 0.35, ease = "out" },
+		{ u = 0.78, hand = { 0.5, -0.3, -1.32 }, dir = { -0.5, -0.17, -0.88 }, wy = 18, wp = 6, rz = 0.3 },
+		{ u = 1 },
+	},
 	-- Birch Hatchet: the Machete's diagonal chop, with a higher follow-through so
 	-- the long bearded head stays above the ground.
 	Chop1H = {

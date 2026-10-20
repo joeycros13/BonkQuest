@@ -23,6 +23,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = Shared:WaitForChild("Config")
 local Balance = require(Config:WaitForChild("Balance"))
 local Enemies = require(Config:WaitForChild("Enemies"))
+local Upgrades = require(Config:WaitForChild("Upgrades"))
 
 local CoinService = {}
 
@@ -35,15 +36,31 @@ function CoinService.get(player: Player): number
 	return if type(value) == "number" then value else 0
 end
 
-function CoinService.add(player: Player, amount: number)
-	player:SetAttribute("Coins", CoinService.get(player) + math.floor(amount))
+-- Coins earned (kills, quest rewards...) are announced to onEarned listeners (the
+-- leaderboards, 2026-10-19). `source` "shop" (Robux bundles), "admin" and "reward"
+-- (leaderboard rewards) add coins without counting as earned; spending is negative.
+local earnedListeners: { (Player, number) -> () } = {}
+
+function CoinService.onEarned(callback: (Player, number) -> ())
+	table.insert(earnedListeners, callback)
+end
+
+function CoinService.add(player: Player, amount: number, source: string?)
+	local whole = math.floor(amount)
+	player:SetAttribute("Coins", CoinService.get(player) + whole)
+	if whole > 0 and source == nil then
+		for _, listener in earnedListeners do
+			task.spawn(listener, player, whole)
+		end
+	end
 end
 
 -- Coins that come from somewhere other than a kill (a quest reward from Dale,
 -- 2026-10-11): the same spill, thrown out at `position`, then added. With
 -- `afterTalk` the client holds the spill until its conversation closes, so the
--- coins land in front of the player rather than behind the dialogue card.
-function CoinService.spill(player: Player, amount: number, position: Vector3, afterTalk: boolean?)
+-- coins land in front of the player rather than behind the dialogue card. `source` is
+-- CoinService.add's ("reward" for the daily rewards, so they don't count as earned).
+function CoinService.spill(player: Player, amount: number, position: Vector3, afterTalk: boolean?, source: string?)
 	if amount <= 0 then
 		return
 	end
@@ -55,7 +72,7 @@ function CoinService.spill(player: Player, amount: number, position: Vector3, af
 			afterTalk = afterTalk == true,
 		})
 	end
-	CoinService.add(player, amount)
+	CoinService.add(player, amount, source)
 end
 
 local function bodyPosition(body: Instance): Vector3?
@@ -77,8 +94,10 @@ local function onKill(enemy: any, killer: Player?)
 		return
 	end
 	local amount = random:NextInteger(range.min, math.max(range.min, range.max))
+	-- passes and boosts (CoinBoost) times the Coins upgrade (Config/Upgrades)
 	local boost = killer:GetAttribute("CoinBoost")
-	if type(boost) == "number" and boost > 0 then
+	boost = (if type(boost) == "number" and boost > 0 then boost else 1) * Upgrades.value(killer, "Coins")
+	if boost ~= 1 then
 		amount = math.max(1, math.floor(amount * boost + 0.5))
 	end
 	-- Announce the spill before the balance changes: the client holds its

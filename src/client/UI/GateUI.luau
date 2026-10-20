@@ -9,6 +9,9 @@
 --   * Banner/Label: Text.banner with the world number; Title: the world's name.
 --   * LevelRow / CoinsRow: Label (Text.level / Text.coins), and Check when the
 --     player meets it (or owns the gate), else Have (Text.youLevel / youCoins).
+--   * MaterialRow1, 2... (2026-10-19): one per entry of the gate's `materials`, the
+--     same pieces, with the material's icon on Icon (Text.material / youMaterial);
+--     rows past the list are hidden.
 --   * Buy (Content: Label, Coin, Amount): Text.buy and the price when both are
 --     met, Text.locked and the price when not, Text.unlocked once owned (no coin
 --     or price). The gui's FillTop_ / FillBottom_ / Lip_ / Ink_<Met|Locked|
@@ -29,6 +32,7 @@ local TweenService = game:GetService("TweenService")
 
 local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
 local Gates = require(Config:WaitForChild("Gates"))
+local Materials = require(Config:WaitForChild("Materials"))
 
 local GateUI = {}
 
@@ -112,10 +116,20 @@ local function fillRow(row: Instance?, text: string, met: boolean, short: string
 end
 
 -- "Met" | "Locked" | "Unlocked"
+local function materialsMet(gate: Gates.Gate): boolean
+	local held = Materials.counts(player)
+	for _, item in gate.materials or {} do
+		if (held[item.id] or 0) < item.count then
+			return false
+		end
+	end
+	return true
+end
+
 local function stateOf(gate: Gates.Gate): string
 	if number("HighestWorld", 1) >= gate.world then
 		return "Unlocked"
-	elseif number("Level", 1) >= gate.level and number("Coins", 0) >= gate.coins then
+	elseif number("Level", 1) >= gate.level and number("Coins", 0) >= gate.coins and materialsMet(gate) then
 		return "Met"
 	end
 	return "Locked"
@@ -133,14 +147,38 @@ local function render(gui: SurfaceGui, gate: Gates.Gate, hovered: boolean)
 	setText(banner and banner:FindFirstChild("Label"), Text.banner:format(gate.world))
 	setText(gui:FindFirstChild("Title"), worldName(gate.world))
 	fillRow(gui:FindFirstChild("LevelRow"), Text.level:format(gate.level), unlocked or level >= gate.level, Text.youLevel:format(level), shortColor)
-	fillRow(gui:FindFirstChild("CoinsRow"), Text.coins:format(commas(gate.coins)), unlocked or coins >= gate.coins, Text.youCoins:format(commas(coins)), shortColor)
+	fillRow(gui:FindFirstChild("CoinsRow"), Text.coins:format(deps.Util.Format.coins(gate.coins)), unlocked or coins >= gate.coins, Text.youCoins:format(deps.Util.Format.coins(coins)), shortColor)
+	local held = Materials.counts(player)
+	local items = gate.materials or {}
+	for i = 1, 8 do
+		local row = gui:FindFirstChild("MaterialRow" .. i)
+		if not row then
+			break
+		end
+		local item = items[i]
+		local shadow = gui:FindFirstChild("MaterialRow" .. i .. "Shadow")
+		for _, piece in { row, shadow } do
+			if piece and piece:IsA("GuiObject") then
+				piece.Visible = item ~= nil
+			end
+		end
+		if item then
+			local def = Materials.get(item.id)
+			local icon = row:FindFirstChild("Icon")
+			if icon and icon:IsA("ImageLabel") and def and def.icon then
+				icon.Image = def.icon
+			end
+			local have = held[item.id] or 0
+			fillRow(row, Text.material:format(commas(item.count), def and def.name or item.id), unlocked or have >= item.count, Text.youMaterial:format(commas(have)), shortColor)
+		end
+	end
 
 	local buy = gui:FindFirstChild("Buy")
 	local content = buy and buy:FindFirstChild("Content")
 	if buy and content then
 		local ink = attribute(gui, "Ink_" .. state, Color3.new(0, 0, 0))
 		setText(content:FindFirstChild("Label"), if unlocked then Text.unlocked elseif state == "Met" then Text.buy else Text.locked)
-		setText(content:FindFirstChild("Amount"), commas(gate.coins))
+		setText(content:FindFirstChild("Amount"), deps.Util.Format.coins(gate.coins))
 		for _, name in { "Coin", "Amount" } do
 			local piece = content:FindFirstChild(name)
 			if piece and piece:IsA("GuiObject") then
@@ -233,7 +271,7 @@ local function wire(gui: SurfaceGui)
 			end
 		end)
 	end
-	for _, name in { "Level", "Coins", "HighestWorld" } do
+	for _, name in { "Level", "Coins", "HighestWorld", "Materials" } do
 		player:GetAttributeChangedSignal(name):Connect(update)
 	end
 	update()

@@ -5,11 +5,13 @@
 -- Gathering: trees and rocks broken by GatherService give theirs through `drop`.
 --
 -- Kills: every kill rolls the enemy's `materials` table (Config/Worlds); each
--- entry rolls on its own and drops min..max of its material. Quest items come
+-- entry rolls on its own and drops min..max of its material, its chance times the
+-- killer's "LuckBoost" (capped at 100%, like weapon drops). Quest items come
 -- from QuestService (give), once per player. Secret-weapon cores (`core`) drop
 -- like materials but at most once per player ever (remembered in `received`, so
--- infusing one later never lets it drop again), and announce through the big
--- Index popup (Remotes.IndexDiscovered { kind = "Core", id }) instead of a toast.
+-- infusing one later never lets it drop again), luck never changes their chance
+-- (the user's rule, 2026-10-19), and they announce through the big Index popup
+-- (Remotes.IndexDiscovered { kind = "Core", id }) instead of a toast.
 --
 -- The counts reach the client as the player's "Materials" attribute,
 -- "BullHide=3,ChickenFeather=12" (read it with Materials.counts). Remotes.MaterialsDropped
@@ -29,6 +31,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = Shared:WaitForChild("Config")
 local Enemies = require(Config:WaitForChild("Enemies"))
 local Materials = require(Config:WaitForChild("Materials"))
+local Upgrades = require(Config:WaitForChild("Upgrades"))
 
 local MaterialService = {}
 
@@ -133,6 +136,9 @@ local function onKill(enemy: any, killer: Player?)
 		return
 	end
 	local profile = profileOf(killer)
+	local luck = killer:GetAttribute("LuckBoost")
+	-- passes and boosts times the Luck upgrade (Config/Upgrades); never cores
+	luck = (if type(luck) == "number" and luck > 0 then luck else 1) * Upgrades.value(killer, "Luck")
 	local items = {}
 	for _, drop in table_ do
 		local material = Materials.get(drop.id)
@@ -148,7 +154,7 @@ local function onKill(enemy: any, killer: Player?)
 					discovered:FireClient(killer, { kind = "Core", id = drop.id })
 				end
 			end
-		elseif random:NextNumber() < drop.chance then
+		elseif random:NextNumber() < math.min(1, drop.chance * luck) then
 			local amount = random:NextInteger(drop.min, math.max(drop.min, drop.max))
 			if amount > 0 then
 				table.insert(items, { id = drop.id, amount = amount })

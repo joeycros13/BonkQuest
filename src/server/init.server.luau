@@ -32,6 +32,14 @@ local SERVICE_ORDER = {
 	"ShopService",
 	-- the Crafting and Weapons stalls: crafting armour and buying weapons
 	"StallService",
+	-- potions: brewed at the Crafters (StallService), timers stamped by ShopService
+	"PotionService",
+	-- stat upgrades at the World 1 Upgrades stand: coins through CoinService, health through ExpService
+	"UpgradeService",
+	-- the 9 leaderboards and their reset rewards (coins, EXP, potions, boosts, materials through the services above)
+	"LeaderboardService",
+	-- the Daily Rewards stand and promo codes (Config/DailyRewards), rewards through the services above
+	"DailyRewardService",
 	-- the admin panel: coins, EXP, levels, weapons and respawns through the services above
 	"AdminService",
 	-- walk-in teleport zones (the secret rooms' entrances and exits)
@@ -44,6 +52,8 @@ local SERVICE_ORDER = {
 	"GatherService",
 	-- casting a rod for fish (Config/Fishing), through ToolService and MaterialService
 	"FishingService",
+	-- the healing fountain: walk-in zones that heal to full on a cooldown
+	"HealZoneService",
 }
 
 print("[Server] bootstrap starting")

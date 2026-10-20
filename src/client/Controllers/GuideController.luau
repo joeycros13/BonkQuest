@@ -41,6 +41,7 @@ local GuideController = {}
 
 local player = Players.LocalPlayer
 
+local deps: any = nil
 local enabled = true
 local changedEvent = Instance.new("BindableEvent")
 local arrow: BasePart? = nil
@@ -107,10 +108,30 @@ local function nearestEnemy(archetype: string, from: Vector3): Vector3?
 	return best
 end
 
+-- The material a gather / bring step still needs, if any: a bring step points at the
+-- first item short (2026-10-19).
+local function neededMaterial(step: Quests.Step): string?
+	if step.kind == "gather" then
+		return step.target
+	elseif step.kind == "bring" then
+		local held = player:GetAttribute("Materials")
+		for _, item in step.items or {} do
+			local n = if type(held) == "string" then tonumber(held:match("%f[%w]" .. item.id .. "=(%d+)") or "0") else 0
+			if (n or 0) < item.count then
+				return item.id
+			end
+		end
+	end
+	return nil
+end
+
 -- True when the current quest state has somewhere to point.
 function GuideController.guidable(): boolean
 	local step, state = currentStep()
-	return step ~= nil and (state == "Ready" or (state == "Active" and step.kind == "kill"))
+	if not step then
+		return false
+	end
+	return state == "Ready" or (state == "Active" and (step.kind == "kill" or neededMaterial(step) ~= nil))
 end
 
 local function target(from: Vector3): Vector3?
@@ -121,6 +142,12 @@ local function target(from: Vector3): Vector3?
 		return giverPosition()
 	elseif state == "Active" and step.kind == "kill" and step.target then
 		return nearestEnemy(step.target, from)
+	elseif state == "Active" then
+		local material = neededMaterial(step)
+		local gather = deps and deps.Controllers.GatherController
+		if material and gather then
+			return gather.nearest(material, from)
+		end
 	end
 	return nil
 end
@@ -189,7 +216,9 @@ function GuideController.onChanged(callback: (boolean) -> ()): RBXScriptConnecti
 	return changedEvent.Event:Connect(callback)
 end
 
-function GuideController.init(_injected: any) end
+function GuideController.init(injected: any)
+	deps = injected
+end
 
 function GuideController.start()
 	local assets = ReplicatedStorage:WaitForChild("Assets", 10)

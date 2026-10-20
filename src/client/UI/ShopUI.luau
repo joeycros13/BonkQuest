@@ -122,6 +122,8 @@ local function styleButton(row: Instance, def: any, balance: number)
 	if skin and skin:IsA("ImageLabel") then
 		skin.Image = attribute(buy, look, skin.Image)
 	end
+	-- only a buy that can go through is clickable (hover and press: Util.ButtonFx)
+	buy.Active = look == "SkinBuy"
 	if coin and coin:IsA("GuiObject") then
 		coin.Visible = not owned
 	end
@@ -130,8 +132,10 @@ local function styleButton(row: Instance, def: any, balance: number)
 			label:SetAttribute("PriceColor", label.TextColor3)
 		end
 		local stroke = label:FindFirstChildOfClass("UIStroke")
-		label.Text = if owned then attribute(buy, "OwnedText", "Owned") else Format.commas(price)
-		label.TextColor3 = if owned then attribute(buy, "OwnedTextColor", label.TextColor3) else label:GetAttribute("PriceColor") :: Color3
+		label.Text = if owned then attribute(buy, "OwnedText", "Owned") else Format.coins(price)
+		label.TextColor3 = if owned then attribute(buy, "OwnedTextColor", label.TextColor3)
+			elseif look == "SkinLocked" then attribute(buy, "LockedTextColor", label:GetAttribute("PriceColor") :: Color3)
+			else label:GetAttribute("PriceColor") :: Color3
 		if stroke then
 			stroke.Enabled = not owned
 		end
@@ -147,7 +151,7 @@ local function refresh()
 	local coinsPill = shop:FindFirstChild("Coins", true)
 	local amount = coinsPill and coinsPill:FindFirstChild("Amount", true)
 	if amount and amount:IsA("TextLabel") then
-		amount.Text = Format.commas(balance)
+		amount.Text = Format.coins(balance)
 	end
 	local world = currentWorld()
 	-- the header pill names the world whose stall this is (as the Crafter's does)
@@ -172,6 +176,7 @@ local function refresh()
 		local name = button:GetAttribute("Tab")
 		if button:IsA("GuiButton") and type(name) == "string" then
 			local on = name == tab
+			button:SetAttribute("Selected", on) -- the open tab stays grown (Util.ButtonFx)
 			button.BackgroundColor3 = attribute(shop, if on then "TabSelectedFill" else "TabIdleFill", button.BackgroundColor3)
 			local label = button:FindFirstChild("Label")
 			if label and label:IsA("TextLabel") then
@@ -197,8 +202,9 @@ local function wire(gui: ScreenGui)
 			end
 			local tile = WeaponTile.new(def, { name = false, stat = false, statText = "" })
 			if tile then
-				tile.AnchorPoint = Vector2.new(0, 0)
-				tile.Position = UDim2.fromScale(0, 0)
+				-- centred, so its hover grows round its middle (Util.ButtonFx)
+				tile.AnchorPoint = Vector2.new(0.5, 0.5)
+				tile.Position = UDim2.fromScale(0.5, 0.5)
 				tile.Size = UDim2.fromScale(1, 1)
 				tile.Parent = art
 			end

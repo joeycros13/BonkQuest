@@ -46,6 +46,16 @@
 --                               glasses (pushes the round glasses up his nose),
 --                               study (peers down at the map in his right hand,
 --                               tracing the route).
+--                  "Sensei"     (the Upgrades stand keeper, 2026-10-19) a calm, small
+--                               shift with the staff arm steady and slow glances;
+--                               stroke (the free hand strokes the long beard down),
+--                               bow (a slow, respectful bow from the hips) and stamp
+--                               (lifts the staff and thumps it down).
+--                  "Wrapper"    (the Daily Rewards gift wrapper, 2026-10-20) a light shift
+--                               with the spool arm steady; unspool (the free hand draws
+--                               ribbon out from the spool, twice, eyes on it), beret
+--                               (straightens the beret with a little wiggle) and pat (two
+--                               pats on the apron pocket).
 --                Default style: the shopkeepers' wave / wipe.
 --   IdleActions  a comma list restricting the actions; "" means none.
 --   HandPoint    Vector3, the torso-local fist of the right hand. Parts with
@@ -137,6 +147,8 @@ local function adopt(inst: Instance)
 		elseif style == "Miner" then { "lampTap", "shoulder", "dust" }
 		elseif style == "Gemcutter" then { "loupe", "polish", "pouch" }
 		elseif style == "Explorer" then { "compass", "glasses", "study" }
+		elseif style == "Sensei" then { "stroke", "bow", "stamp" }
+		elseif style == "Wrapper" then { "unspool", "beret", "pat" }
 		else { "wave", "wipe" }
 	local handAttr = inst:GetAttribute("HandPoint")
 	local listed = inst:GetAttribute("IdleActions")
@@ -197,6 +209,8 @@ local ACTION_SECONDS: { [string]: number } = {
 	lampTap = 2.2, shoulder = 2.4, -- Miner (+ dust)
 	loupe = 2.8, polish = 2.6, pouch = 2.4, -- Gemcutter
 	compass = 3.0, glasses = 1.8, study = 3.2, -- Explorer
+	stroke = 2.8, bow = 2.6, -- Sensei (+ stamp)
+	unspool = 2.8, beret = 2.2, pat = 1.8, -- Wrapper
 }
 
 -- Per-style base motion: a weight shift (radians), whether the right arm holds still (a held
@@ -211,6 +225,8 @@ local STYLE_BASE: { [string]: { shift: number, steadyRight: boolean, lookRate: n
 	Miner = { shift = 0.03, steadyRight = false, lookRate = 1, lookScale = 1 },
 	Gemcutter = { shift = 0.012, steadyRight = false, lookRate = 0.8, lookScale = 0.7 },
 	Explorer = { shift = WEIGHT_SHIFT, steadyRight = true, lookRate = 1.3, lookScale = 1.1 },
+	Sensei = { shift = 0.012, steadyRight = true, lookRate = 0.7, lookScale = 0.8 },
+	Wrapper = { shift = 0.02, steadyRight = true, lookRate = 1.1, lookScale = 0.9 },
 }
 
 local function pose(npc: Npc, now: number, dt: number)
@@ -419,6 +435,43 @@ local function pose(npc: Npc, now: number, dt: number)
 		fwdR = 0.12 * k
 		nod = 0.2 * k
 		yawExtra = (-0.38 + 0.1 * math.sin(u * math.pi * 3)) * k
+	-- ---------- Sensei (the right arm rests raised, holding the staff) ----------
+	elseif action == "stroke" then
+		-- the free hand up to the chin, drawing down the long beard twice, a thoughtful tilt
+		local k = plateau(u)
+		fwdL = (1.75 - 0.25 * math.max(0, math.sin(u * math.pi * 4))) * k
+		armL = -0.45 * k
+		nod = -0.05 * k
+		yawExtra = -0.1 * k
+	elseif action == "bow" then
+		-- a slow bow from the hips, the head following it down
+		local k = plateau(u)
+		lean = 0.22 * k
+		nod = 0.2 * k
+		fwdL = 0.15 * k
+	-- ---------- Wrapper (the right arm rests raised, holding the ribbon spool) ----------
+	elseif action == "unspool" then
+		-- the free hand reaches across to the spool and draws the ribbon out to the side, twice
+		local k = plateau(u)
+		local pull = (1 - math.cos(u * math.pi * 4)) / 2
+		fwdL = (1.0 - 0.25 * pull) * k
+		armL = (-0.45 + 1.0 * pull) * k
+		nod = 0.16 * k
+		yawExtra = (0.25 - 0.45 * pull) * k
+	elseif action == "beret" then
+		-- the hand up to the beret's side, straightening it with a little wiggle
+		local k = plateau(u)
+		fwdL = 2.75 * k
+		armL = (-0.4 + 0.06 * math.sin(now * 13)) * k
+		nod = -0.04 * k
+		yawExtra = -0.08 * k
+	elseif action == "pat" then
+		-- two pats on the apron pocket, eyes down to it
+		local k = plateau(u)
+		local tap = math.max(0, math.sin(u * math.pi * 4))
+		fwdL = (0.5 + 0.12 * tap) * k
+		armL = -0.32 * k
+		nod = 0.22 * k
 	end
 
 	local t = now + npc.phase

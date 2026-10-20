@@ -15,8 +15,8 @@
 -- Balance.Exp.piecesMin..piecesMax blue stars fling out and fly to it.
 --
 -- Max health follows the level (Leveling.maxHealth: 100, +10 per level up;
--- user, 2026-10-11). A new character starts full; a level up adds the new HP
--- to current health straight away. An admin can override the max for the
+-- user, 2026-10-11 and 2026-10-19). A new character starts full; a level up heals to the new
+-- max at once (user, 2026-10-19: early HP is scarce and regen is slow). An admin can override the max for the
 -- session (player attribute MaxHealthOverride, AdminService). Worn armour adds
 -- its bonus HP on top of the level's (player attribute ArmorHealth, ArmorService;
 -- 2026-10-12).
@@ -29,12 +29,21 @@ local Config = Shared:WaitForChild("Config")
 local Balance = require(Config:WaitForChild("Balance"))
 local Enemies = require(Config:WaitForChild("Enemies"))
 local Leveling = require(Config:WaitForChild("Leveling"))
+local Upgrades = require(Config:WaitForChild("Upgrades"))
 
 local ExpService = {}
 
 local deps: any = nil
 local dropped: RemoteEvent? = nil
 local random = Random.new()
+
+-- Level-ups (gained > 0 levels) for listeners: the leaderboards (2026-10-19). Not
+-- fired for the level a save loads with.
+local levelListeners: { (Player, number) -> () } = {}
+
+function ExpService.onLevelUp(callback: (Player, number) -> ())
+	table.insert(levelListeners, callback)
+end
 
 function ExpService.get(player: Player): number
 	local value = player:GetAttribute("ExpTotal")
@@ -75,7 +84,8 @@ function ExpService.maxHealth(player: Player): number
 	end
 	local armor = player:GetAttribute("ArmorHealth")
 	local bonus = if type(armor) == "number" and armor > 0 then armor else 0
-	return Leveling.maxHealth((Leveling.fromTotal(ExpService.get(player)))) + bonus
+	-- the Health upgrade multiplies the lot (Config/Upgrades)
+	return math.floor((Leveling.maxHealth((Leveling.fromTotal(ExpService.get(player)))) + bonus) * Upgrades.value(player, "Health") + 0.5)
 end
 
 -- Bring the character's max health in line. Health rises by any gain (so a
@@ -134,7 +144,8 @@ local function onKill(enemy: any, killer: Player?)
 		return
 	end
 	local boost = killer:GetAttribute("ExpBoost")
-	if type(boost) == "number" and boost > 0 then
+	boost = (if type(boost) == "number" and boost > 0 then boost else 1) * Upgrades.value(killer, "Exp")
+	if boost ~= 1 then
 		amount = math.max(1, math.floor(amount * boost + 0.5))
 	end
 	-- the spill first, so the client knows to hold its bar
@@ -172,8 +183,18 @@ function ExpService.start()
 		if player:GetAttribute("ExpTotal") == nil then
 			ExpService.add(player, 0)
 		end
+		local shownLevel = player:GetAttribute("Level")
 		player:GetAttributeChangedSignal("Level"):Connect(function()
-			ExpService.applyHealth(player)
+			local level = player:GetAttribute("Level")
+			-- a level up fills health; anything else (an admin setting it lower) only caps it
+			local up = type(level) == "number" and type(shownLevel) == "number" and level > shownLevel
+			if up then
+				for _, listener in levelListeners do
+					task.spawn(listener, player, (level :: number) - (shownLevel :: number))
+				end
+			end
+			shownLevel = level
+			ExpService.applyHealth(player, up)
 		end)
 		player.CharacterAdded:Connect(function(character)
 			onCharacter(player, character)

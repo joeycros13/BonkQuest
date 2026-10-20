@@ -236,6 +236,23 @@ local function numberAttribute(inst: Instance, name: string, fallback: number): 
 	return if type(value) == "number" then value else fallback
 end
 
+-- How long a defeated enemy stays down: its world's time for its kind (the user's
+-- rule, 2026-10-19: one time per tier per world, bosses and the secret enemy alike).
+local function respawnFor(worldId: number, def: any, isBoss: boolean): number
+	local world = Worlds.get(worldId)
+	local times = world and world.respawn
+	if times then
+		if isBoss then
+			return times.boss
+		elseif def and def.secret then
+			return times.secret
+		elseif def and def.tier and times[def.tier] then
+			return times[def.tier]
+		end
+	end
+	return if isBoss then Balance.WorldEnemy.bossRespawnSeconds else Balance.WorldEnemy.respawnSeconds
+end
+
 local function register(marker: Instance, worldId: number, index: number, isBoss: boolean): boolean
 	local archetype = archetypeFor(marker, worldId, isBoss)
 	if not archetype then
@@ -267,11 +284,7 @@ local function register(marker: Instance, worldId: number, index: number, isBoss
 		maxHp = maxHp,
 		hp = maxHp,
 		alive = true,
-		respawnSeconds = numberAttribute(
-			marker,
-			"RespawnSeconds",
-			if isBoss then Balance.WorldEnemy.bossRespawnSeconds else Balance.WorldEnemy.respawnSeconds
-		),
+		respawnSeconds = numberAttribute(marker, "RespawnSeconds", respawnFor(worldId, def, isBoss)),
 		wanderRadius = wanderRadius,
 		aiState = "Idle",
 	}

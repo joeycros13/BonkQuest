@@ -106,24 +106,7 @@ local function adopt(gui: Instance)
 					PanelWindow.hidePanel()
 				end
 			end)
-			-- every panel's X is the admin panel's (2026-10-12): it dips while pressed
-			-- (its PressScale). A panel whose own code already does this (AdminUI,
-			-- RobuxShopUI) just runs the same tween twice.
-			local press = descendant:FindFirstChild("PressScale")
-			if press and press:IsA("UIScale") then
-				local function dip(to: number)
-					TweenService:Create(press, TweenInfo.new(0.07, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Scale = to }):Play()
-				end
-				descendant.MouseButton1Down:Connect(function()
-					dip(0.88)
-				end)
-				descendant.MouseButton1Up:Connect(function()
-					dip(1)
-				end)
-				descendant.MouseLeave:Connect(function()
-					dip(1)
-				end)
-			end
+			-- its hover grow and press squash come from Util.ButtonFx (its FxScale), like every button
 		end
 	end
 end

@@ -132,7 +132,7 @@ local function showExtras(conv: Conversation?)
 	end
 	local r = conv.reward
 	if r then
-		setChip("Coins", if r.coins and r.coins > 0 then Format.commas(r.coins) .. " Coins" else nil)
+		setChip("Coins", if r.coins and r.coins > 0 then Format.coins(r.coins) .. " Coins" else nil)
 		setChip("Exp", if r.exp and r.exp > 0 then Format.commas(r.exp) .. " EXP" else nil)
 		local weapon = r.weapon and Weapons.get(r.weapon)
 		setChip("Weapon", if weapon then weapon.name else nil)

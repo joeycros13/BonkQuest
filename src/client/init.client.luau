@@ -11,6 +11,8 @@ local Remotes = require(Shared:WaitForChild("Remotes"))
 local UTIL_ORDER = {
 	-- first: sizes every pixel-only UI value (outlines, text caps...) for this screen
 	"Responsive",
+	-- the hover and click effect on every clickable button (an "FxScale" UIScale on it)
+	"ButtonFx",
 	"DamagePopup",
 	"HudFly",
 	"FontDrop",
@@ -55,6 +57,8 @@ local CONTROLLER_ORDER = {
 	"GatherController",
 	-- casting, the bobber and the line, bites and the reel-in (FishingRingUI draws the rings)
 	"FishingController",
+	-- the healing fountain's sparkles and "+HP" popup (HealZoneService heals)
+	"HealZoneController",
 }
 
 local UI_ORDER = {
@@ -64,6 +68,14 @@ local UI_ORDER = {
 	"HotbarUI",
 	"ShopUI",
 	"CraftingUI",
+	-- the World 1 Upgrades stand (Config/Upgrades, UpgradeService)
+	"UpgradesUI",
+	-- the World 1 Daily Rewards stand and promo codes (Config/DailyRewards, DailyRewardService)
+	"DailyRewardsUI",
+	-- the HUD's Stats panel: every multiplier and where it comes from
+	"StatsUI",
+	-- the HUD's Leaderboards panel (LeaderboardService)
+	"LeaderboardUI",
 	"RobuxShopUI",
 	"IndexUI",
 	"IndexPopup",
@@ -82,6 +94,8 @@ local UI_ORDER = {
 	"WorldsUI",
 	-- the fishing minigame's closing rings (FishingController starts them)
 	"FishingRingUI",
+	-- our own player list, top right (name, level, coins; replaces Roblox's)
+	"PlayerListUI",
 }
 
 print("[Client] bootstrap starting")

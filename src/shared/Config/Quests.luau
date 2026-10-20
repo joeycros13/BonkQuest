@@ -8,8 +8,9 @@
 --                   the final reward is the Firefly Lantern (LanternFlail)
 --   ExplorerCaverns Explorer Pip, "Into the Crystal Caverns" (World 3, 2026-10-17,
 --                   picked on the design canvas); the final reward is the Diamond
---                   Pickaxe. Level steps follow the other lines: first armour set + 1
---                   (20), then the second set's level (23).
+--                   Pickaxe. Level steps follow the other lines: the first comes at the
+--                   same EXP as before the 2026-10-19 curve (36), the second at the
+--                   second set's level (42).
 -- Lines run side by side: each player has a step in every line, published as
 -- per-line attributes (Quests.attr). A giver model (tagged QuestGiver) names its
 -- line in its "QuestLine" attribute. Add a line to `lines` and `order` and give it
@@ -22,6 +23,11 @@
 --              "earn"  earn `amount` coins, counted from accepting
 --              "level" reach level `level`
 --              "give"  hand Dale `amount` coins (taken when handing in)
+--              "gather" gather `count` of material `target` (a Config/Materials id),
+--                      counted from accepting (2026-10-19: chopping, mining)
+--              "bring" hand over `items` ({ { id, count } } materials, taken when
+--                      handing in); progress is the total held toward the total
+--                      needed. Fish never go in quests (user: they're for potions)
 --   objective  the red objective line in the dialogue's Objective box
 --   track      the tracker line: the words before {braces} become the small
 --              label ("DEFEAT"), the part in braces the red name (the enemy or
@@ -44,6 +50,7 @@ export type Step = {
 	kind: string,
 	target: string?,
 	count: number?,
+	items: { { id: string, count: number } }?,
 	amount: number?,
 	level: number?,
 	objective: string,
@@ -101,17 +108,19 @@ lines.DaleFarm = {
 			complete = { "Well I'll be! Five fewer feathered menaces. Here, take this for your trouble." },
 		},
 		{
-			kind = "earn",
-			amount = 75,
-			objective = "Earn 75 coins",
-			track = "Earn {Coins}",
+			-- 2026-10-19 (user): was "earn 75 coins"; teaches the axe early
+			kind = "gather",
+			target = "OakLog",
+			count = 5,
+			objective = "Chop 5 Oak Logs",
+			track = "Chop {Oak Logs}",
 			reward = { coins = 30, exp = 30 },
 			offer = {
-				"Now, a farmhand's gotta have some coin in their pocket.",
-				"Go on and [earn 75 coins] out there. Them critters drop plenty when you whack 'em.",
+				"Now, a farmhand's gotta keep the stove burnin'.",
+				"Grab an axe from the weaponsmith on the plaza, then [chop 5 Oak Logs] from them big oaks by the cliffs.",
 			},
-			reminder = { "Still savin' up? [Earn 75 coins] and come see me." },
-			complete = { "Look at you, jinglin' like a sleigh bell! Here's a little extra." },
+			reminder = { "Stove's gettin' cold! [Chop 5 Oak Logs] and come see me." },
+			complete = { "Now that's a fine stack of firewood! Here's a little somethin' for the sweat." },
 		},
 		{
 			kind = "kill",
@@ -143,32 +152,33 @@ lines.DaleFarm = {
 		},
 		{
 			kind = "level",
-			level = 5,
-			objective = "Reach level 5",
-			track = "Reach {Level 5}",
+			level = 9,
+			objective = "Reach level 9",
+			track = "Reach {Level 9}",
 			-- + the Rusty Blade (Relic), the start of the secret super weapon (2026-10-12)
 			reward = { coins = 50, weapon = "RustyBlade" },
 			offer = {
 				"Them bulls'll only get meaner from here. You gotta toughen up.",
-				"Go get some practice in and [reach level 5]. Come back when you're ready.",
+				"Go get some practice in and [reach level 9]. Come back when you're ready.",
 			},
-			reminder = { "Keep at it! [Reach level 5] first." },
+			reminder = { "Keep at it! [Reach level 9] first." },
 			complete = {
 				"Now that's a seasoned fighter if I ever saw one!",
 				"Here, I dug this old blade up behind the barn. Rusty as anything... but that empty socket's always made me wonder.",
 			},
 		},
 		{
-			kind = "give",
-			amount = 200,
-			objective = "Give Dale 200 coins",
-			track = "Bring Dale {200 Coins}",
-			reward = { exp = 100 },
+			-- 2026-10-19 (user): was "give 200 coins"; the logs and stone are taken at hand-in
+			kind = "bring",
+			items = { { id = "OakLog", count = 8 }, { id = "Stone", count = 8 } },
+			objective = "Bring Dale 8 Oak Logs and 8 Stone",
+			track = "Bring Dale {Logs and Stone}",
+			reward = { coins = 80, exp = 100 },
 			offer = {
-				"I hate to ask, but them bulls flattened my barn door.",
-				"Could you [bring me 200 coins] for the repairs? I'll pay ya back in kind.",
+				"I hate to ask, but them bulls flattened my barn door and knocked the wall stones loose.",
+				"Could you [bring me 8 Oak Logs and 8 Stone] for the repairs? A pickaxe'll crack them boulders.",
 			},
-			reminder = { "No rush... but my barn door's still flat. [Bring me 200 coins]." },
+			reminder = { "No rush... but my barn door's still flat. [Bring me 8 Oak Logs and 8 Stone]." },
 			complete = { "Bless ya! That door'll be standin' by sundown. Here, it ain't much, but it's honest." },
 		},
 		{
@@ -204,15 +214,15 @@ lines.DaleFarm = {
 		},
 		{
 			kind = "level",
-			level = 8,
-			objective = "Reach level 8",
-			track = "Reach {Level 8}",
+			level = 14,
+			objective = "Reach level 14",
+			track = "Reach {Level 14}",
 			reward = { coins = 100 },
 			offer = {
 				"Bad news. That old scarecrow's stitched himself back together.",
-				"He comes back stronger every time. Go [reach level 8] so you can stand up to him.",
+				"He comes back stronger every time. Go [reach level 14] so you can stand up to him.",
 			},
-			reminder = { "Keep trainin'! [Reach level 8]." },
+			reminder = { "Keep trainin'! [Reach level 14]." },
 			complete = { "Look at ya! The strongest farmhand this meadow's ever seen." },
 		},
 		{
@@ -312,15 +322,15 @@ lines.RangerRedwoods = {
 		},
 		{
 			kind = "level",
-			level = 12,
-			objective = "Reach level 12",
-			track = "Reach {Level 12}",
+			level = 22,
+			objective = "Reach level 22",
+			track = "Reach {Level 22}",
 			reward = { coins = 150 },
 			offer = {
 				"Deeper in, the bears are waking up angry. You're not ready for them yet.",
-				"Train up and [reach level 12]. I'll be right here by the fire.",
+				"Train up and [reach level 22]. I'll be right here by the fire.",
 			},
-			reminder = { "Keep training. [Reach level 12] first." },
+			reminder = { "Keep training. [Reach level 22] first." },
 			complete = { "Look at you. Strong enough to stare down a grizzly." },
 		},
 		{
@@ -369,15 +379,15 @@ lines.RangerRedwoods = {
 		},
 		{
 			kind = "level",
-			level = 15,
-			objective = "Reach level 15",
-			track = "Reach {Level 15}",
+			level = 27,
+			objective = "Reach level 27",
+			track = "Reach {Level 27}",
 			reward = { coins = 300 },
 			offer = {
 				"Bad news. Roots don't die easily. The treant is growing back, stronger than before.",
-				"You'll need to be stronger too. [Reach level 15].",
+				"You'll need to be stronger too. [Reach level 27].",
 			},
-			reminder = { "Keep at it. [Reach level 15]." },
+			reminder = { "Keep at it. [Reach level 27]." },
 			complete = { "The strongest warden these woods have ever had." },
 		},
 		{
@@ -478,15 +488,15 @@ lines.ExplorerCaverns = {
 		},
 		{
 			kind = "level",
-			level = 20,
-			objective = "Reach level 20",
-			track = "Reach {Level 20}",
+			level = 36,
+			objective = "Reach level 36",
+			track = "Reach {Level 36}",
 			reward = { coins = 350 },
 			offer = {
 				"The tunnel ends at a sheer drop. Whatever's down there isn't for beginners.",
-				"Come back when you [reach level 20].",
+				"Come back when you [reach level 36].",
 			},
-			reminder = { "Toughen up a bit first. [Reach level 20]." },
+			reminder = { "Toughen up a bit first. [Reach level 36]." },
 			complete = { "Look at you! Tougher than a stalagmite." },
 		},
 		{
@@ -535,15 +545,15 @@ lines.ExplorerCaverns = {
 		},
 		{
 			kind = "level",
-			level = 23,
-			objective = "Reach level 23",
-			track = "Reach {Level 23}",
+			level = 42,
+			objective = "Reach level 42",
+			track = "Reach {Level 42}",
 			reward = { coins = 750 },
 			offer = {
 				"Fresh tracks lead past her hall, deeper than any map. We'll need you at your best.",
-				"[Reach level 23] first.",
+				"[Reach level 42] first.",
 			},
-			reminder = { "Not yet, not yet. [Reach level 23]." },
+			reminder = { "Not yet, not yet. [Reach level 42]." },
 			complete = { "Ready? Me too. Let's finish this." },
 		},
 		{
@@ -610,12 +620,29 @@ end
 
 -- How much progress finishes a step.
 function Quests.goal(step: Step): number
-	if step.kind == "kill" then
+	if step.kind == "kill" or step.kind == "gather" then
 		return step.count or 1
 	elseif step.kind == "level" then
 		return step.level or 1
+	elseif step.kind == "bring" then
+		local total = 0
+		for _, item in step.items or {} do
+			total += item.count
+		end
+		return math.max(total, 1)
 	end
 	return step.amount or 1
+end
+
+-- The material a gather / bring step is about (its icon on the dialogue and tracker).
+function Quests.material(step: Step): string?
+	if step.kind == "gather" then
+		return step.target
+	elseif step.kind == "bring" then
+		local first = step.items and step.items[1]
+		return first and first.id
+	end
+	return nil
 end
 
 return Quests

@@ -27,6 +27,7 @@ Admin.maxHealth = 1e6
 
 -- Give All tops every material up to this many (and each secret-weapon core to 1).
 Admin.giveAllMaterials = 100
+Admin.giveAllPotions = 10 -- of every potion, all three tiers (2026-10-19)
 
 -- The Damage card's multiplier range (your own weapon damage, this session only).
 Admin.minDamage = 0.1
@@ -41,14 +42,23 @@ Admin.quick = {
 Admin.Text = {
 	title = "Admin Panel",
 	hint = "F2 opens and closes",
-	tabs = { PagePlayer = "Player", PageWeapons = "Weapons", PageArmor = "Armor", PageTools = "Tools", PageMaterials = "Materials", PageMobs = "Mobs" },
+	tabs = { PagePlayer = "Player", PageWeapons = "Weapons", PageArmor = "Armor", PageTools = "Tools", PageMaterials = "Materials", PagePotions = "Potions", PageQuests = "Quests", PageMobs = "Mobs" },
 	coinsTitle = "Coins",
 	expTitle = "EXP",
 	levelTitle = "Level",
 	healthTitle = "Health",
 	damageTitle = "Damage",
 	giveAll = "Give All",
-	giveAllDone = "Gave %d weapons, %d tools, %d armour sets and %d of every material",
+	giveAllDone = "Gave %d weapons, %d tools, %d armour sets, %d of every material and %d of every potion",
+	potionsEnded = "Every running potion ended",
+	-- the Quests page (2026-10-19)
+	questNote = "Step %d of %d · %s", -- step, steps, state (Offer / Active / Ready)
+	questFinished = "All %d steps done",
+	questSet = "%s: now on step %d of %d",
+	questDone = "%s: finished",
+	questAlreadyDone = "%s is already finished",
+	skip = "Skip",
+	goTo = "Go",
 	damageBadge = "×%s",
 	damageReset = "×1",
 	damageDone = "Your damage is now ×%s",
@@ -65,6 +75,8 @@ Admin.Text = {
 	remove = "Remove",
 	starter = "Starter",
 	materialStep = 10, -- the materials page's Give / Take buttons move this many
+	potionStep = 1, -- the potions page's Give / Take buttons move this many
+	tierHeader = "Tier %s · Worlds %d–%d", -- the potions page's sections
 	giveMany = "+%d",
 	takeMany = "-%d",
 	materialCount = "×%s",

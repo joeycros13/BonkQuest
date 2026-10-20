@@ -21,6 +21,15 @@
 --   material { id, amount } add (or take) a crafting material (Config/Materials)
 --   armor   { id, remove? } give an armour set (Config/Armor), or take it away
 --   tool    { id, remove? } give a gathering tool (Config/Tools), or take it away
+--   potion  { id, amount } add (or take) potions (Config/Potions; the panel's Potions page)
+--   quest   { line, step } put a questline on a step, on offer (one past the last finishes it)
+--   questSkip { line }   move a questline on one step (no rewards; quest items are handed over)
+--   potionsEnd {}        end every running potion
+--   upgrade { id, level } set an upgrade's level (Config/Upgrades), remote only
+--   daily { streak, yesterday }  set the Daily Rewards streak; yesterday = the last claim was
+--                        yesterday (the next claim climbs), else it's forgotten (testing)
+--   lbReset { period }   pay a Daily / Weekly period's leaderboard rewards now from this
+--                        server's boards (testing; real resets need DataStores)
 -- material and armor have no panel buttons yet; call them through the remote (tool is on the
 -- panel's Tools page since 2026-10-19)
 -- (testing the crafting, 2026-10-12).
@@ -34,6 +43,8 @@ local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
 local Admin = require(Config:WaitForChild("Admin"))
 local Armor = require(Config:WaitForChild("Armor"))
 local Materials = require(Config:WaitForChild("Materials"))
+local Potions = require(Config:WaitForChild("Potions"))
+local Quests = require(Config:WaitForChild("Quests"))
 local Tools = require(Config:WaitForChild("Tools"))
 local Weapons = require(Config:WaitForChild("Weapons"))
 local Enemies = require(Config:WaitForChild("Enemies"))
@@ -100,7 +111,7 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 		end
 		local CoinService = deps.Services.CoinService
 		amount = math.max(amount, -CoinService.get(player))
-		CoinService.add(player, amount)
+		CoinService.add(player, amount, "admin")
 		return true, Text.coinsDone:format(commas(amount))
 	end,
 	exp = function(player, request)
@@ -210,6 +221,70 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 		MaterialService.add(player, def.id, amount)
 		return true, Text.materialDone:format(commas(amount), def.name)
 	end,
+	potion = function(player, request)
+		local def = Potions.get(request.id)
+		local amount = amountOf(request)
+		if not def then
+			return false, Text.unknown
+		elseif not amount then
+			return false, Text.badNumber
+		end
+		local PotionService = deps.Services.PotionService
+		amount = math.max(amount, -PotionService.get(player, def.id))
+		PotionService.add(player, def.id, amount)
+		return true, Text.materialDone:format(commas(amount), def.name)
+	end,
+	quest = function(player, request)
+		local line = Quests.get(request.line)
+		if not line then
+			return false, Text.unknown
+		elseif type(request.step) ~= "number" then
+			return false, Text.badNumber
+		end
+		local step, done = deps.Services.QuestService.setStep(player, line.id, request.step)
+		if not step then
+			return false, Text.unknown
+		end
+		return true, if done then Text.questDone:format(line.name) else Text.questSet:format(line.name, step, #line.steps)
+	end,
+	questSkip = function(player, request)
+		local line = Quests.get(request.line)
+		local now = line and deps.Services.QuestService.stepOf(player, line.id)
+		if not (line and now) then
+			return false, Text.unknown
+		elseif now > #line.steps then
+			return false, Text.questAlreadyDone:format(line.name)
+		end
+		local step, done = deps.Services.QuestService.setStep(player, line.id, now + 1)
+		return true, if done then Text.questDone:format(line.name) else Text.questSet:format(line.name, step :: number, #line.steps)
+	end,
+	potionsEnd = function(player, _request)
+		deps.Services.PotionService.clearRunning(player)
+		return true, Text.potionsEnded
+	end,
+	upgrade = function(player, request)
+		local level = tonumber(request.level)
+		if type(request.id) ~= "string" or not level then
+			return false, Text.badNumber
+		end
+		deps.Services.UpgradeService.set(player, request.id, level)
+		return true, ("%s -> level %d"):format(request.id, level)
+	end,
+	-- daily { streak?, yesterday? }: set the Daily Rewards streak (testing); yesterday = true makes
+	-- the last claim yesterday (so the next one climbs), else the claim is forgotten (claim today)
+	daily = function(player, request)
+		local service = deps.Services.DailyRewardService
+		local streak = if type(request.streak) == "number" then request.streak else 0
+		service.set(player, streak, if request.yesterday then service.today() - 1 else nil)
+		return true, ("Daily streak %d%s"):format(streak, if request.yesterday then ", last claim yesterday" else "")
+	end,
+	lbReset = function(_player, request)
+		if request.period ~= "Daily" and request.period ~= "Weekly" then
+			return false, "Daily or Weekly"
+		end
+		local paid = deps.Services.LeaderboardService.payLocal(request.period)
+		return true, ("Paid %d %s rewards"):format(paid, request.period)
+	end,
 	-- Give All (user, 2026-10-12): every weapon (the Rusty Blade and every Worldheart tier at once:
 	-- only possible from here), every gathering tool (2026-10-19), every armour set, and
 	-- Admin.giveAllMaterials of each material (one of each core). Admins only, like every action.
@@ -243,7 +318,16 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 				MaterialService.add(player, def.id, want - have)
 			end
 		end
-		return true, Text.giveAllDone:format(weapons, tools, armor, Admin.giveAllMaterials)
+		-- and Admin.giveAllPotions of every potion, Tier III too though it has no recipe yet
+		-- (user, 2026-10-19)
+		local PotionService = deps.Services.PotionService
+		for _, def in Potions.list() do
+			local have = PotionService.get(player, def.id)
+			if have < Admin.giveAllPotions then
+				PotionService.add(player, def.id, Admin.giveAllPotions - have)
+			end
+		end
+		return true, Text.giveAllDone:format(weapons, tools, armor, Admin.giveAllMaterials, Admin.giveAllPotions)
 	end,
 	tool = function(player, request)
 		local def = Tools.get(request.id)

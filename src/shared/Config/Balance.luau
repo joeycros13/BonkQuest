@@ -12,17 +12,16 @@ local Balance = {}
 -- anything that should differ per world belongs in Config/Worlds/<world>.luau.
 Balance.WorldEnemy = {
 	wanderRadius = 5, -- studs from its spawn point the enemy may drift within (marker can override)
-	respawnSeconds = 20, -- delay before a defeated enemy returns at full HP (marker can override)
+	-- delay before a defeated enemy returns at full HP, for a world whose config has
+	-- no `respawn` table (each world's tiers set it; a marker can override)
+	respawnSeconds = 20,
 	bossWanderRadius = 4, -- bosses pace a small circle on their platform (marker can override)
 	bossRespawnSeconds = 60,
 }
 
--- === Sprinting (SprintController) ===
--- Hold Shift (gamepad: left stick) to run faster, for as long as you like:
--- stamina was removed on 2026-10-11 (the user's call: unlimited sprinting).
-Balance.Sprint = {
-	speedMultiplier = 1.5, -- sprint speed = normal walk speed x this
-}
+-- === Sprinting ===
+-- There's no base sprint any more (2026-10-19, the user's call): the Sprint
+-- upgrade unlocks it and sets its speed (Config/Upgrades, SprintController).
 
 -- === Real-time weapon combat (MeleeService) ===
 -- Per-weapon numbers live in Config/Weapons, per-enemy ones in each enemy's

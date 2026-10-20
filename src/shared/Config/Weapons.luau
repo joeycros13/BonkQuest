@@ -25,7 +25,9 @@
 --               Legendary and Secret weapons are drop or quest only
 --   ignoreArmor (optional) true: the enemy's armour doesn't reduce this weapon's damage
 --   impact      (optional) an effect WeaponController plays where the weapon
---               lands at its Hit moment: "Slam" = a ground-slam rumble
+--               lands at its Hit moment: "Slam" = a ground-slam rumble, "Gust" = wind
+--               rolling out across the sweep (the Weathervane Spear), "Pumpkin" = orange
+--               sparks and seeds where the head lands (the Pumpkin King's Mace)
 --   icon        the weapon's picture for the hotbar and the Inventory tiles: a
 --               cel-shaded render of its mesh (art/weapon_icons.py). Without one
 --               they fall back to a live model viewport
@@ -106,7 +108,7 @@ Weapons.Defs = {
 	Sickle = {
 		id = "Sickle",
 		world = 1,
-		price = 75,
+		price = 150,
 		icon = "rbxassetid://109909666740470",
 		rarity = "Common",
 		name = "Sickle",
@@ -126,7 +128,7 @@ Weapons.Defs = {
 	Machete = {
 		id = "Machete",
 		world = 1,
-		price = 200,
+		price = 400,
 		icon = "rbxassetid://94460052611934",
 		rarity = "Uncommon",
 		name = "Machete",
@@ -146,7 +148,7 @@ Weapons.Defs = {
 	Shovel = {
 		id = "Shovel",
 		world = 1,
-		price = 350,
+		price = 700,
 		icon = "rbxassetid://116513633926651",
 		rarity = "Rare",
 		name = "Shovel",
@@ -166,7 +168,7 @@ Weapons.Defs = {
 	Pitchfork = {
 		id = "Pitchfork",
 		world = 1,
-		price = 325,
+		price = 650,
 		icon = "rbxassetid://136084151914012",
 		rarity = "Uncommon",
 		name = "Pitchfork",
@@ -186,7 +188,7 @@ Weapons.Defs = {
 	Scythe = {
 		id = "Scythe",
 		world = 1,
-		price = 900,
+		price = 1800,
 		icon = "rbxassetid://89826212012485",
 		rarity = "Epic",
 		name = "Scythe",
@@ -231,9 +233,8 @@ Weapons.Defs = {
 	-- The first Legendaries (2026-10-11, canvas https://claude.ai/artifact/Xiq7CR3mir1Ymy3mNy62Jz).
 	-- Weathervane Spear: Dale's reward for the last quest (Config/Quests), not
 	-- dropped by anything. Two-handed, the same 8.7 length as the Corn Cob (the
-	-- user's call), and it must hit harder than the mace. Until its own wide
-	-- "Gust" sweep is animated it borrows the Pitchfork's hold and thrust, so its
-	-- reach / arc are thrust-shaped for now.
+	-- user's call), and it must hit harder than the mace. Its own attack (2026-10-19)
+	-- is the wide "Gust" sweep, so the arc is wide; a gust rolls out on the hit.
 	WeathervaneSpear = {
 		id = "WeathervaneSpear",
 		world = 1,
@@ -247,16 +248,18 @@ Weapons.Defs = {
 		damage = 43,
 		cooldown = 1.1,
 		reach = 10.5,
-		arc = 60,
+		arc = 120,
 		maxTargets = 4,
-		hitTime = 0.55,
+		hitTime = 0.46,
 		knockback = 8,
-		swing = "Thrust",
+		swing = "Gust",
+		impact = "Gust",
 	},
 	-- Pumpkin King's Mace: a Legendary drop from the Scarecrow King, his own
-	-- pumpkin head on a sharpened stake. One-handed (the Dagger's hold) with the
-	-- Corn Cob's overhead bonk for now. Less damage per hit and per second than
-	-- the spear.
+	-- pumpkin head on a sharpened stake. One-handed (the Dagger's hold); its own
+	-- attack (2026-10-19) is the diagonal "Pumpkin smash" with sparks and seeds where
+	-- it lands, and its carved face glows angry through each swing. Less damage per
+	-- hit and per second than the spear.
 	PumpkinMace = {
 		id = "PumpkinMace",
 		world = 1,
@@ -272,9 +275,10 @@ Weapons.Defs = {
 		reach = 7.5,
 		arc = 100,
 		maxTargets = 3,
-		hitTime = 0.6,
+		hitTime = 0.58,
 		knockback = 10,
-		swing = "CornBonk",
+		swing = "PumpkinSmash",
+		impact = "Pumpkin",
 	},
 	-- ==================== World 2 (The Redwood Forest) ====================
 	-- The cartoony World 2 set (user, 2026-10-11): each made from something in the

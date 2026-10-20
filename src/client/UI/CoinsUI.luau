@@ -49,7 +49,7 @@ end
 local function show(value: number)
 	displayed = value
 	if amountLabel then
-		amountLabel.Text = Format.commas(value)
+		amountLabel.Text = Format.coins(value)
 	end
 	shownEvent:Fire(value)
 end

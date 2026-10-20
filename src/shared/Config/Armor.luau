@@ -19,7 +19,10 @@
 --   recipe    the materials it takes, in display order (Config/Materials ids);
 --             all of them are used up
 --   defense   0..1: the fraction taken off every enemy hit while it's worn
---   health    extra max HP while it's worn, on top of the level's
+--   health    extra max HP while it's worn, on top of the level's. Since 2026-10-19 (the
+--             quicker level curve) a set adds about a quarter of a player's HP at its
+--             level for the first World 1 set, rising to about half by World 3, so
+--             armour stays worth wearing
 --   icon      its drawn picture (designed on the Crafting & Armor canvas, art/icons/)
 
 local Armor = {}
@@ -50,14 +53,15 @@ Armor.Defs = {
 		world = 1,
 		order = 1,
 		rarity = "Uncommon",
-		level = 3,
+		level = 5,
 		coins = 150,
 		recipe = {
 			{ id = "ChickenFeather", count = 15 },
 			{ id = "BullHide", count = 10 },
+			{ id = "OakLog", count = 8 }, -- gathered (2026-10-19, user)
 		},
 		defense = 0.10,
-		health = 20,
+		health = 35,
 	},
 	HarvestKnight = {
 		id = "HarvestKnight",
@@ -67,15 +71,17 @@ Armor.Defs = {
 		world = 1,
 		order = 2,
 		rarity = "Rare",
-		level = 8,
+		level = 14,
 		coins = 750,
 		recipe = {
-			{ id = "Horsehair", count = 10 },
+			{ id = "Horsehair", count = 8 },
 			{ id = "GoldenStraw", count = 3 },
 			{ id = "LuckyHorseshoe", count = 1 },
+			{ id = "Stone", count = 12 }, -- gathered (2026-10-19, user)
+			{ id = "OakLog", count = 6 },
 		},
 		defense = 0.18,
-		health = 40,
+		health = 75,
 	},
 	-- ==================== World 2 (The Redwood Forest) ====================
 	WoodlandHide = {
@@ -86,14 +92,14 @@ Armor.Defs = {
 		world = 2,
 		order = 3,
 		rarity = "Rare",
-		level = 11,
+		level = 20,
 		coins = 1200,
 		recipe = {
 			{ id = "FoxFur", count = 15 },
 			{ id = "BoarTusk", count = 10 },
 		},
 		defense = 0.25,
-		health = 60,
+		health = 110,
 	},
 	HeartwoodBark = {
 		id = "HeartwoodBark",
@@ -103,7 +109,7 @@ Armor.Defs = {
 		world = 2,
 		order = 4,
 		rarity = "Epic",
-		level = 15,
+		level = 27,
 		coins = 3500,
 		recipe = {
 			{ id = "BearClaw", count = 10 },
@@ -111,7 +117,7 @@ Armor.Defs = {
 			{ id = "RangerBadge", count = 1 },
 		},
 		defense = 0.32,
-		health = 90,
+		health = 160,
 	},
 	-- ==================== World 3 (The Crystal Caverns), 2026-10-13 ====================
 	-- Trial numbers carrying on World 2's climb. No icons drawn yet.
@@ -123,14 +129,14 @@ Armor.Defs = {
 		world = 3,
 		order = 5,
 		rarity = "Epic",
-		level = 19,
+		level = 35,
 		coins = 2400,
 		recipe = {
 			{ id = "BatWing", count = 15 },
 			{ id = "GolemPebble", count = 10 },
 		},
 		defense = 0.38,
-		health = 120,
+		health = 220,
 	},
 	CrystalQueen = {
 		id = "CrystalQueen",
@@ -140,7 +146,7 @@ Armor.Defs = {
 		world = 3,
 		order = 6,
 		rarity = "Legendary",
-		level = 23,
+		level = 42,
 		coins = 7000,
 		recipe = {
 			{ id = "GolemCrystal", count = 10 },
@@ -148,7 +154,7 @@ Armor.Defs = {
 			{ id = "MinersLantern", count = 1 },
 		},
 		defense = 0.44,
-		health = 160,
+		health = 280,
 	},
 } :: { [string]: ArmorDef }
 
