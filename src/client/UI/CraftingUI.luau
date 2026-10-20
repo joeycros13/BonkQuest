@@ -56,7 +56,15 @@ local GUI_TIMEOUT = 15
 local player = Players.LocalPlayer
 
 -- What a potion's Effect card says: its title and value (Config/Potions).
-local EFFECT_TITLE: { [string]: string } = { Health = "Heals", Strength = "Damage", Stoneskin = "Defense", Swiftness = "Speed" }
+local EFFECT_TITLE: { [string]: string } = {
+	Health = "Heals",
+	Strength = "Damage",
+	Stoneskin = "Defense",
+	Swiftness = "Speed",
+	Regen = "Regen",
+	Gatherer = "Tool Power",
+	Angler = "Rare Fish",
+}
 
 local PanelWindow: any = nil
 local gui: any = nil
@@ -113,7 +121,7 @@ end
 
 -- The short name on a potion's button ("Health I").
 local function shortName(def: Potions.PotionDef): string
-	return def.kind .. " " .. Potions.Numerals[def.tier]
+	return def.short
 end
 
 -- How many of a recipe item the player holds: a material, or a potion.
@@ -333,9 +341,12 @@ local function fillPotion(def: Potions.PotionDef, counts: { [string]: number }, 
 	fillHeader(def)
 	showCards(true)
 	info.Blurb.Text = Potions.describe(def)
-	local percent = math.floor(def.power * 100 + 0.5)
+	local percent = Potions.percent(def.power)
 	info.EffectCard.Title.Text = EFFECT_TITLE[def.kind] or "Effect"
-	info.EffectCard.Value.Text = if def.kind == "Health" then percent .. "%" else "+" .. percent .. "%"
+	info.EffectCard.Value.Text = if def.kind == "Health"
+		then percent .. "%"
+		elseif def.kind == "Regen" then "+" .. percent .. "%/s"
+		else "+" .. percent .. "%"
 	for _, name in { "StatIcon", "StatIconShadow" } do
 		local icon = info.EffectCard:FindFirstChild(name)
 		if icon and icon:IsA("ImageLabel") then

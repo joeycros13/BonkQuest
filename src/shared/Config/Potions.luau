@@ -6,6 +6,13 @@
 --   Strength   + a share of weapon damage, applied last (MeleeService)
 --   Stoneskin  - a share of damage taken, after armour's defence (MeleeService)
 --   Swiftness  + a share of walk and sprint speed (SprintController)
+-- World 2's three (2026-10-20, the user: the rest of the 2026-10-18 proposal; Tier I recipes are
+-- for testing):
+--   Regen      heals a share of max HP every second, on top of Roblox's own 1% and the Regen
+--              upgrade (UpgradeService's regen tick)
+--   Gatherer   + a share of a tool's power, so trees and rocks break in fewer hits (GatherService)
+--   Angler     + a share of the weight of every fish rarer than Common at a spot, so rare fish
+--              bite more often (FishingService)
 --
 -- Tiers follow world bands: Tier I is brewed from World 1-2 materials at those worlds'
 -- Crafters, Tier II from World 3-5 materials plus a Tier I potion, Tier III from World 6-7
@@ -31,6 +38,7 @@ export type PotionDef = {
 	kind: string,
 	tier: number,
 	name: string,
+	short: string, -- the name without "Potion", for chips and the Crafter ("Gatherer's II")
 	rarity: string, -- its tile colour (Weapons.Rarities)
 	order: number,
 	power: number, -- the effect's share (0.3 = 30%)
@@ -42,7 +50,7 @@ export type PotionDef = {
 	color: Color3,
 }
 
-Potions.Kinds = { "Health", "Strength", "Stoneskin", "Swiftness" }
+Potions.Kinds = { "Health", "Strength", "Stoneskin", "Swiftness", "Regen", "Gatherer", "Angler" }
 Potions.Numerals = { "I", "II", "III" }
 
 -- The worlds whose Crafters brew each tier.
@@ -55,9 +63,10 @@ Potions.Bands = {
 Potions.HEAL_SECONDS = 1 -- a Health potion fills the bar over this long
 Potions.HEALTH_COOLDOWN = 20 -- seconds before another Health potion can be drunk
 Potions.MAX_SPEED = 0.25 -- Swiftness never goes past +25% (user's cap)
+Potions.BASE_REGEN = 0.01 -- Roblox's own healing, a share of max HP a second (Regen's multiplier is against it)
 
 -- What each kind does, per tier, and its look.
-local KINDS = {
+local KINDS: { [string]: any } = {
 	Health = {
 		label = "Health Potion",
 		power = { 0.3, 0.5, 0.8 },
@@ -86,6 +95,32 @@ local KINDS = {
 		color = Color3.fromRGB(64, 196, 232),
 		order = 4,
 	},
+	-- power: a share of max HP healed every second (0.01 = 1%, doubling Roblox's own healing)
+	Regen = {
+		label = "Regen Potion",
+		power = { 0.01, 0.015, 0.02 },
+		seconds = { 180, 240, 300 },
+		color = Color3.fromRGB(88, 200, 96),
+		order = 5,
+	},
+	-- power: + a share of the tool's power per hit (a Wooden Axe's 10 becomes 12.5: an oak in 4 chops, not 5)
+	Gatherer = {
+		label = "Gatherer's Potion",
+		short = "Gatherer's",
+		power = { 0.25, 0.5, 1 },
+		seconds = { 180, 240, 300 },
+		color = Color3.fromRGB(200, 130, 52),
+		order = 6,
+	},
+	-- power: + a share of every non-Common fish's weight (World 2's 60 / 30 / 10 becomes 60 / 45 / 15 at Tier I)
+	Angler = {
+		label = "Angler's Potion",
+		short = "Angler's",
+		power = { 0.5, 1, 1.5 },
+		seconds = { 180, 240, 300 },
+		color = Color3.fromRGB(58, 110, 232),
+		order = 7,
+	},
 }
 
 local RARITY = { "Uncommon", "Epic", "Legendary" }
@@ -97,6 +132,10 @@ local RECIPES: { [string]: { recipe: { Ingredient }, coins: number } } = {
 	Strength1 = { recipe = { { id = "Sunfish", count = 1 }, { id = "BullHide", count = 2 }, { id = "OakLog", count = 2 } }, coins = 50 },
 	Stoneskin1 = { recipe = { { id = "Stone", count = 4 }, { id = "BullHide", count = 2 }, { id = "Sunfish", count = 1 } }, coins = 50 },
 	Swiftness1 = { recipe = { { id = "Horsehair", count = 2 }, { id = "Minnow", count = 2 }, { id = "OakLog", count = 2 } }, coins = 40 },
+	-- World 2's, for testing (2026-10-20): its fish and enemy drops (Oak Log until the redwoods drop wood)
+	Regen1 = { recipe = { { id = "Trout", count = 2 }, { id = "FoxFur", count = 3 } }, coins = 60 },
+	Gatherer1 = { recipe = { { id = "Perch", count = 2 }, { id = "BoarTusk", count = 2 }, { id = "OakLog", count = 4 } }, coins = 75 },
+	Angler1 = { recipe = { { id = "RainbowTrout", count = 1 }, { id = "Perch", count = 2 }, { id = "BearClaw", count = 1 } }, coins = 90 },
 	Health2 = { recipe = { { id = "Health1", count = 1 }, { id = "BatWing", count = 3 } }, coins = 150 },
 	Strength2 = { recipe = { { id = "Strength1", count = 1 }, { id = "GolemCrystal", count = 2 }, { id = "GolemPebble", count = 2 } }, coins = 250 },
 	Stoneskin2 = { recipe = { { id = "Stoneskin1", count = 1 }, { id = "GolemPebble", count = 4 } }, coins = 250 },
@@ -117,6 +156,15 @@ local SELL: { [string]: number } = {
 	Strength3 = 560,
 	Stoneskin3 = 515,
 	Swiftness3 = 470,
+	Regen1 = 40,
+	Regen2 = 220,
+	Regen3 = 700,
+	Gatherer1 = 45,
+	Gatherer2 = 250,
+	Gatherer3 = 790,
+	Angler1 = 55,
+	Angler2 = 300,
+	Angler3 = 950,
 }
 
 -- Drawn icons, style B "grows with tier" (user's pick 2026-10-19): a vial, a bottle with a gold
@@ -134,6 +182,16 @@ local ICONS: { [string]: string } = {
 	Swiftness1 = "rbxassetid://114114649795281",
 	Swiftness2 = "rbxassetid://82114976938925",
 	Swiftness3 = "rbxassetid://89917816345363",
+	-- World 2's three (2026-10-20): Regen green with a plus, Gatherer's amber with an axe, Angler's blue with a fish
+	Regen1 = "rbxassetid://90761972576074",
+	Regen2 = "rbxassetid://100261071992720",
+	Regen3 = "rbxassetid://96275987831548",
+	Gatherer1 = "rbxassetid://135167643332794",
+	Gatherer2 = "rbxassetid://131335149938680",
+	Gatherer3 = "rbxassetid://105862877284140",
+	Angler1 = "rbxassetid://102947906879139",
+	Angler2 = "rbxassetid://71152897917402",
+	Angler3 = "rbxassetid://91090191334479",
 }
 
 Potions.Defs = {} :: { [string]: PotionDef }
@@ -146,6 +204,7 @@ for kind, info in KINDS do
 			kind = kind,
 			tier = tier,
 			name = info.label .. " " .. Potions.Numerals[tier],
+			short = (info.short or kind) .. " " .. Potions.Numerals[tier],
 			rarity = RARITY[tier],
 			order = tier * 10 + info.order,
 			power = info.power[tier],
@@ -185,18 +244,30 @@ function Potions.tierAt(world: number): number?
 	return nil
 end
 
+-- A share as a percentage without a needless ".0" (0.015 -> "1.5", 0.25 -> "25").
+function Potions.percent(share: number): string
+	local text = ("%.1f"):format(share * 100)
+	return (text:gsub("%.0$", ""))
+end
+
 -- What a potion does, in words ("Heals 30% of your health", "+15% damage for 3:00").
 function Potions.describe(def: PotionDef): string
-	local percent = math.floor(def.power * 100 + 0.5)
+	local percent = Potions.percent(def.power)
 	local length = ("%d:%02d"):format(def.seconds // 60, def.seconds % 60)
 	if def.kind == "Health" then
-		return ("Heals %d%% of your health"):format(percent)
+		return ("Heals %s%% of your health"):format(percent)
 	elseif def.kind == "Strength" then
-		return ("+%d%% damage for %s"):format(percent, length)
+		return ("+%s%% damage for %s"):format(percent, length)
 	elseif def.kind == "Stoneskin" then
-		return ("%d%% less damage taken for %s"):format(percent, length)
+		return ("%s%% less damage taken for %s"):format(percent, length)
+	elseif def.kind == "Regen" then
+		return ("Heals %s%% of your health a second for %s"):format(percent, length)
+	elseif def.kind == "Gatherer" then
+		return ("Tools hit trees and rocks %s%% harder for %s"):format(percent, length)
+	elseif def.kind == "Angler" then
+		return ("Rarer fish bite %s%% more often for %s"):format(percent, length)
 	end
-	return ("+%d%% speed for %s"):format(percent, length)
+	return ("+%s%% speed for %s"):format(percent, length)
 end
 
 -- The player's potions held, from their "Potions" attribute ("Health1=2,Swiftness1=1";
@@ -221,15 +292,25 @@ function Potions.running(player: Player, kind: string): (number?, number)
 	return nil, 0
 end
 
+-- A running potion's power (0 when none): Regen's share of max HP a second, for one.
+function Potions.power(player: Player, kind: string): number
+	local tier = Potions.running(player, kind)
+	local def = tier and Potions.get(kind .. tier)
+	return if def then def.power else 0
+end
+
 -- The multiplier a running potion gives (1 when none): damage dealt (Strength), damage
--- taken (Stoneskin, below 1) or speed (Swiftness).
+-- taken (Stoneskin, below 1), speed (Swiftness), healing against Roblox's own 1% a second
+-- (Regen), tool power (Gatherer) or the weight of fish rarer than Common (Angler).
 function Potions.multiplier(player: Player, kind: string): number
 	local tier = Potions.running(player, kind)
 	local def = tier and Potions.get(kind .. tier)
 	if not def then
 		return 1
 	end
-	if kind == "Stoneskin" then
+	if kind == "Regen" then
+		return 1 + def.power / Potions.BASE_REGEN
+	elseif kind == "Stoneskin" then
 		return 1 - def.power
 	elseif kind == "Swiftness" then
 		return 1 + math.min(def.power, Potions.MAX_SPEED)

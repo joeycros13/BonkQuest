@@ -9,7 +9,7 @@ from PIL import Image
 
 from finish_w1_gather import fit, OUT, TILES, HERE
 
-ICONS = [("Trout", "common"), ("RainbowTrout", "rare")]
+ICONS = [("Trout", "common"), ("Perch", "uncommon"), ("RainbowTrout", "rare")]
 
 if __name__ == "__main__":
     done = [(name, rarity, fit(os.path.join(HERE, "raw", "mat_%s.png" % name), os.path.join(OUT, name + ".png"))) for name, rarity in ICONS]

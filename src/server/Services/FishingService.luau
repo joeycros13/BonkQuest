@@ -27,6 +27,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
 local Fishing = require(Config:WaitForChild("Fishing"))
 local Tools = require(Config:WaitForChild("Tools"))
+local Materials = require(Config:WaitForChild("Materials"))
+local Potions = require(Config:WaitForChild("Potions"))
 
 local FishingService = {}
 
@@ -128,14 +130,21 @@ scheduleBite = function(player: Player, session: Session, first: boolean)
 	end)
 end
 
-local function pickFish(spot: Fishing.Spot): string
+-- A running Angler's potion (Config/Potions) multiplies the weight of every fish rarer than
+-- Common, so the uncommon and rare ones bite more often.
+local function pickFish(spot: Fishing.Spot, player: Player): string
+	local angler = Potions.multiplier(player, "Angler")
+	local weights = {}
 	local total = 0
-	for _, entry in spot.fish do
-		total += entry.weight
+	for index, entry in spot.fish do
+		local def = Materials.get(entry.id)
+		local weight = if def and def.rarity ~= "Common" then entry.weight * angler else entry.weight
+		weights[index] = weight
+		total += weight
 	end
 	local roll = random:NextNumber() * total
-	for _, entry in spot.fish do
-		roll -= entry.weight
+	for index, entry in spot.fish do
+		roll -= weights[index]
 		if roll <= 0 then
 			return entry.id
 		end
@@ -209,7 +218,7 @@ local function onHook(player: Player)
 	if session.phase ~= "Bite" or os.clock() > session.biteUntil + HOOK_SLACK then
 		return
 	end
-	session.fish = pickFish(session.spot)
+	session.fish = pickFish(session.spot, player)
 	startRing(player, session, 1)
 end
 

@@ -18,6 +18,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Upgrades = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("Upgrades"))
+local Potions = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("Potions"))
 
 local UpgradeService = {}
 
@@ -123,12 +124,13 @@ function UpgradeService.start()
 	for _, player in Players:GetPlayers() do
 		onPlayer(player)
 	end
-	-- Regen: the upgrade's extra share of max health every second
+	-- Regen: the upgrade's extra share of max health every second, plus a running Regen
+	-- potion's (Config/Potions, 2026-10-20)
 	task.spawn(function()
 		while true do
 			task.wait(REGEN_STEP)
 			for _, player in Players:GetPlayers() do
-				local extra = Upgrades.value(player, "Regen")
+				local extra = Upgrades.value(player, "Regen") + Potions.power(player, "Regen")
 				local character = player.Character
 				local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 				if extra > 0 and humanoid and humanoid.Health > 0 and humanoid.Health < humanoid.MaxHealth then

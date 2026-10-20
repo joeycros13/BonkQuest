@@ -71,7 +71,8 @@ Fishing.Fish = {
 	Minnow = "Easy",
 	Sunfish = "Medium",
 	GoldenCarp = "Hard",
-	Trout = "Medium",
+	Trout = "Easy",
+	Perch = "Medium",
 	RainbowTrout = "Hard",
 } :: { [string]: string }
 
@@ -89,15 +90,17 @@ Fishing.Spots = {
 		},
 	},
 	-- World 2's creek and pond: one water part (Ground/Creek/Water), so the whole creek fishes
-	-- too. The approved table's fish (memory tools-per-world): Trout and the rare Rainbow Trout.
+	-- too. The approved table's fish (memory tools-per-world): Trout and the rare Rainbow Trout, plus
+	-- the Perch (the user, 2026-10-20: three tiers like World 1's pond, at its weights).
 	RedwoodPond = {
 		id = "RedwoodPond",
 		name = "The Creek",
 		world = 2,
 		tier = 2,
 		fish = {
-			{ id = "Trout", weight = 75 },
-			{ id = "RainbowTrout", weight = 25 },
+			{ id = "Trout", weight = 60 },
+			{ id = "Perch", weight = 30 },
+			{ id = "RainbowTrout", weight = 10 },
 		},
 	},
 } :: { [string]: Spot }
