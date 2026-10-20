@@ -20,6 +20,7 @@
 --   power     taken off a node's hp per hit
 --   rarity    its tile skin (the hotbar slot, the Inventory)
 --   price     coins at that world's shop (placeholder)
+--   sell      coins for selling it from the Inventory (placeholder, 2026-10-20)
 --   icon      its drawn picture (cel-shaded render like the weapons', art/icons/tools; without one
 --             the hotbar falls back to the 3D view)
 -- Swinging reuses the weapon animation system (Animation.Clips.Weapons keys holds by id
@@ -37,6 +38,7 @@ export type ToolDef = {
 	power: number,
 	rarity: string,
 	price: number?,
+	sell: number?,
 	icon: string?,
 	handed: number,
 	cooldown: number,
@@ -68,6 +70,7 @@ Tools.Defs = {
 		kind = "Axe",
 		tier = 1,
 		world = 1,
+		sell = 11,
 		power = 10,
 		rarity = "Common",
 		price = 50,
@@ -88,6 +91,7 @@ Tools.Defs = {
 		kind = "Pickaxe",
 		tier = 1,
 		world = 1,
+		sell = 14,
 		power = 10,
 		rarity = "Common",
 		price = 50,
@@ -111,6 +115,7 @@ Tools.Defs = {
 		kind = "Rod",
 		tier = 1,
 		world = 1,
+		sell = 16,
 		power = 0,
 		rarity = "Common",
 		price = 75,

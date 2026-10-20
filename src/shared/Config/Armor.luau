@@ -23,6 +23,7 @@
 --             quicker level curve) a set adds about a quarter of a player's HP at its
 --             level for the first World 1 set, rising to about half by World 3, so
 --             armour stays worth wearing
+--   sell      coins for selling it from the Inventory (placeholder, 2026-10-20)
 --   icon      its drawn picture (designed on the Crafting & Armor canvas, art/icons/)
 
 local Armor = {}
@@ -40,6 +41,7 @@ export type ArmorDef = {
 	recipe: { Ingredient },
 	defense: number,
 	health: number,
+	sell: number?,
 	icon: string?,
 }
 
@@ -51,6 +53,7 @@ Armor.Defs = {
 		name = "Farmhand's Gear",
 		blurb = "Stitched from feathers and hide. Better than nothing!",
 		world = 1,
+		sell = 62,
 		order = 1,
 		rarity = "Uncommon",
 		level = 5,
@@ -69,6 +72,7 @@ Armor.Defs = {
 		name = "Harvest Knight",
 		blurb = "Golden straw plate with Dale's lucky horseshoe on the chest.",
 		world = 1,
+		sell = 150,
 		order = 2,
 		rarity = "Rare",
 		level = 14,
@@ -90,6 +94,7 @@ Armor.Defs = {
 		name = "Woodland Hide",
 		blurb = "Fox fur and tusk toggles. Warm and tough.",
 		world = 2,
+		sell = 490,
 		order = 3,
 		rarity = "Rare",
 		level = 20,
@@ -107,6 +112,7 @@ Armor.Defs = {
 		name = "Heartwood Bark",
 		blurb = "Living bark, bear claws and the ranger's badge.",
 		world = 2,
+		sell = 1000,
 		order = 4,
 		rarity = "Epic",
 		level = 27,
@@ -127,6 +133,7 @@ Armor.Defs = {
 		name = "Cave Runner",
 		blurb = "Golem stone with a glowing core and stone bat wings.",
 		world = 3,
+		sell = 2200,
 		order = 5,
 		rarity = "Epic",
 		level = 35,
@@ -144,6 +151,7 @@ Armor.Defs = {
 		name = "Crystal Queen",
 		blurb = "Spider carapace, the Queen's hourglass and a burst of crystals.",
 		world = 3,
+		sell = 4300,
 		order = 6,
 		rarity = "Legendary",
 		level = 42,

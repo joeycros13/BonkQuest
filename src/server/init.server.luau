@@ -40,6 +40,8 @@ local SERVICE_ORDER = {
 	"LeaderboardService",
 	-- the Daily Rewards stand and promo codes (Config/DailyRewards), rewards through the services above
 	"DailyRewardService",
+	-- selling from the Inventory: takes items through the services above, pays through CoinService
+	"SellService",
 	-- the admin panel: coins, EXP, levels, weapons and respawns through the services above
 	"AdminService",
 	-- walk-in teleport zones (the secret rooms' entrances and exits)
