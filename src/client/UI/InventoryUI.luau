@@ -20,7 +20,9 @@
 --     hand, clicking a set wears it (again takes it off: Remotes.EquipArmor). Tool
 --     tiles only show what is owned (the user's call): tools come out of their hotbar
 --     slot, which always holds the best one of its kind.
---   * Damage / Health / Defense cards under the character.
+--   * Damage / Health / Defense cards under the character, and the header's Capacity pill:
+--     how many different things are held (its Format, "%s Items"; 2026-10-20, the user: a
+--     count, not a "35 / 50" bag size).
 --   * Potions (Config/Potions, 2026-10-19): one tile per potion held ("×3"). Clicking one
 --     opens the tile's hand-built DrinkMenu (the user's pick, option A on the Potions UI
 --     canvas): Effect (what it does), Drink (Remotes.DrinkPotion) and Cancel. A refusal
@@ -29,9 +31,17 @@
 --   * TopBar: the Filter dropdown (All / Weapons / Tools / Armor / Potions / Materials) and the
 --     SearchBox (matches names) narrow the grid.
 --   * BottomBar: Equip Best equips the highest-damage weapon and the highest-defense
---     set owned. Sell Mode makes clicks pick weapon tiles instead (SellMark + Sell*
---     rim); once one is picked the Sell button appears and sells them
---     (Remotes.SellItems). Armour and materials can't be sold.
+--     set owned. Sell Mode (2026-10-20: everything sells but quest items and cores,
+--     Config/Sell) makes clicks pick tiles instead (SellMark + Sell* rim) and each tile's
+--     pill shows what it sells for (the template's SellFormat, or NoSellText for what
+--     can't be sold). A weapon, tool or set is picked by a click; a potion or material
+--     opens the tile's hand-built SellMenu to choose how many (Title, Minus, Count (a
+--     TextBox), Plus, All, Worth (WorthFormat), Pick, Cancel) and its pill then reads
+--     "12 / 40" (PickedFormat). Picking a Legendary or rarer weapon, tool or set first asks
+--     on the tile (2026-10-20, the user): its hand-built ConfirmMenu (Title "Are you sure?",
+--     Worth (WorthFormat), Yes, Cancel); Yes picks it. With anything picked, BottomBar/SellWorth shows the coins
+--     (Icon, Amount, Format) and the Sell button sells it all (Remotes.SellItems,
+--     SellService). The Hint reads its Text_Sell attribute while Sell Mode is on.
 -- Looks that change with state come from attributes on the template / buttons.
 --
 -- HUD (WeaponHud): "Attack" is shown on touch screens only; getting hit flashes
@@ -49,6 +59,7 @@ local Config = Shared:WaitForChild("Config")
 local Armor = require(Config:WaitForChild("Armor"))
 local Materials = require(Config:WaitForChild("Materials"))
 local Potions = require(Config:WaitForChild("Potions"))
+local Sell = require(Config:WaitForChild("Sell"))
 local Tools = require(Config:WaitForChild("Tools"))
 local Weapons = require(Config:WaitForChild("Weapons"))
 
@@ -59,7 +70,7 @@ local DamagePopup: any = nil
 local PanelWindow: any = nil
 local WeaponController: any = nil
 local PlayerAnimator: any = nil
-local sellRemote: RemoteEvent? = nil
+local sellRemote: RemoteFunction? = nil
 local armorRemote: RemoteEvent? = nil
 
 local PANEL_ID = "Inventory"
@@ -93,7 +104,14 @@ local drinking = false
 local drinkNote: { [string]: string } = {} -- a refusal shown on that potion's Effect line
 local query = ""
 local sellMode = false
-local selected: { [string]: boolean } = {}
+-- what Sell Mode has picked, by "<kind>:<id>"; stacks carry how many
+type Pick = { kind: string, id: string, count: number }
+local picks: { [string]: Pick } = {}
+local openStack: string? = nil -- the potion / material whose tile shows its SellMenu
+local openConfirm: string? = nil -- the Legendary+ tile asking "Are you sure?" before it is picked
+-- picking anything this rare or rarer asks first (Weapons.Rarities order)
+local CONFIRM_FROM = table.find(Weapons.Rarities, "Legendary") or 5
+local selling = false
 
 local preview: Model? = nil
 
@@ -169,20 +187,30 @@ local renderGrid: () -> ()
 
 type GridEntry = { kind: string, def: any, rank: number, typeRank: number, strength: number }
 
-local function selectedCount(): number
-	local n = 0
-	for _ in selected do
+-- How many lines are picked, and the coins they come to.
+local function pickTotals(): (number, number)
+	local n, coins = 0, 0
+	for _, pick in picks do
 		n += 1
+		coins += (Sell.price(pick.kind, pick.id) or 0) * pick.count
 	end
-	return n
+	return n, coins
 end
 
 local function renderButtons()
+	local count, coins = pickTotals()
 	local sellButton = find("SellButton", "GuiButton")
 	if sellButton then
-		local count = selectedCount()
 		sellButton.Visible = sellMode and count > 0
 		setButtonText(sellButton, (attribute(sellButton, "TextFormat", "Sell (%d)") :: string):format(count))
+	end
+	local worth = find("SellWorth", "GuiObject")
+	if worth then
+		worth.Visible = sellMode and count > 0
+		local amount = worth:FindFirstChild("Amount", true)
+		if amount and amount:IsA("TextLabel") then
+			amount.Text = (attribute(worth, "Format", "+%s") :: string):format(Format.coins(coins))
+		end
 	end
 	local modeButton = find("SellMode", "GuiButton")
 	if modeButton then
@@ -218,7 +246,7 @@ local function renderSockets()
 end
 
 -- The Damage / Health / Defense cards under the character, and the item count
--- in the header (its Max / Format attributes set the capacity and wording).
+-- in the header (its Format attribute sets the wording).
 local function renderStats(count: number)
 	local current = WeaponController.selected()
 	local damage = find("DamageValue", "TextLabel")
@@ -239,7 +267,7 @@ local function renderStats(count: number)
 	local capacity = find("Capacity", "GuiObject")
 	local capLabel = capacity and capacity:FindFirstChild("Label")
 	if capLabel and capLabel:IsA("TextLabel") then
-		capLabel.Text = (attribute(capacity, "Format", "%d / %d") :: string):format(count, attribute(capacity, "Max", 50))
+		capLabel.Text = (attribute(capacity, "Format", "%s Items") :: string):format(Format.commas(count))
 	end
 end
 
@@ -313,7 +341,7 @@ local function wireDrinkMenu(tile: GuiObject, def: Potions.PotionDef)
 	if not (menu and menu:IsA("GuiObject")) then
 		return
 	end
-	local open = openPotion == def.id
+	local open = openPotion == def.id and not sellMode
 	menu.Visible = open
 	local effect = menu:FindFirstChild("Effect")
 	if effect and effect:IsA("TextLabel") then
@@ -363,6 +391,77 @@ local function wireDrinkMenu(tile: GuiObject, def: Potions.PotionDef)
 				drinkNote[def.id] = refusal(if ok then reason else nil)
 			end
 			renderGrid()
+		end)
+	end
+end
+
+-- A potion or material tile in Sell Mode: a click opens its SellMenu to choose how
+-- many go in the sale (Pick), from 1 to all held; Cancel leaves the pick as it was.
+-- The count is edited in place (no re-render) until Pick.
+local function wireSellMenu(tile: GuiObject, kind: string, def: any, held: number)
+	local key = kind .. ":" .. def.id
+	local menu = tile:FindFirstChild("SellMenu")
+	if not (menu and menu:IsA("GuiObject")) then
+		return
+	end
+	local price = Sell.price(kind, def.id) or 0
+	menu.Visible = openStack == key
+	local current = picks[key]
+	local count = if current then current.count else 1
+	local box = menu:FindFirstChild("Count")
+	local worth = menu:FindFirstChild("Worth")
+	local function show()
+		count = math.clamp(count, 1, math.max(1, held))
+		if box and box:IsA("TextBox") then
+			box.Text = Format.commas(count)
+		end
+		if worth and worth:IsA("TextLabel") then
+			worth.Text = (attribute(menu, "WorthFormat", "%s Coins") :: string):format(Format.coins(price * count))
+		end
+	end
+	show()
+	local function on(name: string, action: () -> ())
+		local button = menu:FindFirstChild(name)
+		if button and button:IsA("GuiButton") then
+			button.Activated:Connect(action)
+		end
+	end
+	on("Minus", function()
+		count -= 1
+		show()
+	end)
+	on("Plus", function()
+		count += 1
+		show()
+	end)
+	on("All", function()
+		count = held
+		show()
+	end)
+	if box and box:IsA("TextBox") then
+		box.FocusLost:Connect(function()
+			local typed = tonumber((box.Text:gsub("[^%d]", "")))
+			if typed then
+				count = typed
+			end
+			show()
+		end)
+	end
+	on("Pick", function()
+		picks[key] = { kind = kind, id = def.id, count = count }
+		openStack = nil
+		renderGrid()
+	end)
+	on("Cancel", function()
+		openStack = nil
+		renderGrid()
+	end)
+	if tile:IsA("GuiButton") then
+		tile.Activated:Connect(function()
+			if sellMode then
+				openStack = if openStack == key then nil else key
+				renderGrid()
+			end
 		end)
 	end
 end
@@ -428,6 +527,42 @@ renderGrid = function()
 		openPotion = nil
 	end
 	local counts = Materials.counts(player)
+	-- picks of things no longer held go; stacks shrink to what is left
+	local ownedTools = Tools.owned(player)
+	local function holds(pick: Pick): number
+		if pick.kind == "weapon" then
+			for _, def in owned do
+				if def.id == pick.id then
+					return 1
+				end
+			end
+			return 0
+		elseif pick.kind == "tool" then
+			return if ownedTools[pick.id] then 1 else 0
+		elseif pick.kind == "armor" then
+			for _, set in sets do
+				if set.id == pick.id then
+					return 1
+				end
+			end
+			return 0
+		end
+		return (if pick.kind == "potion" then held else counts)[pick.id] or 0
+	end
+	for key, pick in picks do
+		local have = holds(pick)
+		if have <= 0 then
+			picks[key] = nil
+		else
+			pick.count = math.min(pick.count, have)
+		end
+	end
+	if openStack and not sellMode then
+		openStack = nil
+	end
+	if openConfirm and not sellMode then
+		openConfirm = nil
+	end
 	if shows.materials then
 		for _, def in Materials.list() do
 			if (counts[def.id] or 0) > 0 and matches(def.name) then
@@ -453,58 +588,124 @@ renderGrid = function()
 		local def = entry.def
 		-- the shared tile (ReplicatedStorage/Assets/UI/WeaponTile, Util.WeaponTile): rarity
 		-- skin, drawn icon, name and its pill ("50 Dmg", "10% Def", "×12")
-		local tile: GuiObject? = nil
-		if entry.kind == "weapon" then
-			tile = WeaponTile.new(def)
+		local key = entry.kind .. ":" .. def.id
+		local pick = picks[key]
+		local price = Sell.price(entry.kind, def.id)
+		local stacks = Sell.Stacks[entry.kind] == true
+		local stack = if entry.kind == "potion" then held[def.id] or 0 elseif entry.kind == "material" then counts[def.id] or 0 else 0
+		local noSell: string = WeaponTile.attribute("NoSellText", "Can't sell")
+		local statText: string? = nil
+		if sellMode and not price then
+			statText = noSell
+		elseif sellMode and stacks and pick then
+			statText = (WeaponTile.attribute("PickedFormat", "%s / %s") :: string):format(Format.commas(pick.count), Format.commas(stack))
+		elseif sellMode and not stacks then
+			-- what it sells for
+			statText = (WeaponTile.attribute("SellFormat", "%s Coins") :: string):format(Format.coins(price :: number))
 		elseif entry.kind == "tool" then
-			tile = WeaponTile.new(def, { statText = ("Tier %d"):format(def.tier) })
+			statText = ("Tier %d"):format(def.tier)
 		elseif entry.kind == "armor" then
-			tile = WeaponTile.new(def, { statText = math.floor(def.defense * 100 + 0.5) .. "% Def" })
-		elseif entry.kind == "potion" then
-			tile = WeaponTile.new(def, { statText = "×" .. Format.commas(held[def.id] or 0) })
-		else
-			tile = WeaponTile.new(def, { statText = "×" .. Format.commas(counts[def.id] or 0) })
+			statText = math.floor(def.defense * 100 + 0.5) .. "% Def"
+		elseif stacks then
+			statText = "×" .. Format.commas(stack)
 		end
+		local tile = WeaponTile.new(def, if statText then { statText = statText } else nil)
 		if not tile then
 			continue
 		end
 		shown += 1
 		tile.LayoutOrder = order
+		local picked = sellMode and pick ~= nil
+		-- in Sell Mode a weapon, tool or set toggles its pick (if it can be sold at all);
+		-- a Legendary or rarer one asks on its ConfirmMenu first, and a click on the tile
+		-- while it asks closes it again
+		local function choose()
+			picks[key] = { kind = entry.kind, id = def.id, count = 1 }
+			openConfirm = nil
+			renderGrid()
+		end
+		local function togglePick()
+			if not price then
+				return
+			end
+			if pick then
+				picks[key] = nil
+			elseif openConfirm == key then
+				openConfirm = nil
+			elseif entry.rank >= CONFIRM_FROM then
+				openConfirm = key
+			else
+				choose()
+				return
+			end
+			renderGrid()
+		end
+		if not stacks then
+			local confirm = tile:FindFirstChild("ConfirmMenu")
+			if confirm and confirm:IsA("GuiObject") then
+				confirm.Visible = sellMode and openConfirm == key
+				local worth = confirm:FindFirstChild("Worth")
+				if worth and worth:IsA("TextLabel") and price then
+					worth.Text = (attribute(confirm, "WorthFormat", "%s Coins") :: string):format(Format.coins(price))
+				end
+				local yes = confirm:FindFirstChild("Yes")
+				if yes and yes:IsA("GuiButton") then
+					yes.Activated:Connect(choose)
+				end
+				local cancel = confirm:FindFirstChild("Cancel")
+				if cancel and cancel:IsA("GuiButton") then
+					cancel.Activated:Connect(function()
+						openConfirm = nil
+						renderGrid()
+					end)
+				end
+			end
+		end
 		if entry.kind == "weapon" then
-			styleTile(tile, current ~= nil and current.id == def.id, selected[def.id] == true)
+			styleTile(tile, current ~= nil and current.id == def.id, picked)
 			if tile:IsA("GuiButton") then
 				tile.Activated:Connect(function()
 					if sellMode then
-						if def.starter or def.keep then
-							return -- the starter weapon and key items (the Rusty Blade) can't be sold
-						end
-						selected[def.id] = if selected[def.id] then nil else true
-						renderGrid()
-						renderButtons()
+						togglePick()
 					else
 						WeaponController.equip(def.id)
 					end
 				end)
 			end
 		elseif entry.kind == "tool" then
-			-- shown only (user, 2026-10-19): tools are taken out from their hotbar slot,
-			-- which always holds the best one of its kind, so a tile does nothing
-			styleTile(tile, false, false)
-		elseif entry.kind == "potion" then
-			styleTile(tile, false, false)
-			wireDrinkMenu(tile, def)
-		elseif entry.kind == "armor" then
-			-- the worn set is badged; clicking wears it, or takes it off
-			styleTile(tile, worn ~= nil and worn.id == def.id, false)
+			-- outside Sell Mode a tool tile does nothing (user, 2026-10-19): tools are taken
+			-- out from their hotbar slot, which always holds the best one of its kind
+			styleTile(tile, false, picked)
 			if tile:IsA("GuiButton") then
 				tile.Activated:Connect(function()
-					if not sellMode and armorRemote then
+					if sellMode then
+						togglePick()
+					end
+				end)
+			end
+		elseif entry.kind == "potion" then
+			styleTile(tile, false, picked)
+			wireDrinkMenu(tile, def)
+			if price then
+				wireSellMenu(tile, "potion", def, stack)
+			end
+		elseif entry.kind == "armor" then
+			-- the worn set is badged; clicking wears it, or takes it off
+			styleTile(tile, worn ~= nil and worn.id == def.id, picked)
+			if tile:IsA("GuiButton") then
+				tile.Activated:Connect(function()
+					if sellMode then
+						togglePick()
+					elseif armorRemote then
 						armorRemote:FireServer(def.id)
 					end
 				end)
 			end
 		else
-			styleTile(tile, false, false)
+			styleTile(tile, false, picked)
+			if price then
+				wireSellMenu(tile, "material", def, stack)
+			end
 		end
 		tile.Parent = grid
 	end
@@ -521,7 +722,19 @@ renderGrid = function()
 			filler.Parent = grid
 		end
 	end
-	renderStats(#owned + #sets)
+	-- every different thing held, whatever the filter shows
+	local items = #owned + #sets
+	for _ in Tools.owned(player) do
+		items += 1
+	end
+	for _, list in { held, counts } do
+		for _, n in list do
+			if n > 0 then
+				items += 1
+			end
+		end
+	end
+	renderStats(items)
 
 	-- the hint line under the cards: its Text_<filter> attribute, else as authored
 	local hint = find("Hint", "TextLabel")
@@ -529,8 +742,9 @@ renderGrid = function()
 		if hint:GetAttribute("DefaultText") == nil then
 			hint:SetAttribute("DefaultText", hint.Text)
 		end
-		hint.Text = attribute(hint, "Text_" .. filter, hint:GetAttribute("DefaultText"))
+		hint.Text = if sellMode then attribute(hint, "Text_Sell", "Pick what to sell.") else attribute(hint, "Text_" .. filter, hint:GetAttribute("DefaultText"))
 	end
+	renderButtons()
 
 	local empty = find("Empty", "TextLabel")
 	if empty then
@@ -541,9 +755,11 @@ end
 
 local function setSellMode(on: boolean)
 	sellMode = on
-	table.clear(selected)
+	table.clear(picks)
+	openStack = nil
+	openConfirm = nil
+	openPotion = nil
 	renderGrid()
-	renderButtons()
 end
 
 -- ==================== character preview ====================
@@ -668,13 +884,22 @@ local function wirePanel(gui: ScreenGui)
 	local sellButton = find("SellButton", "GuiButton")
 	if sellButton then
 		sellButton.Activated:Connect(function()
-			local ids = {}
-			for id in selected do
-				table.insert(ids, id)
+			if selling or not sellRemote then
+				return
 			end
-			if #ids > 0 and sellRemote then
-				sellRemote:FireServer(ids)
+			local lines = {}
+			for _, pick in picks do
+				table.insert(lines, { kind = pick.kind, id = pick.id, count = pick.count })
 			end
+			if #lines == 0 then
+				return
+			end
+			selling = true
+			local remote = sellRemote :: RemoteFunction
+			pcall(function()
+				remote:InvokeServer(lines)
+			end)
+			selling = false
 			setSellMode(false)
 		end)
 	end
@@ -702,18 +927,8 @@ local function wirePanel(gui: ScreenGui)
 		end
 	end)
 
-	player:GetAttributeChangedSignal("OwnedWeapons"):Connect(function()
-		-- Sold items can't stay picked.
-		local owned = player:GetAttribute("OwnedWeapons")
-		for id in selected do
-			if type(owned) ~= "string" or not ("," .. owned .. ","):find("," .. id .. ",", 1, true) then
-				selected[id] = nil
-			end
-		end
-		renderGrid()
-		renderButtons()
-	end)
-	for _, name in { "OwnedArmor", "EquippedArmor", "Materials", "OwnedTools", "Potions" } do
+	-- renderGrid also drops picks of anything no longer held
+	for _, name in { "OwnedWeapons", "OwnedArmor", "EquippedArmor", "Materials", "OwnedTools", "Potions" } do
 		player:GetAttributeChangedSignal(name):Connect(renderGrid)
 	end
 	-- the max-health change lands just after the armour's own attributes
@@ -777,7 +992,6 @@ local function wirePanel(gui: ScreenGui)
 	end)
 
 	renderGrid()
-	renderButtons()
 end
 
 -- ==================== HUD ====================
@@ -832,7 +1046,7 @@ function InventoryUI.init(injected: any)
 	PanelWindow = deps.UI.PanelWindow
 	WeaponController = deps.Controllers.WeaponController
 	PlayerAnimator = deps.Controllers.PlayerAnimator
-	sellRemote = deps.Remotes.getEvent("SellItems")
+	sellRemote = deps.Remotes.getFunction("SellItems")
 	armorRemote = deps.Remotes.getEvent("EquipArmor")
 end
 

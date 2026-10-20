@@ -12,9 +12,9 @@
 -- the drops and calls grant). The set and the selected weapon are saved as the
 -- "weapons" section of PlayerDataService (2026-10-09). It is published as the
 -- player's "OwnedWeapons" attribute (comma-separated ids). Only owned weapons
--- can be equipped; SellItems removes weapons from the set (no coins are paid
--- yet). The starter weapon (Weapons.default, the Dagger) is always owned and can't
--- be sold, so nobody is ever left empty-handed. Equipping clones the
+-- can be equipped; removeWeapons takes weapons out of the set (selling them through
+-- SellService, the admin panel's Remove, infusing). The starter weapon (Weapons.default,
+-- the Dagger) is always owned and can't be removed, so nobody is ever left empty-handed. Equipping clones the
 -- model from ReplicatedStorage/Assets/Weapons and welds its Grip into the right
 -- hand; the character's "Weapon" attribute tells every client which swing to play.
 --
@@ -731,24 +731,25 @@ function MeleeService.WeaponHit(player: Player, targets: any)
 	end
 end
 
--- Remove weapons from the player's set. Selling the selected weapon selects the
--- starter weapon instead (in hand or put away, as before). Coins for sold items come later, with the coin system.
--- `force` (the admin panel's Remove only, never the remote) also takes key items.
-function MeleeService.SellItems(player: Player, ids: any, force: boolean?)
+-- Remove weapons from the player's set (SellService sells through this). Removing the
+-- selected weapon selects the starter weapon instead (in hand or put away, as before).
+-- `force` (revoke: the admin panel's Remove, infusing) also takes key items. Returns how
+-- many were removed.
+function MeleeService.removeWeapons(player: Player, ids: { any }, force: boolean?): number
 	if type(ids) ~= "table" then
-		return
+		return 0
 	end
 	local state = stateOf(player)
-	local sold = 0
+	local removed = 0
 	for _, id in ids do
 		local def = Weapons.get(id)
 		if def and not def.unarmed and not def.starter and (force or not def.keep) and state.owned[id] then
 			state.owned[id] = nil
-			sold += 1
+			removed += 1
 		end
 	end
-	if sold == 0 then
-		return
+	if removed == 0 then
+		return 0
 	end
 	if not canUse(state, state.weapon) then
 		state.weapon = Weapons.default
@@ -758,15 +759,16 @@ function MeleeService.SellItems(player: Player, ids: any, force: boolean?)
 		end
 	end
 	publishOwned(player, state)
+	return removed
 end
 
--- Take one weapon away (the admin panel). The starter can't be removed, the
--- same rule as selling. Returns true if the player had it.
+-- Take one weapon away (the admin panel, infusing). The starter can't be removed.
+-- Returns true if the player had it.
 function MeleeService.revoke(player: Player, id: string): boolean
 	if not MeleeService.owns(player, id) then
 		return false
 	end
-	MeleeService.SellItems(player, { id }, true)
+	MeleeService.removeWeapons(player, { id }, true)
 	return not MeleeService.owns(player, id)
 end
 
@@ -822,9 +824,6 @@ function MeleeService.start()
 	end)
 	deps.Remotes.getEvent("WeaponHit").OnServerEvent:Connect(function(player: Player, targets: any)
 		MeleeService.WeaponHit(player, targets)
-	end)
-	deps.Remotes.getEvent("SellItems").OnServerEvent:Connect(function(player: Player, ids: any)
-		MeleeService.SellItems(player, ids)
 	end)
 
 	-- Every spawn starts with the selected weapon put away (it stays in the

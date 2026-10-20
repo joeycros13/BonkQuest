@@ -32,7 +32,7 @@ local World: WorldTypes.WorldDef = {
 			melee = { damage = 6, cooldown = 1.2, windup = 0.25, range = 1.5, chaseSpeed = 15, armor = 0, move = "peck" },
 			-- Coins and rates are tuned for a ~30-minute World 1 (2026-10-19; see Balance).
 			coins = { min = 6, max = 12 },
-			exp = 8,
+			exp = 10, -- +25% on 2026-10-20 (was 8): the gate in ~30 min, world_sim.py --goal gate
 			drops = {
 				{ weapon = "Sickle", chance = 0.20 },
 				{ weapon = "Machete", chance = 0.05 },
@@ -52,7 +52,7 @@ local World: WorldTypes.WorldDef = {
 			-- Slow, heavy horn charges with a long reach.
 			melee = { damage = 16, cooldown = 2.0, windup = 0.45, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "gore" },
 			coins = { min = 24, max = 40 },
-			exp = 30,
+			exp = 38, -- was 30 (+25%, 2026-10-20)
 			drops = {
 				{ weapon = "Machete", chance = 0.25 },
 				{ weapon = "Pitchfork", chance = 0.15 },
@@ -72,7 +72,7 @@ local World: WorldTypes.WorldDef = {
 			portrait = "rbxassetid://73569429526048", -- calm face (2026-10-12)
 			melee = { damage = 20, cooldown = 2.2, windup = 0.78, range = 1.6, chaseSpeed = 16, armor = 0.1, move = "slam" },
 			coins = { min = 40, max = 60 },
-			exp = 45,
+			exp = 56, -- was 45 (+25%, 2026-10-20)
 			drops = {
 				{ weapon = "Shovel", chance = 0.15 },
 				{ weapon = "Scythe", chance = 0.10 },
@@ -112,7 +112,7 @@ local World: WorldTypes.WorldDef = {
 			-- fight outlasts the Bull's.
 			melee = { damage = 22, cooldown = 2.2, windup = 0.5, range = 1.2, chaseSpeed = 11, armor = 0.5, move = "stab" },
 			coins = { min = 90, max = 140 },
-			exp = 120,
+			exp = 150, -- was 120 (+25%, 2026-10-20)
 			drops = {
 				{ weapon = "Pitchfork", chance = 0.25 },
 				{ weapon = "Scythe", chance = 0.20 },

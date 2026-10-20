@@ -18,7 +18,6 @@ local EVENT_NAMES: { string } = {
 	"HolsterWeapon",
 	"WeaponSwing",
 	"WeaponHit",
-	"SellItems",
 	"QuestAction", -- ("accept" | "turnIn", lineId): any questline (QuestService)
 	"ShopBuy", -- { kind = "Bundle" | "Pass" | "Boost" | "Starter", id = string? }: the Robux shop (ShopService)
 	"GateBuy", -- { id = string }: buy a world gate (GateService, Config/Gates)
@@ -54,6 +53,7 @@ local FUNCTION_NAMES: { string } = {
 	"BrewPotion", -- (id: string) -> (ok: boolean, reason: string?): brew a potion at the Crafter's Potions tab (PotionService)
 	"DrinkPotion", -- (id: string) -> (ok: boolean, reason: string?): drink a held potion from the Inventory (PotionService)
 	"InfuseCore", -- (core: string) -> (ok: boolean, reason: string?): set a core into the blade at an Infuser (InfuseService)
+	"SellItems", -- ({ { kind, id, count? } }) -> (ok: boolean, coins: number): sell from the Inventory's Sell Mode (SellService, Config/Sell)
 	"TravelToWorld", -- (world: number) -> (ok: boolean, reason: string?): teleport to an unlocked world's spawn (PortalService, the Worlds menu)
 }
 

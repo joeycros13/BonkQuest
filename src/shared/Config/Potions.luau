@@ -37,6 +37,7 @@ export type PotionDef = {
 	seconds: number, -- how long it lasts (0 for Health: instant)
 	recipe: { Ingredient }?, -- nil: can't be brewed yet
 	coins: number,
+	sell: number, -- coins for selling one from the Inventory (placeholder, 2026-10-20)
 	icon: string?,
 	color: Color3,
 }
@@ -102,6 +103,22 @@ local RECIPES: { [string]: { recipe: { Ingredient }, coins: number } } = {
 	Swiftness2 = { recipe = { { id = "Swiftness1", count = 1 }, { id = "BatWing", count = 3 }, { id = "GolemCrystal", count = 1 } }, coins = 200 },
 }
 
+-- What one potion sells for from the Inventory (placeholders, 2026-10-20).
+local SELL: { [string]: number } = {
+	Health1 = 18,
+	Strength1 = 32,
+	Stoneskin1 = 29,
+	Swiftness1 = 24,
+	Health2 = 110,
+	Strength2 = 175,
+	Stoneskin2 = 160,
+	Swiftness2 = 140,
+	Health3 = 420,
+	Strength3 = 560,
+	Stoneskin3 = 515,
+	Swiftness3 = 470,
+}
+
 -- Drawn icons, style B "grows with tier" (user's pick 2026-10-19): a vial, a bottle with a gold
 -- collar, a gold decanter (art/tools/icons/potion_icons.py → art/icons/potions/).
 local ICONS: { [string]: string } = {
@@ -135,6 +152,7 @@ for kind, info in KINDS do
 			seconds = info.seconds[tier],
 			recipe = recipe and recipe.recipe,
 			coins = recipe and recipe.coins or 0,
+			sell = SELL[id] or 0,
 			icon = ICONS[id],
 			color = info.color,
 		}
