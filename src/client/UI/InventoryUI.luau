@@ -20,7 +20,9 @@
 --     hand, clicking a set wears it (again takes it off: Remotes.EquipArmor). Tool
 --     tiles only show what is owned (the user's call): tools come out of their hotbar
 --     slot, which always holds the best one of its kind.
---   * Damage / Health / Defense cards under the character.
+--   * Damage / Health / Defense cards under the character, and the header's Capacity pill:
+--     how many different things are held (its Format, "%s Items"; 2026-10-20, the user: a
+--     count, not a "35 / 50" bag size).
 --   * Potions (Config/Potions, 2026-10-19): one tile per potion held ("×3"). Clicking one
 --     opens the tile's hand-built DrinkMenu (the user's pick, option A on the Potions UI
 --     canvas): Effect (what it does), Drink (Remotes.DrinkPotion) and Cancel. A refusal
@@ -35,7 +37,9 @@
 --     can't be sold). A weapon, tool or set is picked by a click; a potion or material
 --     opens the tile's hand-built SellMenu to choose how many (Title, Minus, Count (a
 --     TextBox), Plus, All, Worth (WorthFormat), Pick, Cancel) and its pill then reads
---     "12 / 40" (PickedFormat). With anything picked, BottomBar/SellWorth shows the coins
+--     "12 / 40" (PickedFormat). Picking a Legendary or rarer weapon, tool or set first asks
+--     on the tile (2026-10-20, the user): its hand-built ConfirmMenu (Title "Are you sure?",
+--     Worth (WorthFormat), Yes, Cancel); Yes picks it. With anything picked, BottomBar/SellWorth shows the coins
 --     (Icon, Amount, Format) and the Sell button sells it all (Remotes.SellItems,
 --     SellService). The Hint reads its Text_Sell attribute while Sell Mode is on.
 -- Looks that change with state come from attributes on the template / buttons.
@@ -104,6 +108,9 @@ local sellMode = false
 type Pick = { kind: string, id: string, count: number }
 local picks: { [string]: Pick } = {}
 local openStack: string? = nil -- the potion / material whose tile shows its SellMenu
+local openConfirm: string? = nil -- the Legendary+ tile asking "Are you sure?" before it is picked
+-- picking anything this rare or rarer asks first (Weapons.Rarities order)
+local CONFIRM_FROM = table.find(Weapons.Rarities, "Legendary") or 5
 local selling = false
 
 local preview: Model? = nil
@@ -239,7 +246,7 @@ local function renderSockets()
 end
 
 -- The Damage / Health / Defense cards under the character, and the item count
--- in the header (its Max / Format attributes set the capacity and wording).
+-- in the header (its Format attribute sets the wording).
 local function renderStats(count: number)
 	local current = WeaponController.selected()
 	local damage = find("DamageValue", "TextLabel")
@@ -260,7 +267,7 @@ local function renderStats(count: number)
 	local capacity = find("Capacity", "GuiObject")
 	local capLabel = capacity and capacity:FindFirstChild("Label")
 	if capLabel and capLabel:IsA("TextLabel") then
-		capLabel.Text = (attribute(capacity, "Format", "%d / %d") :: string):format(count, attribute(capacity, "Max", 50))
+		capLabel.Text = (attribute(capacity, "Format", "%s Items") :: string):format(Format.commas(count))
 	end
 end
 
@@ -553,6 +560,9 @@ renderGrid = function()
 	if openStack and not sellMode then
 		openStack = nil
 	end
+	if openConfirm and not sellMode then
+		openConfirm = nil
+	end
 	if shows.materials then
 		for _, def in Materials.list() do
 			if (counts[def.id] or 0) > 0 and matches(def.name) then
@@ -606,11 +616,49 @@ renderGrid = function()
 		shown += 1
 		tile.LayoutOrder = order
 		local picked = sellMode and pick ~= nil
-		-- in Sell Mode a weapon, tool or set toggles its pick (if it can be sold at all)
+		-- in Sell Mode a weapon, tool or set toggles its pick (if it can be sold at all);
+		-- a Legendary or rarer one asks on its ConfirmMenu first, and a click on the tile
+		-- while it asks closes it again
+		local function choose()
+			picks[key] = { kind = entry.kind, id = def.id, count = 1 }
+			openConfirm = nil
+			renderGrid()
+		end
 		local function togglePick()
-			if price then
-				picks[key] = if pick then nil else { kind = entry.kind, id = def.id, count = 1 }
-				renderGrid()
+			if not price then
+				return
+			end
+			if pick then
+				picks[key] = nil
+			elseif openConfirm == key then
+				openConfirm = nil
+			elseif entry.rank >= CONFIRM_FROM then
+				openConfirm = key
+			else
+				choose()
+				return
+			end
+			renderGrid()
+		end
+		if not stacks then
+			local confirm = tile:FindFirstChild("ConfirmMenu")
+			if confirm and confirm:IsA("GuiObject") then
+				confirm.Visible = sellMode and openConfirm == key
+				local worth = confirm:FindFirstChild("Worth")
+				if worth and worth:IsA("TextLabel") and price then
+					worth.Text = (attribute(confirm, "WorthFormat", "%s Coins") :: string):format(Format.coins(price))
+				end
+				local yes = confirm:FindFirstChild("Yes")
+				if yes and yes:IsA("GuiButton") then
+					yes.Activated:Connect(choose)
+				end
+				local cancel = confirm:FindFirstChild("Cancel")
+				if cancel and cancel:IsA("GuiButton") then
+					cancel.Activated:Connect(function()
+						openConfirm = nil
+						renderGrid()
+					end)
+				end
 			end
 		end
 		if entry.kind == "weapon" then
@@ -674,7 +722,19 @@ renderGrid = function()
 			filler.Parent = grid
 		end
 	end
-	renderStats(#owned + #sets)
+	-- every different thing held, whatever the filter shows
+	local items = #owned + #sets
+	for _ in Tools.owned(player) do
+		items += 1
+	end
+	for _, list in { held, counts } do
+		for _, n in list do
+			if n > 0 then
+				items += 1
+			end
+		end
+	end
+	renderStats(items)
 
 	-- the hint line under the cards: its Text_<filter> attribute, else as authored
 	local hint = find("Hint", "TextLabel")
@@ -697,6 +757,7 @@ local function setSellMode(on: boolean)
 	sellMode = on
 	table.clear(picks)
 	openStack = nil
+	openConfirm = nil
 	openPotion = nil
 	renderGrid()
 end
