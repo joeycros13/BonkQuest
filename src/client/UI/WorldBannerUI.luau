@@ -141,7 +141,13 @@ function WorldBannerUI.start()
 				if id and id ~= current then
 					current = id
 					player:SetAttribute("CurrentWorld", id)
-					show(id)
+					-- on join it waits until the loading cover has gone (UI.Preloader)
+					local shownId = id
+					deps.UI.Preloader.whenDone(function()
+						if current == shownId then
+							show(shownId)
+						end
+					end)
 				end
 			end
 			task.wait(CHECK_EVERY)

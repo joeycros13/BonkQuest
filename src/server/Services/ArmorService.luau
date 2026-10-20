@@ -212,6 +212,30 @@ function ArmorService.init(injected: any)
 end
 
 function ArmorService.start()
+	-- The armour models stay in ServerStorage, so a client first sees their meshes when a
+	-- set goes on. A plain copy (no scripts, no tags) goes to ReplicatedStorage/Assets/
+	-- ArmorModels for the client's Preloader to load on join (2026-10-20, the user:
+	-- nothing may load in front of the player). Bare mesh ids can't be preloaded: a
+	-- content string is fetched as an image.
+	local assets = ServerStorage:FindFirstChild("Assets")
+	local folder = assets and assets:FindFirstChild("Armor")
+	local shared = game:GetService("ReplicatedStorage"):FindFirstChild("Assets")
+	if folder and shared and not shared:FindFirstChild("ArmorModels") then
+		local copy = folder:Clone()
+		copy.Name = "ArmorModels"
+		local CollectionService = game:GetService("CollectionService")
+		for _, d in copy:GetDescendants() do
+			if d:IsA("LuaSourceContainer") then
+				d:Destroy()
+			else
+				for _, tag in CollectionService:GetTags(d) do
+					CollectionService:RemoveTag(d, tag)
+				end
+			end
+		end
+		copy.Parent = shared
+	end
+
 	deps.Remotes.getEvent("EquipArmor").OnServerEvent:Connect(function(player: Player, id: any)
 		-- the worn set's own id takes it off, so one button can toggle
 		if id ~= nil and id == stateOf(player).equipped then
