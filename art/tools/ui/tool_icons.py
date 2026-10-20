@@ -1,9 +1,9 @@
-"""World 1 gathering tool icons (2026-10-19): the finishing pass of weapon_icons_w2.py for the
+"""Gathering tool icons (World 1 2026-10-19, World 2's Stone Axe / Stone Rod 2026-10-20): the finishing pass of weapon_icons_w2.py for the
 cel-shaded raw renders of the Wooden Axe, Pickaxe and Rod (Blender text block "w1_icons_rerender",
 render(id), raw PNGs in art/icons/tools/raw). Crops to a square, adds the chunky ink outline and a
 soft shadow down and to the right, saves 512 px icons to art/icons/tools, and builds a review sheet
 on the common tile.
-Usage: py tool_icons.py
+Usage: py tool_icons.py [ToolId ...]   (default: every tool below)
 """
 import os
 from PIL import Image, ImageFilter, ImageChops
@@ -13,8 +13,9 @@ ART = os.path.dirname(os.path.dirname(HERE))
 RAW = os.path.join(ART, "icons", "tools", "raw")
 TILES = os.path.join(ART, "ui", "inventory")
 OUT = os.path.join(ART, "icons", "tools")
-WEAPONS = ["WoodenAxe", "WoodenPickaxe", "WoodenRod"]
-RARITY = {"WoodenAxe": "common", "WoodenPickaxe": "common", "WoodenRod": "common"}
+WEAPONS = ["WoodenAxe", "WoodenPickaxe", "WoodenRod", "StoneAxe", "StoneRod"]
+RARITY = {"WoodenAxe": "common", "WoodenPickaxe": "common", "WoodenRod": "common",
+          "StoneAxe": "uncommon", "StoneRod": "uncommon"}
 INK = (22, 18, 28)
 WORK, FINAL, OUTLINE, SHADOW, MARGIN = 1024, 512, 22, (14, 20), 0.06
 
@@ -50,7 +51,7 @@ def finish(name):
     return out
 
 
-def sheet(icons):
+def sheet(icons, path):
     cell = 220
     img = Image.new("RGBA", (cell * len(icons) + 20, cell + 20), (196, 232, 238, 255))
     for i, (name, icon) in enumerate(icons):
@@ -59,11 +60,16 @@ def sheet(icons):
         if os.path.exists(tp):
             img.alpha_composite(Image.open(tp).convert("RGBA").resize((cell - 12, cell - 12), Image.LANCZOS), (x + 6, 16))
         img.alpha_composite(icon.resize((cell - 30, cell - 30), Image.LANCZOS), (x + 15, 22))
-    img.save(os.path.join(OUT, "sheet.png"))
+    img.save(path)
 
 
 if __name__ == "__main__":
+    import sys
     os.makedirs(OUT, exist_ok=True)
-    done = [(w, finish(w)) for w in WEAPONS]
-    sheet(done)
-    print("saved", len(done), "icons and sheet.png")
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    done = [(w, finish(w)) for w in (args or WEAPONS)]
+    # a review sheet only when asked (art/ keeps live art only): --sheet=<path>
+    for a in sys.argv[1:]:
+        if a.startswith("--sheet="):
+            sheet(done, a.split("=", 1)[1])
+    print("saved", len(done), "icons")

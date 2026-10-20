@@ -129,6 +129,54 @@ Tools.Defs = {
 		knockback = 0,
 		swing = "Cast",
 	},
+
+	-- ==================== World 2 (The Redwood Forest) ====================
+	-- The approved table (2026-10-20, memory tools-per-world): World 2 sells a Stone Axe and a
+	-- Stone Rod (no pickaxe: the Wooden Pickaxe lasts until World 3). Models: Blender
+	-- w2_tools_build, art/meshes/w2_tools.fbx, built to the wooden ones' sizes ("Redwood +
+	-- slate": knapped slate, vine lashing; the axe's amber grip, the all-stone rod's teal reel).
+	-- Prices, power and sell are placeholders. Still to come: the upgrade recipe (the
+	-- previous tier of the same tool + World 2's materials + coins) and World 2's nodes / fish.
+	StoneAxe = {
+		id = "StoneAxe",
+		name = "Stone Axe",
+		kind = "Axe",
+		tier = 2,
+		world = 2,
+		sell = 120,
+		power = 20,
+		rarity = "Uncommon",
+		price = 600,
+		icon = "rbxassetid://138518954912606",
+		handed = 1,
+		cooldown = 0.8,
+		hitTime = 0.52,
+		reach = 5,
+		arc = 70,
+		maxTargets = 1,
+		knockback = 0,
+		swing = "Diagonal",
+	},
+	StoneRod = {
+		id = "StoneRod",
+		name = "Stone Rod",
+		kind = "Rod",
+		tier = 2,
+		world = 2,
+		sell = 160,
+		power = 0,
+		rarity = "Uncommon",
+		price = 800,
+		icon = "rbxassetid://115528900023286",
+		handed = 2,
+		cooldown = 1.0,
+		hitTime = 0.56,
+		reach = 0,
+		arc = 0,
+		maxTargets = 0,
+		knockback = 0,
+		swing = "Cast",
+	},
 } :: { [string]: ToolDef }
 
 -- Studio only (testing): every player owns these from the start. Emptied 2026-10-19 now
