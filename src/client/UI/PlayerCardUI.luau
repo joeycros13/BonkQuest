@@ -104,6 +104,16 @@ local function showExp(total: number)
 	local badge = find("Level", "TextLabel")
 	if badge then
 		badge.Text = Format.commas(level)
+		-- the badge widens with the level's digits (2026-10-21, the user): its aspect follows
+		-- the text's length, and it's anchored on its right edge, so it grows to the left,
+		-- away from the bars. The badge's `BaseAspect` / `DigitAspect` attributes set it.
+		local holder = badge.Parent
+		local ratio = holder and holder:FindFirstChildOfClass("UIAspectRatioConstraint")
+		if holder and ratio then
+			local base = holder:GetAttribute("BaseAspect")
+			local per = holder:GetAttribute("DigitAspect")
+			ratio.AspectRatio = (if type(base) == "number" then base else 1.15) + (if type(per) == "number" then per else 0.42) * math.max(0, #badge.Text - 1)
+		end
 	end
 	if level ~= shownLevel then
 		shownLevel = level
