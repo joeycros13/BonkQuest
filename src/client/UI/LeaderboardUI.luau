@@ -9,7 +9,8 @@
 --   Window/Periods/<Daily|Weekly|All>   pills in a dark header pill (Period attribute, Label)
 --   Window/Tabs/<Coins|Levels|Kills>    big stat pills under the header (Stat attribute,
 --                                       IconRing/Icon, Label)
---   Window/Reset                        the header's dark pill: "Resets in 5h 12m" / "Never resets"
+--   Window/ResetPill/Reset              the header's dark pill, a Util.CenterRow with its Clock:
+--                                       "Resets in 5h 12m" / "Never resets"
 --   Window/Stage                        the glowing stage behind the podium (Rays turn slowly,
 --                                       Confetti, Base)
 --   Window/ListCard                     the cream card behind List and You
@@ -203,7 +204,12 @@ local function tickReset()
 	if not window then
 		return
 	end
-	window.Reset.Text = if shownResetsAt
+	-- Reset sits in the header's ResetPill, a CenterRow with the hourglass (2026-10-21)
+	local reset = window:FindFirstChild("Reset", true)
+	if not (reset and reset:IsA("TextLabel")) then
+		return
+	end
+	reset.Text = if shownResetsAt
 		then Text.resetsIn:format(duration(shownResetsAt - Workspace:GetServerTimeNow()))
 		else Text.never
 end
