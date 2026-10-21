@@ -4,22 +4,30 @@
 -- WeaponHud/SideButtons/LeaderboardButton. Boards and rewards are Config/Leaderboards;
 -- the numbers come from Remotes.GetLeaderboard (LeaderboardService).
 --
--- Hand-built StarterGui/LeaderboardPanel (Panel = "Leaderboards"):
---   Window/Periods/<Daily|Weekly|All>   pills (Period attribute, Label)
---   Window/Tabs/<Coins|Levels|Kills>    stat tabs (Stat attribute, Icon, Label)
---   Window/Reset                        "Resets in 5h 12m" / "Never resets"
+-- Hand-built StarterGui/LeaderboardPanel (Panel = "Leaderboards"), laid out as Ranks A
+-- "Spotlight stage" (2026-10-21, https://claude.ai/artifact/BW6XYrhkThRjExFbRB41Xj):
+--   Window/Periods/<Daily|Weekly|All>   pills in a dark header pill (Period attribute, Label)
+--   Window/Tabs/<Coins|Levels|Kills>    big stat pills under the header (Stat attribute,
+--                                       IconRing/Icon, Label)
+--   Window/Reset                        the header's dark pill: "Resets in 5h 12m" / "Never resets"
+--   Window/Stage                        the glowing stage behind the podium (Rays turn slowly,
+--                                       Confetti, Base)
+--   Window/ListCard                     the cream card behind List and You
 --   Window/Podium/Place1..3             PlayerName, Value, Block/Rank, Avatar (the player's
 --                                       headshot), Crown on Place1 (podium option A, 2026-10-21)
 --   Window/List                         a ScrollingFrame of Templates/Row clones (#4-50:
---                                       Rank, PlayerName, Value); Window/Empty when no one
+--                                       Rank circle, Avatar headshot, PlayerName, Value);
+--                                       Window/Empty when no one
 --   Window/You                          your own place (Rank, PlayerName, Value)
---   Window/Rewards                      Title, Tiers (Templates/TierCard clones: Label, Chips
---                                       of Templates/Chip; Fill1..3 attributes), Note (all-time)
+--   Window/Rewards                      Title, Tiers (Templates/TierCard clones: Label = the
+--                                       tier's badge in its Fill1..3 colour, Chips holding one
+--                                       Templates/Chip with every prize on a line), Note (all-time)
 -- Colours: the gui's TabSelected / TabIdle / PillSelected / PillIdle / PillSelectedText /
--- PillIdleText attributes; a chip's TextScale is its text size as a share of its height.
+-- PillIdleText attributes.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -100,10 +108,6 @@ local function styleTabs()
 	end
 end
 
-local function chipSize(container: GuiObject, template: Instance): number
-	return math.max(8, math.floor(container.AbsoluteSize.Y * 0.3 * (template:GetAttribute("TextScale") or 0.62)))
-end
-
 local function fillRewards()
 	local card = window.Rewards
 	for _, c in card.Tiers:GetChildren() do
@@ -120,19 +124,16 @@ local function fillRewards()
 		tc.Name = "Tier" .. index
 		tc.LayoutOrder = index
 		tc.Visible = true
-		tc.BackgroundColor3 = tc:GetAttribute("Fill" .. index) or tc.BackgroundColor3
+		-- Ranks A (2026-10-21): the tier's colour is its badge (Label); the prizes read as
+		-- one line ("1,000 coins · Chat tag · ...") instead of a row of tiny chips
+		tc.Label.BackgroundColor3 = tc:GetAttribute("Fill" .. index) or tc.Label.BackgroundColor3
 		tc.Label.Text = tier.label
 		tc.Parent = card.Tiers
-		local size = chipSize(tc.Chips, window.Templates.Chip)
-		for i, words in Leaderboards.describe(tier.reward) do
-			local chip = window.Templates.Chip:Clone()
-			chip.Name = "Chip" .. i
-			chip.LayoutOrder = i
-			chip.Visible = true
-			chip.Text = words
-			chip.TextSize = size
-			chip.Parent = tc.Chips
-		end
+		local chip = window.Templates.Chip:Clone()
+		chip.Name = "Prizes"
+		chip.Visible = true
+		chip.Text = table.concat(Leaderboards.describe(tier.reward), " · ")
+		chip.Parent = tc.Chips
 	end
 end
 
@@ -178,8 +179,12 @@ function LeaderboardUI.refresh()
 		r.Name = "Rank" .. row.rank
 		r.LayoutOrder = row.rank
 		r.Visible = true
-		r.Rank.Text = "#" .. row.rank
+		r.Rank.Text = tostring(row.rank)
 		r.PlayerName.Text = row.name
+		local avatar = r:FindFirstChild("Avatar")
+		if avatar and avatar:IsA("ImageLabel") and row.userId then
+			avatar.Image = ("rbxthumb://type=AvatarHeadShot&id=%d&w=150&h=150"):format(row.userId)
+		end
 		r.Value.Text = valueText(row.value)
 		r.Parent = window.List
 	end
@@ -242,6 +247,12 @@ local function wire(found: ScreenGui)
 	end
 	if deps.Util.FontDrop then
 		deps.Util.FontDrop.watch(found)
+	end
+	-- the rays behind the podium turn slowly (Ranks A, 2026-10-21)
+	local stage = window:FindFirstChild("Stage")
+	local rays = stage and stage:FindFirstChild("Rays")
+	if rays and rays:IsA("GuiObject") then
+		TweenService:Create(rays, TweenInfo.new(40, Enum.EasingStyle.Linear, Enum.EasingDirection.In, -1), { Rotation = 360 }):Play()
 	end
 	local hud = player:WaitForChild("PlayerGui"):WaitForChild("WeaponHud", GUI_TIMEOUT)
 	local button = hud and hud:FindFirstChild("LeaderboardButton", true)
