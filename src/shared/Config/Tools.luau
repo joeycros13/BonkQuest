@@ -141,8 +141,7 @@ Tools.Defs = {
 	-- Stone Rod (no pickaxe: the Wooden Pickaxe lasts until World 3). Models: Blender
 	-- w2_tools_build, art/meshes/w2_tools.fbx, built to the wooden ones' sizes ("Redwood +
 	-- slate": knapped slate, vine lashing; the axe's amber grip, the all-stone rod's teal reel).
-	-- Prices, power and sell are placeholders. Still to come: the upgrade recipe (the
-	-- previous tier of the same tool + World 2's materials + coins) and World 2's nodes / fish.
+	-- Prices, power, sell and the recipes are placeholders.
 	StoneAxe = {
 		id = "StoneAxe",
 		name = "Stone Axe",
@@ -154,11 +153,17 @@ Tools.Defs = {
 		rarity = "Uncommon",
 		price = 600,
 		icon = "rbxassetid://138518954912606",
-		-- the upgrade (2026-10-20): the Wooden Axe plus World 2's enemy drops. Not Redwood Logs:
-		-- only a Stone Axe can chop those. Numbers are placeholders.
+		-- the upgrade (2026-10-20): the Wooden Axe, World 1's gathered wood and stone, and World
+		-- 2's enemy drops (the user: "giving the requirements depth and an actual tree"). Not
+		-- Redwood Logs: only a Stone Axe can chop those. Numbers are placeholders.
 		recipe = {
 			tool = "WoodenAxe",
-			materials = { { id = "FoxFur", count = 6 }, { id = "BoarTusk", count = 2 } },
+			materials = {
+				{ id = "OakLog", count = 8 },
+				{ id = "Stone", count = 8 },
+				{ id = "FoxFur", count = 6 },
+				{ id = "BoarTusk", count = 2 },
+			},
 		},
 		handed = 1,
 		cooldown = 0.8,
@@ -180,6 +185,17 @@ Tools.Defs = {
 		rarity = "Uncommon",
 		price = 800,
 		icon = "rbxassetid://115528900023286",
+		-- the upgrade (2026-10-20, the user: like the axe's): the Wooden Rod, World 1's wood and
+		-- stone, and World 2's Fox Fur and Boar Tusk. Not fish: a Stone Rod catches World 2's.
+		recipe = {
+			tool = "WoodenRod",
+			materials = {
+				{ id = "OakLog", count = 6 },
+				{ id = "Stone", count = 6 },
+				{ id = "FoxFur", count = 4 },
+				{ id = "BoarTusk", count = 3 },
+			},
+		},
 		handed = 2,
 		cooldown = 1.0,
 		hitTime = 0.56,
