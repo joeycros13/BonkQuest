@@ -16,7 +16,10 @@
 --
 -- Tiers follow world bands: Tier I is brewed from World 1-2 materials at those worlds'
 -- Crafters, Tier II from World 3-5 materials plus a Tier I potion, Tier III from World 6-7
--- materials plus a Tier II potion. A tier is brewed at a Crafter of any world in its band.
+-- materials plus a Tier II potion. A tier is brewed at a Crafter of any world in its band,
+-- except Tier I, which belongs to one world (the user, 2026-10-20): Health, Strength, Stoneskin and
+-- Swiftness are World 1's, brewed only at its Crafter from its materials; Regen, Gatherer's and
+-- Angler's are World 2's, brewed only at its Crafter from its materials (`world` on the def).
 --
 -- Rules (PotionService):
 --   * the same potion at the same tier adds its time; a higher tier replaces a lower one (the
@@ -45,6 +48,7 @@ export type PotionDef = {
 	seconds: number, -- how long it lasts (0 for Health: instant)
 	recipe: { Ingredient }?, -- nil: can't be brewed yet
 	coins: number,
+	world: number?, -- Tier I only: the one world whose Crafter brews it (nil: any world of the band)
 	sell: number, -- coins for selling one from the Inventory (placeholder, 2026-10-20)
 	icon: string?,
 	color: Color3,
@@ -73,6 +77,7 @@ local KINDS: { [string]: any } = {
 		seconds = { 0, 0, 0 },
 		color = Color3.fromRGB(228, 66, 72),
 		order = 1,
+		world = 1,
 	},
 	Strength = {
 		label = "Strength Potion",
@@ -80,6 +85,7 @@ local KINDS: { [string]: any } = {
 		seconds = { 180, 240, 300 },
 		color = Color3.fromRGB(242, 140, 40),
 		order = 2,
+		world = 1,
 	},
 	Stoneskin = {
 		label = "Stoneskin Potion",
@@ -87,6 +93,7 @@ local KINDS: { [string]: any } = {
 		seconds = { 180, 240, 300 },
 		color = Color3.fromRGB(150, 150, 160),
 		order = 3,
+		world = 1,
 	},
 	Swiftness = {
 		label = "Swiftness Potion",
@@ -94,6 +101,7 @@ local KINDS: { [string]: any } = {
 		seconds = { 180, 240, 300 },
 		color = Color3.fromRGB(64, 196, 232),
 		order = 4,
+		world = 1,
 	},
 	-- power: a share of max HP healed every second (0.01 = 1%, doubling Roblox's own healing)
 	Regen = {
@@ -102,6 +110,7 @@ local KINDS: { [string]: any } = {
 		seconds = { 180, 240, 300 },
 		color = Color3.fromRGB(88, 200, 96),
 		order = 5,
+		world = 2,
 	},
 	-- power: + a share of the tool's power per hit (a Wooden Axe's 10 becomes 12.5: an oak in 4 chops, not 5)
 	Gatherer = {
@@ -111,6 +120,7 @@ local KINDS: { [string]: any } = {
 		seconds = { 180, 240, 300 },
 		color = Color3.fromRGB(200, 130, 52),
 		order = 6,
+		world = 2,
 	},
 	-- power: + a share of every non-Common fish's weight (World 2's 60 / 30 / 10 becomes 60 / 45 / 15 at Tier I)
 	Angler = {
@@ -120,6 +130,7 @@ local KINDS: { [string]: any } = {
 		seconds = { 180, 240, 300 },
 		color = Color3.fromRGB(58, 110, 232),
 		order = 7,
+		world = 2,
 	},
 }
 
@@ -132,9 +143,9 @@ local RECIPES: { [string]: { recipe: { Ingredient }, coins: number } } = {
 	Strength1 = { recipe = { { id = "Sunfish", count = 1 }, { id = "BullHide", count = 2 }, { id = "OakLog", count = 2 } }, coins = 50 },
 	Stoneskin1 = { recipe = { { id = "Stone", count = 4 }, { id = "BullHide", count = 2 }, { id = "Sunfish", count = 1 } }, coins = 50 },
 	Swiftness1 = { recipe = { { id = "Horsehair", count = 2 }, { id = "Minnow", count = 2 }, { id = "OakLog", count = 2 } }, coins = 40 },
-	-- World 2's, for testing (2026-10-20): its fish and enemy drops (Oak Log until the redwoods drop wood)
+	-- World 2's, for testing (2026-10-20): only World 2's fish, gathered wood and enemy drops
 	Regen1 = { recipe = { { id = "Trout", count = 2 }, { id = "FoxFur", count = 3 } }, coins = 60 },
-	Gatherer1 = { recipe = { { id = "Perch", count = 2 }, { id = "BoarTusk", count = 2 }, { id = "OakLog", count = 4 } }, coins = 75 },
+	Gatherer1 = { recipe = { { id = "Perch", count = 2 }, { id = "BoarTusk", count = 2 }, { id = "RedwoodLog", count = 4 } }, coins = 75 },
 	Angler1 = { recipe = { { id = "RainbowTrout", count = 1 }, { id = "Perch", count = 2 }, { id = "BearClaw", count = 1 } }, coins = 90 },
 	Health2 = { recipe = { { id = "Health1", count = 1 }, { id = "BatWing", count = 3 } }, coins = 150 },
 	Strength2 = { recipe = { { id = "Strength1", count = 1 }, { id = "GolemCrystal", count = 2 }, { id = "GolemPebble", count = 2 } }, coins = 250 },
@@ -211,6 +222,7 @@ for kind, info in KINDS do
 			seconds = info.seconds[tier],
 			recipe = recipe and recipe.recipe,
 			coins = recipe and recipe.coins or 0,
+			world = if tier == 1 then info.world else nil,
 			sell = SELL[id] or 0,
 			icon = ICONS[id],
 			color = info.color,

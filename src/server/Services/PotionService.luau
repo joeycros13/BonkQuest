@@ -118,6 +118,10 @@ end
 -- ==================== brewing ====================
 
 local function atCrafterFor(player: Player, def: Potions.PotionDef): boolean
+	-- a Tier I potion belongs to one world's Crafter
+	if def.world then
+		return deps.Services.StallService.atStall(player, "Crafting", def.world)
+	end
 	local band = Potions.Bands[def.tier]
 	if not band then
 		return false

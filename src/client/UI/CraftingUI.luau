@@ -98,12 +98,13 @@ local function setsHere(): { Armor.ArmorDef }
 	return out
 end
 
--- The potions this world's Crafter brews: its band's tier, those with a recipe.
+-- The potions this world's Crafter brews: its band's tier, those with a recipe, and of Tier I
+-- only this world's own (Config/Potions `world`).
 local function potionsHere(): { Potions.PotionDef }
 	local out = {}
 	local tier = Potions.tierAt(world())
 	for _, def in Potions.list() do
-		if def.tier == tier and def.recipe then
+		if def.tier == tier and def.recipe and (def.world == nil or def.world == world()) then
 			table.insert(out, def)
 		end
 	end
