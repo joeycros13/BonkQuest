@@ -53,7 +53,7 @@ local function goalOf(zone: BasePart): { [string]: any }
 	return goal
 end
 
-local function poll()
+local function poll(): ()
 	local character = player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart")
 	local found: BasePart? = nil
@@ -83,6 +83,12 @@ local function poll()
 		saved = nil
 	end
 	current = found
+end
+
+-- Re-check now (FadeController calls this as a teleport's fade-in starts, 2026-10-20: the
+-- 0.25 s poll let the old place's lighting show for a moment after a secret room's exit).
+function AmbienceController.refresh()
+	poll()
 end
 
 function AmbienceController.init(_injected: any) end

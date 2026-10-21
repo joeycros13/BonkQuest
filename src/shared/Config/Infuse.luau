@@ -41,7 +41,7 @@ Infuse.SPEED_PER_CORE = 0.10
 Infuse.REACH_PER_CORE = 0.05
 -- (2026-10-13) Tiers 1..3 = that world's secret x1.1 after the weapons were rescaled to boss HP
 -- (Corn Cob 47, Marshmallow Stick 312, Rock Candy Club 675 DPS); 4..8 are placeholders at x2 per core.
-Infuse.DPS = { 51.7, 343.2, 742.5, 1485, 2970, 5940, 11880, 23760 } -- damage per second at 1..8 cores (trial numbers)
+Infuse.DPS = { 51.7, 140.8, 392.7, 785.4, 1570.8, 3141.6, 6283.2, 12566.4 } -- damage per second at 1..8 cores (trial numbers; 2026-10-20 ladder: 343.2 / 742.5 before)
 
 export type Tier = { cores: number, damage: number, cooldown: number, reach: number, speedBonus: number, reachBonus: number }
 

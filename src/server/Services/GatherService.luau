@@ -30,6 +30,7 @@ local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
 local Gathering = require(Config:WaitForChild("Gathering"))
 local Tools = require(Config:WaitForChild("Tools"))
 local Upgrades = require(Config:WaitForChild("Upgrades"))
+local Potions = require(Config:WaitForChild("Potions"))
 
 local GatherService = {}
 
@@ -192,7 +193,8 @@ local function onHit(player: Player, ids: any)
 		end
 		state.lastHit = now
 		landed += 1
-		state.hp = math.max(0, state.hp - tool.power)
+		-- a Gatherer's potion adds its share to the tool's power (Config/Potions)
+		state.hp = math.max(0, state.hp - tool.power * Potions.multiplier(player, "Gatherer"))
 		if state.hp <= 0 then
 			breakNode(player, id, model :: Model, def, state)
 		else

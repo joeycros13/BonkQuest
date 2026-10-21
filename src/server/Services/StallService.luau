@@ -10,7 +10,9 @@
 --     granted (MeleeService) with the Index's pop-up (IndexService.showWeapon).
 --     Its Tools tab (2026-10-19): Remotes.BuyTool(id) buys a gathering tool with a
 --     `price` in Config/Tools, sold at its own world's stall; the coins are spent and
---     the tool is granted (ToolService), which shows its hotbar slot.
+--     the tool is granted (ToolService), which shows its hotbar slot. A tool with a
+--     `recipe` (2026-10-20, the Stone Axe) is an upgrade: it also takes the previous
+--     tier of the same tool and the recipe's materials.
 --
 -- All are RemoteFunctions returning (ok, reason). reason is one of:
 --   "unknown"    no such item, or it isn't for sale
@@ -18,6 +20,7 @@
 --   "level"      their level is too low
 --   "coins"      not enough coins
 --   "materials"  a recipe material is short
+--   "tool"       an upgrade's previous tool isn't owned
 --   "range"      they aren't standing at a stall of that kind
 -- A stall is a ring tagged Interactable whose "Station" attribute is "Crafting"
 -- or "Weapons" (InteractionController opens its panel on the client); a
@@ -143,7 +146,19 @@ function StallService.buyToolBlocker(player: Player, def: Tools.ToolDef): string
 		return "unknown"
 	elseif deps.Services.ToolService.owns(player, def.id) then
 		return "owned"
-	elseif deps.Services.CoinService.get(player) < def.price then
+	end
+	local recipe = def.recipe
+	if recipe then
+		if recipe.tool and not deps.Services.ToolService.owns(player, recipe.tool) then
+			return "tool"
+		end
+		for _, item in recipe.materials do
+			if deps.Services.MaterialService.get(player, item.id) < item.count then
+				return "materials"
+			end
+		end
+	end
+	if deps.Services.CoinService.get(player) < def.price then
 		return "coins"
 	elseif not StallService.atStall(player, "Weapons", def.world) then
 		return "range"
@@ -161,6 +176,15 @@ function StallService.buyTool(player: Player, id: any): (boolean, string?)
 		return false, blocker
 	end
 	deps.Services.CoinService.add(player, -(def.price :: number))
+	local recipe = def.recipe
+	if recipe then
+		for _, item in recipe.materials do
+			deps.Services.MaterialService.add(player, item.id, -item.count)
+		end
+		if recipe.tool then
+			deps.Services.ToolService.revoke(player, recipe.tool)
+		end
+	end
 	deps.Services.ToolService.grant(player, def.id)
 	task.spawn(deps.Services.PlayerDataService.saveNow, player)
 	return true, nil

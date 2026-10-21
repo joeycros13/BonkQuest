@@ -4,7 +4,8 @@
 -- request, 2026-10-11).
 --
 -- Which world the player is in comes from where they stand: each world's
--- footprint is the X/Z box of its Workspace.Worlds.<folder>/Ground parts
+-- footprint is the X/Z box of its Workspace.Worlds.<folder>/Ground parts (a Ground child marked
+-- `Secret`, a secret room far off the world, is left out; a player in one has no world)
 -- (ignoring huge base plates like World 1's 2048-stud Baseplate), checked
 -- smallest box first. Outside every box (a gate's doorway) the last world holds.
 -- The world is also published on the local player as "CurrentWorld" (client-only;
@@ -54,8 +55,24 @@ local function measure()
 			continue
 		end
 		local minX, maxX, minZ, maxZ = math.huge, -math.huge, math.huge, -math.huge
+		-- a secret room's floor (a Ground child with the Secret attribute: the Corn Wraith cellar,
+		-- the Fairy's stump room) floats far off its world (2026-10-20), so it never counts
+		local secret = {}
+		for _, child in ground:GetChildren() do
+			if child:GetAttribute("Secret") then
+				table.insert(secret, child)
+			end
+		end
+		local function inSecret(part: Instance): boolean
+			for _, folder in secret do
+				if part:IsDescendantOf(folder) then
+					return true
+				end
+			end
+			return false
+		end
 		for _, part in ground:GetDescendants() do
-			if part:IsA("BasePart") and part.Size.X < BASEPLATE and part.Size.Z < BASEPLATE then
+			if part:IsA("BasePart") and part.Size.X < BASEPLATE and part.Size.Z < BASEPLATE and not inSecret(part) then
 				local p, h = part.Position, part.Size / 2
 				minX, maxX = math.min(minX, p.X - h.X), math.max(maxX, p.X + h.X)
 				minZ, maxZ = math.min(minZ, p.Z - h.Z), math.max(maxZ, p.Z + h.Z)
@@ -141,7 +158,13 @@ function WorldBannerUI.start()
 				if id and id ~= current then
 					current = id
 					player:SetAttribute("CurrentWorld", id)
-					show(id)
+					-- on join it waits until the loading cover has gone (UI.Preloader)
+					local shownId = id
+					deps.UI.Preloader.whenDone(function()
+						if current == shownId then
+							show(shownId)
+						end
+					end)
 				end
 			end
 			task.wait(CHECK_EVERY)

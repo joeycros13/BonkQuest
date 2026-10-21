@@ -322,15 +322,15 @@ lines.RangerRedwoods = {
 		},
 		{
 			kind = "level",
-			level = 22,
-			objective = "Reach level 22",
-			track = "Reach {Level 22}",
+			level = 30, -- 22 until 2026-10-20: players arrive at 25 since the World 2 gate moved to level 25
+			objective = "Reach level 30",
+			track = "Reach {Level 30}",
 			reward = { coins = 150 },
 			offer = {
 				"Deeper in, the bears are waking up angry. You're not ready for them yet.",
-				"Train up and [reach level 22]. I'll be right here by the fire.",
+				"Train up and [reach level 30]. I'll be right here by the fire.",
 			},
-			reminder = { "Keep training. [Reach level 22] first." },
+			reminder = { "Keep training. [Reach level 30] first." },
 			complete = { "Look at you. Strong enough to stare down a grizzly." },
 		},
 		{
@@ -379,31 +379,31 @@ lines.RangerRedwoods = {
 		},
 		{
 			kind = "level",
-			level = 27,
-			objective = "Reach level 27",
-			track = "Reach {Level 27}",
+			level = 34, -- 27 until 2026-10-20 (World 2 balance)
+			objective = "Reach level 34",
+			track = "Reach {Level 34}",
 			reward = { coins = 300 },
 			offer = {
 				"Bad news. Roots don't die easily. The treant is growing back, stronger than before.",
-				"You'll need to be stronger too. [Reach level 27].",
+				"You'll need to be stronger too. [Reach level 34].",
 			},
-			reminder = { "Keep at it. [Reach level 27]." },
+			reminder = { "Keep at it. [Reach level 34]." },
 			complete = { "The strongest warden these woods have ever had." },
 		},
 		{
 			kind = "kill",
 			target = "ElderTreant",
-			count = 3,
-			objective = "Defeat the Elder Treant 3 times",
+			count = 5, -- 3 until 2026-10-20 (World 2 balance; Dale's is 5 too)
+			objective = "Defeat the Elder Treant 5 times",
 			track = "Defeat the {Elder Treant}",
 			-- The quest-only Firefly Lantern (Legendary, 2026-10-11).
 			reward = { coins = 750, exp = 750, weapon = "LanternFlail" },
 			offer = {
 				"This is it. We have to calm that old tree for good.",
-				"[Defeat the Elder Treant 3 times] and the forest can finally rest.",
+				"[Defeat the Elder Treant 5 times] and the forest can finally rest.",
 				"Do this, and I'll trust you with something very special.",
 			},
-			reminder = { "It keeps regrowing! [Defeat the Elder Treant 3 times]." },
+			reminder = { "It keeps regrowing! [Defeat the Elder Treant 5 times]." },
 			complete = {
 				"You did it. Listen... the forest is quiet again.",
 				"This lantern has lit my way for years. The fireflies chose you. It's yours now.",

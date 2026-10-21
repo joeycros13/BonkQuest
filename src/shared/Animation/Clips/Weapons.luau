@@ -101,6 +101,9 @@ Weapons.HOLDS = {
 	-- water (user, 2026-10-18: one-handed normally, both hands only for the cast). The
 	-- reel hangs under the rod (roll 0: the model's -Y is down).
 	WoodenRod = { hand = { 1.45, -0.75, -0.45 }, dir = { 0, 0.45, -1 }, roll = 0, two = 0 },
+	-- World 2's tools (2026-10-20) are built to the wooden ones' sizes, so they share their holds
+	StoneAxe = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
+	StoneRod = { hand = { 1.45, -0.75, -0.45 }, dir = { 0, 0.45, -1 }, roll = 0, two = 0 },
 	-- the 10-stud Pinecone Staff (6.3 ahead of the hand, 3.8 behind): held level across
 	-- the front, head out to the right and a touch back, the butt crossing in front of
 	-- the body to the left hand (behind the grip, off = -1.6). The staff stays across the

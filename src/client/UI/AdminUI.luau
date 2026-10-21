@@ -872,29 +872,37 @@ function AdminUI.start()
 		end
 		showPage(page)
 
-		-- live values while it's open
-		for _, name in { "Coins", "ExpTotal" } do
-			player:GetAttributeChangedSignal(name):Connect(renderPlayer)
+		-- live values while it's open, on the page showing them (2026-10-20: these lists
+		-- re-rendered on every material drop and weapon change with the panel shut, part of
+		-- the hitch the user felt; opening the panel renders its page anyway)
+		local function live(pageName: string, render: () -> ()): () -> ()
+			return function()
+				if found.Enabled and page == pageName then
+					render()
+				end
+			end
 		end
-		player:GetAttributeChangedSignal("OwnedWeapons"):Connect(renderWeapons)
-		player:GetAttributeChangedSignal("OwnedArmor"):Connect(renderArmor)
-		player:GetAttributeChangedSignal("OwnedTools"):Connect(renderTools)
-		player:GetAttributeChangedSignal("Materials"):Connect(renderMaterials)
-		player:GetAttributeChangedSignal("Potions"):Connect(renderPotions)
+		for _, name in { "Coins", "ExpTotal" } do
+			player:GetAttributeChangedSignal(name):Connect(live("PagePlayer", renderPlayer))
+		end
+		player:GetAttributeChangedSignal("OwnedWeapons"):Connect(live("PageWeapons", renderWeapons))
+		player:GetAttributeChangedSignal("OwnedArmor"):Connect(live("PageArmor", renderArmor))
+		player:GetAttributeChangedSignal("OwnedTools"):Connect(live("PageTools", renderTools))
+		player:GetAttributeChangedSignal("Materials"):Connect(live("PageMaterials", renderMaterials))
+		player:GetAttributeChangedSignal("Potions"):Connect(live("PagePotions", renderPotions))
 		for _, id in Quests.order do
 			for _, field in { "Step", "State" } do
-				player:GetAttributeChangedSignal(Quests.attr(field, id)):Connect(renderQuests)
+				player:GetAttributeChangedSignal(Quests.attr(field, id)):Connect(live("PageQuests", renderQuests))
 			end
 		end
 		-- the Health card's badge follows the character's max HP
 		local function watchHealth(character: Model)
 			local h = character:WaitForChild("Humanoid", 10)
 			if h and h:IsA("Humanoid") then
-				h:GetPropertyChangedSignal("MaxHealth"):Connect(renderPlayer)
-				renderPlayer()
+				h:GetPropertyChangedSignal("MaxHealth"):Connect(live("PagePlayer", renderPlayer))
 			end
 		end
-		player:GetAttributeChangedSignal("DamageMultiplier"):Connect(renderPlayer)
+		player:GetAttributeChangedSignal("DamageMultiplier"):Connect(live("PagePlayer", renderPlayer))
 		player.CharacterAdded:Connect(watchHealth)
 		if player.Character then
 			task.spawn(watchHealth, player.Character)

@@ -9,7 +9,9 @@
 --                 ShopService) x the upgrade
 --   Damage        the Strength potion x the Attack upgrade
 --   Defense       how much tougher: 1 / (armour's damage x Stoneskin x the Defense upgrade)
---   Attack Speed, Regen, Gathering   the upgrade (Upgrades.multiplier)
+--   Attack Speed, Gathering   the upgrade (Upgrades.multiplier)
+--   Regen         against the base 1% a second: the upgrade's share plus a Regen potion's
+--                 (Gathering is yield, so a Gatherer's potion, which hits harder, isn't on it)
 --   Sprint        the Sprint upgrade x a Swiftness potion ("Locked" before Sprint 1)
 -- An admin's own test settings show as an "Admin" chip, only while one is set: the
 -- damage multiplier (DamageMultiplier) and the max-health override (MaxHealthOverride,
@@ -161,7 +163,14 @@ local function measure(id: string): (string, { string }, boolean)
 		if up then
 			table.insert(parts, Text.upgrade:format(times(upgradeX(id))))
 		end
-		return times(upgradeX(id)), parts, up
+		-- a Regen potion adds its own share of the base 1% a second
+		local regen = Potions.multiplier(player, "Regen")
+		local name = potionName("Regen")
+		if name then
+			table.insert(parts, Text.potion:format(name, times(regen)))
+		end
+		local total = upgradeX(id) + regen - 1
+		return times(total), parts, total > 1.0001
 	end
 	-- Attack Speed, Gathering: the upgrade alone
 	if up then

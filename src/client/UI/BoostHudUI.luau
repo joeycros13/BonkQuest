@@ -95,7 +95,7 @@ local function renderPotions(stack: Instance, template: Instance)
 		if chip and chip:GetAttribute("Tier") ~= tier then
 			chip:Destroy()
 		end
-		showChip(stack, template, name, { color = def.color, icon = def.icon, title = kind .. " " .. Potions.Numerals[def.tier] }, left, player:GetAttribute("PotionOrder_" .. kind))
+		showChip(stack, template, name, { color = def.color, icon = def.icon, title = def.short }, left, player:GetAttribute("PotionOrder_" .. kind))
 		local shown = stack:FindFirstChild(name)
 		if shown then
 			shown:SetAttribute("Tier", tier)

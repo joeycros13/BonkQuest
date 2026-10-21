@@ -96,6 +96,8 @@ local UI_ORDER = {
 	"FishingRingUI",
 	-- our own player list, top right (name, level, coins; replaces Roblox's)
 	"PlayerListUI",
+	-- last: loads every asset and draws every panel once behind the join cover
+	"Preloader",
 }
 
 print("[Client] bootstrap starting")

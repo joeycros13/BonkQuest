@@ -77,6 +77,23 @@ Gathering.Nodes = {
 			{ id = "Stone", min = 2, max = 3, chance = 1 },
 		},
 	},
+	-- ==================== World 2 (The Redwood Forest) ====================
+	-- (2026-10-20) Needs the Stone Axe (power 20): a redwood falls in 5 chops (4 with a Gatherer's
+	-- potion I). Its rare drop is Amber Sap (placeholder 10%), used in Regen I (Config/Potions).
+	RedwoodTree = {
+		id = "RedwoodTree",
+		name = "Redwood",
+		world = 2,
+		verb = "Chop",
+		tool = "Axe",
+		tier = 2,
+		hp = 100,
+		respawn = 45,
+		drops = {
+			{ id = "RedwoodLog", min = 2, max = 3, chance = 1 },
+			{ id = "AmberSap", min = 1, max = 1, chance = 0.1 },
+		},
+	},
 } :: { [string]: NodeDef }
 
 function Gathering.get(id: any): NodeDef?

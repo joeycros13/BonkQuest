@@ -3,7 +3,9 @@
 --
 -- A zone is an invisible part tagged TeleportZone (MapLayout.Tags) holding an
 -- ObjectValue "Target" that points at a part: standing inside the zone's box
--- sends you to that part's CFrame (feet on it, facing its look direction).
+-- sends you to that part (feet on its top face, facing its look direction; 2026-10-20:
+-- feet at its centre sank them half a stud into World 1's spawn dais, and the physics
+-- popped the character up on arrival).
 -- Zone attributes:
 --   Fade         true: fade the screen out and back (Remotes.TeleportFade)
 --   KeepFalling  true: keep the player's downward speed (the silo drop lands you
@@ -34,8 +36,11 @@ local PortalService = {}
 local POLL = 0.1
 local COOLDOWN = 2.5
 local FADE_SECONDS = 0.25
--- a target's centre is where the feet go; the root sits this far above the feet (R6)
+-- the root sits this far above the feet (R6)
 local ROOT_HEIGHT = 3
+-- how long the screen stays fully black after the move, so the new spot (and its
+-- lighting, AmbienceController) is settled before the fade-in shows it
+local SETTLE_SECONDS = 0.15
 
 local deps: any = nil
 local fadeRemote: RemoteEvent? = nil
@@ -120,12 +125,14 @@ function PortalService.send(player: Player, target: BasePart, opts: SendOptions?
 	if look.Magnitude < 1e-3 then
 		look = Vector3.new(0, 0, -1)
 	end
-	local at = target.Position + Vector3.new(0, ROOT_HEIGHT, 0)
+	-- feet on the target's top face
+	local top = target.Position.Y + target.Size.Y / 2
+	local at = Vector3.new(target.Position.X, top + ROOT_HEIGHT, target.Position.Z)
 	character:PivotTo(CFrame.lookAt(at, at + look.Unit))
 	root.AssemblyLinearVelocity = Vector3.new(0, fall, 0)
 	root.AssemblyAngularVelocity = Vector3.zero
 	if remote then
-		task.wait(0.05)
+		task.wait(SETTLE_SECONDS)
 		remote:FireClient(player, "in", FADE_SECONDS * 1.6)
 	end
 end

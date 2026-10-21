@@ -23,11 +23,16 @@
 --   sell      coins for selling it from the Inventory (placeholder, 2026-10-20)
 --   icon      its drawn picture (cel-shaded render like the weapons', art/icons/tools; without one
 --             the hotbar falls back to the 3D view)
+--   recipe    (optional) an upgrade: the previous tier of the same tool (`tool`, taken when it is
+--             made) plus that world's `materials` ({ id, count }), on top of the coin `price`
+--             (2026-10-20, the gathering plan: tools build up, each tier from the one before)
 -- Swinging reuses the weapon animation system (Animation.Clips.Weapons keys holds by id
 -- and swings by `swing`), so each tool has the same swing fields a weapon has:
 --   handed, cooldown, hitTime, reach, arc, maxTargets, swing
 
 local Tools = {}
+
+export type Recipe = { tool: string?, materials: { { id: string, count: number } } }
 
 export type ToolDef = {
 	id: string,
@@ -40,6 +45,7 @@ export type ToolDef = {
 	price: number?,
 	sell: number?,
 	icon: string?,
+	recipe: Recipe?,
 	handed: number,
 	cooldown: number,
 	hitTime: number,
@@ -120,6 +126,76 @@ Tools.Defs = {
 		rarity = "Common",
 		price = 75,
 		icon = "rbxassetid://91808020801922",
+		handed = 2,
+		cooldown = 1.0,
+		hitTime = 0.56,
+		reach = 0,
+		arc = 0,
+		maxTargets = 0,
+		knockback = 0,
+		swing = "Cast",
+	},
+
+	-- ==================== World 2 (The Redwood Forest) ====================
+	-- The approved table (2026-10-20, memory tools-per-world): World 2 sells a Stone Axe and a
+	-- Stone Rod (no pickaxe: the Wooden Pickaxe lasts until World 3). Models: Blender
+	-- w2_tools_build, art/meshes/w2_tools.fbx, built to the wooden ones' sizes ("Redwood +
+	-- slate": knapped slate, vine lashing; the axe's amber grip, the all-stone rod's teal reel).
+	-- Prices, power, sell and the recipes are placeholders.
+	StoneAxe = {
+		id = "StoneAxe",
+		name = "Stone Axe",
+		kind = "Axe",
+		tier = 2,
+		world = 2,
+		sell = 120,
+		power = 20,
+		rarity = "Uncommon",
+		price = 600,
+		icon = "rbxassetid://138518954912606",
+		-- the upgrade (2026-10-20): the Wooden Axe, World 1's gathered wood and stone, and World
+		-- 2's enemy drops (the user: "giving the requirements depth and an actual tree"). Not
+		-- Redwood Logs: only a Stone Axe can chop those. Numbers are placeholders.
+		recipe = {
+			tool = "WoodenAxe",
+			materials = {
+				{ id = "OakLog", count = 8 },
+				{ id = "Stone", count = 8 },
+				{ id = "FoxFur", count = 6 },
+				{ id = "BoarTusk", count = 2 },
+			},
+		},
+		handed = 1,
+		cooldown = 0.8,
+		hitTime = 0.52,
+		reach = 5,
+		arc = 70,
+		maxTargets = 1,
+		knockback = 0,
+		swing = "Diagonal",
+	},
+	StoneRod = {
+		id = "StoneRod",
+		name = "Stone Rod",
+		kind = "Rod",
+		tier = 2,
+		world = 2,
+		sell = 160,
+		power = 0,
+		rarity = "Uncommon",
+		price = 800,
+		icon = "rbxassetid://115528900023286",
+		-- the upgrade (2026-10-20, the user: like the axe's): the Wooden Rod, World 1's wood and
+		-- stone, and World 2's Fox Fur and Boar Tusk. Not fish: a Stone Rod catches World 2's.
+		recipe = {
+			tool = "WoodenRod",
+			materials = {
+				{ id = "OakLog", count = 6 },
+				{ id = "Stone", count = 6 },
+				{ id = "FoxFur", count = 4 },
+				{ id = "BoarTusk", count = 3 },
+			},
+		},
 		handed = 2,
 		cooldown = 1.0,
 		hitTime = 0.56,
