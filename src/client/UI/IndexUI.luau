@@ -3,11 +3,25 @@
 -- from the Claude Design canvas) and its HUD button (WeaponHud/IndexButton).
 -- Nothing here builds UI; lists are clones of Index/Templates.
 --
---   * Left page: how many creatures (Progress), weapons (WeaponProgress) and armour
---     sets (ArmorProgress) the player has found, "All", and one card per world
---     (Templates/WorldCard: the world's profile picture plus three count chips,
---     Counts/CreatureCount, WeaponCount and ArmorCount; Templates/LockedWorld for a
---     world with nothing yet). Always in that order (user, 2026-10-13).
+--   * The whole book (2026-10-20, tab strip B and Title 2 on the Index Expansion canvas,
+--     https://claude.ai/artifact/25K21YcFmckdyVGPEa3VpX): eight sections (Index.Sections).
+--     RightPage/Tabs holds a hand-placed button per section (Tab<Section>, attribute `Tab`;
+--     Icon, Label, Count "found/total" for the world picked or all worlds; the open one wears
+--     the Tabs' SkinSelected / TextSelected and `Selected`, the rest SkinIdle / TextIdle).
+--     The page shows only the open section: creatures, weapons and armour as before, the
+--     other five as Templates/EntryRow rows in each Section's `Entries` list (the shared
+--     rarity tile in Tile, ItemName, RarityPill, Chip1 / Chip2 with where it comes from,
+--     and CountCaption / CountValue: how many the player has caught, found or collected).
+--     Rows are not buttons. The row's attributes hold every word.
+--   * RightPage/Heading is the world's name (or All worlds), Total its found / total.
+--   * RightPage/Titles (a world picked): the Collector card (every page found) and, once
+--     that is earned, the Secret card -- "???" under a wax seal until the world's
+--     Completionist title is earned (IndexService decides; the book never says what it
+--     needs). An earned card toggles wearing it (Remotes.EquipTitle); the worn one is
+--     `Selected`. Looks and words are the Titles frame's attributes.
+--   * Left page: how much of the whole book is found (Progress, ProgressBar/Fill), "All",
+--     and one card per world (Templates/WorldCard: the world's profile picture and its
+--     Percent chip; Templates/LockedWorld for a world with nothing yet).
 --     Picking one filters the right page.
 --   * Right page (user's pick C on the Index Armour Pages canvas, 2026-10-13):
 --     one Templates/Section per world -- a row of creature photos, a row of the
@@ -54,6 +68,10 @@ local Materials = require(Config:WaitForChild("Materials"))
 local Weapons = require(Config:WaitForChild("Weapons"))
 local Worlds = require(Config:WaitForChild("Worlds"))
 local Quests = require(Config:WaitForChild("Quests"))
+local Tools = require(Config:WaitForChild("Tools"))
+local Potions = require(Config:WaitForChild("Potions"))
+local Fishing = require(Config:WaitForChild("Fishing"))
+local Gathering = require(Config:WaitForChild("Gathering"))
 
 local Util = script.Parent.Parent:WaitForChild("Util")
 local WeaponTile = require(Util:WaitForChild("WeaponTile"))
@@ -71,6 +89,8 @@ local panel: ScreenGui? = nil
 local filter: number? = nil -- a world id, or nil for All
 local selected: string? = nil -- the creature or armour set whose slip is showing
 local selectedKind: string? = nil -- "Enemy", "Weapon" or "Armor"
+local tab = "Creatures" -- the open section (Index.Sections)
+local Remotes: any = nil
 
 local function attribute(inst: Instance?, name: string, fallback: any): any
 	local value = inst and inst:GetAttribute(name)
@@ -192,6 +212,8 @@ IndexUI.showWeapon = WeaponTile.showModel
 -- ==================== drop slip ====================
 
 local render: () -> ()
+local renderTabs: (counts: { [string]: { found: number, total: number } }) -> ()
+local renderTitles: (progress: Index.Progress) -> ()
 
 -- Centre the book, or the book and its open slip together.
 local shiftTween: Tween? = nil
@@ -616,22 +638,7 @@ local function renderWorlds(killed: { [string]: number }, owned: { [string]: boo
 			lockedGui.Parent = list
 			continue
 		end
-		local creatures, weapons, armor = 0, 0, 0
-		for _, entry in roster do
-			if killed[entry.id] then
-				creatures += 1
-			end
-		end
-		for _, def in arms do
-			if owned[def.id] then
-				weapons += 1
-			end
-		end
-		for _, def in sets do
-			if crafted[def.id] then
-				armor += 1
-			end
-		end
+		local done = Index.progress(worldId, Index.progressOf(player))
 		local cardGui = cardTemplate:Clone() :: any
 		cardGui.Name = world.folder
 		cardGui.LayoutOrder = order
@@ -644,20 +651,9 @@ local function renderWorlds(killed: { [string]: number }, owned: { [string]: boo
 		end
 		cardGui.Rotation = if picked then attribute(cardTemplate, "SelectedRotation", 0) else 0
 		setText(cardGui, "WorldName", world.name)
-		local counts = cardGui:FindFirstChild("Counts")
-		if counts then
-			local creatureChip = show(counts, "CreatureCount", #roster > 0)
-			if creatureChip then
-				setText(creatureChip, "Value", count(creatures, #roster))
-			end
-			local weaponChip = show(counts, "WeaponCount", #arms > 0)
-			if weaponChip then
-				setText(weaponChip, "Value", count(weapons, #arms))
-			end
-			local armorChip = show(counts, "ArmorCount", #sets > 0)
-			if armorChip then
-				setText(armorChip, "Value", count(armor, #sets))
-			end
+		local percent = cardGui:FindFirstChild("Percent")
+		if percent then
+			setText(percent, "Value", ("%d%%"):format(if done.total > 0 then math.floor(done.found / done.total * 100) else 0))
 		end
 		cardGui.Activated:Connect(function()
 			filter = worldId
@@ -747,15 +743,108 @@ local function itemTile(sectionTemplate: GuiObject, def: any, known: boolean, ki
 	return tile
 end
 
--- One world's spread: its creatures, then its weapons, then its armour sets.
+-- ---------- the item pages (tools, materials, fish, potions, treasures) ----------
+
+-- The tool that breaks a gathering node: the lowest tier of its kind that can.
+local function toolFor(node: any): any
+	local best: any = nil
+	for _, def in Tools.Defs do
+		if def.kind == node.tool and def.tier >= node.tier and (best == nil or def.tier < best.tier) then
+			best = def
+		end
+	end
+	return best
+end
+
+local function chipText(row: Instance, name: string, text: string?)
+	local chip = row:FindFirstChild(name)
+	if chip and chip:IsA("GuiObject") then
+		chip.Visible = text ~= nil and text ~= ""
+		if text then
+			setText(chip, "Label", text)
+		end
+	end
+end
+
+-- What a row says about where an item comes from (Chip1, Chip2) and what its count is
+-- called (caught / found / collected).
+local function aboutItem(rowTemplate: Instance, section: string, def: any): (string?, string?, string)
+	local f = function(name: string, fallback: string): string
+		return attribute(rowTemplate, name, fallback)
+	end
+	if section == "Tools" then
+		local kind = Tools.KindNames[def.kind] or def.kind
+		local from = def.recipe and def.recipe.tool and Tools.get(def.recipe.tool)
+		return f("TierFormat", "%s · Tier %d"):format(kind, def.tier), if from then f("UpgradeFormat", "Upgrades the %s"):format(from.name) else f("SoldText", "Weaponsmith"), ""
+	elseif section == "Potions" then
+		return Potions.describe(def), nil, f("CollectedText", "Collected")
+	elseif section == "Fish" then
+		local spot = Fishing.spot(def.source)
+		return spot and spot.name, f("BiteFormat", "%s bite"):format(Fishing.Fish[def.id] or "Easy"), f("CaughtText", "Caught")
+	elseif section == "Treasures" then
+		local source = Index.materialSource(def.id)
+		return source and f("QuestFormat", "%s's quest"):format(source.name), nil, f("FoundText", "Found")
+	end
+	local source = Index.materialSource(def.id)
+	local from = source and f("FromFormat", "From %s"):format(source.name)
+	if def.gathered then
+		local node = Gathering.get(def.source)
+		local tool = node and toolFor(node)
+		return from, tool and f("NeedsFormat", "Needs a %s"):format(tool.name), f("FoundText", "Found")
+	end
+	local chance = source and source.chance and luckyChance(source.chance)
+	return from, chance and f("ChanceFormat", "%s chance"):format(Index.percent(chance)), f("FoundText", "Found")
+end
+
+local function entryRow(rowTemplate: GuiObject, section: string, def: any, order: number, held: number): GuiObject
+	local found = held > 0
+	local row = rowTemplate:Clone()
+	row.Name = def.id
+	row.LayoutOrder = order
+	row.Visible = true
+	if row:IsA("Frame") then
+		row.BackgroundColor3 = attribute(rowTemplate, if found then "FillFound" else "FillUnknown", row.BackgroundColor3)
+	end
+	local slot = row:FindFirstChild("Tile")
+	local tile = slot and WeaponTile.new(def, { known = found, name = false, stat = false })
+	if slot and tile then
+		tile.Parent = slot
+	end
+	setText(row, "ItemName", if found then def.name else attribute(rowTemplate, "UnknownName", "???"), attribute(rowTemplate, if found then "NameColor" else "UnknownNameColor", nil))
+	local rarity = def.rarity or "Common"
+	local pill = row:FindFirstChild("RarityPill")
+	if pill and pill:IsA("GuiObject") then
+		pill.BackgroundColor3 = attribute(template("DropRow"), "Color_" .. rarity, pill.BackgroundColor3)
+		setText(pill, "Label", rarity)
+	end
+	local first, second, caption = aboutItem(rowTemplate, section, def)
+	chipText(row, "Chip1", first)
+	chipText(row, "Chip2", second)
+	-- a lone first chip takes the second one's room too (a potion's effect)
+	local chip1 = row:FindFirstChild("Chip1")
+	if chip1 and chip1:IsA("GuiObject") then
+		local size = chip1:GetAttribute(if second then "NarrowSize" else "WideSize")
+		if typeof(size) == "UDim2" then
+			chip1.Size = size
+		end
+	end
+	local shown = found and caption ~= ""
+	setText(row, "CountCaption", if shown then caption else "")
+	setText(row, "CountValue", if shown then (attribute(rowTemplate, "CountFormat", "×%s") :: string):format(Format.commas(held)) else "")
+	return row
+end
+
+-- One world's spread for the open tab: its creatures, weapons or armour sets as tiles, or
+-- the rows of one of the item pages. nil when the world has nothing in that section.
 local function section(sectionTemplate: GuiObject, cardTemplate: GuiObject, worldId: number, order: number, killed: { [string]: number }, owned: { [string]: boolean }, crafted: { [string]: boolean }): GuiObject?
 	local world = Worlds.get(worldId)
-	local roster = Index.roster(worldId)
-	local sets = Index.armorOf(worldId)
-	local arms = Index.weaponsOf(worldId)
-	if not world or (#roster == 0 and #sets == 0 and #arms == 0) then
+	local listed = Index.entries(worldId, tab)
+	if not world or #listed == 0 then
 		return nil
 	end
+	local roster = if tab == "Creatures" then listed else {}
+	local sets = if tab == "Armor" then listed else {}
+	local arms = if tab == "Weapons" then listed else {}
 	local sec = sectionTemplate:Clone()
 	sec.Name = world.folder
 	sec.LayoutOrder = order
@@ -764,59 +853,50 @@ local function section(sectionTemplate: GuiObject, cardTemplate: GuiObject, worl
 	if title then
 		title.Text = world.name
 	end
+	-- the tab already names the section: no headers
+	for _, name in { "CreaturesHeader", "WeaponsHeader", "ArmorHeader" } do
+		show(sec, name, false)
+	end
+	local entries = show(sec, "Entries", #roster == 0 and #sets == 0 and #arms == 0)
+	local rowTemplate = template("EntryRow")
+	if entries and rowTemplate and #roster == 0 and #sets == 0 and #arms == 0 then
+		local items = Index.progressOf(player).items
+		for i, def in listed do
+			entryRow(rowTemplate, tab, def, i, items[def.id] or 0).Parent = entries
+		end
+		fitHeight(entries :: GuiObject)
+	end
 
-	local creatures, armor = 0, 0
 	local creatureRow = sec:FindFirstChild("Creatures")
 	for i, entry in roster do
-		if killed[entry.id] then
-			creatures += 1
-		end
 		if creatureRow then
 			creatureCard(cardTemplate, entry, i, killed).Parent = creatureRow
 		end
 	end
-	local weapons = 0
 	local weaponRow = sec:FindFirstChild("Weapons")
 	for i, def in arms do
-		if owned[def.id] then
-			weapons += 1
-		end
 		local tile = weaponRow and itemTile(sectionTemplate, def, owned[def.id] == true, "Weapon", i)
 		if tile then
 			tile.Parent = weaponRow
 		end
 	end
-	local weaponHeader = show(sec, "WeaponsHeader", #arms > 0)
 	show(sec, "Weapons", #arms > 0)
-	if weaponHeader then
-		setText(weaponHeader, "Count", count(weapons, #arms))
-	end
 	local armorRow = sec:FindFirstChild("Armor")
 	for i, def in sets do
-		if crafted[def.id] then
-			armor += 1
-		end
 		local tile = armorRow and itemTile(sectionTemplate, def, crafted[def.id] == true, "Armor", i)
 		if tile then
 			tile.Parent = armorRow
 		end
 	end
-	local creatureHeader = show(sec, "CreaturesHeader", #roster > 0)
 	show(sec, "Creatures", #roster > 0)
-	if creatureHeader then
-		setText(creatureHeader, "Count", count(creatures, #roster))
-	end
-	local armorHeader = show(sec, "ArmorHeader", #sets > 0)
 	show(sec, "Armor", #sets > 0)
-	if armorHeader then
-		setText(armorHeader, "Count", count(armor, #sets))
-	end
 	return sec
 end
 
 -- the filter the page was last drawn for: the scroll is kept while it stays the
 -- same (picking a photo redraws the page), and goes back to the top when it changes
 local drawnFilter: number? = -1
+local drawnTab = ""
 
 local function renderPage(killed: { [string]: number }, owned: { [string]: boolean }, crafted: { [string]: boolean })
 	local grid = find("Grid")
@@ -825,8 +905,9 @@ local function renderPage(killed: { [string]: number }, owned: { [string]: boole
 		return
 	end
 	fitCanvas(grid)
-	local scroll = if grid:IsA("ScrollingFrame") and drawnFilter == filter then grid.CanvasPosition else Vector2.zero
+	local scroll = if grid:IsA("ScrollingFrame") and drawnFilter == filter and drawnTab == tab then grid.CanvasPosition else Vector2.zero
 	drawnFilter = filter
+	drawnTab = tab
 	clear(grid)
 	local shown = 0
 	for order, worldId in (if filter then { filter } else Worlds.Order) :: { number } do
@@ -852,6 +933,83 @@ local function renderPage(killed: { [string]: number }, owned: { [string]: boole
 	end
 end
 
+-- ---------- tabs and titles ----------
+
+renderTabs = function(counts: { [string]: { found: number, total: number } })
+	local bar = find("Tabs")
+	if not bar then
+		return
+	end
+	for _, button in bar:GetChildren() do
+		local name = button:GetAttribute("Tab")
+		if not (button:IsA("GuiButton") and type(name) == "string") then
+			continue
+		end
+		local open = name == tab
+		local skin = button:FindFirstChild("Skin")
+		if skin and skin:IsA("ImageLabel") then
+			skin.Image = attribute(bar, if open then "SkinSelected" else "SkinIdle", skin.Image)
+		end
+		local ink: Color3 = attribute(bar, if open then "TextSelected" else "TextIdle", Color3.new(1, 1, 1))
+		local c = counts[name] or { found = 0, total = 0 }
+		setText(button, "Label", (button:FindFirstChild("Label") :: TextLabel).Text, ink)
+		setText(button, "Count", count(c.found, c.total), ink)
+		button:SetAttribute("Selected", open)
+	end
+end
+
+-- The world's two titles: the Collector card, and once that is earned the Secret card.
+renderTitles = function(progress: Index.Progress)
+	local box = find("Titles")
+	if not (box and box:IsA("GuiObject")) then
+		return
+	end
+	box.Visible = filter ~= nil
+	if not filter then
+		return
+	end
+	local earned: { [string]: boolean } = {}
+	local raw = player:GetAttribute("Titles")
+	for id in (if type(raw) == "string" then raw else ""):gmatch("[^,]+") do
+		earned[id] = true
+	end
+	local worn = player:GetAttribute("Title")
+	local collector, completionist = Index.titlesOf(filter)
+	local p = Index.progress(filter, progress)
+	local function card(name: string, title: Index.Title?, iconName: string, secretLook: boolean, note: string, visible: boolean)
+		local button = box:FindFirstChild(name)
+		if not (button and button:IsA("GuiButton")) then
+			return
+		end
+		button.Visible = visible
+		local has = title ~= nil and earned[title.id] == true
+		local wearing = has and worn == (title :: Index.Title).id
+		local state = if wearing then "Worn" elseif has then "Earned" elseif secretLook then "Secret" else "Locked"
+		local skin = button:FindFirstChild("Skin")
+		if skin and skin:IsA("GuiObject") then
+			skin.BackgroundColor3 = attribute(box, "Fill" .. state, skin.BackgroundColor3)
+			local rim = skin:FindFirstChild("Rim")
+			if rim and rim:IsA("UIStroke") then
+				rim.Color = attribute(box, "Rim" .. state, rim.Color)
+			end
+		end
+		local icon = button:FindFirstChild("Icon")
+		if icon and icon:IsA("ImageLabel") then
+			icon.Image = attribute(box, iconName, icon.Image)
+		end
+		local shownName = if title and not (secretLook and not has) then title.name else attribute(box, "SecretName", "???")
+		setText(button, "TitleName", shownName, attribute(box, if state == "Secret" then "NameSecretColor" elseif state == "Locked" then "NameLockedColor" else "NameColor", nil))
+		setText(button, "Note", if wearing then attribute(box, "TextWorn", "") elseif has then attribute(box, "TextEarned", "") else note, attribute(box, if state == "Secret" then "NoteSecretColor" else "NoteColor", nil))
+		button.Active = has
+		button:SetAttribute("Selected", wearing)
+		button:SetAttribute("TitleId", if has then (title :: Index.Title).id else nil)
+	end
+	local collectorEarned = collector ~= nil and earned[collector.id] == true
+	card("Collector", collector, "IconCollector", false, (attribute(box, "TextLocked", "%s / %s") :: string):format(Format.commas(p.found), Format.commas(p.total)), true)
+	local completionistEarned = completionist ~= nil and earned[completionist.id] == true
+	card("Secret", completionist, if completionistEarned then "IconCompletionist" else "IconSeal", true, attribute(box, "TextSecret", ""), collectorEarned)
+end
+
 render = function()
 	if not panel then
 		return
@@ -863,35 +1021,40 @@ render = function()
 	if selected and ((selectedKind == "Enemy" and killed[selected] == nil) or (selectedKind == "Weapon" and not owned[selected]) or (selectedKind == "Armor" and not crafted[selected])) then
 		selected, selectedKind = nil, nil
 	end
-	local weapons, weaponTotal = 0, 0
-	for _, def in Weapons.list() do
-		if Index.weaponCounts(def) then
-			weaponTotal += 1
-			if owned[def.id] then
-				weapons += 1
+	-- found / total: the whole book (left page), the page shown, and each tab
+	local progress = Index.progressOf(player)
+	local found, total = 0, 0
+	local shownFound, shownTotal = 0, 0
+	local tabs: { [string]: { found: number, total: number } } = {}
+	for _, worldId in Worlds.Order do
+		local p = Index.progress(worldId, progress)
+		found += p.found
+		total += p.total
+		if filter == nil or filter == worldId then
+			shownFound += p.found
+			shownTotal += p.total
+			for name, part in p.sections do
+				local t = tabs[name] or { found = 0, total = 0 }
+				t.found += part.found
+				t.total += part.total
+				tabs[name] = t
 			end
 		end
 	end
-	local creatures, creatureTotal = 0, 0
-	for _, entry in Index.all() do
-		creatureTotal += 1
-		if killed[entry.id] then
-			creatures += 1
-		end
+	local progressLabel = find("Progress")
+	setText(panel, "Progress", (attribute(progressLabel, "Format", "%s of %s found") :: string):format(Format.commas(found), Format.commas(total)))
+	local fill = find("ProgressBar")
+	fill = fill and fill:FindFirstChild("Fill")
+	if fill and fill:IsA("GuiObject") then
+		fill.Size = UDim2.fromScale(if total > 0 then found / total else 0, 1)
+		fill.Visible = found > 0
 	end
-	local armor, armorTotal = 0, 0
-	for _, def in Armor.list() do
-		armorTotal += 1
-		if crafted[def.id] then
-			armor += 1
-		end
-	end
-	setText(panel, "Progress", ("%d of %d creatures found"):format(creatures, creatureTotal))
-	setText(panel, "WeaponProgress", ("%d of %d weapons found"):format(weapons, weaponTotal))
-	setText(panel, "ArmorProgress", ("%d of %d armour sets found"):format(armor, armorTotal))
 	local world = filter and Worlds.get(filter)
 	local heading = find("Heading")
 	setText(panel, "Heading", if world then world.name else attribute(heading, "AllText", "All worlds"))
+	setText(panel, "Total", count(shownFound, shownTotal))
+	renderTabs(tabs)
+	renderTitles(progress)
 	renderWorlds(killed, owned, crafted)
 	renderPage(killed, owned, crafted)
 	renderSlip()
@@ -955,6 +1118,29 @@ local function wirePanel(gui: ScreenGui)
 			render()
 		end)
 	end
+	local bar = find("Tabs")
+	for _, button in (if bar then bar:GetChildren() else {}) :: { Instance } do
+		local name = button:GetAttribute("Tab")
+		if button:IsA("GuiButton") and type(name) == "string" then
+			button.Activated:Connect(function()
+				tab = name
+				selected, selectedKind = nil, nil
+				render()
+			end)
+		end
+	end
+	local titles = find("Titles")
+	for _, name in { "Collector", "Secret" } do
+		local button = titles and titles:FindFirstChild(name)
+		if button and button:IsA("GuiButton") then
+			button.Activated:Connect(function()
+				local id = button:GetAttribute("TitleId")
+				if type(id) == "string" then
+					Remotes.getEvent("EquipTitle"):FireServer(if player:GetAttribute("Title") == id then "" else id)
+				end
+			end)
+		end
+	end
 	gui:GetPropertyChangedSignal("Enabled"):Connect(function()
 		if gui.Enabled then
 			render()
@@ -964,7 +1150,7 @@ local function wirePanel(gui: ScreenGui)
 		end
 	end)
 	-- LuckBoost changes the drop chances shown
-	for _, name in { "IndexKills", "IndexWeapons", "IndexArmor", "LuckBoost", Upgrades.attr("Luck") } do
+	for _, name in { "IndexKills", "IndexWeapons", "IndexArmor", "IndexItems", "Titles", "Title", "LuckBoost", Upgrades.attr("Luck") } do
 		player:GetAttributeChangedSignal(name):Connect(function()
 			if gui.Enabled then
 				render()
@@ -976,6 +1162,7 @@ end
 
 function IndexUI.init(injected: any)
 	PanelWindow = injected.UI.PanelWindow
+	Remotes = injected.Remotes
 end
 
 function IndexUI.start()

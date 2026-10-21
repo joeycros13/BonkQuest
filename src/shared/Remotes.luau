@@ -20,6 +20,7 @@ local EVENT_NAMES: { string } = {
 	"WeaponHit",
 	"QuestAction", -- ("accept" | "turnIn", lineId): any questline (QuestService)
 	"ShopBuy", -- { kind = "Bundle" | "Pass" | "Boost" | "Starter", id = string? }: the Robux shop (ShopService)
+	"EquipTitle", -- (titleId: string): wear an earned Index title, "" to take it off (IndexService)
 	"GateBuy", -- { id = string }: buy a world gate (GateService, Config/Gates)
 	"EquipArmor", -- (id: string?): wear an owned armour set, nil takes it off (ArmorService)
 	"SecretCrystalHit", -- (order: number): a swing reached World 3's secret crystal #order (SecretService)

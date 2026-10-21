@@ -31,6 +31,12 @@
 --   * Armor (2026-10-13): an armour set crafted for the first time (IndexService
 --     via ArmorService.grant). Its drawn icon, its rarity's look, the
 --     ArmorSubtitle line and no chips.
+--   * Item (2026-10-20, the whole book): the first tool, fish, potion, quest item or
+--     Rare-or-better material (IndexService). Its drawn icon, its rarity's look, the
+--     ItemSubtitle line and no chips.
+--   * Title (2026-10-20): an Index title earned. The Popup's TitleIcon / TitleSecretIcon trophy,
+--     a Collector title in the Legendary look and a Completionist title in the Secret look,
+--     TitleNewText for the tag ("NEW TITLE!") and the TitleSubtitle line.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -76,7 +82,13 @@ local function lookFor(pop: Instance, item: Discovery): Look
 		end
 	end
 	local rarity = "Common"
-	if item.kind == "Core" then
+	if item.kind == "Title" then
+		local title = Index.titleOf(item.id)
+		rarity = if title and title.secret then "Secret" else "Legendary"
+	elseif item.kind == "Item" then
+		local def = Index.itemDef(item.id)
+		rarity = def and def.rarity or "Common"
+	elseif item.kind == "Core" then
 		local core = Materials.get(item.id)
 		rarity = core and core.rarity or "Core"
 	elseif item.kind == "Armor" then
@@ -96,6 +108,8 @@ local function fill(pop: Frame, item: Discovery, look: Look): boolean
 	local isEnemy = item.kind == "Enemy"
 	local isCore = item.kind == "Core"
 	local isArmor = item.kind == "Armor"
+	local isItem = item.kind == "Item"
+	local isTitle = item.kind == "Title"
 	local p = pop :: any
 	local name: string
 	local drawn = false
@@ -106,6 +120,27 @@ local function fill(pop: Frame, item: Discovery, look: Look): boolean
 		end
 		name = def.name
 		p.Portrait.Image = def.portrait or ""
+	elseif isTitle then
+		local title = Index.titleOf(item.id)
+		if not title then
+			return false
+		end
+		name = title.name
+		local icon = attribute(pop, if title.secret then "TitleSecretIcon" else "TitleIcon", "")
+		drawn = icon ~= "" and p:FindFirstChild("Picture") ~= nil
+		if drawn then
+			p.Picture.Image = icon
+		end
+	elseif isItem then
+		local def = Index.itemDef(item.id)
+		if not def then
+			return false
+		end
+		name = def.name
+		drawn = def.icon ~= nil and p:FindFirstChild("Picture") ~= nil
+		if drawn then
+			p.Picture.Image = def.icon :: string
+		end
 	elseif isArmor then
 		local def = Armor.get(item.id)
 		if not def then
@@ -166,21 +201,23 @@ local function fill(pop: Frame, item: Discovery, look: Look): boolean
 	local tag = p:FindFirstChild("NewTag")
 	local tagLabel = tag and tag:FindFirstChild("Label")
 	if tagLabel and tagLabel:IsA("TextLabel") then
-		tagLabel.Text = look("NewText", "NEW!")
+		tagLabel.Text = if isTitle then attribute(pop, "TitleNewText", "NEW TITLE!") else look("NewText", "NEW!")
 	end
 	-- nothing is new about a weapon found again
 	if tag and tag:IsA("GuiObject") then
 		tag.Visible = not item.again
 	end
-	p.Subtitle.Visible = isEnemy or isCore or isArmor
+	p.Subtitle.Visible = isEnemy or isCore or isArmor or isItem or isTitle
 	p.Subtitle.Text = if isCore
 		then attribute(pop, "CoreSubtitle", "Take it to the Crafter")
+		elseif isTitle then attribute(pop, "TitleSubtitle", "Wear it from your Index")
+		elseif isItem then attribute(pop, "ItemSubtitle", "Added to your Index")
 		elseif isArmor then attribute(pop, "ArmorSubtitle", "Added to your Index")
 		else attribute(pop, "EnemySubtitle", "Added to your Index")
 
 	-- weapons: where they drop, likeliest first
 	local chips = p.Chips :: Frame
-	local showChips = not isEnemy and not isCore and not isArmor
+	local showChips = not isEnemy and not isCore and not isArmor and not isItem and not isTitle
 	chips.Visible = showChips
 	for _, child in chips:GetChildren() do
 		if child:IsA("GuiObject") then

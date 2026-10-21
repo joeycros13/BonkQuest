@@ -292,6 +292,8 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 		local MeleeService = deps.Services.MeleeService
 		local IndexService = deps.Services.IndexService
 		local weapons, tools, armor = 0, 0, 0
+		-- the Index counts all of it, quietly (no popup per tool, fish and potion)
+		IndexService.hush(player, 2)
 		for id, def in Weapons.Defs do
 			if not def.unarmed and MeleeService.grant(player, id) then
 				IndexService.discoverWeapon(player, id, true)

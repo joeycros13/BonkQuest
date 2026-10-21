@@ -19,9 +19,31 @@
 --   * weaponSources(weaponId): every way to get a weapon -- the enemies that drop
 --     it (likeliest first), then the quests that give it.
 --
+-- The whole book (2026-10-20, the user: "cover almost everything", tab strip B on the
+-- Index Expansion canvas, https://claude.ai/artifact/25K21YcFmckdyVGPEa3VpX): eight
+-- sections per world, `Index.Sections` -- Creatures, Weapons, Armor, Tools, Materials,
+-- Fish, Potions, Treasures. Cores and secret enemies are never in it.
+--   * entries(worldId, section): what that page lists, in order (defs; creatures are
+--     roster entries). Tools by tier then hotbar kind; Materials are the world's enemy
+--     drops then its gathered ones (no fish, quest items or cores); Fish the world's
+--     fished materials; Potions the ones the world's Crafter makes (Tier I by its
+--     `world`, Tier II / III at the first world of their band) that have a recipe;
+--     Treasures the world's quest items.
+--   * itemDef(id): a tool, material or potion def by id (the "items" IndexService counts).
+--   * found(section, id, progress): whether the player has found it. `progress` is
+--     { kills, weapons, armor, items } (IndexService's attributes, progressOf(player)).
+--   * progress(worldId, progress): found / total for the world and per section.
+--   * Titles (Title 2 on the canvas): filling every page of a world earns its Collector
+--     title; that plus the world's core infused into the Worldheart Blade earns its
+--     Completionist title, which the book never names until it is earned. titleOf(id),
+--     titlesOf(worldId), coreDone(player, worldId).
+--
 -- Drop tables themselves live on each enemy in Config/Worlds/<world>.
 
 local Worlds = require(script.Parent.Worlds)
+local Infuse = require(script.Parent.Infuse)
+local Potions = require(script.Parent.Potions)
+local Tools = require(script.Parent.Tools)
 local Armor = require(script.Parent.Armor)
 local Fishing = require(script.Parent.Fishing)
 local Gathering = require(script.Parent.Gathering)
@@ -215,6 +237,211 @@ function Index.weaponSources(weaponId: string): { WeaponSource }
 		end
 	end
 	return out
+end
+
+
+-- ==================== the whole book (2026-10-20) ====================
+
+Index.Sections = { "Creatures", "Weapons", "Armor", "Tools", "Materials", "Fish", "Potions", "Treasures" }
+
+export type Progress = {
+	kills: { [string]: number },
+	weapons: { [string]: boolean },
+	armor: { [string]: boolean },
+	items: { [string]: number },
+}
+
+-- The world whose page lists a potion: Tier I its own `world`, a later tier the first
+-- world of its band. nil when it can't be made yet (no recipe).
+function Index.potionWorld(def: any): number?
+	if not (def and def.recipe) then
+		return nil
+	end
+	if def.tier == 1 then
+		return def.world
+	end
+	local band = Potions.Bands[def.tier]
+	return band and band.from
+end
+
+local function byOrder(a: any, b: any): boolean
+	if (a.order or 0) ~= (b.order or 0) then
+		return (a.order or 0) < (b.order or 0)
+	end
+	return a.id < b.id
+end
+
+local kindRank: { [string]: number } = {}
+for i, kind in Tools.Kinds do
+	kindRank[kind] = i
+end
+
+function Index.entries(worldId: number, section: string): { any }
+	local out = {}
+	if section == "Creatures" then
+		return Index.roster(worldId)
+	elseif section == "Weapons" then
+		return Index.weaponsOf(worldId)
+	elseif section == "Armor" then
+		return Index.armorOf(worldId)
+	elseif section == "Tools" then
+		for _, def in Tools.Defs do
+			if def.world == worldId then
+				table.insert(out, def)
+			end
+		end
+		table.sort(out, function(a, b)
+			if a.tier ~= b.tier then
+				return a.tier < b.tier
+			end
+			return (kindRank[a.kind] or 0) < (kindRank[b.kind] or 0)
+		end)
+	elseif section == "Potions" then
+		for _, def in Potions.list() do
+			if Index.potionWorld(def) == worldId then
+				table.insert(out, def)
+			end
+		end
+	else
+		local drops, gathered = {}, {}
+		for _, def in Materials.list() do
+			local m = def :: any
+			if m.world ~= worldId or m.core then
+				continue
+			end
+			if section == "Treasures" and m.quest then
+				table.insert(out, m)
+			elseif section == "Fish" and m.fished then
+				table.insert(out, m)
+			elseif section == "Materials" and not (m.quest or m.fished) then
+				table.insert(if m.gathered then gathered else drops, m)
+			end
+		end
+		table.sort(out, byOrder)
+		if section == "Materials" then
+			table.sort(drops, byOrder)
+			table.sort(gathered, byOrder)
+			table.move(gathered, 1, #gathered, #drops + 1, drops)
+			return drops
+		end
+	end
+	return out
+end
+
+-- A tool, material or potion by id: the "items" the Index counts (cores are materials
+-- too, but never listed).
+function Index.itemDef(id: string): any
+	return Tools.get(id) or Materials.get(id) or Potions.get(id)
+end
+
+-- Which section an item is listed in ("Tools", "Materials", "Fish", "Potions",
+-- "Treasures"), or nil for a core or anything the book doesn't list.
+function Index.sectionOf(id: string): string?
+	if Tools.get(id) then
+		return "Tools"
+	elseif Potions.get(id) then
+		return if Index.potionWorld(Potions.get(id)) then "Potions" else nil
+	end
+	local m = Materials.get(id) :: any
+	if not m or m.core then
+		return nil
+	end
+	return if m.quest then "Treasures" elseif m.fished then "Fish" else "Materials"
+end
+
+function Index.found(section: string, id: string, progress: Progress): boolean
+	if section == "Creatures" then
+		return progress.kills[id] ~= nil
+	elseif section == "Weapons" then
+		return progress.weapons[id] == true
+	elseif section == "Armor" then
+		return progress.armor[id] == true
+	end
+	return (progress.items[id] or 0) > 0
+end
+
+export type WorldProgress = { found: number, total: number, sections: { [string]: { found: number, total: number } } }
+
+function Index.progress(worldId: number, progress: Progress): WorldProgress
+	local out: WorldProgress = { found = 0, total = 0, sections = {} }
+	for _, section in Index.Sections do
+		local found, total = 0, 0
+		for _, entry in Index.entries(worldId, section) do
+			total += 1
+			if Index.found(section, entry.id, progress) then
+				found += 1
+			end
+		end
+		out.sections[section] = { found = found, total = total }
+		out.found += found
+		out.total += total
+	end
+	return out
+end
+
+-- Parse the player's Index attributes (IndexService publishes them; either side).
+function Index.progressOf(player: Player): Progress
+	local function counts(name: string): { [string]: number }
+		local out: { [string]: number } = {}
+		local raw = player:GetAttribute(name)
+		if type(raw) == "string" then
+			for id, n in raw:gmatch("([^,=]+)=(%d+)") do
+				out[id] = tonumber(n) :: number
+			end
+		end
+		return out
+	end
+	local function set(name: string): { [string]: boolean }
+		local out: { [string]: boolean } = {}
+		local raw = player:GetAttribute(name)
+		if type(raw) == "string" then
+			for id in raw:gmatch("[^,]+") do
+				out[id] = true
+			end
+		end
+		return out
+	end
+	return { kills = counts("IndexKills"), weapons = set("IndexWeapons"), armor = set("IndexArmor"), items = counts("IndexItems") }
+end
+
+-- ---------- titles ----------
+
+-- Each world's two titles (the names are placeholders the user can change). A world
+-- with no row gets "World N Collector" / "World N Completionist".
+Index.TitleNames = {
+	[1] = { collector = "Meadows Collector", completionist = "World 1 Completionist" },
+	[2] = { collector = "Redwood Collector", completionist = "World 2 Completionist" },
+	[3] = { collector = "Caverns Collector", completionist = "World 3 Completionist" },
+} :: { [number]: { collector: string, completionist: string } }
+
+export type Title = { id: string, name: string, world: number, secret: boolean }
+
+-- "Collector1" / "Completionist1"
+function Index.titleOf(id: any): Title?
+	if type(id) ~= "string" then
+		return nil
+	end
+	local kind, n = id:match("^(%a+)(%d+)$")
+	local world = tonumber(n)
+	if not (world and Worlds.get(world)) or (kind ~= "Collector" and kind ~= "Completionist") then
+		return nil
+	end
+	local names = Index.TitleNames[world]
+	local secret = kind == "Completionist"
+	local name = if names then (if secret then names.completionist else names.collector) else ("World %d %s"):format(world, kind)
+	return { id = id, name = name, world = world, secret = secret }
+end
+
+function Index.titlesOf(worldId: number): (Title, Title)
+	return Index.titleOf("Collector" .. worldId) :: Title, Index.titleOf("Completionist" .. worldId) :: Title
+end
+
+-- The world's secret part of the Completionist title: its core infused into the
+-- Worldheart Blade (which needs the core found first). A world with no core yet has
+-- nothing secret to do.
+function Index.coreDone(player: Player, worldId: number): boolean
+	local core = Infuse.coreOfWorld(worldId)
+	return core == nil or Infuse.infused(player)[core] == true
 end
 
 return Index
