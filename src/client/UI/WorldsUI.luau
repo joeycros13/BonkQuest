@@ -14,7 +14,9 @@
 --               walking through the gate is still how you unlock it
 --   * Soon      a world that isn't built yet ("?" picture)
 -- Words and dot colours are attributes on the gui (TextTag, TextLocked, TextSoon, TextHere,
--- TextUnknown, DotHere / DotOpen / DotLocked / DotSoon / DotSelected).
+-- TextUnknown, DotHere / DotOpen / DotLocked / DotSoon / DotSelected). Prev / Next show their drawn
+-- gold buttons (`Art`) and a locked dot its padlock (`Lock`): option B on the Quest Guide & Worlds
+-- Arrows canvas (2026-10-21).
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -109,6 +111,14 @@ local function render()
 				elseif s == "open" then attr("DotOpen", Color3.fromHex("36c6e0"))
 				elseif s == "locked" then attr("DotLocked", Color3.fromHex("3a4552"))
 				else attr("DotSoon", Color3.fromHex("5d6873"))
+			-- a locked or unbuilt world's dot shows its padlock (`Lock`, option B, 2026-10-21)
+			-- instead of its number, unless it is the one picked
+			local lock = dot:FindFirstChild("Lock")
+			local closed = (s == "locked" or s == "soon") and i ~= selected
+			if lock and lock:IsA("GuiObject") then
+				lock.Visible = closed
+				dot.Label.Visible = not closed
+			end
 			dot.Label.TextTransparency = if s == "soon" and i ~= selected then 0.45 else 0
 		end
 	end
