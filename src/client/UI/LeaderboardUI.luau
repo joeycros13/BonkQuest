@@ -8,7 +8,8 @@
 --   Window/Periods/<Daily|Weekly|All>   pills (Period attribute, Label)
 --   Window/Tabs/<Coins|Levels|Kills>    stat tabs (Stat attribute, Icon, Label)
 --   Window/Reset                        "Resets in 5h 12m" / "Never resets"
---   Window/Podium/Place1..3             PlayerName, Value, Block/Rank
+--   Window/Podium/Place1..3             PlayerName, Value, Block/Rank, Avatar (the player's
+--                                       headshot), Crown on Place1 (podium option A, 2026-10-21)
 --   Window/List                         a ScrollingFrame of Templates/Row clones (#4-50:
 --                                       Rank, PlayerName, Value); Window/Empty when no one
 --   Window/You                          your own place (Rank, PlayerName, Value)
@@ -159,6 +160,11 @@ function LeaderboardUI.refresh()
 			place.PlayerName.Text = if row then row.name else "—"
 			place.Value.Text = if row then valueText(row.value) else ""
 			place.Block.Rank.Text = tostring(rank)
+			-- the drawn podium (option A, 2026-10-21): each step shows its player's headshot
+			local avatar = place:FindFirstChild("Avatar")
+			if avatar and avatar:IsA("ImageLabel") then
+				avatar.Image = if row and row.userId then ("rbxthumb://type=AvatarHeadShot&id=%d&w=150&h=150"):format(row.userId) else ""
+			end
 		end
 	end
 	for _, c in window.List:GetChildren() do
