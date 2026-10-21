@@ -10,6 +10,12 @@
 -- then the hand-built StarterGui/TelescopeView lens (option A, brass rim) shows
 -- and the camera pushes out past the railing while the FOV zooms onto LookAt.
 -- E, gamepad B, a click or the lens's StepBack button steps back the same way.
+-- Nothing blocks the view (2026-10-20, the user's pick after re-dressings grew trees into the
+-- line): while looking, every decoration and gathering node of the telescope's world whose
+-- bounding sphere enters the lens's view cone (eyecup to the ring, minus `CLEAR_NEAR` at the
+-- far end) is hidden for this player only (LocalTransparencyModifier 1), the ring's own
+-- `FairyRing` decorations excepted; stepping back puts each part's old value back (a broken
+-- gathering node keeps its own).
 -- Nothing here builds UI; it only shows the lens and wires its button.
 
 local CollectionService = game:GetService("CollectionService")
@@ -24,10 +30,12 @@ local TAG = "Telescope"
 local EXIT_ACTION = "TelescopeStepBack"
 local TO_EYE, ZOOM, BACK = 0.45, 0.9, 0.5
 local PUSH_OUT = 3 -- studs past the objective lens, clear of the railing
+local CONE_TAN = math.tan(math.rad(6)) -- the lens shows ~4.5 degrees round the centre; a little margin
+local CLEAR_NEAR = 10 -- studs short of LookAt where hiding stops (the ring itself stays)
 
 local player = Players.LocalPlayer
 local busy = false
-local viewing: { model: Model, prompt: ProximityPrompt, startCf: CFrame, startFov: number, huds: { [ScreenGui]: boolean }, died: RBXScriptConnection? }? = nil
+local viewing: { model: Model, prompt: ProximityPrompt, startCf: CFrame, startFov: number, huds: { [ScreenGui]: boolean }, died: RBXScriptConnection?, hidden: { [BasePart]: number }? }? = nil
 
 local function lensGui(): ScreenGui?
 	local g = player:WaitForChild("PlayerGui"):FindFirstChild("TelescopeView")
@@ -57,6 +65,59 @@ local function poses(model: Model): (CFrame?, CFrame?)
 	end
 	local dir = (lookAt - glass.Position).Unit
 	return CFrame.lookAt(eyecup.Position, lookAt), CFrame.lookAt(glass.Position + dir * PUSH_OUT, lookAt)
+end
+
+-- Hide, for this player, whatever stands in the view cone from `from` to `lookAt`: the
+-- decorations and gathering nodes of the telescope's world. Returns each part's old value.
+local function hideBlockers(model: Model, from: Vector3, lookAt: Vector3): { [BasePart]: number }
+	local hidden: { [BasePart]: number } = {}
+	local world: Instance? = model
+	while world and world.Parent ~= workspace:FindFirstChild("Worlds") do
+		world = world.Parent
+	end
+	if not world then
+		return hidden
+	end
+	local axis = lookAt - from
+	local length = axis.Magnitude
+	local dir = axis.Unit
+	local function blocks(item: Model): boolean
+		local cf, size = item:GetBoundingBox()
+		local radius = size.Magnitude / 2 * 0.8
+		local rel = cf.Position - from
+		local t = rel:Dot(dir)
+		if t < -radius or t > length - CLEAR_NEAR + radius then
+			return false
+		end
+		local off = (rel - dir * t).Magnitude
+		return off < math.max(t, 0) * CONE_TAN + radius
+	end
+	local function scan(folder: Instance?)
+		if not folder then
+			return
+		end
+		for _, item in folder:GetDescendants() do
+			if item:IsA("Model") and item.Parent and not item.Parent:IsA("Model") and item.Name ~= "FairyRing" and not item:FindFirstAncestor("FairyRing") and blocks(item) then
+				for _, part in item:GetDescendants() do
+					if part:IsA("BasePart") and hidden[part] == nil then
+						hidden[part] = part.LocalTransparencyModifier
+						part.LocalTransparencyModifier = 1
+					end
+				end
+			end
+		end
+	end
+	scan(world:FindFirstChild("Decorations"))
+	scan(world:FindFirstChild("Gathering"))
+	return hidden
+end
+
+local function unhide(hidden: { [BasePart]: number }?)
+	for part, old in hidden or {} do
+		if part.Parent then
+			part.LocalTransparencyModifier = old
+		end
+	end
 end
 
 local stepBack: () -> ()
@@ -93,6 +154,8 @@ local function look(model: Model, prompt: ProximityPrompt)
 	cam.CameraType = Enum.CameraType.Scriptable
 	tweenCamera(eye :: CFrame, cam.FieldOfView, TO_EYE)
 	gui.Enabled = true
+	local lookAt = model:GetAttribute("LookAt") :: Vector3
+	;(viewing :: any).hidden = hideBlockers(model, (view :: CFrame).Position, lookAt)
 	local fov = model:GetAttribute("ViewFov")
 	tweenCamera(view :: CFrame, if type(fov) == "number" then fov else 9, ZOOM, Enum.EasingStyle.Quart)
 	ContextActionService:BindActionAtPriority(EXIT_ACTION, function(_, state)
@@ -123,6 +186,7 @@ stepBack = function()
 	if gui then
 		gui.Enabled = false
 	end
+	unhide(v.hidden)
 	tweenCamera(v.startCf, v.startFov, TO_EYE)
 	cam.CameraType = Enum.CameraType.Custom
 	cam.FieldOfView = v.startFov
