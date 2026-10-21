@@ -14,8 +14,9 @@
 --     rows past the list are hidden.
 --   * Buy (Skin, Content: Lock, Label, Coin, Amount), one of the game's pill buttons
 --     (option A on the Quest Guide canvas, 2026-10-21): its Skin takes the gui's
---     Skin_<Met|Locked|Unlocked> image; Met shows Text.buy, the coin and the price,
---     Locked the padlock and the price, Unlocked Text.unlocked. It is Active only
+--     Skin_<Met|Locked|Unlocked> image and reads Text.buy / Text.locked /
+--     Text.unlocked alone (the requirements are the rows above it; its Lock, Coin and
+--     Amount stay hidden since 2026-10-21). It is Active only
 --     while Met, so Util.ButtonFx grows and squashes it (its FxScale) only then.
 --     Pressing it while Met fires Remotes.GateBuy { id } (GateService checks
 --     everything again).
@@ -176,10 +177,10 @@ local function render(gui: SurfaceGui, gate: Gates.Gate)
 		-- the game's pill buttons (option A, 2026-10-21): green "Buy  2,500" once you can,
 		-- grey with a padlock and the price while locked; ButtonFx grows / squashes it
 		-- only while it's Active
-		local locked = state == "Locked"
-		setText(content:FindFirstChild("Label"), if unlocked then Text.unlocked else Text.buy)
-		setText(content:FindFirstChild("Amount"), deps.Util.Format.coins(gate.coins))
-		local show = { Label = not locked, Lock = locked and not unlocked, Coin = state == "Met", Amount = not unlocked }
+		-- just the word (2026-10-21, the user): the four requirements are listed above it,
+		-- so the button no longer repeats the price
+		setText(content:FindFirstChild("Label"), if unlocked then Text.unlocked elseif state == "Met" then Text.buy else Text.locked)
+		local show = { Label = true, Lock = false, Coin = false, Amount = false }
 		for name, visible in show do
 			local piece = content:FindFirstChild(name)
 			if piece and piece:IsA("GuiObject") then
