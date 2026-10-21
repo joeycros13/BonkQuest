@@ -23,7 +23,7 @@ local World: WorldTypes.WorldDef = {
 	name = "The Redwood Forest",
 	folder = "W02_RedwoodForest",
 	-- the Index world card (2026-10-12, no enemies; art/index/world_W02_2026-10-12.png)
-	profile = "rbxassetid://110979330411375",
+	profile = "rbxassetid://114443855013343",
 
 	-- Respawn seconds by kind (the user's rule, 2026-10-19): every enemy of a tier
 	-- comes back after the same time in its world; bosses and the secret enemy

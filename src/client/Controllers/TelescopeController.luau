@@ -16,6 +16,12 @@
 -- far end) is hidden for this player only (LocalTransparencyModifier 1), the ring's own
 -- `FairyRing` decorations excepted; stepping back puts each part's old value back (a broken
 -- gathering node keeps its own).
+-- The lookout itself and the player's own body are hidden the same way while the lens is up
+-- (2026-10-20, the user: parts of the tower flashed by as the camera pushed out through the
+-- railing): the lens comes up, and they go, just before the glide reaches the eyecup, and come
+-- back just after the glide back leaves it, so the camera never shows the inside of the tube.
+-- The tube is aimed so its eyecup -> lens line runs straight through LookAt, and the camera
+-- moves along that line.
 -- Nothing here builds UI; it only shows the lens and wires its button.
 
 local CollectionService = game:GetService("CollectionService")
@@ -32,6 +38,7 @@ local TO_EYE, ZOOM, BACK = 0.45, 0.9, 0.5
 local PUSH_OUT = 3 -- studs past the objective lens, clear of the railing
 local CONE_TAN = math.tan(math.rad(6)) -- the lens shows ~4.5 degrees round the centre; a little margin
 local CLEAR_NEAR = 10 -- studs short of LookAt where hiding stops (the ring itself stays)
+local LENS_AT = 0.8 -- share of the glide to the eyecup after which the lens comes up
 
 local player = Players.LocalPlayer
 local busy = false
@@ -49,11 +56,31 @@ local function controls(): any?
 	return if ok and module then module:GetControls() else nil
 end
 
-local function tweenCamera(cf: CFrame, fov: number, seconds: number, style: Enum.EasingStyle?)
+-- Glide the camera; `midway` (if given) runs once `at` of the way through, without a pause.
+local function tweenCamera(cf: CFrame, fov: number, seconds: number, style: Enum.EasingStyle?, at: number?, midway: (() -> ())?)
 	local cam = workspace.CurrentCamera
 	local tween = TweenService:Create(cam, TweenInfo.new(seconds, style or Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), { CFrame = cf, FieldOfView = fov })
 	tween:Play()
-	tween.Completed:Wait()
+	if midway then
+		task.wait(seconds * (at or 0.5))
+		midway()
+	end
+	if tween.PlaybackState == Enum.PlaybackState.Playing then
+		tween.Completed:Wait()
+	end
+end
+
+-- Hide every part of `root` for this player, keeping the old values in `hidden`.
+local function hideAll(root: Instance?, hidden: { [BasePart]: number })
+	if not root then
+		return
+	end
+	for _, part in root:GetDescendants() do
+		if part:IsA("BasePart") and hidden[part] == nil then
+			hidden[part] = part.LocalTransparencyModifier
+			part.LocalTransparencyModifier = 1
+		end
+	end
 end
 
 local function poses(model: Model): (CFrame?, CFrame?)
@@ -98,12 +125,7 @@ local function hideBlockers(model: Model, from: Vector3, lookAt: Vector3): { [Ba
 		end
 		for _, item in folder:GetDescendants() do
 			if item:IsA("Model") and item.Parent and not item.Parent:IsA("Model") and item.Name ~= "FairyRing" and not item:FindFirstAncestor("FairyRing") and blocks(item) then
-				for _, part in item:GetDescendants() do
-					if part:IsA("BasePart") and hidden[part] == nil then
-						hidden[part] = part.LocalTransparencyModifier
-						part.LocalTransparencyModifier = 1
-					end
-				end
+				hideAll(item, hidden)
 			end
 		end
 	end
@@ -152,10 +174,16 @@ local function look(model: Model, prompt: ProximityPrompt)
 		stepBack()
 	end)
 	cam.CameraType = Enum.CameraType.Scriptable
-	tweenCamera(eye :: CFrame, cam.FieldOfView, TO_EYE)
-	gui.Enabled = true
 	local lookAt = model:GetAttribute("LookAt") :: Vector3
-	;(viewing :: any).hidden = hideBlockers(model, (view :: CFrame).Position, lookAt)
+	tweenCamera(eye :: CFrame, cam.FieldOfView, TO_EYE, nil, LENS_AT, function()
+		gui.Enabled = true
+		local hidden = hideBlockers(model, (view :: CFrame).Position, lookAt)
+		-- the lookout the telescope stands on (or the telescope alone), and the player's body
+		local tower = if model.Parent and model.Parent:IsA("Model") then model.Parent else model
+		hideAll(tower, hidden)
+		hideAll(character, hidden)
+		;(viewing :: any).hidden = hidden
+	end)
 	local fov = model:GetAttribute("ViewFov")
 	tweenCamera(view :: CFrame, if type(fov) == "number" then fov else 9, ZOOM, Enum.EasingStyle.Quart)
 	ContextActionService:BindActionAtPriority(EXIT_ACTION, function(_, state)
@@ -183,11 +211,12 @@ stepBack = function()
 	if eye then
 		tweenCamera(eye, v.startFov, BACK, Enum.EasingStyle.Quart)
 	end
-	if gui then
-		gui.Enabled = false
-	end
-	unhide(v.hidden)
-	tweenCamera(v.startCf, v.startFov, TO_EYE)
+	tweenCamera(v.startCf, v.startFov, TO_EYE, nil, 1 - LENS_AT, function()
+		if gui then
+			gui.Enabled = false
+		end
+		unhide(v.hidden)
+	end)
 	cam.CameraType = Enum.CameraType.Custom
 	cam.FieldOfView = v.startFov
 	for g in v.huds do

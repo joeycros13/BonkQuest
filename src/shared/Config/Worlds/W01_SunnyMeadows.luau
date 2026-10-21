@@ -12,7 +12,7 @@ local World: WorldTypes.WorldDef = {
 	name = "The Sunny Meadows",
 	folder = "W01_SunnyMeadows",
 	-- the Index world card (re-shot 2026-10-19 for the grown map, no enemies; art/portraits/worlds/world_W01_2026-10-19.png)
-	profile = "rbxassetid://89359546830130",
+	profile = "rbxassetid://85727377419936",
 
 	-- Respawn seconds by kind (the user's rule, 2026-10-19): every enemy of a tier
 	-- comes back after the same time in its world; bosses and the secret enemy

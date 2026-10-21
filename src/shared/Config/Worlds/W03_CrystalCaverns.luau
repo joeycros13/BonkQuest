@@ -16,7 +16,7 @@ local World: WorldTypes.WorldDef = {
 	folder = "W03_CrystalCaverns",
 	-- the Index world card and Worlds-menu banner (2026-10-17, no enemies, past the stalls
 	-- looking at the boarded-up mine entrance; art/portraits/worlds/world_W03_2026-10-17.png)
-	profile = "rbxassetid://125541783517148",
+	profile = "rbxassetid://106928307558031",
 	-- Respawn seconds by kind (the user's rule, 2026-10-19): every enemy of a tier
 	-- comes back after the same time in its world; bosses and the secret enemy
 	-- after `boss` / `secret`. A spawn marker's RespawnSeconds attribute still wins.

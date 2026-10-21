@@ -36,6 +36,11 @@ end
 
 function FadeController.start()
 	deps.Remotes.getEvent("TeleportFade").OnClientEvent:Connect(function(phase: string, seconds: number?)
+		-- the new place's lighting first, so it is right when the screen clears
+		local ambience = deps.Controllers and deps.Controllers.AmbienceController
+		if phase == "in" and ambience and ambience.refresh then
+			ambience.refresh()
+		end
 		FadeController.fade(phase, seconds)
 	end)
 end
