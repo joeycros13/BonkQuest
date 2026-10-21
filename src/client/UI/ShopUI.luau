@@ -8,6 +8,7 @@
 --   * Window/Coins/Amount: the player's coin balance (their "Coins" attribute).
 --   * each row's Art: the shared weapon tile (Util.WeaponTile: rarity skin and drawn
 --     icon, like the Inventory; 2026-10-12, it was an old viewport tile).
+--   * each weapon row's Damage / Speed / Reach chips (Content/Value), from Config/Weapons.
 --   * Buy/Content, Coins/Content and each stat chip's Content are centred rows
 --     (Util.CenterRow): the coin, price or "Owned" sit centred in the button.
 --   * each row's Buy button, in one of three looks set by its attributes:
@@ -315,6 +316,21 @@ local function wire(gui: ScreenGui)
 				tile.Size = UDim2.fromScale(1, 1)
 				tile.Parent = art
 			end
+		end
+		-- a weapon row's stat chips come from Config/Weapons (2026-10-20: they were typed by hand and
+		-- went stale when the health ladder rescaled World 2 and 3's weapons): Damage, Speed (swings a
+		-- second, "2.5/s") and Reach, each chip's Content/Value
+		if def and not isTool(row) then
+			local function stat(chip: string, text: string)
+				local holder = row:FindFirstChild(chip)
+				local value = holder and holder:FindFirstChild("Value", true)
+				if value and value:IsA("TextLabel") then
+					value.Text = text
+				end
+			end
+			stat("Damage", Format.commas(def.damage or 0))
+			stat("Speed", (("%.1f"):format(1 / (def.cooldown or 1)):gsub("%.0$", "")) .. "/s")
+			stat("Reach", (("%.1f"):format(def.reach or 0):gsub("%.0$", "")))
 		end
 		-- an upgrade's path: the previous tool's tile in UpgradeFrom (the shared tile, like Art)
 		local from = row:FindFirstChild("UpgradeFrom")

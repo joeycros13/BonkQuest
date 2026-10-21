@@ -8,6 +8,13 @@
 -- Drops use the World 3 weapons (2026-10-13, memory world3-weapons). The Diamond
 -- Pickaxe (Legendary) comes only from the World 3 quest's final reward.
 
+-- The health ladder and a prepared player (2026-10-20, as World 2's): the base is a level-36 arrival (450 HP)
+-- in Heartwood Bark (+160 HP, 32%) with World 2's upgrades maxed (x1.30 HP, x0.94 damage taken, x1.18 damage,
+-- x0.91 swing time) swinging the Heartwood Staff: 793 HP, taking x0.639, 118 damage a second. Each enemy
+-- mirrors its World 1 counterpart against a fresh level-1 Dagger player: hits take 6 / 12 / 20 / 22% of health
+-- (Bat 74, Pebble Golem 149, Crystal Golem 248, Spider Queen 273; the Gem Mole 15%, 186) and kills take as long
+-- (Bat 314, Pebble Golem 747 at 10% armour, Crystal Golem 1,022 at 15%, Spider Queen 1,572 at 20%, Gem Mole
+-- 1,415 at 10%). Coins and EXP are not re-simulated yet (World 3 has no world_sim dump).
 local WorldTypes = require(script.Parent.Parent.WorldTypes)
 
 local World: WorldTypes.WorldDef = {
@@ -30,8 +37,8 @@ local World: WorldTypes.WorldDef = {
 			tier = "small",
 			name = "Cave Bat",
 			portrait = "rbxassetid://72271902069536", -- calm face (2026-10-13)
-			hp = 240,
-			melee = { damage = 18, cooldown = 1.2, windup = 0.47, range = 1.6, chaseSpeed = 18, armor = 0, move = "swoop" },
+			hp = 314, -- 240 before the 2026-10-20 ladder
+			melee = { damage = 74, cooldown = 1.2, windup = 0.47, range = 1.6, chaseSpeed = 18, armor = 0, move = "swoop" },
 			coins = { min = 30, max = 50 },
 			exp = 70,
 			drops = {
@@ -47,8 +54,8 @@ local World: WorldTypes.WorldDef = {
 			tier = "medium",
 			name = "Pebble Golem",
 			portrait = "rbxassetid://92185614445143", -- calm face (2026-10-13)
-			hp = 550,
-			melee = { damage = 30, cooldown = 1.8, windup = 0.48, range = 1.5, chaseSpeed = 14, armor = 0.15, move = "punch" },
+			hp = 747, -- 550 before the 2026-10-20 ladder
+			melee = { damage = 149, cooldown = 1.8, windup = 0.48, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "punch" },
 			coins = { min = 65, max = 95 },
 			exp = 150,
 			drops = {
@@ -65,8 +72,8 @@ local World: WorldTypes.WorldDef = {
 			tier = "elite",
 			name = "Crystal Golem",
 			portrait = "rbxassetid://84986641261720", -- calm face (2026-10-13)
-			hp = 1100,
-			melee = { damage = 48, cooldown = 2.4, windup = 0.74, range = 1.6, chaseSpeed = 12, armor = 0.2, move = "smash" },
+			hp = 1022, -- 1,100 before the 2026-10-20 ladder
+			melee = { damage = 248, cooldown = 2.4, windup = 0.74, range = 1.6, chaseSpeed = 12, armor = 0.15, move = "smash" },
 			coins = { min = 130, max = 190 },
 			exp = 320,
 			drops = {
@@ -87,10 +94,10 @@ local World: WorldTypes.WorldDef = {
 		GemMole = {
 			id = "GemMole",
 			name = "Gem Mole",
-			hp = 1200,
+			hp = 1415, -- 1,200 before the 2026-10-20 ladder
 			secret = true,
 			adminPortrait = "rbxassetid://95259297161320", -- admin panel only, never the Index (2026-10-17)
-			melee = { damage = 40, cooldown = 1.8, windup = 0.48, range = 1.8, chaseSpeed = 15, armor = 0.15, move = "slash" },
+			melee = { damage = 186, cooldown = 1.8, windup = 0.48, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
 			coins = { min = 160, max = 230 },
 			exp = 360,
 			-- the Cave Core: about 1%, once per player (trial numbers)
@@ -106,8 +113,8 @@ local World: WorldTypes.WorldDef = {
 			id = "SpiderQueen",
 			name = "Spider Queen",
 			portrait = "rbxassetid://80870479752276", -- calm face (2026-10-13)
-			hp = 2600,
-			melee = { damage = 60, cooldown = 2.4, windup = 0.74, range = 1.5, chaseSpeed = 11, armor = 0.3, move = "legstab", moves = { "legstab", "rearslam" } },
+			hp = 1572, -- 2,600 with 30% armour before the 2026-10-20 ladder
+			melee = { damage = 273, cooldown = 2.4, windup = 0.74, range = 1.5, chaseSpeed = 11, armor = 0.2, move = "legstab", moves = { "legstab", "rearslam" } },
 			coins = { min = 320, max = 460 },
 			exp = 850,
 			drops = {

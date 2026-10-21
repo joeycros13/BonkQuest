@@ -47,12 +47,12 @@ local World: WorldTypes.WorldDef = {
 			id = "Bull",
 			tier = "medium",
 			name = "Raging Bull",
-			hp = 140,
+			hp = 95, -- 140 until 2026-10-20 (the health ladder: Chicken < Bull < Stallion < King)
 			portrait = "rbxassetid://105217136953827", -- calm face (2026-10-11)
 			-- Slow, heavy horn charges with a long reach.
 			melee = { damage = 16, cooldown = 2.0, windup = 0.45, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "gore" },
 			coins = { min = 24, max = 40 },
-			exp = 38, -- was 30 (+25%, 2026-10-20)
+			exp = 30, -- 38 until the 2026-10-20 health ladder (quicker fights, the gate still ~31 min)
 			drops = {
 				{ weapon = "Machete", chance = 0.25 },
 				{ weapon = "Pitchfork", chance = 0.15 },
@@ -68,11 +68,11 @@ local World: WorldTypes.WorldDef = {
 			id = "Stallion",
 			tier = "elite",
 			name = "Wild Stallion",
-			hp = 220,
+			hp = 130, -- 220 until 2026-10-20 (the health ladder)
 			portrait = "rbxassetid://73569429526048", -- calm face (2026-10-12)
-			melee = { damage = 20, cooldown = 2.2, windup = 0.78, range = 1.6, chaseSpeed = 16, armor = 0.1, move = "slam" },
+			melee = { damage = 20, cooldown = 2.2, windup = 0.78, range = 1.6, chaseSpeed = 16, armor = 0.15, move = "slam" },
 			coins = { min = 40, max = 60 },
-			exp = 56, -- was 45 (+25%, 2026-10-20)
+			exp = 42, -- 56 until the 2026-10-20 health ladder
 			drops = {
 				{ weapon = "Shovel", chance = 0.15 },
 				{ weapon = "Scythe", chance = 0.10 },
@@ -106,11 +106,11 @@ local World: WorldTypes.WorldDef = {
 			id = "BossScarecrow",
 			name = "Scarecrow King",
 			-- 32 x the old boss multiplier of 4, so the fight is unchanged.
-			hp = 128,
+			hp = 200, -- 128 with 50% armour until 2026-10-20: the boss now has the most health
 			portrait = "rbxassetid://80515484828150", -- calm black face, with the elbow and knee ties (2026-10-11; was 122472392610626)
 			-- Pitchfork jabs with the longest reach; armour halves weapon damage so the
 			-- fight outlasts the Bull's.
-			melee = { damage = 22, cooldown = 2.2, windup = 0.5, range = 1.2, chaseSpeed = 11, armor = 0.5, move = "stab" },
+			melee = { damage = 22, cooldown = 2.2, windup = 0.5, range = 1.2, chaseSpeed = 11, armor = 0.2, move = "stab" },
 			coins = { min = 90, max = 140 },
 			exp = 150, -- was 120 (+25%, 2026-10-20)
 			drops = {

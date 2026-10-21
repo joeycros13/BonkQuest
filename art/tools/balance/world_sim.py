@@ -25,6 +25,11 @@ world's weapons and armour are loaded so the carried gear works (--start-weapons
 --start-wear, --start-level, --start-coins; the defaults are World 1's gate-goal result: level 25,
 about 1,000 coins, the Weathervane Spear, Harvest Knight worn).
 
+--upgrades N (2026-10-20, the user's base for World 2: arriving with World 1's upgrades maxed):
+the Health, Defense, Attack and Attack Speed upgrades at level N (Config/Upgrades steps: +5% max
+HP, -1% damage taken, +3% damage, -1.5% swing time a level). Off (0) by default: upgrades are
+outside a world's run.
+
 Every game number comes from world<N>.json, which dump_world.luau writes from
 the real configs and the map in Studio. Only the player's behaviour is assumed;
 those numbers are in PLAYER below.
@@ -148,6 +153,13 @@ class World:
 
 # ---------------------------------------------------------------------------
 START = {}
+# upgrade levels (Health, Defense, Attack, AttackSpeed), --upgrades
+UPG = {"health": 0, "defense": 0, "attack": 0, "speed": 0}
+UPG_STEP = {"health": 0.05, "defense": -0.01, "attack": 0.03, "speed": -0.015}
+
+
+def upg(name):
+    return 1 + UPG_STEP[name] * UPG[name]
 
 
 class Run:
@@ -203,7 +215,7 @@ class Run:
         return self.w.level_of(self.exp)
 
     def maxhp(self):
-        return self.w.max_hp(self.level(), self.wearing)
+        return self.w.max_hp(self.level(), self.wearing) * upg("health")
 
     def walk(self, to, what="walking"):
         seconds = dist(self.pos, to) * PLAYER["detour"] / self.w.speed
@@ -224,7 +236,7 @@ class Run:
     # --- combat ------------------------------------------------------------
     def dps(self, wid):
         v = self.w.weapons[wid]
-        return v["damage"] / v["cooldown"]
+        return v["damage"] * upg("attack") / (v["cooldown"] * upg("speed"))
 
     def best_dps(self):
         return max(self.dps(x) for x in self.weapons)
@@ -241,9 +253,9 @@ class Run:
         best = None
         for wid in self.weapons:
             v = self.w.weapons[wid]
-            per = v["damage"] * (1 - (0 if v.get("ignoreArmor") else armor))
+            per = v["damage"] * upg("attack") * (1 - (0 if v.get("ignoreArmor") else armor))
             hits = math.ceil(e["hp"] / per)
-            ttk = v["hitTime"] + (hits - 1) * v["cooldown"] / PLAYER["hitRate"]
+            ttk = (v["hitTime"] + (hits - 1) * v["cooldown"] / PLAYER["hitRate"]) * upg("speed")
             if best is None or ttk < best[1]:
                 best = (wid, ttk)
         return best[0]
@@ -253,10 +265,11 @@ class Run:
         e = self.w.enemies[enemy]
         m = e["melee"]
         v = self.w.weapons[weapon]
-        per = v["damage"] * (1 - (0 if v.get("ignoreArmor") else m.get("armor", 0)))
+        per = v["damage"] * upg("attack") * (1 - (0 if v.get("ignoreArmor") else m.get("armor", 0)))
+        cooldown = v["cooldown"] * upg("speed")
         hp = e["hp"]
         rng = self.rng if not dry else random.Random(1)
-        t = PLAYER["engageSeconds"] + v["hitTime"]
+        t = PLAYER["engageSeconds"] + v["hitTime"] * upg("speed")
         first_hit = None
         knocks = []           # times the enemy was knocked back
         while True:
@@ -267,7 +280,7 @@ class Run:
                 knocks.append(t)
                 if hp <= 1e-6:
                     break
-            t += v["cooldown"]
+            t += cooldown
         end = t
         # the enemy fights back from its first hit until it dies
         taken = 0
@@ -284,7 +297,7 @@ class Run:
                 # knocked out of reach during the windup: the attack misses
                 missed = v.get("knockback", 0) >= 3 and any(na < k < lands for k in knocks)
                 if not missed:
-                    taken += max(1, math.floor(m["damage"] * (1 - self.defense()) + 0.5))
+                    taken += max(1, math.floor(m["damage"] * (1 - self.defense()) * upg("defense") + 0.5))
                 na += m["cooldown"]
         return end, taken
 
@@ -817,6 +830,7 @@ def main():
     ap.add_argument("--start-armor", default="FarmhandsGear,HarvestKnight")
     ap.add_argument("--start-wear", default="HarvestKnight")
     ap.add_argument("--set", action="append", default=[])
+    ap.add_argument("--upgrades", type=int, default=0, help="Health, Defense, Attack and Attack Speed upgrades at this level")
     ap.add_argument("--trace", action="store_true")
     ap.add_argument("--remap", action="store_true", help="after level.* changes, move level requirements to the same EXP")
     a = ap.parse_args()
@@ -835,6 +849,8 @@ def main():
             "armor": [x for x in a.start_armor.split(",") if x],
             "wear": a.start_wear or None,
         })
+    for k in UPG:
+        UPG[k] = a.upgrades
     old_curve = dict(data["leveling"])
     apply_overrides(data, a.set)
     if a.remap:
