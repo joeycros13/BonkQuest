@@ -5,7 +5,9 @@
 --
 -- One big banner (Window/Viewport/Banner, a rounded CanvasGroup that clips the slide) shows the selected world (its Index picture, Config/Worlds `profile`), a gold
 -- "World N" tag and its name; Prev / Next and the numbered dots below pick a world (8: chapter 1),
--- sliding the old banner out and the new one in (Next from the right, Prev from the left).
+-- sliding the old banner out and the new one in (Next from the right, Prev from the left). Only the
+-- worlds unlocked (HighestWorld) can be picked: Prev / Next stop (and fade) at the ends and a locked
+-- world's dot doesn't respond (2026-10-21, the user).
 -- The banner's right-hand corner says what you can do there:
 --   * Teleport  a world you have unlocked (HighestWorld) and aren't in: Remotes.TravelToWorld sends
 --               you to its spawn with the fade (PortalService.travel); the panel closes first
@@ -52,6 +54,12 @@ end
 local function number(name: string, fallback: number): number
 	local value = player:GetAttribute(name)
 	return if type(value) == "number" then value else fallback
+end
+
+-- The last world the menu can show: the highest one unlocked (2026-10-21, the user: you
+-- can't scroll past the worlds you have), never past the chapter.
+local function reachable(): number
+	return math.clamp(number("HighestWorld", 1), 1, COUNT)
 end
 
 type Status = "here" | "open" | "locked" | "soon"
@@ -101,6 +109,17 @@ local function render()
 	end
 	banner.Soon.Visible = status == "soon"
 	banner.Soon.Label.Text = attr("TextSoon", "Coming soon")
+	-- the arrows stop at the first world and the last unlocked one; a stopped arrow fades
+	for name, can in { Prev = selected > 1, Next = selected < reachable() } do
+		local arrow = win:FindFirstChild(name)
+		if arrow and arrow:IsA("GuiButton") then
+			arrow.Active = can
+			local art = arrow:FindFirstChild("Art")
+			if art and art:IsA("ImageLabel") then
+				art.ImageTransparency = if can then 0 else 0.55
+			end
+		end
+	end
 	-- the dots
 	for i = 1, COUNT do
 		local dot = win.Dots:FindFirstChild("Dot" .. i)
@@ -120,15 +139,18 @@ local function render()
 				dot.Label.Visible = not closed
 			end
 			dot.Label.TextTransparency = if s == "soon" and i ~= selected then 0.45 else 0
+			-- a world past the unlocked ones can't be picked: no hover or press either
+			dot.Active = i <= reachable()
 		end
 	end
 end
 
 -- Pick a world; `dir` +1 slides the new banner in from the right (Next), -1 from the left.
+-- Worlds past the unlocked ones can't be picked, and Prev / Next stop at the ends.
 local function select(i: number, dir: number?)
 	local g = gui
-	local target = ((i - 1) % COUNT) + 1
-	if target == selected or not g then
+	local target = i
+	if target < 1 or target > reachable() or target == selected or not g then
 		return
 	end
 	local d = dir or (if target > selected then 1 else -1)
