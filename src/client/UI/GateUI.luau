@@ -12,7 +12,7 @@
 --   * MaterialRow1, 2... (2026-10-19): one per entry of the gate's `materials`, the
 --     same pieces, with the material's icon on Icon (Text.material / youMaterial);
 --     rows past the list are hidden.
---   * Buy (Skin, Content: Lock, Label, Coin, Amount), one of the game's pill buttons
+--   * Buy (Skin, Content: Lock, Label (+ Ink1..4, Face), Coin, Amount), one of the game's pill buttons
 --     (option A on the Quest Guide canvas, 2026-10-21): its Skin takes the gui's
 --     Skin_<Met|Locked|Unlocked> image and reads Text.buy / Text.locked /
 --     Text.unlocked alone (the requirements are the rows above it; its Lock, Coin and
@@ -179,7 +179,14 @@ local function render(gui: SurfaceGui, gate: Gates.Gate)
 		-- only while it's Active
 		-- just the word (2026-10-21, the user): the four requirements are listed above it,
 		-- so the button no longer repeats the price
-		setText(content:FindFirstChild("Label"), if unlocked then Text.unlocked elseif state == "Met" then Text.buy else Text.locked)
+		-- the Label is the word's ink layer; its copies (Ink1..4 a pixel off each way, then the
+		-- white Face) fill the B's small counters, which a UIStroke leaves open (2026-10-21)
+		local label = content:FindFirstChild("Label")
+		local word = if unlocked then Text.unlocked elseif state == "Met" then Text.buy else Text.locked
+		setText(label, word)
+		for _, layer in if label then label:GetChildren() else {} do
+			setText(layer, word)
+		end
 		local show = { Label = true, Lock = false, Coin = false, Amount = false }
 		for name, visible in show do
 			local piece = content:FindFirstChild(name)

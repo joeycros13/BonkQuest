@@ -87,6 +87,36 @@ local function xpNumber(name: string, fallback: number): number
 	return if type(value) == "number" then value else fallback
 end
 
+-- The level badge is square, the number centred in it, and widens only once the number
+-- no longer fits (2026-10-21, the user). The number's width at the size TextScaled gives
+-- it is measured; the badge grows (to the left: it's anchored on its right edge, away from
+-- the bars) just enough for the label, `Slack` x that width wide, to hold it. The badge's
+-- `MinAspect` (1, square) and `Slack` (1.12) attributes set it.
+local function fitBadge(badge: TextLabel)
+	local holder = badge.Parent
+	local ratio = holder and holder:FindFirstChildOfClass("UIAspectRatioConstraint")
+	if not (holder and holder:IsA("GuiObject") and ratio) or badge.AbsoluteSize.Y <= 0 or holder.AbsoluteSize.Y <= 0 then
+		return
+	end
+	local function get(name: string, fallback: number): number
+		local v = holder:GetAttribute(name)
+		return if type(v) == "number" then v else fallback
+	end
+	-- the drawn text's shape, scaled to the full height TextScaled gives it when nothing
+	-- squeezes it (TextBounds keeps its shape even while the width squeezes it)
+	local bounds = badge.TextBounds
+	if bounds.Y <= 0 then
+		return
+	end
+	local width = bounds.X / bounds.Y * badge.AbsoluteSize.Y
+	local share = math.max(0.1, badge.Size.X.Scale)
+	local need = width * get("Slack", 1.12) / share / holder.AbsoluteSize.Y
+	local aspect = math.max(get("MinAspect", 1), need)
+	if math.abs(ratio.AspectRatio - aspect) > 0.005 then
+		ratio.AspectRatio = aspect
+	end
+end
+
 local function showExp(total: number)
 	expShown = total
 	local level, into, need = Leveling.fromTotal(math.floor(total + 0.5))
@@ -103,21 +133,7 @@ local function showExp(total: number)
 	end
 	local badge = find("Level", "TextLabel")
 	if badge then
-		badge.Text = Format.commas(level)
-		-- the badge widens only as far as the number needs (2026-10-21, the user): its
-		-- width is the text's width plus a margin each side, never under its square-ish
-		-- minimum, and it's anchored on its right edge, so it grows to the left, away from
-		-- the bars. The badge's `MinAspect` / `MarginAspect` (both sides together) and
-		-- `CharAspect` (one character's width, measured for Luckiest Guy) set it.
-		local holder = badge.Parent
-		local ratio = holder and holder:FindFirstChildOfClass("UIAspectRatioConstraint")
-		if holder and ratio then
-			local function get(name: string, fallback: number): number
-				local v = holder:GetAttribute(name)
-				return if type(v) == "number" then v else fallback
-			end
-			ratio.AspectRatio = math.max(get("MinAspect", 1.15), get("MarginAspect", 0.5) + get("CharAspect", 0.26) * #badge.Text)
-		end
+		badge.Text = Format.commas(level) -- fitBadge follows its TextBounds
 	end
 	if level ~= shownLevel then
 		shownLevel = level
@@ -236,6 +252,16 @@ function PlayerCardUI.start()
 		card = found
 		hud = gui :: any
 		showIdentity()
+		local badge = find("Level", "TextLabel")
+		if badge then
+			-- FredokaOne draws centred in its box, so the number needs no drop (measured
+			-- within 1 px of the badge's middle, 2026-10-21)
+			for _, property in { "AbsoluteSize", "TextBounds" } do
+				badge:GetPropertyChangedSignal(property):Connect(function()
+					fitBadge(badge)
+				end)
+			end
+		end
 		showExp(expTotal())
 		player:GetAttributeChangedSignal("ExpTotal"):Connect(function()
 			-- stars on their way count up when they land; anything else counts
