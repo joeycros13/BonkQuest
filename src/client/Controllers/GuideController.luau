@@ -9,6 +9,9 @@
 -- says the step is done):
 --   Ready                    the line's quest giver -- always, once a step is done
 --   Active, a "kill" step    the nearest living enemy of that kind
+--   Active, gather / bring   the tool's Weapons stall while the step's tool is
+--                            missing (Quests.toolNeeded), then the nearest standing
+--                            node, or for an enemy drop the nearest such enemy
 --   anything else            nothing: earning coins or reaching a level has no
 --                            place to go, so the arrow and the tracker's Guide
 --                            button are hidden
@@ -36,6 +39,7 @@ local Config = Shared:WaitForChild("Config")
 local MapLayout = require(Config:WaitForChild("MapLayout"))
 local Quests = require(Config:WaitForChild("Quests"))
 local Materials = require(Config:WaitForChild("Materials"))
+local Worlds = require(Config:WaitForChild("Worlds"))
 local Animation = require(Shared:WaitForChild("Animation"))
 
 local GuideController = {}
@@ -92,6 +96,17 @@ local function giverPosition(): Vector3?
 	return nil
 end
 
+-- The ring of a world's Weapons stall, where its tools are sold (a gather step's
+-- tool phase, Quests.toolNeeded).
+local function weaponStall(world: number): Vector3?
+	local def = Worlds.get(world)
+	local folder = def and Workspace:FindFirstChild("Worlds") and Workspace.Worlds:FindFirstChild(def.folder)
+	local merchants = folder and folder:FindFirstChild("Structures") and folder.Structures:FindFirstChild("Merchants")
+	local stall = merchants and merchants:FindFirstChild("WeaponStation")
+	local ring = stall and stall:FindFirstChild("ShopRing")
+	return if ring and ring:IsA("BasePart") then ring.Position elseif stall and stall:IsA("Model") then stall:GetPivot().Position else nil
+end
+
 local function nearestEnemy(archetype: string, from: Vector3): Vector3?
 	local best: Vector3? = nil
 	local bestDistance = math.huge
@@ -132,7 +147,8 @@ function GuideController.guidable(): boolean
 	if not step then
 		return false
 	end
-	return state == "Ready" or (state == "Active" and (step.kind == "kill" or neededMaterial(step) ~= nil))
+	return state == "Ready"
+		or (state == "Active" and (step.kind == "kill" or neededMaterial(step) ~= nil or Quests.toolNeeded(step, player) ~= nil))
 end
 
 local function target(from: Vector3): Vector3?
@@ -144,6 +160,10 @@ local function target(from: Vector3): Vector3?
 	elseif state == "Active" and step.kind == "kill" and step.target then
 		return nearestEnemy(step.target, from)
 	elseif state == "Active" then
+		local tool = Quests.toolNeeded(step, player)
+		if tool then
+			return weaponStall(tool.world)
+		end
 		local material = neededMaterial(step)
 		local gather = deps and deps.Controllers.GatherController
 		local node = if material and gather then gather.nearest(material, from) else nil

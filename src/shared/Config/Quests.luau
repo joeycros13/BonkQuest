@@ -41,9 +41,27 @@
 --   complete   their lines when you hand it in
 -- In dialogue lines, [square brackets] mark the objective: bold and red.
 --
+-- A gather / bring step whose material comes from a node the player has no good
+-- enough tool for runs in two phases on the tracker (2026-10-21, the user): first
+-- "Buy a {Wooden Axe}" / "Upgrade to a {Stone Axe}" at the Weaponsmith
+-- (Quests.toolNeeded, Quests.ToolText; the guide arrow points at that world's
+-- Weapons stall), then the gathering itself. The server's step doesn't change: the
+-- tool phase is only what the tracker and the arrow show while the tool is missing.
+--
 -- All the wording and numbers here are free to edit.
 
+local Gathering = require(script.Parent:WaitForChild("Gathering"))
+local Tools = require(script.Parent:WaitForChild("Tools"))
+
 local Quests = {}
+
+-- The tracker's tool phase: the line (a tool's name goes in the braces) and the note
+-- under it (the stall's name).
+Quests.ToolText = {
+	buy = "Buy a {%s}",
+	upgrade = "Upgrade to a {%s}",
+	note = "at the Weaponsmith",
+}
 
 export type Reward = { coins: number?, exp: number?, weapon: string?, item: string? }
 export type Step = {
@@ -116,10 +134,11 @@ lines.DaleFarm = {
 			track = "Chop {Oak Logs}",
 			reward = { coins = 30, exp = 30 },
 			offer = {
-				"Now, a farmhand's gotta keep the stove burnin'.",
-				"Grab an axe from the weaponsmith on the plaza, then [chop 5 Oak Logs] from them big oaks by the cliffs.",
+				"Now, a farmhand's gotta keep the stove burnin', and that means firewood.",
+				"You can't chop a tree with that little dagger, though. The Weaponsmith on the plaza sells all the tools: axes, pickaxes, fishin' rods.",
+				"Pick yourself up a [Wooden Axe] first. Then head to them big oaks by the cliffs and [chop 5 Oak Logs].",
 			},
-			reminder = { "Stove's gettin' cold! [Chop 5 Oak Logs] and come see me." },
+			reminder = { "Got your axe from the Weaponsmith on the plaza? Then [chop 5 Oak Logs] and come see me." },
 			complete = { "Now that's a fine stack of firewood! Here's a little somethin' for the sweat." },
 		},
 		{
@@ -176,7 +195,7 @@ lines.DaleFarm = {
 			reward = { coins = 80, exp = 100 },
 			offer = {
 				"I hate to ask, but them bulls flattened my barn door and knocked the wall stones loose.",
-				"Could you [bring me 8 Oak Logs and 8 Stone] for the repairs? A pickaxe'll crack them boulders.",
+				"Could you [bring me 8 Oak Logs and 8 Stone] for the repairs? A pickaxe'll crack them boulders; the Weaponsmith sells those too.",
 			},
 			reminder = { "No rush... but my barn door's still flat. [Bring me 8 Oak Logs and 8 Stone]." },
 			complete = { "Bless ya! That door'll be standin' by sundown. Here, it ain't much, but it's honest." },
@@ -344,7 +363,8 @@ lines.RangerRedwoods = {
 			reward = { coins = 200, exp = 300 },
 			offer = {
 				"The boars battered the lookout tower. I can't keep watch from up there like this.",
-				"Could you [bring me 10 Redwood Logs and 4 Boar Tusks]? Logs for the beams, tusks for pegs. A Stone Axe will fell the redwoods.",
+				"Could you [bring me 10 Redwood Logs and 4 Boar Tusks]? Logs for the beams, tusks for pegs.",
+				"Only a Stone Axe will fell a redwood. The Weaponsmith by the gate can turn your wooden axe into one.",
 			},
 			reminder = { "The tower still needs fixing. [Bring me 10 Redwood Logs and 4 Boar Tusks]." },
 			complete = { "Thank you. The tower will be standing tall by morning. Take this, it's what I can spare." },
@@ -644,6 +664,45 @@ function Quests.material(step: Step): string?
 	elseif step.kind == "bring" then
 		local first = step.items and step.items[1]
 		return first and first.id
+	end
+	return nil
+end
+
+-- The tool a gather / bring step still needs before its material can be gathered (see
+-- the header): the lowest tier of the node's tool kind that can break it, or nil once
+-- the player owns one as good (or the material isn't from a node, like Fox Fur). A
+-- bring step only asks about the items still short.
+function Quests.toolNeeded(step: Step, player: Player): Tools.ToolDef?
+	local ids: { string } = {}
+	if step.kind == "gather" and step.target then
+		ids = { step.target }
+	elseif step.kind == "bring" then
+		local held = player:GetAttribute("Materials")
+		for _, item in step.items or {} do
+			local n = if type(held) == "string" then tonumber(held:match("%f[%w]" .. item.id .. "=(%d+)") or "0") else 0
+			if (n or 0) < item.count then
+				table.insert(ids, item.id)
+			end
+		end
+	end
+	local owned = Tools.owned(player)
+	for _, id in ids do
+		for _, node in Gathering.Nodes do
+			for _, drop in node.drops do
+				if drop.id == id then
+					local best = Tools.bestOf(owned, node.tool)
+					if best == nil or best.tier < node.tier then
+						local pick: Tools.ToolDef? = nil
+						for _, def in Tools.Defs do
+							if def.kind == node.tool and def.tier >= node.tier and (pick == nil or def.tier < pick.tier) then
+								pick = def
+							end
+						end
+						return pick
+					end
+				end
+			end
+		end
 	end
 	return nil
 end

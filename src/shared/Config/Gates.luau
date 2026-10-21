@@ -41,7 +41,7 @@ Gates.list = {
 		-- world_sim.py); 75 / 50,000 would make it 103. Was 36 (20 before 2026-10-19).
 		level = 50,
 		coins = 25000,
-		materials = { { id = "RedwoodLog", count = 25 }, { id = "AmberSap", count = 1 } },
+		materials = { { id = "RedwoodLog", count = 25 }, { id = "AmberSap", count = 3 } }, -- 3 sap: the user, 2026-10-21
 	},
 } :: { Gate }
 

@@ -15,6 +15,9 @@
 --   Verb        the words before {braces} in the step's `track` ("DEFEAT")
 --   Target      the part in braces, in red ("Angry Chickens")
 --   Count       "3 / 5", or the line's returnNote once done
+--               A gather / bring step's tool phase (Quests.toolNeeded, 2026-10-21)
+--               shows "BUY A Wooden Axe" / "UPGRADE TO A Stone Axe", the tool's
+--               icon and "at the Weaponsmith" until the tool is owned
 --   Chips       a "bring" step with several materials (2026-10-19, option A on the
 --               Quest Tracker Materials canvas): instead of Count, one clone of
 --               QuestTracker/Templates/MaterialChip per item (Icon, Count "5/8" in
@@ -301,7 +304,12 @@ local function render()
 			d.ImageColor3 = if d.Name == "Track" then colour(if ready then "TrackReady" else "TrackColor", Color3.new(1, 1, 1)) else fillColour
 		end
 	end
-	local fraction = if ready then 1 else have / goal
+	-- the tool phase (Quests.toolNeeded): get the tool first, then gather
+	local tool = if ready then nil else Quests.toolNeeded(step, player)
+	if tool then
+		portrait.Image = tool.icon or ""
+	end
+	local fraction = if ready then 1 elseif tool then 0 else have / goal
 	if ringTween then
 		ringTween:Cancel()
 	end
@@ -311,7 +319,12 @@ local function render()
 	tween:Play()
 
 	-- text
-	local verb, name = split(if ready then line.returnTrack else step.track)
+	local trackLine = if ready then line.returnTrack else step.track
+	if tool then
+		local upgrade = tool.recipe ~= nil and tool.recipe.tool ~= nil
+		trackLine = (if upgrade then Quests.ToolText.upgrade else Quests.ToolText.buy):format(tool.name)
+	end
+	local verb, name = split(trackLine)
 	local verbLabel = frame:FindFirstChild("Verb") :: TextLabel
 	verbLabel.Text = verb
 	verbLabel.TextColor3 = rim
@@ -319,7 +332,7 @@ local function render()
 	targetLabel.Text = name
 	local countLabel = frame:FindFirstChild("Count") :: TextLabel
 	local chips = frame:FindFirstChild("Chips")
-	local byItem = not ready and step.kind == "bring" and chips ~= nil and #(step.items or {}) > 1
+	local byItem = not ready and not tool and step.kind == "bring" and chips ~= nil and #(step.items or {}) > 1
 	countLabel.Visible = not byItem
 	if chips and chips:IsA("GuiObject") then
 		chips.Visible = byItem
@@ -327,6 +340,8 @@ local function render()
 	end
 	if ready then
 		countLabel.Text = line.returnNote
+	elseif tool then
+		countLabel.Text = Quests.ToolText.note
 	else
 		countLabel.Text = ('%s <font color="#6b8f97">/ %s</font>'):format(Format.commas(have), Format.commas(goal))
 	end
@@ -371,12 +386,26 @@ function QuestTrackerUI.start()
 	player:GetAttributeChangedSignal("CurrentWorld"):Connect(refresh)
 	-- a bring step's chips and badge follow the materials held
 	player:GetAttributeChangedSignal("Materials"):Connect(refresh)
+	-- a gather step's tool phase ends when the tool arrives
+	player:GetAttributeChangedSignal("OwnedTools"):Connect(refresh)
 	local guide = frame:FindFirstChild("Guide")
 	if guide and guide:IsA("GuiButton") then
 		-- Held down, the button sits on its lip; it flips on release.
 		local rest = guide.Position
 		local lip = frame:FindFirstChild("GuideLip")
-		local pressedAt = if lip and lip:IsA("GuiObject") then lip.Position else rest
+		-- The lip's spot measured at the button's own anchor: the button grows from its
+		-- centre (ButtonFx) while the lip is anchored top-left, and using the lip's
+		-- Position as-is threw the held button up and left (2026-10-21).
+		local pressedAt = rest
+		if lip and lip:IsA("GuiObject") then
+			local d = guide.AnchorPoint - lip.AnchorPoint
+			pressedAt = UDim2.new(
+				lip.Position.X.Scale + lip.Size.X.Scale * d.X,
+				lip.Position.X.Offset + lip.Size.X.Offset * d.X,
+				lip.Position.Y.Scale + lip.Size.Y.Scale * d.Y,
+				lip.Position.Y.Offset + lip.Size.Y.Offset * d.Y
+			)
+		end
 		local function setPressed(down: boolean)
 			guidePressed = down
 			guide.Position = if down then pressedAt else rest
