@@ -28,6 +28,12 @@
 -- gathering tools (Config/Tools: price, world, OwnedTools) and show only on the Tools
 -- tab; their Buy asks Remotes.BuyTool (StallService) and owning one shows its
 -- hotbar slot. The other rows are weapons and show on the Weapons tab.
+-- Upgrades (2026-10-20): a tool with a `recipe` (the Stone Axe: the Wooden Axe plus World 2's
+-- materials) shows it in the row's hand-built `Recipe` strip: one clone of
+-- Templates/RecipeChip per ingredient (the previous tool first), each its icon and
+-- "have/need" (`Format`), filled with the chip's ShortFill / ShortText or DoneFill /
+-- DoneText. The chips are made once per row; a refresh only re-reads the counts. Buy
+-- stays locked (SkinLocked, not clickable) until every ingredient and the coins are there.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -35,6 +41,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Remotes = require(Shared:WaitForChild("Remotes"))
 local Tools = require(Shared:WaitForChild("Config"):WaitForChild("Tools"))
+local Materials = require(Shared:WaitForChild("Config"):WaitForChild("Materials"))
 local Weapons = require(Shared:WaitForChild("Config"):WaitForChild("Weapons"))
 local Worlds = require(Shared:WaitForChild("Config"):WaitForChild("Worlds"))
 local Format = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("Format"))
@@ -91,6 +98,77 @@ local function priceOf(row: Instance, def: any): number
 	return def.price or attribute(row, "Price", 0)
 end
 
+-- a tool upgrade's ingredients: { icon, have, need } (the previous tool first)
+local function ingredients(def: any): { { icon: string, have: number, need: number } }
+	local out = {}
+	local recipe = def.recipe
+	if not recipe then
+		return out
+	end
+	if recipe.tool then
+		local prev = Tools.get(recipe.tool)
+		table.insert(out, { icon = prev and prev.icon or "", have = Tools.owned(player)[recipe.tool] and 1 or 0, need = 1 })
+	end
+	local held = Materials.counts(player)
+	for _, item in recipe.materials do
+		local m = Materials.get(item.id)
+		table.insert(out, { icon = m and m.icon or "", have = held[item.id] or 0, need = item.count })
+	end
+	return out
+end
+
+local function recipeMet(def: any): boolean
+	for _, item in ingredients(def) do
+		if item.have < item.need then
+			return false
+		end
+	end
+	return true
+end
+
+-- fill a row's Recipe strip: chips made once (cloned from Templates/RecipeChip), counts every refresh
+local function fillRecipe(row: Instance, def: any)
+	local strip = row:FindFirstChild("Recipe")
+	local templates = shop and shop:FindFirstChild("Templates")
+	local template = templates and templates:FindFirstChild("RecipeChip")
+	if not (strip and template) then
+		return
+	end
+	local items = ingredients(def)
+	strip.Visible = #items > 0 and not owns(def)
+	if strip:GetAttribute("Built") ~= #items then
+		for _, c in strip:GetChildren() do
+			if c:IsA("GuiObject") then
+				c:Destroy()
+			end
+		end
+		for i, item in items do
+			local chip = template:Clone()
+			chip.Name = "Chip" .. i
+			chip.LayoutOrder = i
+			chip.Visible = true
+			local icon = chip:FindFirstChild("Icon")
+			if icon and icon:IsA("ImageLabel") then
+				icon.Image = item.icon
+			end
+			chip.Parent = strip
+		end
+		strip:SetAttribute("Built", #items)
+	end
+	for i, item in items do
+		local chip = strip:FindFirstChild("Chip" .. i)
+		if chip and chip:IsA("GuiObject") then
+			local done = item.have >= item.need
+			chip.BackgroundColor3 = attribute(template, if done then "DoneFill" else "ShortFill", chip.BackgroundColor3)
+			local count = chip:FindFirstChild("Count")
+			if count and count:IsA("TextLabel") then
+				count.Text = (attribute(template, "Format", "%s/%s") :: string):format(Format.commas(math.min(item.have, 9999)), Format.commas(item.need))
+				count.TextColor3 = attribute(template, if done then "DoneText" else "ShortText", count.TextColor3)
+			end
+		end
+	end
+end
+
 local WeaponTile = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("WeaponTile"))
 -- the 3D view of a weapon (shared with every screen: Util.WeaponTile)
 local showWeapon = WeaponTile.showModel
@@ -118,7 +196,7 @@ local function styleButton(row: Instance, def: any, balance: number)
 	local label = buy:FindFirstChild("Label", true)
 	local price = priceOf(row, def)
 	local owned = owns(def)
-	local look = if owned then "SkinOwned" elseif balance >= price then "SkinBuy" else "SkinLocked"
+	local look = if owned then "SkinOwned" elseif balance >= price and recipeMet(def) then "SkinBuy" else "SkinLocked"
 	if skin and skin:IsA("ImageLabel") then
 		skin.Image = attribute(buy, look, skin.Image)
 	end
@@ -165,6 +243,9 @@ local function refresh()
 		local def = defOf(row)
 		if def then
 			styleButton(row, def, balance)
+			if isTool(row) then
+				fillRecipe(row, def)
+			end
 		end
 		if row:IsA("GuiObject") then
 			row.Visible = def ~= nil and (def.world or 1) == world and isTool(row) == (tab == "Tools")
@@ -213,7 +294,7 @@ local function wire(gui: ScreenGui)
 		if buy and buy:IsA("GuiButton") then
 			buy.Activated:Connect(function()
 				local def = defOf(row)
-				if buying or not def or not def.price or owns(def) or coins() < def.price then
+				if buying or not def or not def.price or owns(def) or coins() < def.price or not recipeMet(def) then
 					return
 				end
 				buying = true
@@ -232,6 +313,7 @@ local function wire(gui: ScreenGui)
 	player:GetAttributeChangedSignal("Coins"):Connect(refresh)
 	player:GetAttributeChangedSignal("OwnedWeapons"):Connect(refresh)
 	player:GetAttributeChangedSignal("OwnedTools"):Connect(refresh)
+	player:GetAttributeChangedSignal("Materials"):Connect(refresh)
 	local tabs = gui:FindFirstChild("Tabs", true)
 	for _, button in tabs and tabs:GetChildren() or {} do
 		local name = button:GetAttribute("Tab")

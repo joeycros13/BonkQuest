@@ -23,11 +23,16 @@
 --   sell      coins for selling it from the Inventory (placeholder, 2026-10-20)
 --   icon      its drawn picture (cel-shaded render like the weapons', art/icons/tools; without one
 --             the hotbar falls back to the 3D view)
+--   recipe    (optional) an upgrade: the previous tier of the same tool (`tool`, taken when it is
+--             made) plus that world's `materials` ({ id, count }), on top of the coin `price`
+--             (2026-10-20, the gathering plan: tools build up, each tier from the one before)
 -- Swinging reuses the weapon animation system (Animation.Clips.Weapons keys holds by id
 -- and swings by `swing`), so each tool has the same swing fields a weapon has:
 --   handed, cooldown, hitTime, reach, arc, maxTargets, swing
 
 local Tools = {}
+
+export type Recipe = { tool: string?, materials: { { id: string, count: number } } }
 
 export type ToolDef = {
 	id: string,
@@ -40,6 +45,7 @@ export type ToolDef = {
 	price: number?,
 	sell: number?,
 	icon: string?,
+	recipe: Recipe?,
 	handed: number,
 	cooldown: number,
 	hitTime: number,
@@ -148,6 +154,12 @@ Tools.Defs = {
 		rarity = "Uncommon",
 		price = 600,
 		icon = "rbxassetid://138518954912606",
+		-- the upgrade (2026-10-20): the Wooden Axe plus World 2's enemy drops. Not Redwood Logs:
+		-- only a Stone Axe can chop those. Numbers are placeholders.
+		recipe = {
+			tool = "WoodenAxe",
+			materials = { { id = "FoxFur", count = 6 }, { id = "BoarTusk", count = 2 } },
+		},
 		handed = 1,
 		cooldown = 0.8,
 		hitTime = 0.52,
