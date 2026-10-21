@@ -144,7 +144,8 @@ local RECIPES: { [string]: { recipe: { Ingredient }, coins: number } } = {
 	Stoneskin1 = { recipe = { { id = "Stone", count = 4 }, { id = "BullHide", count = 2 }, { id = "Sunfish", count = 1 } }, coins = 50 },
 	Swiftness1 = { recipe = { { id = "Horsehair", count = 2 }, { id = "Minnow", count = 2 }, { id = "OakLog", count = 2 } }, coins = 40 },
 	-- World 2's, for testing (2026-10-20): only World 2's fish, gathered wood and enemy drops
-	Regen1 = { recipe = { { id = "Trout", count = 2 }, { id = "FoxFur", count = 3 } }, coins = 60 },
+	-- Amber Sap (the redwoods' rare drop) goes in the healing one (the user, 2026-10-20: use it in a World 2 recipe)
+	Regen1 = { recipe = { { id = "Trout", count = 2 }, { id = "FoxFur", count = 3 }, { id = "AmberSap", count = 1 } }, coins = 60 },
 	Gatherer1 = { recipe = { { id = "Perch", count = 2 }, { id = "BoarTusk", count = 2 }, { id = "RedwoodLog", count = 4 } }, coins = 75 },
 	Angler1 = { recipe = { { id = "RainbowTrout", count = 1 }, { id = "Perch", count = 2 }, { id = "BearClaw", count = 1 } }, coins = 90 },
 	Health2 = { recipe = { { id = "Health1", count = 1 }, { id = "BatWing", count = 3 } }, coins = 150 },
