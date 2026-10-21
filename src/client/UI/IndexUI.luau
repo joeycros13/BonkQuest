@@ -1046,7 +1046,13 @@ render = function()
 	local fill = find("ProgressBar")
 	fill = fill and fill:FindFirstChild("Fill")
 	if fill and fill:IsA("GuiObject") then
-		fill.Size = UDim2.fromScale(if total > 0 then found / total else 0, 1)
+		-- never narrower than it is tall: the fill is rounded at both ends, so a sliver
+		-- squashed into a lopsided blob at a low count (2026-10-21, the user); now a
+		-- little progress shows as a round dot that grows into the bar
+		local bar = fill.Parent :: GuiObject
+		local least = if bar.AbsoluteSize.X > 0 then bar.AbsoluteSize.Y / bar.AbsoluteSize.X else 0
+		local share = if total > 0 then found / total else 0
+		fill.Size = UDim2.fromScale(if share > 0 then math.max(share, least) else 0, 1)
 		fill.Visible = found > 0
 	end
 	local world = filter and Worlds.get(filter)
