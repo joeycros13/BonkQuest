@@ -28,12 +28,17 @@
 -- gathering tools (Config/Tools: price, world, OwnedTools) and show only on the Tools
 -- tab; their Buy asks Remotes.BuyTool (StallService) and owning one shows its
 -- hotbar slot. The other rows are weapons and show on the Weapons tab.
--- Upgrades (2026-10-20): a tool with a `recipe` (the Stone Axe: the Wooden Axe plus World 2's
--- materials) shows it in the row's hand-built `Recipe` strip: one clone of
--- Templates/RecipeChip per ingredient (the previous tool first), each its icon and
--- "have/need" (`Format`), filled with the chip's ShortFill / ShortText or DoneFill /
--- DoneText. The chips are made once per row; a refresh only re-reads the counts. Buy
--- stays locked (SkinLocked, not clickable) until every ingredient and the coins are there.
+-- Upgrades (2026-10-20, option C "upgrade path" on the Tool Upgrade Recipes canvas,
+-- https://claude.ai/artifact/1zSpsCCM1Xg7DSgxdNuUPX): a tool with a `recipe` (the Stone Axe and
+-- Stone Rod: the wooden one plus Oak Log, Stone, Fox Fur and Boar Tusk) shows the path in its
+-- hand-built row: `UpgradeFrom` (the previous tool's shared tile, its `Owned` tick shown while
+-- it is owned) → `Arrow` → `Art`, with `FromText` under them (its `Format` "Upgrades your %s"),
+-- and the materials in the `Recipe` grid: one clone of Templates/RecipeCard per material
+-- (`IconBox/Icon`, `ItemName`, `Count` in the card's `Format`, `Bar/Fill` as wide as the share
+-- held), coloured by the card's ShortText / DoneText and ShortFill / DoneFill. The cards are made
+-- once per row; a refresh only re-reads the counts. Once the tool is owned the grid hides. Buy
+-- stays locked (SkinLocked, not clickable) until the previous tool, every material and the coins
+-- are there.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -126,44 +131,65 @@ local function recipeMet(def: any): boolean
 	return true
 end
 
--- fill a row's Recipe strip: chips made once (cloned from Templates/RecipeChip), counts every refresh
+-- fill a row's upgrade path: the previous tool's tick, and the Recipe grid's cards (made once from
+-- Templates/RecipeCard, counts every refresh)
 local function fillRecipe(row: Instance, def: any)
-	local strip = row:FindFirstChild("Recipe")
+	local recipe = def.recipe
+	local grid = row:FindFirstChild("Recipe")
 	local templates = shop and shop:FindFirstChild("Templates")
-	local template = templates and templates:FindFirstChild("RecipeChip")
-	if not (strip and template) then
+	local template = templates and templates:FindFirstChild("RecipeCard")
+	if not (recipe and grid and template) then
 		return
 	end
-	local items = ingredients(def)
-	strip.Visible = #items > 0 and not owns(def)
-	if strip:GetAttribute("Built") ~= #items then
-		for _, c in strip:GetChildren() do
+	local from = row:FindFirstChild("UpgradeFrom")
+	local tick = from and from:FindFirstChild("Owned")
+	if tick and tick:IsA("GuiObject") then
+		tick.Visible = recipe.tool ~= nil and Tools.owned(player)[recipe.tool] == true
+	end
+	local owned = owns(def)
+	if grid:IsA("GuiObject") then
+		grid.Visible = not owned
+	end
+	local held = Materials.counts(player)
+	if grid:GetAttribute("Built") ~= #recipe.materials then
+		for _, c in grid:GetChildren() do
 			if c:IsA("GuiObject") then
 				c:Destroy()
 			end
 		end
-		for i, item in items do
-			local chip = template:Clone()
-			chip.Name = "Chip" .. i
-			chip.LayoutOrder = i
-			chip.Visible = true
-			local icon = chip:FindFirstChild("Icon")
+		for i, item in recipe.materials do
+			local m = Materials.get(item.id)
+			local card = template:Clone()
+			card.Name = "Card" .. i
+			card.LayoutOrder = i
+			card.Visible = true
+			local icon = card:FindFirstChild("Icon", true)
 			if icon and icon:IsA("ImageLabel") then
-				icon.Image = item.icon
+				icon.Image = m and m.icon or ""
 			end
-			chip.Parent = strip
+			local name = card:FindFirstChild("ItemName")
+			if name and name:IsA("TextLabel") then
+				name.Text = m and m.name or item.id
+			end
+			card.Parent = grid
 		end
-		strip:SetAttribute("Built", #items)
+		grid:SetAttribute("Built", #recipe.materials)
 	end
-	for i, item in items do
-		local chip = strip:FindFirstChild("Chip" .. i)
-		if chip and chip:IsA("GuiObject") then
-			local done = item.have >= item.need
-			chip.BackgroundColor3 = attribute(template, if done then "DoneFill" else "ShortFill", chip.BackgroundColor3)
-			local count = chip:FindFirstChild("Count")
+	for i, item in recipe.materials do
+		local card = grid:FindFirstChild("Card" .. i)
+		if card then
+			local have = held[item.id] or 0
+			local done = have >= item.count
+			local count = card:FindFirstChild("Count")
 			if count and count:IsA("TextLabel") then
-				count.Text = (attribute(template, "Format", "%s/%s") :: string):format(Format.commas(math.min(item.have, 9999)), Format.commas(item.need))
+				count.Text = (attribute(template, "Format", "%s/%s") :: string):format(Format.commas(math.min(have, 9999)), Format.commas(item.count))
 				count.TextColor3 = attribute(template, if done then "DoneText" else "ShortText", count.TextColor3)
+			end
+			local fill = card:FindFirstChild("Fill", true)
+			if fill and fill:IsA("GuiObject") then
+				fill.Size = UDim2.fromScale(math.clamp(have / item.count, 0, 1), 1)
+				fill.Visible = have > 0
+				fill.BackgroundColor3 = attribute(template, if done then "DoneFill" else "ShortFill", fill.BackgroundColor3)
 			end
 		end
 	end
@@ -288,6 +314,23 @@ local function wire(gui: ScreenGui)
 				tile.Position = UDim2.fromScale(0.5, 0.5)
 				tile.Size = UDim2.fromScale(1, 1)
 				tile.Parent = art
+			end
+		end
+		-- an upgrade's path: the previous tool's tile in UpgradeFrom (the shared tile, like Art)
+		local from = row:FindFirstChild("UpgradeFrom")
+		local prev = def and def.recipe and def.recipe.tool and Tools.get(def.recipe.tool)
+		if from and prev and not from:FindFirstChild(prev.id) then
+			local tile = WeaponTile.new(prev, { name = false, stat = false, statText = "" })
+			if tile then
+				tile.Name = prev.id
+				tile.AnchorPoint = Vector2.new(0.5, 0.5)
+				tile.Position = UDim2.fromScale(0.5, 0.5)
+				tile.Size = UDim2.fromScale(1, 1)
+				tile.Parent = from
+			end
+			local text = row:FindFirstChild("FromText")
+			if text and text:IsA("TextLabel") then
+				text.Text = (attribute(text, "Format", "Upgrades your %s") :: string):format(prev.name)
 			end
 		end
 		local buy = row:FindFirstChild("Buy")
