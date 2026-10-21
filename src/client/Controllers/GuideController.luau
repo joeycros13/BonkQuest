@@ -35,6 +35,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = Shared:WaitForChild("Config")
 local MapLayout = require(Config:WaitForChild("MapLayout"))
 local Quests = require(Config:WaitForChild("Quests"))
+local Materials = require(Config:WaitForChild("Materials"))
 local Animation = require(Shared:WaitForChild("Animation"))
 
 local GuideController = {}
@@ -145,8 +146,14 @@ local function target(from: Vector3): Vector3?
 	elseif state == "Active" then
 		local material = neededMaterial(step)
 		local gather = deps and deps.Controllers.GatherController
-		if material and gather then
-			return gather.nearest(material, from)
+		local node = if material and gather then gather.nearest(material, from) else nil
+		if node then
+			return node
+		end
+		-- An enemy drop (Rowan's Fox Fur, 2026-10-21): the nearest enemy that drops it.
+		local def = material and Materials.get(material)
+		if def and def.source then
+			return nearestEnemy(def.source, from)
 		end
 	end
 	return nil

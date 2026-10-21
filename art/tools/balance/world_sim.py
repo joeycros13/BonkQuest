@@ -127,6 +127,15 @@ class World:
         self.allWeapons = {w for w, v in self.weapons.items() if self.counts(v)}
         self.needWeapons = set(self.allWeapons) if goal == "all" else set()
         self.needTools = {t for t, v in self.tools.items() if v["kind"] in ("Axe", "Pickaxe") or (rod and v["kind"] == "Rod")}
+        # A tool made from the one before it (World 2's stone tools, 2026-10-20) also needs
+        # materials. Only this world's count: the older tool and the older world's gathered
+        # materials are carried in from the last world.
+        here = {x["id"] for e in self.enemies.values() for x in e["materials"]}
+        here |= {x["id"] for g in self.gather.values() for x in g["drops"]}
+        self.toolRecipe = {}
+        for t, v in self.tools.items():
+            r = (v.get("recipe") or {}).get("materials") or {}
+            self.toolRecipe[t] = [x for x in listify(r) if x["id"] in here]
 
     def secret_weapon(self, wid):
         w = self.d["weapons"].get(wid, {})
@@ -380,7 +389,11 @@ class Run:
         self.add_exp(e.get("exp", 0))
         for x in e["materials"]:
             if self.rng.random() < x["chance"]:
-                self.mats[x["id"]] = self.mats.get(x["id"], 0) + self.rng.randint(x["min"], max(x["min"], x["max"]))
+                n = self.rng.randint(x["min"], max(x["min"], x["max"]))
+                self.mats[x["id"]] = self.mats.get(x["id"], 0) + n
+                c = self.cur()
+                if self.accepted and c and c["kind"] == "gather" and c["target"] == x["id"]:
+                    self.progress += n
         for x in e["drops"]:
             if x["weapon"] not in self.weapons and self.rng.random() < x["chance"]:
                 self.weapons.add(x["weapon"])
@@ -494,7 +507,14 @@ class Run:
         if not self.gateDone:
             for x in self.w.gate["materials"]:
                 need[x["id"]] = need.get(x["id"], 0) + x["count"]
+        for t in self.w.needTools - self.tools:
+            for x in self.w.toolRecipe[t]:
+                need[x["id"]] = need.get(x["id"], 0) + x["count"]
         return {k: max(0, n - self.mats.get(k, 0)) for k, n in need.items()}
+
+    def tool_ready(self, t):
+        return (self.coins >= self.w.tools[t]["price"]
+                and all(self.mats.get(x["id"], 0) >= x["count"] for x in self.w.toolRecipe[t]))
 
     def coin_need(self):
         n = sum(self.w.weapons[x].get("price", 0) for x in self.w.needWeapons - self.weapons if self.w.weapons[x].get("price"))
@@ -526,9 +546,12 @@ class Run:
         did = False
         # tools first: they're cheap and the quest needs them
         for t in sorted(w.needTools - self.tools, key=lambda t: w.tools[t]["price"]):
-            if self.coins >= w.tools[t]["price"]:
+            if self.tool_ready(t):
                 self.coins -= w.tools[t]["price"]
+                for x in w.toolRecipe[t]:
+                    self.mats[x["id"]] -= x["count"]
                 self.tools.add(t)
+                self.say("made", t)
                 did = True
         # the gate's coins come last: keep them only once everything else is bought
         missing = sorted((x for x in w.needWeapons - self.weapons if w.weapons[x].get("price")), key=lambda x: w.weapons[x]["price"])
@@ -571,7 +594,7 @@ class Run:
 
     def can_shop_something(self):
         w = self.w
-        if any(self.coins >= w.tools[t]["price"] for t in w.needTools - self.tools):
+        if any(self.tool_ready(t) for t in w.needTools - self.tools):
             return True
         if any(self.coins >= w.weapons[x]["price"] for x in w.needWeapons - self.weapons if w.weapons[x].get("price")):
             return True
@@ -666,15 +689,11 @@ class Run:
                         continue
                     # too strong for now: level up and gear up on something else
                 if k == "gather":
-                    if not self.ensure_tool(c["target"]):
-                        continue
-                    self.do(self.node_for(c["target"]))
+                    self.farm_material(c["target"])
                     continue
                 if k == "bring":
                     short = [x for x in c["items"] if self.mats.get(x["id"], 0) < x["count"]]
-                    if not self.ensure_tool(short[0]["id"]):
-                        continue
-                    self.do(self.node_for(short[0]["id"]))
+                    self.farm_material(short[0]["id"])
                     continue
                 # level, earn, give: farm by need
             if c is None:
@@ -696,18 +715,45 @@ class Run:
         return self
 
     def node_for(self, material):
-        return next(g for g, v in self.w.gather.items() if any(x["id"] == material for x in v["drops"]))
+        return next((g for g, v in self.w.gather.items() if any(x["id"] == material for x in v["drops"])), None)
+
+    def enemy_for(self, material):
+        """The beatable enemy that drops this material fastest (Rowan's Fox Fur, 2026-10-21)."""
+        best = None
+        for e, v in self.w.enemies.items():
+            for x in v["materials"]:
+                if x["id"] == material and self.beatable(e):
+                    r = (self.rates(e) or {}).get(material, 0)
+                    if best is None or r > best[0]:
+                        best = (r, e)
+        return best[1] if best else None
+
+    def farm_material(self, material):
+        """One round of getting a material: break its node, or fight the enemy that drops it."""
+        if self.node_for(material):
+            if self.ensure_tool(material):
+                self.do(self.node_for(material))
+            return
+        e = self.enemy_for(material)
+        if e:
+            self.do(e)
+        else:
+            act = self.choose()
+            if act:
+                self.do(act)
 
     def ensure_tool(self, material):
         kind = self.w.gather[self.node_for(material)]["tool"]
         if any(self.w.tools[t]["kind"] == kind for t in self.tools):
             return True
         tool = min((t for t, v in self.w.tools.items() if v["kind"] == kind), key=lambda t: self.w.tools[t]["price"])
-        if self.coins >= self.w.tools[tool]["price"]:
+        if self.tool_ready(tool):
             self.go_shop()
             return True
-        # not enough for the tool yet: farm the cheapest coins
-        self.do(min((e for e in self.w.enemies if not self.w.enemies[e]["boss"]), key=lambda e: self.w.enemies[e]["hp"]), 2)
+        # not ready for the tool yet: farm what it still needs (its materials, then coins)
+        short = [x["id"] for x in self.w.toolRecipe[tool] if self.mats.get(x["id"], 0) < x["count"]]
+        e = self.enemy_for(short[0]) if short else None
+        self.do(e or min((e for e in self.w.enemies if not self.w.enemies[e]["boss"]), key=lambda e: self.w.enemies[e]["hp"]), 2)
         return False
 
     def ready_for_gate(self):

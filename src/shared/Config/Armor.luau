@@ -97,11 +97,12 @@ Armor.Defs = {
 		sell = 490,
 		order = 3,
 		rarity = "Rare",
-		level = 20,
+		level = 28, -- 20 until 2026-10-21: players arrive at 25, so it unlocked on arrival
 		coins = 1200,
 		recipe = {
 			{ id = "FoxFur", count = 15 },
 			{ id = "BoarTusk", count = 10 },
+			{ id = "RedwoodLog", count = 10 }, -- gathered (2026-10-21, user: like World 1's sets)
 		},
 		defense = 0.25,
 		health = 110,
@@ -115,12 +116,14 @@ Armor.Defs = {
 		sell = 1000,
 		order = 4,
 		rarity = "Epic",
-		level = 27,
+		level = 34, -- 27 until 2026-10-21: Rowan's second level step, like Harvest Knight and Dale's
 		coins = 3500,
 		recipe = {
 			{ id = "BearClaw", count = 10 },
 			{ id = "HeartwoodSap", count = 3 },
 			{ id = "RangerBadge", count = 1 },
+			{ id = "RedwoodLog", count = 12 }, -- gathered (2026-10-21)
+			{ id = "AmberSap", count = 1 },
 		},
 		defense = 0.32,
 		health = 160,

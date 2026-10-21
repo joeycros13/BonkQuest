@@ -280,17 +280,19 @@ lines.RangerRedwoods = {
 			complete = { "That's a relief. The trail's safer already. Here, for your trouble." },
 		},
 		{
-			kind = "earn",
-			amount = 300,
-			objective = "Earn 300 coins",
-			track = "Earn {Coins}",
+			-- 2026-10-21 (user): was "earn 300 coins"; the fur goes toward the Stone Axe
+			kind = "gather",
+			target = "FoxFur",
+			count = 6,
+			objective = "Collect 6 Fox Fur",
+			track = "Collect {Fox Fur}",
 			reward = { coins = 80, exp = 80 },
 			offer = {
-				"You'll want supplies out here. Rope, rations, a good pair of boots.",
-				"Go and [earn 300 coins]. The forest provides, if you know where to look.",
+				"Your old wooden axe won't bite into a redwood. You'll want a Stone Axe.",
+				"The weaponsmith wraps their grips in fox fur. Go and [collect 6 Fox Fur] from the foxes on the trail.",
 			},
-			reminder = { "Still gathering? [Earn 300 coins] and check back in." },
-			complete = { "Well stocked. Good. A ranger always packs for the long way round." },
+			reminder = { "Those foxes still have their coats. [Collect 6 Fox Fur]." },
+			complete = { "Thick and warm. That'll make a fine grip. Now all you need is a boar tusk or two." },
 		},
 		{
 			kind = "kill",
@@ -334,16 +336,17 @@ lines.RangerRedwoods = {
 			complete = { "Look at you. Strong enough to stare down a grizzly." },
 		},
 		{
-			kind = "give",
-			amount = 600,
-			objective = "Give Rowan 600 coins",
-			track = "Bring Rowan {600 Coins}",
-			reward = { exp = 300 },
+			-- 2026-10-21 (user): was "give 600 coins"; the logs and tusks are taken at hand-in
+			kind = "bring",
+			items = { { id = "RedwoodLog", count = 10 }, { id = "BoarTusk", count = 4 } },
+			objective = "Bring Rowan 10 Redwood Logs and 4 Boar Tusks",
+			track = "Bring Rowan {Logs and Tusks}",
+			reward = { coins = 200, exp = 300 },
 			offer = {
 				"The boars battered the lookout tower. I can't keep watch from up there like this.",
-				"Could you [bring me 600 coins] for the repairs? I'll make it worth your while.",
+				"Could you [bring me 10 Redwood Logs and 4 Boar Tusks]? Logs for the beams, tusks for pegs. A Stone Axe will fell the redwoods.",
 			},
-			reminder = { "The tower still needs fixing. [Bring me 600 coins]." },
+			reminder = { "The tower still needs fixing. [Bring me 10 Redwood Logs and 4 Boar Tusks]." },
 			complete = { "Thank you. The tower will be standing tall by morning. Take this, it's what I can spare." },
 		},
 		{
