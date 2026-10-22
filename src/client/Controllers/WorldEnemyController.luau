@@ -295,8 +295,8 @@ end
 -- A weapon hit: recoil, the EnemyHit sound, and the damage in a comic burst
 -- bubble that pops like the defeat's BONK (2026-10-21, the user's request). A
 -- critical hit gets the gold bubble and a lower, louder hit (the sound's
--- CritPitch / CritVolume attributes); the killing blow gets no hit sound, only
--- the defeat's pop (the user: one sound on a death).
+-- CritPitch / CritVolume attributes). The killing blow gets neither the sound
+-- nor the bubble: a death shows only the defeat's BONK and pop (the user).
 local function showHit(enemy: Enemy, amount: number, crit: boolean, killing: boolean)
 	if EnemyAnimator then
 		EnemyAnimator.flinch(enemy.instance)
@@ -312,7 +312,9 @@ local function showHit(enemy: Enemy, amount: number, crit: boolean, killing: boo
 		local volume = if crit then numberAttr(hit, "CritVolume", 1.4) else 1
 		Effects.sound(hit, at, { pitch = hit.PlaybackSpeed * pitch * math.random(92, 110) / 100, volume = hit.Volume * volume })
 	end
-	BonkPop.hit(enemy.anchor.Position + Vector3.new(0, enemy.height / 2, 0), enemy.height / 4, amount, enemy.isBoss, crit)
+	if not killing then
+		BonkPop.hit(enemy.anchor.Position + Vector3.new(0, enemy.height / 2, 0), enemy.height / 4, amount, enemy.isBoss, crit)
+	end
 end
 
 -- A defeat (user, 2026-10-11: kills were too quiet): a white Poof cloud, gold

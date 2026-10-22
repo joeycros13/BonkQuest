@@ -18,7 +18,10 @@
 -- red `Rays`, the white ink-outlined `Burst` (art/tools/ui/hit_burst.py) and
 -- `Shadow` / `Label` for the number -- with the same motion attributes plus
 -- `Format` (the number's text, "%s") and `Spread` (studs it lands off-centre at
--- random, so quick hits don't stack). Every image in `Content` fades out; only
+-- random, sideways on screen, so quick hits don't stack). `Pull` (both templates)
+-- moves a pop that many studs toward the camera: billboards drawn on top are
+-- sorted by distance, so a pop level with the enemy's health bar sometimes drew
+-- behind it (the user, 2026-10-22); pulled in front, it always draws over it. Every image in `Content` fades out; only
 -- the `Rays*` ones turn. A critical hit (Balance.Melee.critChance) pops bigger
 -- (`CritScale`), tints the white `Burst` and the `Rays` (`CritBurstColor` /
 -- `CritRaysColor`) and shows the hand-built `CritTag` ("CRIT!", hidden otherwise).
@@ -86,9 +89,16 @@ local function play(source: BillboardGui, position: Vector3, size: number, isBos
 	-- An attachment in Terrain holds the spot, so the pop stays put while the
 	-- body hides or respawns.
 	local spot = Instance.new("Attachment")
-	local spread = number(source, "Spread", 0)
-	local aside = Vector3.new((math.random() * 2 - 1) * spread, 0, (math.random() * 2 - 1) * spread)
-	spot.WorldPosition = position + aside + Vector3.new(0, number(source, "Height", 1.2), 0)
+	local base = position + Vector3.new(0, number(source, "Height", 1.2), 0)
+	local right, toward = Vector3.xAxis, Vector3.zero
+	local camera = workspace.CurrentCamera
+	if camera then
+		local back = camera.CFrame.Position - base
+		right = camera.CFrame.RightVector
+		toward = if back.Magnitude > 1e-3 then back.Unit else Vector3.zero
+	end
+	local aside = right * (math.random() * 2 - 1) * number(source, "Spread", 0)
+	spot.WorldPosition = base + aside + toward * number(source, "Pull", 0)
 	spot.Parent = workspace.Terrain
 
 	local billboard = source:Clone()
