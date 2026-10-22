@@ -40,6 +40,19 @@ local World: WorldTypes.WorldDef = {
 	folder = "W02_RedwoodForest",
 	-- the Index world card (2026-10-12, no enemies; art/index/world_W02_2026-10-12.png)
 	profile = "rbxassetid://114443855013343",
+	-- "Misty morning" (the user's pick, 2026-10-21): a soft morning sun and blue-grey
+	-- haze between the trees. No sun rays in World 2 (the user's rule).
+	lighting = {
+		ClockTime = 9.6,
+		Brightness = 1.9,
+		ExposureCompensation = -0.15,
+		Ambient = Color3.fromHex("4a5562"),
+		OutdoorAmbient = Color3.fromHex("93a6b8"),
+		ColorShift_Top = Color3.fromHex("f6efe2"),
+		Atmosphere = { Density = 0.46, Offset = 0.1, Color = Color3.fromHex("dce8f0"), Decay = Color3.fromHex("8ca6b4"), Glare = 0.05, Haze = 2.0 },
+		ColorCorrection = { Brightness = 0, Contrast = 0.08, Saturation = 0.04, TintColor = Color3.fromHex("eef6ff") },
+		SunRays = { Intensity = 0, Spread = 0.6 },
+	},
 
 	-- Respawn seconds by kind (the user's rule, 2026-10-19): every enemy of a tier
 	-- comes back after the same time in its world; bosses and the secret enemy

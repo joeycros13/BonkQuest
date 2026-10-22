@@ -49,6 +49,8 @@ local CONTROLLER_ORDER = {
 	"TelescopeController",
 	-- local sky/lighting for special places (the stump room's twilight)
 	"AmbienceController",
+	-- each world's background sounds (birds, wind, music) only while you're in it
+	"WorldAudioController",
 	-- the Infuser altars: the Infuse prompt and the infusion reveal
 	"InfuserController",
 	-- World 3's secret: the three breathing crystals and their colour code

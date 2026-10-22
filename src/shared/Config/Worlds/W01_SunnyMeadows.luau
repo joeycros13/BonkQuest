@@ -13,6 +13,18 @@ local World: WorldTypes.WorldDef = {
 	folder = "W01_SunnyMeadows",
 	-- the Index world card (re-shot 2026-10-19 for the grown map, no enemies; art/portraits/worlds/world_W01_2026-10-19.png)
 	profile = "rbxassetid://85727377419936",
+	-- "Golden afternoon" (the user's pick, 2026-10-21): a later, warmer sun.
+	lighting = {
+		ClockTime = 16.2,
+		Brightness = 2.6,
+		ExposureCompensation = -0.2,
+		Ambient = Color3.fromHex("50464f"),
+		OutdoorAmbient = Color3.fromHex("a89c9a"),
+		ColorShift_Top = Color3.fromHex("ffd6a0"),
+		Atmosphere = { Density = 0.32, Offset = 0.2, Color = Color3.fromHex("ffe6c8"), Decay = Color3.fromHex("c0906e"), Glare = 0.3, Haze = 1.0 },
+		ColorCorrection = { Brightness = 0, Contrast = 0.12, Saturation = 0.2, TintColor = Color3.fromHex("fff1e0") },
+		SunRays = { Intensity = 0.06, Spread = 0.6 },
+	},
 
 	-- Respawn seconds by kind (the user's rule, 2026-10-19): every enemy of a tier
 	-- comes back after the same time in its world; bosses and the secret enemy
