@@ -715,7 +715,10 @@ function MeleeService.WeaponHit(player: Player, targets: any)
 		landed += 1
 		-- some weapons (the Toadstool Mace) ignore armour (def.ignoreArmor)
 		local armor = if def.ignoreArmor then 0 else (melee.armor or 0)
-		local died = WorldEnemyService.damage(enemy.id, def.damage * damageMultiplier(player) * Potions.multiplier(player, "Strength") * Upgrades.value(player, "Attack") * (1 - armor), player)
+		-- each target rolls its own crit (Balance.Melee.critChance)
+		local crit = math.random() < Balance.Melee.critChance
+		local damage = def.damage * damageMultiplier(player) * Potions.multiplier(player, "Strength") * Upgrades.value(player, "Attack") * (1 - armor)
+		local died = WorldEnemyService.damage(enemy.id, if crit then damage * Balance.Melee.critMultiplier else damage, player, crit)
 		if died then
 			fights[enemy.id] = nil
 		else

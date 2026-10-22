@@ -51,6 +51,8 @@ PLAYER = {
     "detour": 1.3,           # walking routes vs a straight line (paths, hills, fences)
     "sprint": False,         # no base sprint since 2026-10-19 (an upgrade, outside the run)
     "hitRate": 0.85,         # share of swings that land (misses, enemies wandering)
+    "critChance": 0.10,      # Balance.Melee.critChance: a landed hit is a crit this often
+    "critMultiplier": 1.5,   # Balance.Melee.critMultiplier: and deals this times its damage
     "engageSeconds": 1.0,    # lining up the first swing once in range
     "talkSeconds": 15,       # one Dale visit: hand in, read, take the next step
     "shopSeconds": 8,        # one visit to a stall (open, pick, buy)
@@ -263,6 +265,7 @@ class Run:
         for wid in self.weapons:
             v = self.w.weapons[wid]
             per = v["damage"] * upg("attack") * (1 - (0 if v.get("ignoreArmor") else armor))
+            per *= 1 + PLAYER["critChance"] * (PLAYER["critMultiplier"] - 1)  # crits on average
             hits = math.ceil(e["hp"] / per)
             ttk = (v["hitTime"] + (hits - 1) * v["cooldown"] / PLAYER["hitRate"]) * upg("speed")
             if best is None or ttk < best[1]:
@@ -283,7 +286,7 @@ class Run:
         knocks = []           # times the enemy was knocked back
         while True:
             if rng.random() < PLAYER["hitRate"]:
-                hp -= per
+                hp -= per * (PLAYER["critMultiplier"] if rng.random() < PLAYER["critChance"] else 1)
                 if first_hit is None:
                     first_hit = t
                 knocks.append(t)

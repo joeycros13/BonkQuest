@@ -293,8 +293,11 @@ local function applyVisible(enemy: Enemy, visible: boolean)
 end
 
 -- A weapon hit: recoil, the EnemyHit sound, and the damage in a comic burst
--- bubble that pops like the defeat's BONK (2026-10-21, the user's request).
-local function showHit(enemy: Enemy, amount: number)
+-- bubble that pops like the defeat's BONK (2026-10-21, the user's request). A
+-- critical hit gets the gold bubble and a lower, louder hit (the sound's
+-- CritPitch / CritVolume attributes); the killing blow gets no hit sound, only
+-- the defeat's pop (the user: one sound on a death).
+local function showHit(enemy: Enemy, amount: number, crit: boolean, killing: boolean)
 	if EnemyAnimator then
 		EnemyAnimator.flinch(enemy.instance)
 	end
@@ -304,10 +307,12 @@ local function showHit(enemy: Enemy, amount: number)
 	local assets = ReplicatedStorage:FindFirstChild("Assets")
 	local sounds = assets and assets:FindFirstChild("Sounds")
 	local hit = sounds and sounds:FindFirstChild("EnemyHit")
-	if hit and hit:IsA("Sound") then
-		Effects.sound(hit, at, { pitch = hit.PlaybackSpeed * math.random(92, 110) / 100 })
+	if hit and hit:IsA("Sound") and not killing then
+		local pitch = if crit then numberAttr(hit, "CritPitch", 0.85) else 1
+		local volume = if crit then numberAttr(hit, "CritVolume", 1.4) else 1
+		Effects.sound(hit, at, { pitch = hit.PlaybackSpeed * pitch * math.random(92, 110) / 100, volume = hit.Volume * volume })
 	end
-	BonkPop.hit(enemy.anchor.Position + Vector3.new(0, enemy.height / 2, 0), enemy.height / 4, amount, enemy.isBoss)
+	BonkPop.hit(enemy.anchor.Position + Vector3.new(0, enemy.height / 2, 0), enemy.height / 4, amount, enemy.isBoss, crit)
 end
 
 -- A defeat (user, 2026-10-11: kills were too quiet): a white Poof cloud, gold
@@ -348,7 +353,7 @@ local function refreshFromAttributes(enemy: Enemy)
 
 	-- enemy.alive is the state BEFORE this update, so the killing blow shows too.
 	if hp < enemy.lastHp and enemy.alive then
-		showHit(enemy, math.floor(enemy.lastHp - hp + 0.5))
+		showHit(enemy, math.floor(enemy.lastHp - hp + 0.5), inst:GetAttribute("CritHp") == hp, hp <= 0 or not alive)
 	end
 	enemy.lastHp = hp
 

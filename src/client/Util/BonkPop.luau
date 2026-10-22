@@ -19,7 +19,9 @@
 -- `Shadow` / `Label` for the number -- with the same motion attributes plus
 -- `Format` (the number's text, "%s") and `Spread` (studs it lands off-centre at
 -- random, so quick hits don't stack). Every image in `Content` fades out; only
--- the `Rays*` ones turn.
+-- the `Rays*` ones turn. A critical hit (Balance.Melee.critChance) pops bigger
+-- (`CritScale`), tints the white `Burst` and the `Rays` (`CritBurstColor` /
+-- `CritRaysColor`) and shows the hand-built `CritTag` ("CRIT!", hidden otherwise).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -68,7 +70,7 @@ end
 -- Pop a copy of `source` showing `word` at `position` (the template's Height is
 -- added). `size` is how big the body is, about 1 for a chicken; it's clamped to
 -- SizeMin..SizeMax, and bosses get BossScale on top.
-local function play(source: BillboardGui, position: Vector3, size: number, isBoss: boolean?, word: string)
+local function play(source: BillboardGui, position: Vector3, size: number, isBoss: boolean?, word: string, crit: boolean?)
 	local playerGui = Players.LocalPlayer:FindFirstChildOfClass("PlayerGui")
 	if not playerGui then
 		return
@@ -79,6 +81,7 @@ local function play(source: BillboardGui, position: Vector3, size: number, isBos
 	local fadeSeconds = math.max(lifetime - popSeconds - hold, 0.1)
 	local scale = math.clamp(size, number(source, "SizeMin", 0.85), number(source, "SizeMax", 1.6))
 		* (if isBoss then number(source, "BossScale", 1.35) else 1)
+		* (if crit then number(source, "CritScale", 1) else 1)
 
 	-- An attachment in Terrain holds the spot, so the pop stays put while the
 	-- body hides or respawns.
@@ -110,6 +113,21 @@ local function play(source: BillboardGui, position: Vector3, size: number, isBos
 			label.Text = word
 			label.Rotation = tilt
 			table.insert(labels, label)
+		end
+	end
+	local critTag = content and content:FindFirstChild("CritTag")
+	if crit and content then
+		for _, look in { { "Burst", "CritBurstColor" }, { "Rays", "CritRaysColor" } } do
+			local image = content:FindFirstChild(look[1])
+			local color = source:GetAttribute(look[2])
+			if image and image:IsA("ImageLabel") and typeof(color) == "Color3" then
+				image.ImageColor3 = color
+			end
+		end
+		if critTag and critTag:IsA("TextLabel") then
+			critTag.Visible = true
+			critTag.Rotation = tilt
+			table.insert(labels, critTag)
 		end
 	end
 	billboard.Parent = playerGui
@@ -171,11 +189,11 @@ function BonkPop.show(position: Vector3, size: number, isBoss: boolean?)
 	end
 end
 
--- A hit's damage in the comic burst bubble.
-function BonkPop.hit(position: Vector3, size: number, amount: number, isBoss: boolean?)
+-- A hit's damage in the comic burst bubble (gold and bigger for a crit).
+function BonkPop.hit(position: Vector3, size: number, amount: number, isBoss: boolean?, crit: boolean?)
 	if hitTemplate then
 		local format = hitTemplate:GetAttribute("Format")
-		play(hitTemplate, position, size, isBoss, string.format(if type(format) == "string" then format else "%s", tostring(amount)))
+		play(hitTemplate, position, size, isBoss, string.format(if type(format) == "string" then format else "%s", tostring(amount)), crit)
 	end
 end
 
