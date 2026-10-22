@@ -13,6 +13,8 @@
 --   Regen         against the base 1% a second: the upgrade's share plus a Regen potion's
 --                 (Gathering is yield, so a Gatherer's potion, which hits harder, isn't on it)
 --   Sprint        the Sprint upgrade x a Swiftness potion ("Locked" before Sprint 1)
+--   Crit Damage   a critical hit's whole multiplier (x1.50 at the start, the upgrade adds 0.05)
+--   Crit Chance   against the base 10% of hits (2026-10-22, with the two crit upgrades)
 -- An admin's own test settings show as an "Admin" chip, only while one is set: the
 -- damage multiplier (DamageMultiplier) and the max-health override (MaxHealthOverride,
 -- which replaces the whole max), so the panel matches what they really have.
@@ -51,14 +53,19 @@ local Text = {
 	potion = "%s %s",
 	armourDefense = "Armour %s",
 	base = "Base 1% a second",
+	critBase = "Base %s of hits",
+	critDamageBase = "Base %s",
 	adminX = "Admin %s",
 	adminOverride = "Admin override",
 	names = {
 		Health = "Max Health", Luck = "Luck", Attack = "Damage", Coins = "Coins", Defense = "Defense",
 		Exp = "EXP", AttackSpeed = "Attack Speed", Regen = "Regen", Sprint = "Sprint", Gathering = "Gathering",
+		CritDamage = "Crit Damage", CritChance = "Crit Chance",
 	},
 }
-local ORDER = { "Health", "Luck", "Attack", "Coins", "Defense", "Exp", "AttackSpeed", "Regen", "Sprint", "Gathering" }
+-- two columns: combat down the left (Health, Damage, Crit Damage, Defense, Attack
+-- Speed, Sprint), the rest down the right
+local ORDER = { "Health", "Luck", "Attack", "Coins", "CritDamage", "CritChance", "Defense", "Exp", "AttackSpeed", "Regen", "Sprint", "Gathering" }
 
 local PanelWindow: any = nil
 local FontDrop: any = nil
@@ -171,6 +178,20 @@ local function measure(id: string): (string, { string }, boolean)
 		end
 		local total = upgradeX(id) + regen - 1
 		return times(total), parts, total > 1.0001
+	elseif id == "CritDamage" then
+		local def = Upgrades.get(id)
+		table.insert(parts, Text.critDamageBase:format(times(def and def.base or 1.5)))
+		if up then
+			table.insert(parts, Text.upgrade:format("+" .. ("%.2f"):format(Upgrades.value(player, id) - (def and def.base or 1.5))))
+		end
+		return times(Upgrades.value(player, id)), parts, up
+	elseif id == "CritChance" then
+		local def = Upgrades.get(id)
+		table.insert(parts, Text.critBase:format(("%d%%"):format(math.floor((def and def.base or 0.1) * 100 + 0.5))))
+		if up then
+			table.insert(parts, Text.upgrade:format(times(upgradeX(id))))
+		end
+		return times(upgradeX(id)), parts, up
 	end
 	-- Attack Speed, Gathering: the upgrade alone
 	if up then

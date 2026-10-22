@@ -18,18 +18,25 @@
 --   Defense      x damage taken
 --   Attack       x weapon damage
 --   AttackSpeed  x weapon swing time (cooldown)
+--   CritDamage   a critical hit's damage multiplier (Balance.Melee.critMultiplier, 1.5, at level 0)
+--   CritChance   the chance a hit is critical (Balance.Melee.critChance, 10%, at level 0)
 --   Regen        extra share of max HP healed each second, on top of Roblox's 1%
 --   Coins        x kill coins
 --   Exp          x kill EXP
 --   Gathering    x the materials a broken tree or rock gives (the fraction rolled)
 -- Every upgrade is SHOWN as a multiplier (the user, 2026-10-19: "easier tracking";
 -- the Stats panel shows the same totals): Defense and Attack Speed as how much
--- tougher / faster you are (1 / the value), Regen against Roblox's base 1% a second.
+-- tougher / faster you are (1 / the value), Regen against Roblox's base 1% a second,
+-- Crit Chance against its own base 10% (11% reads x1.10). Crit Damage and Crit Chance
+-- joined on 2026-10-22 (the user: +0.05x crit damage and +1% crit chance a level),
+-- after Attack Speed, as on the stand's 12-cubby scroll rack.
 -- Every number here is a starting point to tune; prices are placeholders. Icons: set A
 -- "puffy toy" (2026-10-19, the user's pick on https://claude.ai/artifact/G9vG6k7KNs8rGrbRmBtUKf),
 -- rendered from art/tools/icons/upgrade_icons_v2.dc.html by svg_render.py and trimmed to
 -- art/icons/upgrades/ (the first drafts are in art/icons/upgrades/_older/). The Stats
 -- panel shows the same icons.
+
+local Balance = require(script.Parent.Balance)
 
 local Upgrades = {}
 
@@ -41,8 +48,8 @@ export type UpgradeDef = {
 	step: number, -- added per level
 	-- how the value shows as a multiplier: "x" as it is, "inverse" as 1 / it (a smaller
 	-- damage taken or swing time reads as a bigger defense or speed), "regen" as the
-	-- total regen over Roblox's base
-	show: "x" | "inverse" | "regen",
+	-- total regen over Roblox's base, "ratio" as the value over its level-0 base
+	show: "x" | "inverse" | "regen" | "ratio",
 	format: string, -- the effect line, with %s for the number (Text below has the words)
 	costScale: number?, -- this upgrade's prices x this (Sprint is cheap: the first thing to buy)
 	order: number,
@@ -62,10 +69,12 @@ Upgrades.Defs = {
 	Defense = { id = "Defense", name = "Defense", icon = "rbxassetid://87669341236749", base = 1, step = -0.01, show = "inverse", format = "%s defense", order = 4 },
 	Attack = { id = "Attack", name = "Attack", icon = "rbxassetid://101904574763468", base = 1, step = 0.03, show = "x", format = "%s damage", order = 5 },
 	AttackSpeed = { id = "AttackSpeed", name = "Attack Speed", icon = "rbxassetid://94360279558290", base = 1, step = -0.015, show = "inverse", format = "%s attack speed", order = 6 },
-	Regen = { id = "Regen", name = "Regen", icon = "rbxassetid://111410183445207", base = 0, step = 0.0025, show = "regen", format = "%s regen", order = 7 },
-	Coins = { id = "Coins", name = "Coins", icon = "rbxassetid://114082700684383", base = 1, step = 0.04, show = "x", format = "%s coins", order = 8 },
-	Exp = { id = "Exp", name = "EXP", icon = "rbxassetid://72394547070909", base = 1, step = 0.04, show = "x", format = "%s EXP", order = 9 },
-	Gathering = { id = "Gathering", name = "Gathering", icon = "rbxassetid://75333539272846", base = 1, step = 0.1, show = "x", format = "%s materials", order = 10 },
+	CritDamage = { id = "CritDamage", name = "Crit Damage", icon = "rbxassetid://136086913663998", base = Balance.Melee.critMultiplier, step = 0.05, show = "x", format = "%s crit damage", order = 7 },
+	CritChance = { id = "CritChance", name = "Crit Chance", icon = "rbxassetid://112979523138128", base = Balance.Melee.critChance, step = 0.01, show = "ratio", format = "%s crit chance", order = 8 },
+	Regen = { id = "Regen", name = "Regen", icon = "rbxassetid://111410183445207", base = 0, step = 0.0025, show = "regen", format = "%s regen", order = 9 },
+	Coins = { id = "Coins", name = "Coins", icon = "rbxassetid://114082700684383", base = 1, step = 0.04, show = "x", format = "%s coins", order = 10 },
+	Exp = { id = "Exp", name = "EXP", icon = "rbxassetid://72394547070909", base = 1, step = 0.04, show = "x", format = "%s EXP", order = 11 },
+	Gathering = { id = "Gathering", name = "Gathering", icon = "rbxassetid://75333539272846", base = 1, step = 0.1, show = "x", format = "%s materials", order = 12 },
 } :: { [string]: UpgradeDef }
 
 -- Every word the panel shows (the user's rule: UI text lives in code).
@@ -178,6 +187,8 @@ function Upgrades.multiplier(def: UpgradeDef, level: number): number
 		return 1 / v
 	elseif def.show == "regen" then
 		return (Upgrades.BASE_REGEN + v) / Upgrades.BASE_REGEN
+	elseif def.show == "ratio" then
+		return v / def.base
 	end
 	return v
 end
