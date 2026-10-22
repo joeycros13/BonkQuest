@@ -11,6 +11,15 @@
 -- per pop), Lifetime, PopSeconds, PopFrom, Hold, Rise, Height, TiltMax,
 -- RaysSpin (degrees over the life), ShrinkTo, SizeMin / SizeMax and BossScale.
 -- This only copies it and animates it.
+--
+-- The same pop shows every weapon hit's damage (2026-10-21, the user: the hit
+-- number should appear like the BONK, in a comic burst bubble): `BonkPop.hit`
+-- copies ReplicatedStorage/Assets/UI/HitPop instead -- `Content` with `PopScale`,
+-- red `Rays`, the white ink-outlined `Burst` (art/tools/ui/hit_burst.py) and
+-- `Shadow` / `Label` for the number -- with the same motion attributes plus
+-- `Format` (the number's text, "%s") and `Spread` (studs it lands off-centre at
+-- random, so quick hits don't stack). Every image in `Content` fades out; only
+-- the `Rays*` ones turn.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -19,6 +28,7 @@ local TweenService = game:GetService("TweenService")
 local BonkPop = {}
 
 local template: BillboardGui? = nil
+local hitTemplate: BillboardGui? = nil
 local FontDrop: any = nil
 
 function BonkPop.init(injected: any)
@@ -33,6 +43,12 @@ function BonkPop.start()
 		template = found
 	else
 		warn("[BonkPop] missing ReplicatedStorage/Assets/UI/BonkPop")
+	end
+	local hit = ui and ui:FindFirstChild("HitPop")
+	if hit and hit:IsA("BillboardGui") then
+		hitTemplate = hit
+	else
+		warn("[BonkPop] missing ReplicatedStorage/Assets/UI/HitPop")
 	end
 end
 
@@ -49,13 +65,12 @@ local function pickWord(source: Instance): string
 	return if #words > 0 then words[math.random(#words)] else "BONK!"
 end
 
--- Pop the word at `position` (the top of the body; the template's Height is
+-- Pop a copy of `source` showing `word` at `position` (the template's Height is
 -- added). `size` is how big the body is, about 1 for a chicken; it's clamped to
 -- SizeMin..SizeMax, and bosses get BossScale on top.
-function BonkPop.show(position: Vector3, size: number, isBoss: boolean?)
-	local source = template
+local function play(source: BillboardGui, position: Vector3, size: number, isBoss: boolean?, word: string)
 	local playerGui = Players.LocalPlayer:FindFirstChildOfClass("PlayerGui")
-	if not (source and playerGui) then
+	if not playerGui then
 		return
 	end
 	local lifetime = number(source, "Lifetime", 1.05)
@@ -68,23 +83,27 @@ function BonkPop.show(position: Vector3, size: number, isBoss: boolean?)
 	-- An attachment in Terrain holds the spot, so the pop stays put while the
 	-- body hides or respawns.
 	local spot = Instance.new("Attachment")
-	spot.WorldPosition = position + Vector3.new(0, number(source, "Height", 1.2), 0)
+	local spread = number(source, "Spread", 0)
+	local aside = Vector3.new((math.random() * 2 - 1) * spread, 0, (math.random() * 2 - 1) * spread)
+	spot.WorldPosition = position + aside + Vector3.new(0, number(source, "Height", 1.2), 0)
 	spot.Parent = workspace.Terrain
 
 	local billboard = source:Clone()
 	billboard.Adornee = spot
 	local content = billboard:FindFirstChild("Content") :: GuiObject?
 	local popScale = content and content:FindFirstChild("PopScale") :: UIScale?
+	local images: { ImageLabel } = {}
 	local rays: { ImageLabel } = {}
-	for _, name in { "Rays", "RaysInner" } do
-		local image = content and content:FindFirstChild(name)
-		if image and image:IsA("ImageLabel") then
-			table.insert(rays, image)
+	for _, image in if content then content:GetChildren() else {} do
+		if image:IsA("ImageLabel") then
+			table.insert(images, image)
+			if string.sub(image.Name, 1, 4) == "Rays" then
+				table.insert(rays, image)
+			end
 		end
 	end
 	local labels: { TextLabel } = {}
 	local tilt = (math.random() * 2 - 1) * number(source, "TiltMax", 12)
-	local word = pickWord(source)
 	for _, name in { "Shadow", "Label" } do
 		local label = content and content:FindFirstChild(name)
 		if label and label:IsA("TextLabel") then
@@ -128,7 +147,7 @@ function BonkPop.show(position: Vector3, size: number, isBoss: boolean?)
 		if popScale then
 			TweenService:Create(popScale, outInfo, { Scale = scale * number(source, "ShrinkTo", 0.75) }):Play()
 		end
-		for _, image in rays do
+		for _, image in images do
 			TweenService:Create(image, outInfo, { ImageTransparency = 1 }):Play()
 		end
 		for _, label in labels do
@@ -143,6 +162,21 @@ function BonkPop.show(position: Vector3, size: number, isBoss: boolean?)
 		billboard:Destroy()
 		spot:Destroy()
 	end)
+end
+
+-- The defeat's word (one of the template's Words) over the top of the body.
+function BonkPop.show(position: Vector3, size: number, isBoss: boolean?)
+	if template then
+		play(template, position, size, isBoss, pickWord(template))
+	end
+end
+
+-- A hit's damage in the comic burst bubble.
+function BonkPop.hit(position: Vector3, size: number, amount: number, isBoss: boolean?)
+	if hitTemplate then
+		local format = hitTemplate:GetAttribute("Format")
+		play(hitTemplate, position, size, isBoss, string.format(if type(format) == "string" then format else "%s", tostring(amount)))
+	end
 end
 
 return BonkPop

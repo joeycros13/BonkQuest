@@ -63,7 +63,6 @@ local BOSS_SPEED_SCALE = 0.6
 local FOLLOW_RATE = 12
 
 local deps: any = nil
-local DamagePopup: any = nil
 local BonkPop: any = nil
 local barTemplate: BillboardGui? = nil
 local bossBarTemplate: BillboardGui? = nil
@@ -293,14 +292,22 @@ local function applyVisible(enemy: Enemy, visible: boolean)
 	end
 end
 
--- A weapon hit: recoil and a number.
+-- A weapon hit: recoil, the EnemyHit sound, and the damage in a comic burst
+-- bubble that pops like the defeat's BONK (2026-10-21, the user's request).
 local function showHit(enemy: Enemy, amount: number)
 	if EnemyAnimator then
 		EnemyAnimator.flinch(enemy.instance)
 	end
-	Effects.burst(enemy.anchor.Position + Vector3.new(0, enemy.height * 0.15, 0), "HitSpark")
+	local at = enemy.anchor.Position + Vector3.new(0, enemy.height * 0.15, 0)
+	Effects.burst(at, "HitSpark")
 	Effects.flash(enemy.instance, "HurtFlash")
-	DamagePopup.show(enemy.anchor, "-" .. amount, "Enemy", enemy.height / 2 + 0.5)
+	local assets = ReplicatedStorage:FindFirstChild("Assets")
+	local sounds = assets and assets:FindFirstChild("Sounds")
+	local hit = sounds and sounds:FindFirstChild("EnemyHit")
+	if hit and hit:IsA("Sound") then
+		Effects.sound(hit, at, { pitch = hit.PlaybackSpeed * math.random(92, 110) / 100 })
+	end
+	BonkPop.hit(enemy.anchor.Position + Vector3.new(0, enemy.height / 2, 0), enemy.height / 4, amount, enemy.isBoss)
 end
 
 -- A defeat (user, 2026-10-11: kills were too quiet): a white Poof cloud, gold
@@ -633,7 +640,6 @@ end
 
 function WorldEnemyController.init(injected: any)
 	deps = injected
-	DamagePopup = deps.Util.DamagePopup
 	BonkPop = deps.Util.BonkPop
 	EnemyAnimator = deps.Controllers.EnemyAnimator
 end
