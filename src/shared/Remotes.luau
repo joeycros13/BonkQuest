@@ -27,6 +27,7 @@ local EVENT_NAMES: { string } = {
 	"GatherHit", -- (nodeIds: { string }): a tool swing reached these gathering nodes (GatherService)
 	"HoldTool", -- (kind: string?): take out the best tool of that kind, or put it away (MeleeService, Config/Tools)
 	"FishAction", -- { action = "cast", at = Vector3 } | { action = "hook" | "reel" } | { action = "ring", n = number, ok = boolean }: fishing (FishingService)
+	"SetSetting", -- (id: string, value: number | boolean): change one of the player's settings (SettingsService, Config/Settings)
 
 	-- Replication (server -> client)
 	"IndexDiscovered", -- { kind = "Enemy" | "Weapon", id = string }: show the NEW popup

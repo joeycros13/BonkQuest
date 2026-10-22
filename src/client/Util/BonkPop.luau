@@ -38,6 +38,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
+local Settings = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("Settings"))
+
 local BonkPop = {}
 
 local template: BillboardGui? = nil
@@ -233,9 +235,10 @@ function BonkPop.show(position: Vector3, size: number, isBoss: boolean?)
 	end
 end
 
--- A hit's damage in the comic burst bubble (gold and bigger for a crit).
+-- A hit's damage in the comic burst bubble (gold and bigger for a crit), unless the
+-- player turned "Hit bubbles" off (Config/Settings).
 function BonkPop.hit(position: Vector3, size: number, amount: number, isBoss: boolean?, crit: boolean?)
-	if hitTemplate then
+	if hitTemplate and Settings.on(Players.LocalPlayer, "Hits") then
 		local format = hitTemplate:GetAttribute("Format")
 		play(hitTemplate, position, size, string.format(if type(format) == "string" then format else "%s", tostring(amount)), {
 			isBoss = isBoss,

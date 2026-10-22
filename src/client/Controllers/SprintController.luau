@@ -22,6 +22,7 @@ local UserInputService = game:GetService("UserInputService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Upgrades = require(Shared:WaitForChild("Config"):WaitForChild("Upgrades"))
 local Potions = require(Shared:WaitForChild("Config"):WaitForChild("Potions"))
+local Settings = require(Shared:WaitForChild("Config"):WaitForChild("Settings"))
 local CameraFX = require(Shared:WaitForChild("Animation")).CameraFX
 
 local SprintController = {}
@@ -59,7 +60,8 @@ local function step(dt: number)
 
 	if want ~= sprinting then
 		sprinting = want
-		if sprinting then
+		-- the FOV push is the player's "Sprint zoom" setting (Config/Settings)
+		if sprinting and Settings.on(player, "SprintZoom") then
 			CameraFX.zoom("Sprint", FOV_PUSH, FOV_SPEED)
 		else
 			CameraFX.release("Sprint")

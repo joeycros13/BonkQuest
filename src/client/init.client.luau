@@ -63,6 +63,8 @@ local CONTROLLER_ORDER = {
 	"FishingController",
 	-- the healing fountain's sparkles and "+HP" popup (HealZoneService heals)
 	"HealZoneController",
+	-- applies the player's settings (volumes, guide arrow, particles, shadows; Config/Settings)
+	"SettingsController",
 }
 
 local UI_ORDER = {
@@ -80,6 +82,8 @@ local UI_ORDER = {
 	"StatsUI",
 	-- the HUD's Leaderboards panel (LeaderboardService)
 	"LeaderboardUI",
+	-- the HUD's Settings panel (Config/Settings; SettingsController applies them)
+	"SettingsUI",
 	"RobuxShopUI",
 	"IndexUI",
 	"IndexPopup",
