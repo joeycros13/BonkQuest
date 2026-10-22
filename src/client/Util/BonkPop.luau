@@ -25,6 +25,14 @@
 -- the `Rays*` ones turn. A critical hit (Balance.Melee.critChance) pops bigger
 -- (`CritScale`), tints the white `Burst` and the `Rays` (`CritBurstColor` /
 -- `CritRaysColor`) and shows the hand-built `CritTag` ("CRIT!", hidden otherwise).
+--
+-- A level up pops the same way over the player's own head (2026-10-22, the user: like the
+-- BONK, small, never a banner at the top of the screen): `BonkPop.levelUp` copies
+-- ReplicatedStorage/Assets/UI/LevelPop -- gold `Rays` / `RaysInner`, `Shadow` / `Label`
+-- (its Words, "LEVEL UP!") and a `Level` / `LevelShadow` pill line under it (`LevelFormat`,
+-- "Level %s") -- with the same motion attributes. It rides on the head (an attachment in
+-- it), so it moves with the player, and returns a function that changes the level shown
+-- (a count that passes two levels raises the number in the same pop).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -34,6 +42,7 @@ local BonkPop = {}
 
 local template: BillboardGui? = nil
 local hitTemplate: BillboardGui? = nil
+local levelTemplate: BillboardGui? = nil
 local FontDrop: any = nil
 
 function BonkPop.init(injected: any)
@@ -55,6 +64,12 @@ function BonkPop.start()
 	else
 		warn("[BonkPop] missing ReplicatedStorage/Assets/UI/HitPop")
 	end
+	local level = ui and ui:FindFirstChild("LevelPop")
+	if level and level:IsA("BillboardGui") then
+		levelTemplate = level
+	else
+		warn("[BonkPop] missing ReplicatedStorage/Assets/UI/LevelPop")
+	end
 end
 
 local function number(inst: Instance, name: string, fallback: number): number
@@ -70,13 +85,22 @@ local function pickWord(source: Instance): string
 	return if #words > 0 then words[math.random(#words)] else "BONK!"
 end
 
+type Options = {
+	isBoss: boolean?,
+	crit: boolean?,
+	follow: BasePart?, -- ride on this part instead of staying at `position`
+	texts: { [string]: string }?, -- more labels in Content to fill, by name
+}
+
 -- Pop a copy of `source` showing `word` at `position` (the template's Height is
 -- added). `size` is how big the body is, about 1 for a chicken; it's clamped to
--- SizeMin..SizeMax, and bosses get BossScale on top.
-local function play(source: BillboardGui, position: Vector3, size: number, isBoss: boolean?, word: string, crit: boolean?)
+-- SizeMin..SizeMax, and bosses get BossScale on top. Returns the copy.
+local function play(source: BillboardGui, position: Vector3, size: number, word: string, options: Options?): BillboardGui?
+	local opts: Options = options or {}
+	local isBoss, crit = opts.isBoss, opts.crit
 	local playerGui = Players.LocalPlayer:FindFirstChildOfClass("PlayerGui")
 	if not playerGui then
-		return
+		return nil
 	end
 	local lifetime = number(source, "Lifetime", 1.05)
 	local popSeconds = number(source, "PopSeconds", 0.2)
@@ -98,8 +122,13 @@ local function play(source: BillboardGui, position: Vector3, size: number, isBos
 		toward = if back.Magnitude > 1e-3 then back.Unit else Vector3.zero
 	end
 	local aside = right * (math.random() * 2 - 1) * number(source, "Spread", 0)
-	spot.WorldPosition = base + aside + toward * number(source, "Pull", 0)
-	spot.Parent = workspace.Terrain
+	if opts.follow then
+		spot.Position = Vector3.new(0, number(source, "Height", 1.2), 0)
+		spot.Parent = opts.follow
+	else
+		spot.WorldPosition = base + aside + toward * number(source, "Pull", 0)
+		spot.Parent = workspace.Terrain
+	end
 
 	local billboard = source:Clone()
 	billboard.Adornee = spot
@@ -117,10 +146,14 @@ local function play(source: BillboardGui, position: Vector3, size: number, isBos
 	end
 	local labels: { TextLabel } = {}
 	local tilt = (math.random() * 2 - 1) * number(source, "TiltMax", 12)
-	for _, name in { "Shadow", "Label" } do
+	local texts: { [string]: string } = { Shadow = word, Label = word }
+	for name, text in opts.texts or {} do
+		texts[name] = text
+	end
+	for name, text in texts do
 		local label = content and content:FindFirstChild(name)
 		if label and label:IsA("TextLabel") then
-			label.Text = word
+			label.Text = text
 			label.Rotation = tilt
 			table.insert(labels, label)
 		end
@@ -190,12 +223,13 @@ local function play(source: BillboardGui, position: Vector3, size: number, isBos
 		billboard:Destroy()
 		spot:Destroy()
 	end)
+	return billboard
 end
 
 -- The defeat's word (one of the template's Words) over the top of the body.
 function BonkPop.show(position: Vector3, size: number, isBoss: boolean?)
 	if template then
-		play(template, position, size, isBoss, pickWord(template))
+		play(template, position, size, pickWord(template), { isBoss = isBoss })
 	end
 end
 
@@ -203,7 +237,38 @@ end
 function BonkPop.hit(position: Vector3, size: number, amount: number, isBoss: boolean?, crit: boolean?)
 	if hitTemplate then
 		local format = hitTemplate:GetAttribute("Format")
-		play(hitTemplate, position, size, isBoss, string.format(if type(format) == "string" then format else "%s", tostring(amount)), crit)
+		play(hitTemplate, position, size, string.format(if type(format) == "string" then format else "%s", tostring(amount)), {
+			isBoss = isBoss,
+			crit = crit,
+		})
+	end
+end
+
+-- LEVEL UP! over the player's head (`head`), with the new level under it. Returns a
+-- function that shows another level in the same pop while it is still up.
+function BonkPop.levelUp(head: BasePart, level: number): (number) -> ()
+	local source = levelTemplate
+	if not source then
+		return function(_: number) end
+	end
+	local format = source:GetAttribute("LevelFormat")
+	local function line(n: number): string
+		return string.format(if type(format) == "string" then format else "Level %s", tostring(n))
+	end
+	local billboard = play(source, head.Position, 1, pickWord(source), {
+		follow = head,
+		texts = { Level = line(level), LevelShadow = line(level) },
+	})
+	return function(n: number)
+		local content = billboard and billboard.Parent and billboard:FindFirstChild("Content")
+		if content then
+			for _, name in { "Level", "LevelShadow" } do
+				local label = content:FindFirstChild(name)
+				if label and label:IsA("TextLabel") then
+					label.Text = line(n)
+				end
+			end
+		end
 	end
 end
 

@@ -29,6 +29,8 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local UiSound = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("UiSound"))
+
 local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
 local Gates = require(Config:WaitForChild("Gates"))
 local Materials = require(Config:WaitForChild("Materials"))
@@ -226,6 +228,22 @@ local function wire(gui: SurfaceGui)
 	if buy and buy:IsA("GuiButton") then
 		buy.Activated:Connect(function()
 			if stateOf(gate) == "Met" and buyRemote then
+				-- the gate opening (HighestWorld reaching it) plays the Purchase sound
+				local before = number("HighestWorld", 1)
+				local watch: RBXScriptConnection? = nil
+				watch = player:GetAttributeChangedSignal("HighestWorld"):Connect(function()
+					if number("HighestWorld", 1) > before then
+						UiSound.play("Purchase")
+					end
+					if watch then
+						watch:Disconnect()
+					end
+				end)
+				task.delay(5, function()
+					if watch then
+						watch:Disconnect()
+					end
+				end)
 				buyRemote:FireServer({ id = gate.id })
 			end
 		end)

@@ -43,6 +43,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UiSound = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("UiSound"))
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Remotes = require(Shared:WaitForChild("Remotes"))
@@ -358,13 +359,14 @@ local function wire(gui: ScreenGui)
 				end
 				buying = true
 				local remote = if isTool(row) then "BuyTool" else "BuyWeapon"
-				local ok, reason = pcall(function()
+				local ok, bought = pcall(function()
 					return Remotes.getFunction(remote):InvokeServer(id)
 				end)
 				buying = false
 				if not ok then
-					warn("[ShopUI] " .. remote .. " failed: " .. tostring(reason))
+					warn("[ShopUI] " .. remote .. " failed: " .. tostring(bought))
 				end
+				UiSound.play(if ok and bought == true then "Purchase" else "Refuse")
 				refresh()
 			end)
 		end

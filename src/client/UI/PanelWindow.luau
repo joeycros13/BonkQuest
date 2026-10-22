@@ -15,10 +15,13 @@
 -- panel's "OpenSeconds". Closing shrinks it back to 0 over "CloseSeconds",
 -- and only then turns the panel off. Switching straight to another panel
 -- closes the old one at once, so two windows never overlap. A panel without a
--- PopScale just appears and disappears.
+-- PopScale just appears and disappears. Opening plays Util.UiSound's "PanelOpen",
+-- closing "PanelClose" (switching straight to another panel plays only the open).
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
+
+local UiSound = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("UiSound"))
 
 local PanelWindow = {}
 
@@ -159,6 +162,9 @@ function PanelWindow.showPanel(panelId: string)
 			closeNow(other, false)
 		end
 	end
+	if openPanel ~= panelId then
+		UiSound.play("PanelOpen")
+	end
 	openPanel = panelId
 	openNow(gui)
 end
@@ -167,6 +173,7 @@ function PanelWindow.hidePanel()
 	local id = openPanel
 	openPanel = nil
 	if id and panels[id] then
+		UiSound.play("PanelClose")
 		closeNow(panels[id], true)
 	end
 end

@@ -14,9 +14,12 @@
 --   * shown() / onShown() give what the counter shows right now, so other HUD
 --     pieces (the quest tracker) move in step with it instead of jumping
 --     ahead to the balance.
+--   * Each landing coin plays Util.UiSound's "CoinLand" (its pitch climbs through a spill).
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
+
+local UiSound = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("UiSound"))
 
 local CoinsUI = {}
 
@@ -108,6 +111,7 @@ function CoinsUI.collect(from: Vector2, landed: (() -> ())?)
 	end
 	HudFly.fly(hud :: ScreenGui, template, from, icon :: GuiObject, attribute("FlySeconds", 0.55), function()
 		HudFly.bump(icon, attribute("BumpScale", 1.25))
+		UiSound.play("CoinLand")
 		if landed then
 			landed()
 		end

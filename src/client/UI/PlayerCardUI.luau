@@ -22,12 +22,19 @@
 --     (BumpScale); the count starts when the first one lands.
 --   * PlayerCardUI.Exp.shownLevel() / onShown() give the level the badge shows
 --     right now, for the quest tracker to follow.
+--   * A level up (2026-10-22, the user: like the BONK, not a banner at the top of the
+--     screen): when the badge reaches a level the server raised after the data loaded,
+--     a small LEVEL UP! pops over the player's head (Util.BonkPop.levelUp) and
+--     Util.UiSound plays "LevelUp". Joining counts up from 0 to the saved
+--     level quietly. A count that passes two levels raises the number in the same pop
+--     (within LEVEL_MERGE seconds). Each landing star plays "ExpLand".
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local Leveling = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("Leveling"))
+local UiSound = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("UiSound"))
 
 local PlayerCardUI = {}
 
@@ -38,6 +45,7 @@ local card: Instance? = nil
 local hud: ScreenGui? = nil
 local HudFly: any = nil
 local Format: any = nil
+local BonkPop: any = nil
 
 local function attribute(inst: Instance, name: string, fallback: any): any
 	local value = inst:GetAttribute(name)
@@ -75,6 +83,11 @@ local expTween: Tween? = nil
 local expPending = 0 -- star spills still on their way
 local shownLevel = Leveling.START
 local levelEvent = Instance.new("BindableEvent")
+local LEVEL_MERGE = 0.9 -- seconds a level-up pop takes further levels in
+local earnedLevel = 0 -- the highest Level the server published after DataLoaded
+local poppedLevel = 0
+local popAt = -math.huge
+local raisePop: ((number) -> ())? = nil
 
 local function expTotal(): number
 	local value = player:GetAttribute("ExpTotal")
@@ -117,6 +130,25 @@ local function fitBadge(badge: TextLabel)
 	end
 end
 
+-- The LEVEL UP! pop, the badge bump and the sound, for `level`.
+local function celebrate(level: number)
+	poppedLevel = level
+	local now = os.clock()
+	if raisePop and now - popAt < LEVEL_MERGE then
+		(raisePop :: (number) -> ())(level)
+		return
+	end
+	popAt = now
+	UiSound.play("LevelUp")
+	local character = player.Character
+	local head = character and character:FindFirstChild("Head")
+	if BonkPop and head and head:IsA("BasePart") then
+		raisePop = BonkPop.levelUp(head, level)
+	else
+		raisePop = nil
+	end
+end
+
 local function showExp(total: number)
 	expShown = total
 	local level, into, need = Leveling.fromTotal(math.floor(total + 0.5))
@@ -136,8 +168,12 @@ local function showExp(total: number)
 		badge.Text = Format.commas(level) -- fitBadge follows its TextBounds
 	end
 	if level ~= shownLevel then
+		local rose = level > shownLevel
 		shownLevel = level
 		levelEvent:Fire(level)
+		if rose and level <= earnedLevel and level > poppedLevel then
+			celebrate(level)
+		end
 	end
 end
 
@@ -184,6 +220,7 @@ function PlayerCardUI.Exp.collect(from: Vector2, landed: (() -> ())?)
 	end
 	HudFly.fly(hud :: ScreenGui, template, from, bar, xpNumber("FlySeconds", 0.55), function()
 		HudFly.bump(bar, xpNumber("BumpScale", 1.08))
+		UiSound.play("ExpLand")
 		if landed then
 			landed()
 		end
@@ -237,6 +274,7 @@ end
 function PlayerCardUI.init(injected: any)
 	HudFly = injected.Util.HudFly
 	Format = injected.Util.Format
+	BonkPop = injected.Util.BonkPop
 end
 
 function PlayerCardUI.start()
@@ -263,6 +301,12 @@ function PlayerCardUI.start()
 			end
 		end
 		showExp(expTotal())
+		player:GetAttributeChangedSignal("Level"):Connect(function()
+			local level = player:GetAttribute("Level")
+			if player:GetAttribute("DataLoaded") == true and type(level) == "number" then
+				earnedLevel = math.max(earnedLevel, level)
+			end
+		end)
 		player:GetAttributeChangedSignal("ExpTotal"):Connect(function()
 			-- stars on their way count up when they land; anything else counts
 			-- after a beat (in case its spill is announced a moment later)

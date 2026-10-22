@@ -53,6 +53,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local UiSound = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("UiSound"))
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = Shared:WaitForChild("Config")
@@ -481,6 +482,7 @@ local function wireTile(st: TileState)
 				return deps.Remotes.getFunction("DrinkPotion"):InvokeServer(id)
 			end)
 			drinking = false
+			UiSound.play(if ok and okDrink then "Drink" else "Refuse")
 			if ok and okDrink then
 				openPotion = nil
 				drinkNote[id] = nil
@@ -948,9 +950,10 @@ local function wirePanel(gui: ScreenGui)
 			end
 			selling = true
 			local remote = sellRemote :: RemoteFunction
-			pcall(function()
-				remote:InvokeServer(lines)
+			local ok, sold = pcall(function()
+				return remote:InvokeServer(lines)
 			end)
+			UiSound.play(if ok and sold == true then "Purchase" else "Refuse")
 			selling = false
 			setSellMode(false)
 		end)

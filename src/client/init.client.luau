@@ -11,6 +11,8 @@ local Remotes = require(Shared:WaitForChild("Remotes"))
 local UTIL_ORDER = {
 	-- first: sizes every pixel-only UI value (outlines, text caps...) for this screen
 	"Responsive",
+	-- the UI and reward sounds (Assets/Sounds/UI): clicks, panels, coins landing, level up
+	"UiSound",
 	-- the hover and click effect on every clickable button (an "FxScale" UIScale on it)
 	"ButtonFx",
 	"DamagePopup",
