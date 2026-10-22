@@ -8,6 +8,11 @@ a white highlight, a sparkle, a soft ground shadow.
     python ../ui/svg_render.py crit_icons.dc.html <out_dir>
 
 Each draft is SYMBOLS[name] on one of the BACKGROUNDS; DRAFTS lists the combinations shown.
+
+The user's picks (2026-10-22): Crit Damage = the sword with the red up-arrow badge, Crit
+Chance = the exclamation mark. The background is ONE burst shape drawn twice: the red burst,
+then the yellow burst as an exact copy (same spikes, same turn, same curved edges) scaled
+down by INNER about the same centre, so it sits inside the red with a red band all round.
 """
 import math
 import os
@@ -37,22 +42,30 @@ def star(cx, cy, spikes, r_out, r_in, turn=0.0, curve=0.0):
 
 
 # Uneven like the hit bubble's burst (art/tools/ui/hit_burst.py), so it reads hand-drawn.
-RAYS = [1.0, 0.88, 0.97, 0.86, 1.0, 0.9, 0.95, 0.87, 0.98]
-BURST = [1.0, 0.86, 0.95, 0.83, 1.0, 0.88, 0.93, 0.84, 0.98, 0.86, 0.94]
+SPIKES = [1.0, 0.88, 0.97, 0.86, 1.0, 0.9, 0.95, 0.87, 0.98]
+CX, CY = 64, 62
+R_OUT, R_IN, TURN, CURVE = 57, 37, 0.18, 0.06  # the red burst (its top spike clears the edge)
+INNER = 0.72  # the yellow copy's size against the red
+INNER_STROKE = 4  # the yellow's ink line, a little lighter than the red's 5
 
 
-def background(id_, burst_top, burst_bottom, rays_top, rays_bottom):
+def burst(scale):
+    return star(CX, CY, SPIKES, R_OUT * scale, R_IN * scale, TURN, CURVE)
+
+
+def background(id_, burst_top, burst_bottom, rays_top, rays_bottom, inner=INNER):
     return f"""<defs><linearGradient id="{id_}R" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{rays_top}"></stop><stop offset="1" stop-color="{rays_bottom}"></stop></linearGradient><linearGradient id="{id_}B" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{burst_top}"></stop><stop offset="1" stop-color="{burst_bottom}"></stop></linearGradient></defs>
 {SHADOW}
-<path d="{star(64, 62, RAYS, 62, 30, 0.18, 0.06)}" fill="url(#{id_}R)" stroke="{INK}" stroke-width="5" stroke-linejoin="round"></path>
-<path d="{star(64, 62, BURST, 50, 33, 0.0, 0.1)}" fill="url(#{id_}B)" stroke="{INK}" stroke-width="5" stroke-linejoin="round"></path>"""
+<path d="{burst(1)}" fill="url(#{id_}R)" stroke="{INK}" stroke-width="5" stroke-linejoin="round"></path>
+<path d="{burst(inner)}" fill="url(#{id_}B)" stroke="{INK}" stroke-width="{INNER_STROKE}" stroke-linejoin="round"></path>"""
 
 
 BACKGROUNDS = {
     # yellow burst on red rays: the in-game crit bubble's colours turned round
     "yellow": lambda id_: background(id_, "#fff27a", "#f5a623", "#ff6a4d", "#d42638"),
-    # red burst on yellow rays
-    "red": lambda id_: background(id_, "#ff7a5c", "#d42638", "#fff27a", "#f5a623"),
+    # the yellow copy at other sizes, to compare
+    "yellow66": lambda id_: background(id_, "#fff27a", "#f5a623", "#ff6a4d", "#d42638", 0.66),
+    "yellow80": lambda id_: background(id_, "#fff27a", "#f5a623", "#ff6a4d", "#d42638", 0.80),
 }
 
 SWORD = """<defs><linearGradient id="{id}Bl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffffff"></stop><stop offset="0.5" stop-color="#dfe6ee"></stop><stop offset="1" stop-color="#a7b3c2"></stop></linearGradient><linearGradient id="{id}Gd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe27a"></stop><stop offset="1" stop-color="#e09a12"></stop></linearGradient></defs>
@@ -134,7 +147,7 @@ SYMBOLS = {
     "CrossedSwords": crossed_swords,
     "Mallet": mallet,
     "SwordUp": sword_up,
-    "Bang": bang,
+    "Bang": lambda id_: bang(id_, scale=0.86),  # sits inside the yellow burst
     "DoubleBang": double_bang,
     "Percent": percent,
     "Target": target,
@@ -142,25 +155,18 @@ SYMBOLS = {
 
 # (export name, label, upgrade, symbol, background)
 DRAFTS = [
-    ("CritDamage_A", "A. Sword", "Crit Damage", "Sword", "yellow"),
-    ("CritDamage_B", "B. Crossed swords", "Crit Damage", "CrossedSwords", "yellow"),
-    ("CritDamage_C", "C. Bonk mallet", "Crit Damage", "Mallet", "yellow"),
-    ("CritDamage_D", "D. Sword + up arrow", "Crit Damage", "SwordUp", "yellow"),
-    ("CritChance_A", "A. Exclamation", "Crit Chance", "Bang", "yellow"),
-    ("CritChance_B", "B. Double exclamation", "Crit Chance", "DoubleBang", "yellow"),
-    ("CritChance_C", "C. Percent", "Crit Chance", "Percent", "yellow"),
-    ("CritChance_D", "D. Bullseye", "Crit Chance", "Target", "yellow"),
-    ("CritDamage_A_red", "A on the red burst", "Crit Damage", "Sword", "red"),
-    ("CritChance_A_red", "A on the red burst", "Crit Chance", "Bang", "red"),
-    ("CritChance_C_red", "C on the red burst", "Crit Chance", "Percent", "red"),
+    ("CritDamage", "Inner burst 72%", "Crit Damage", "SwordUp", "yellow"),
+    ("CritChance", "Inner burst 72%", "Crit Chance", "Bang", "yellow"),
+    ("CritDamage_66", "Inner burst 66%", "Crit Damage", "SwordUp", "yellow66"),
+    ("CritChance_66", "Inner burst 66%", "Crit Chance", "Bang", "yellow66"),
+    ("CritDamage_80", "Inner burst 80%", "Crit Damage", "SwordUp", "yellow80"),
+    ("CritChance_80", "Inner burst 80%", "Crit Chance", "Bang", "yellow80"),
 ]
 
 
 def icon(export, symbol, bg, size=150):
     id_ = export.replace("_", "")
     body = BACKGROUNDS[bg](id_ + "bg") + "\n" + SYMBOLS[symbol](id_) + "\n" + SPARKLE
-    if symbol == "Percent" and bg == "red":
-        body = BACKGROUNDS[bg](id_ + "bg") + "\n" + percent(id_, ("#ffffff", "#dfe6ee"), "#d42638") + "\n" + SPARKLE
     return (f'<svg data-export="{export}" role="img" aria-label="{export}" viewBox="0 0 128 128" '
             f'style="width: {size}px; height: {size}px">\n{body}\n</svg>')
 
