@@ -164,9 +164,20 @@ local function fitBadge(badge: TextLabel)
 		local pxPerEm = bounds.X / total
 		shift = -(massX / mass - total / 2) * pxPerEm / holder.AbsoluteSize.X
 	end
-	local x = 0.5 + shift
-	if math.abs(badge.Position.X.Scale - x) > 0.001 then
-		badge.Position = UDim2.new(x, 0, badge.Position.Y.Scale, 0)
+	-- Then onto whole pixels (2026-10-23, measured in a playtest): Roblox draws text that
+	-- starts part-way into a pixel from the next whole pixel, which put every number about
+	-- 1 px right and 1.2 px low at the HUD's size (dead centre at 5x). The label's top-left
+	-- corner goes down to the whole pixel at or before where centring puts it; measured
+	-- after: "25" within 0.3 px both ways. It's worked out from the badge's own position
+	-- (the label's moving doesn't move the badge, so this never feeds itself).
+	local W, H = holder.AbsoluteSize.X, holder.AbsoluteSize.Y
+	local lw, lh = badge.AbsoluteSize.X, badge.AbsoluteSize.Y
+	local left = holder.AbsolutePosition.X + (0.5 + shift) * W - badge.AnchorPoint.X * lw
+	local top = holder.AbsolutePosition.Y + 0.5 * H - badge.AnchorPoint.Y * lh
+	local x = 0.5 + shift + (math.floor(left + 1e-3) - left) / W
+	local y = 0.5 + (math.floor(top + 1e-3) - top) / H
+	if math.abs(badge.Position.X.Scale - x) > 1e-5 or math.abs(badge.Position.Y.Scale - y) > 1e-5 then
+		badge.Position = UDim2.fromScale(x, y)
 	end
 end
 
@@ -317,6 +328,13 @@ end
 function PlayerCardUI.watchBadge(badge: TextLabel)
 	for _, property in { "AbsoluteSize", "TextBounds", "Text" } do
 		badge:GetPropertyChangedSignal(property):Connect(function()
+			fitBadge(badge)
+		end)
+	end
+	-- the whole-pixel snap follows the badge wherever it moves (a panel popping open)
+	local holder = badge.Parent
+	if holder and holder:IsA("GuiObject") then
+		holder:GetPropertyChangedSignal("AbsolutePosition"):Connect(function()
 			fitBadge(badge)
 		end)
 	end
