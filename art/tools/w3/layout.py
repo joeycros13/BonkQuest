@@ -28,24 +28,31 @@ def wobble(a, b):
     return 0.6 * math.sin(a * 0.11 + b * 0.07) + 0.4 * math.sin(a * 0.043 - b * 0.12 + 1.7)
 
 
+def ceil_at(x, z):
+    """The cave's ceiling height over a point (from its lower corner on the 2-stud grid), or None
+    where it's rock."""
+    d, s = Z0 - z, x - CX
+    best = None
+    for (cd, hl, hw, ceil) in HALLS:
+        if ((d - cd) / hl) ** 2 + (s / hw) ** 2 <= 1 + 0.12 * wobble(x, z):
+            best = max(best or 0, ceil)
+    for (a, b, base, bow, w) in LANES:
+        if a <= d <= b:
+            off = base + bow * math.sin(math.pi * (d - a) / (b - a))
+            for side in (-1, 1):
+                if abs(s - side * off) <= w / 2 + 2 * wobble(x, z):
+                    best = max(best or 0, LANE_CEIL)
+    return best
+
+
 def cave_cells():
     """(x, z) of every open 2-stud cell -> its ceiling height."""
     cells = {}
     for x in range(CX - 140, CX + 140, 2):
         for z in range(Z0 - 520, Z0 + 2, 2):
-            d, s = Z0 - z, x - CX
-            best = None
-            for (cd, hl, hw, ceil) in HALLS:
-                if ((d - cd) / hl) ** 2 + (s / hw) ** 2 <= 1 + 0.12 * wobble(x, z):
-                    best = max(best or 0, ceil)
-            for (a, b, base, bow, w) in LANES:
-                if a <= d <= b:
-                    off = base + bow * math.sin(math.pi * (d - a) / (b - a))
-                    for side in (-1, 1):
-                        if abs(s - side * off) <= w / 2 + 2 * wobble(x, z):
-                            best = max(best or 0, LANE_CEIL)
-            if best:
-                cells[(x, z)] = best
+            c = ceil_at(x, z)
+            if c:
+                cells[(x, z)] = c
     return cells
 
 
