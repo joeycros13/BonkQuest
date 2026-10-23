@@ -1,20 +1,23 @@
 --!strict
 -- StatsUI: the Stats panel (2026-10-19, option A "stat sheet" on
 -- https://claude.ai/artifact/E7RQQXPYH2ZCKBB6V4YaWk), opened from the HUD's
--- WeaponHud/SideButtons/StatsButton. Every stat shows as its total MULTIPLIER, never a
--- percentage (the user's rule), with a chip for each thing that feeds it:
+-- WeaponHud/SideButtons/StatsButton. Every stat shows as its total MULTIPLIER (the user's
+-- rule), except chances and regen, which are percentages since 2026-10-22 (the user: Crit
+-- Chance, Regen, Gathering), with a chip for each thing that feeds it:
 --   Max Health    the number: (level's HP + armour) x the Health upgrade (flat bonuses
 --                 first, then multipliers)
 --   Luck / Coins / EXP   the shop's passes and boosts (LuckBoost / CoinBoost / ExpBoost,
 --                 ShopService) x the upgrade
 --   Damage        the Strength potion x the Attack upgrade
 --   Defense       how much tougher: 1 / (armour's damage x Stoneskin x the Defense upgrade)
---   Attack Speed, Gathering   the upgrade (Upgrades.multiplier)
---   Regen         against the base 1% a second: the upgrade's share plus a Regen potion's
---                 (Gathering is yield, so a Gatherer's potion, which hits harder, isn't on it)
+--   Attack Speed  the upgrade (Upgrades.multiplier)
+--   Gathering     the chance a tree's or rock's drop comes doubled (the upgrade; a Gatherer's
+--                 potion makes tools hit harder, so it isn't on it)
+--   Regen         the share of max HP healed a second: Roblox's base 1% plus the upgrade's
+--                 share plus a Regen potion's
 --   Sprint        the Sprint upgrade x a Swiftness potion ("Locked" before Sprint 1)
 --   Crit Damage   a critical hit's whole multiplier (x1.50 at the start, the upgrade adds 0.05)
---   Crit Chance   against the base 10% of hits (2026-10-22, with the two crit upgrades)
+--   Crit Chance   the chance a hit is critical: the base 10% plus the upgrade
 -- An admin's own test settings show as an "Admin" chip, only while one is set: the
 -- damage multiplier (DamageMultiplier) and the max-health override (MaxHealthOverride,
 -- which replaces the whole max), so the panel matches what they really have.
@@ -43,7 +46,7 @@ local player = Players.LocalPlayer
 
 -- Every word the panel shows.
 local Text = {
-	pill = "Level %s · all your multipliers",
+	pill = "Level %s · all your stats",
 	locked = "Locked",
 	noBonus = "No bonus yet",
 	level = "Level HP %s",
@@ -54,6 +57,8 @@ local Text = {
 	armourDefense = "Armour %s",
 	base = "Base 1% a second",
 	critBase = "Base %s of hits",
+	plus = "+%s", -- an upgrade's or potion's share, "Upgrade +0.45%"
+	doubleNote = "Chance to double drops",
 	critDamageBase = "Base %s",
 	adminX = "Admin %s",
 	adminOverride = "Admin override",
@@ -85,11 +90,11 @@ local function upgradeX(id: string): number
 	return if def then Upgrades.multiplier(def, Upgrades.level(player, id)) else 1
 end
 
--- A potion's name for a chip ("Strength II"), or nil while none runs.
+-- A potion's short name for a chip ("Strength II"), or nil while none runs.
 local function potionName(kind: string): string?
 	local tier = Potions.running(player, kind)
 	local def = tier and Potions.get(kind .. tier)
-	return def and def.name or nil
+	return def and (def.short or def.name) or nil
 end
 
 -- One stat's total and its source chips.
@@ -166,18 +171,19 @@ local function measure(id: string): (string, { string }, boolean)
 		end
 		return times(upgradeX(id) * swift), parts, true
 	elseif id == "Regen" then
+		-- percentages of max HP a second: Roblox's own 1%, the upgrade's share, a potion's
 		table.insert(parts, Text.base)
+		local upgrade = Upgrades.value(player, id)
 		if up then
-			table.insert(parts, Text.upgrade:format(times(upgradeX(id))))
+			table.insert(parts, Text.upgrade:format(Text.plus:format(Upgrades.percent(upgrade))))
 		end
-		-- a Regen potion adds its own share of the base 1% a second
-		local regen = Potions.multiplier(player, "Regen")
+		local potion = Potions.power(player, "Regen")
 		local name = potionName("Regen")
-		if name then
-			table.insert(parts, Text.potion:format(name, times(regen)))
+		if name and potion > 0 then
+			table.insert(parts, Text.potion:format(name, Text.plus:format(Upgrades.percent(potion))))
 		end
-		local total = upgradeX(id) + regen - 1
-		return times(total), parts, total > 1.0001
+		local total = Upgrades.BASE_REGEN + upgrade + potion
+		return Upgrades.percent(total), parts, total > Upgrades.BASE_REGEN + 1e-6
 	elseif id == "CritDamage" then
 		local def = Upgrades.get(id)
 		table.insert(parts, Text.critDamageBase:format(times(def and def.base or 1.5)))
@@ -187,13 +193,22 @@ local function measure(id: string): (string, { string }, boolean)
 		return times(Upgrades.value(player, id)), parts, up
 	elseif id == "CritChance" then
 		local def = Upgrades.get(id)
-		table.insert(parts, Text.critBase:format(("%d%%"):format(math.floor((def and def.base or 0.1) * 100 + 0.5))))
+		local base = def and def.base or 0.1
+		table.insert(parts, Text.critBase:format(Upgrades.percent(base)))
+		local value = Upgrades.value(player, id)
 		if up then
-			table.insert(parts, Text.upgrade:format(times(upgradeX(id))))
+			table.insert(parts, Text.upgrade:format(Text.plus:format(Upgrades.percent(value - base))))
 		end
-		return times(upgradeX(id)), parts, up
+		return Upgrades.percent(value), parts, up
+	elseif id == "Gathering" then
+		table.insert(parts, Text.doubleNote)
+		local value = Upgrades.value(player, id)
+		if up then
+			table.insert(parts, Text.upgrade:format(Text.plus:format(Upgrades.percent(value))))
+		end
+		return Upgrades.percent(value), parts, up
 	end
-	-- Attack Speed, Gathering: the upgrade alone
+	-- Attack Speed: the upgrade alone
 	if up then
 		table.insert(parts, Text.upgrade:format(times(upgradeX(id))))
 	end
