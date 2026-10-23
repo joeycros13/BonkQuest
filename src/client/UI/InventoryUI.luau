@@ -58,7 +58,9 @@ local UiSound = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = Shared:WaitForChild("Config")
 local Armor = require(Config:WaitForChild("Armor"))
-local Infuse = require(Config:WaitForChild("Infuse"))
+local Bonuses = require(Config:WaitForChild("Bonuses"))
+local Potions = require(Config:WaitForChild("Potions"))
+local Upgrades = require(Config:WaitForChild("Upgrades"))
 local Materials = require(Config:WaitForChild("Materials"))
 local Potions = require(Config:WaitForChild("Potions"))
 local Sell = require(Config:WaitForChild("Sell"))
@@ -269,7 +271,9 @@ end
 --                       user): Speed moves up into Regen's slot, and the card's Face / Lip /
 --                       Blocker end under the last row shown (each row's SlotY attribute keeps
 --                       its authored spot)
--- Both follow the Worldheart Blade's tier (Infuse.adjust).
+-- Both show the player's real numbers (2026-10-23, the user: every bonus, everywhere but
+-- the Index): the weapon after its Worldheart tier, the Attack Speed upgrade and every damage
+-- bonus (Config/Bonuses.weapon), the set's health after the Health upgrade.
 local function setRow(card: Instance, row: string, value: string, on: boolean)
 	local frame = card:FindFirstChild(row, true)
 	if not (frame and frame:IsA("GuiObject")) then
@@ -302,7 +306,7 @@ local function renderStatCards()
 	local weaponCard = find("WeaponStats", "GuiObject")
 	if weaponCard then
 		local def = WeaponController.selected()
-		local swing = def and Infuse.adjust(player, def)
+		local swing = def and Bonuses.weapon(player, def)
 		local name = weaponCard:FindFirstChild("ItemName", true)
 		if name and name:IsA("TextLabel") then
 			name.Text = def and def.name or ""
@@ -314,7 +318,7 @@ local function renderStatCards()
 		end
 		local range = (weaponCard:GetAttribute("RangeFormat") or "%s") :: string
 		local speed = (weaponCard:GetAttribute("SpeedFormat") or "%s s") :: string
-		setRow(weaponCard, "Row_Damage", Format.commas(swing and swing.damage or 0), true)
+		setRow(weaponCard, "Row_Damage", Format.commas(math.floor((swing and swing.damage or 0) + 0.5)), true)
 		setRow(weaponCard, "Row_Range", range:format(("%.1f"):format(swing and swing.reach or 0):gsub("%.0$", "")), true)
 		setRow(weaponCard, "Row_Speed", speed:format(("%.2f"):format(swing and swing.cooldown or 0):gsub("0$", "")), true)
 	end
@@ -329,7 +333,7 @@ local function renderStatCards()
 		local function percent(share: number): string
 			return (("%.2f"):format(share * 100):gsub("0+$", ""):gsub("%.$", "")) .. "%"
 		end
-		setRow(armorCard, "Row_Health", if set then "+" .. Format.commas(set.health) else none, set ~= nil)
+		setRow(armorCard, "Row_Health", if set then "+" .. Format.commas(math.floor(set.health * Bonuses.health(player) + 0.5)) else none, set ~= nil)
 		setRow(armorCard, "Row_Defense", if set then percent(set.defense) else none, set ~= nil)
 		local regen = set and set.regen or 0
 		local fast = set and set.speed or 0
@@ -378,10 +382,14 @@ end
 -- in the header (its Format attribute sets the wording).
 local function renderStats(count: number)
 	renderStatCards()
+	-- the mini cards are the player's own totals: a hit's damage with every bonus, max
+	-- health, and the whole damage reduction (armour, Stoneskin and the Defense upgrade
+	-- multiply: Config/Bonuses)
 	local current = WeaponController.selected()
 	local damage = find("DamageValue", "TextLabel")
 	if damage then
-		damage.Text = Format.commas(current and current.damage or 0)
+		local swing = current and Bonuses.weapon(player, current)
+		damage.Text = Format.commas(math.floor((swing and swing.damage or 0) + 0.5))
 	end
 	local health = find("HealthValue", "TextLabel")
 	local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
@@ -391,7 +399,9 @@ local function renderStats(count: number)
 	local defense = find("DefenseValue", "TextLabel")
 	if defense then
 		local value = player:GetAttribute("ArmorDefense")
-		defense.Text = math.floor((if type(value) == "number" then value else 0) * 100 + 0.5) .. "%"
+		local armour = 1 - math.clamp(if type(value) == "number" then value else 0, 0, 0.9)
+		local taken = armour * Potions.multiplier(player, "Stoneskin") * Upgrades.value(player, "Defense")
+		defense.Text = math.floor((1 - taken) * 100 + 0.5) .. "%"
 	end
 	renderSockets()
 	local capacity = find("Capacity", "GuiObject")
@@ -1128,6 +1138,12 @@ local function wirePanel(gui: ScreenGui)
 	for _, name in { "OwnedWeapons", "OwnedArmor", "EquippedArmor", "Materials", "OwnedTools", "Potions" } do
 		player:GetAttributeChangedSignal(name):Connect(renderGrid)
 	end
+	-- every bonus the shown stats include (an upgrade bought, a potion starting or ending...)
+	for _, name in Bonuses.Watch do
+		player:GetAttributeChangedSignal(name):Connect(renderGrid)
+	end
+	player:GetAttributeChangedSignal("PotionTier_Stoneskin"):Connect(renderGrid)
+	player:GetAttributeChangedSignal(Upgrades.attr("Defense")):Connect(renderGrid)
 	-- the max-health change lands just after the armour's own attributes
 	player:GetAttributeChangedSignal("ArmorHealth"):Connect(function()
 		task.delay(0.1, renderGrid)

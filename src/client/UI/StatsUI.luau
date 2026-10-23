@@ -6,16 +6,19 @@
 -- Chance, Regen, Gathering), with a chip for each thing that feeds it:
 --   Max Health    the number: (level's HP + armour) x the Health upgrade (flat bonuses
 --                 first, then multipliers)
---   Luck / Coins / EXP   the shop's passes and boosts (LuckBoost / CoinBoost / ExpBoost,
---                 ShopService) x the upgrade
---   Damage        the Strength potion x the Attack upgrade
+--   Luck / Coins / EXP   1 + the shop's passes and boosts' share (LuckBoost / CoinBoost /
+--                 ExpBoost, ShopService) + the upgrade's share
+--   Damage        1 + the Strength potion's share + the Attack upgrade's
+-- Bonuses ADD (2026-10-23, the user: x1.5 and x2 make x2.5): the totals come from
+-- Config/Bonuses, the same numbers the server uses, and each chip shows its share ("+50%").
 --   Defense       how much tougher: 1 / (armour's damage x Stoneskin x the Defense upgrade)
 --   Attack Speed  the upgrade (Upgrades.multiplier)
 --   Gathering     the chance a tree's or rock's drop comes doubled (the upgrade; a Gatherer's
 --                 potion makes tools hit harder, so it isn't on it)
 --   Regen         the share of max HP healed a second: Roblox's base 1% plus the upgrade's
 --                 share plus a Regen potion's
---   Sprint        the Sprint upgrade x a Swiftness potion ("Locked" before Sprint 1)
+--   Sprint        1 + the Sprint upgrade's share + a Swiftness potion's + the armour's
+--                 ("Locked" before Sprint 1)
 --   Crit Damage   a critical hit's whole multiplier (x1.50 at the start, the upgrade adds 0.05)
 --   Crit Chance   the chance a hit is critical: the base 10% plus the upgrade
 -- An admin's own test settings show as an "Admin" chip, only while one is set: the
@@ -33,7 +36,7 @@ local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
 local Upgrades = require(Config:WaitForChild("Upgrades"))
 local Potions = require(Config:WaitForChild("Potions"))
 local Leveling = require(Config:WaitForChild("Leveling"))
-local Armor = require(Config:WaitForChild("Armor"))
+local Bonuses = require(Config:WaitForChild("Bonuses"))
 
 local Util = script.Parent.Parent:WaitForChild("Util")
 local Format = require(Util:WaitForChild("Format"))
@@ -88,6 +91,11 @@ end
 
 local times = Upgrades.times
 
+-- A multiplier's share as a chip amount: x1.5 -> "+50%".
+local function share(multiplier: number): string
+	return Text.plus:format(Upgrades.percent(multiplier - 1))
+end
+
 local function upgradeX(id: string): number
 	local def = Upgrades.get(id)
 	return if def then Upgrades.multiplier(def, Upgrades.level(player, id)) else 1
@@ -123,29 +131,30 @@ local function measure(id: string): (string, { string }, boolean)
 		local max = if humanoid then humanoid.MaxHealth else Leveling.maxHealth(level)
 		return Format.commas(math.floor(max + 0.5)), parts, armour > 0 or up or override
 	elseif id == "Luck" or id == "Coins" or id == "Exp" then
-		local shop = number(({ Luck = "LuckBoost", Coins = "CoinBoost", Exp = "ExpBoost" })[id], 1)
+		local shop = Bonuses.shop(player, id)
 		if shop ~= 1 then
-			table.insert(parts, Text.shop:format(times(shop)))
+			table.insert(parts, Text.shop:format(share(shop)))
 		end
 		if up then
-			table.insert(parts, Text.upgrade:format(times(upgradeX(id))))
+			table.insert(parts, Text.upgrade:format(share(upgradeX(id))))
 		end
-		local total = shop * upgradeX(id)
+		local total = Bonuses.total(player, id)
 		return times(total), parts, total > 1.0001
 	elseif id == "Attack" then
 		local strength = Potions.multiplier(player, "Strength")
 		local name = potionName("Strength")
 		if name then
-			table.insert(parts, Text.potion:format(name, times(strength)))
+			table.insert(parts, Text.potion:format(name, share(strength)))
 		end
 		if up then
-			table.insert(parts, Text.upgrade:format(times(upgradeX(id))))
+			table.insert(parts, Text.upgrade:format(share(upgradeX(id))))
 		end
+		-- the admin's test multiplier works on top of the added bonuses
 		local admin = number("DamageMultiplier", 1)
 		if admin ~= 1 then
 			table.insert(parts, Text.adminX:format(times(admin)))
 		end
-		local total = strength * upgradeX(id) * admin
+		local total = Bonuses.damage(player)
 		return times(total), parts, total > 1.0001
 	elseif id == "Defense" then
 		local armour = 1 - math.clamp(number("ArmorDefense", 0), 0, 0.9)
@@ -172,17 +181,16 @@ local function measure(id: string): (string, { string }, boolean)
 			end
 			return Text.locked, { Text.noBonus }, false
 		end
-		table.insert(parts, Text.upgrade:format(times(upgradeX(id))))
+		table.insert(parts, Text.upgrade:format(share(upgradeX(id))))
 		local swift = Potions.multiplier(player, "Swiftness")
 		local name = potionName("Swiftness")
 		if name then
-			table.insert(parts, Text.potion:format(name, times(swift)))
+			table.insert(parts, Text.potion:format(name, share(swift)))
 		end
 		if armour > 0 then
 			table.insert(parts, Text.armourSpeed:format(Upgrades.percent(armour)))
 		end
-		local boost = math.min(swift * (1 + armour), 1 + Armor.MAX_SPEED)
-		return times(upgradeX(id) * boost), parts, true
+		return times(Bonuses.speed(player, true)), parts, true
 	elseif id == "Regen" then
 		-- percentages of max HP a second: Roblox's own 1%, the upgrade's share, a potion's
 		table.insert(parts, Text.base)

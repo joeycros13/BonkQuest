@@ -68,7 +68,7 @@ Upgrades.WORLD_SCALE = { 1, 4, 12, 30, 70, 150, 300, 600 }
 Upgrades.Defs = {
 	Sprint = { id = "Sprint", name = "Sprint", icon = "rbxassetid://73296530776054", base = 1.16, step = 0.04, show = "x", format = "%s sprint speed", costScale = 0.5, order = 1 },
 	Luck = { id = "Luck", name = "Luck", icon = "rbxassetid://140530795448870", base = 1, step = 0.05, show = "x", format = "%s luck", order = 2 },
-	Health = { id = "Health", name = "Health", icon = "rbxassetid://82838416987322", base = 1, step = 0.05, show = "x", format = "%s max health", order = 3 },
+	Health = { id = "Health", name = "Health", icon = "rbxassetid://104320402035577", base = 1, step = 0.05, show = "x", format = "%s max health", order = 3 },
 	Defense = { id = "Defense", name = "Defense", icon = "rbxassetid://87669341236749", base = 1, step = -0.01, show = "inverse", format = "%s defense", order = 4 },
 	Attack = { id = "Attack", name = "Attack", icon = "rbxassetid://101904574763468", base = 1, step = 0.03, show = "x", format = "%s damage", order = 5 },
 	AttackSpeed = { id = "AttackSpeed", name = "Attack Speed", icon = "rbxassetid://94360279558290", base = 1, step = -0.015, show = "inverse", format = "%s attack speed", order = 6 },

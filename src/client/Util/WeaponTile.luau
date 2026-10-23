@@ -19,11 +19,14 @@
 --   WeaponTile.skin(rarity)          the rarity's skin image
 --   WeaponTile.attribute(name)       any template attribute
 --   WeaponTile.showModel(viewport, id) a weapon framed in a 3D view
---   WeaponTile.dps(def) / dpsText(def)  a weapon's damage per second as it swings (its
---                                    damage / cooldown after the Worldheart Blade's tier):
---                                    the pill shows it and the Inventory ranks weapons by it
---                                    (2026-10-22, the user: damage alone made Equip Best pick
---                                    slow secret weapons over the faster Worldheart Blade)
+--   WeaponTile.dps(def, base?) / dpsText(def, base?)  a weapon's damage per second as the
+--                                    player swings it (Config/Bonuses.dps: the Worldheart tier,
+--                                    the Attack Speed upgrade, Strength, the Attack upgrade...;
+--                                    2026-10-23, the user: every screen but the Index shows
+--                                    your real numbers); base = true for the Index's plain
+--                                    numbers (the Worldheart tier only). The pill shows it and
+--                                    the Inventory ranks weapons by it (2026-10-22, the user:
+--                                    damage alone made Equip Best pick slow secret weapons)
 -- opts: known (false = a question mark on a dimmed tile), name / stat (false
 -- hides the tile's own name / damage pill where the screen shows them itself),
 -- statText (the pill's words instead of "N DPS": armour sets and materials use
@@ -36,6 +39,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- the Worldheart Blade's pill shows the player's own tier (Config/Infuse)
 local Infuse = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("Infuse"))
+local Bonuses = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("Bonuses"))
 
 local Format = require(script.Parent:WaitForChild("Format"))
 
@@ -56,22 +60,26 @@ function WeaponTile.attribute(name: string, fallback: any): any
 	return if value ~= nil then value else fallback
 end
 
--- A weapon's damage per second as it swings (Infuse.adjust: the Worldheart Blade's tier).
-function WeaponTile.dps(def: any): number
+-- A weapon's damage per second as the player swings it (Config/Bonuses), or with `base`
+-- only its Worldheart tier (Infuse.adjust), as the Index shows it.
+function WeaponTile.dps(def: any, base: boolean?): number
+	if not base then
+		return Bonuses.dps(Players.LocalPlayer, def)
+	end
 	local swing = Infuse.adjust(Players.LocalPlayer, def)
 	local damage, cooldown = swing.damage or 0, swing.cooldown or 1
 	return if cooldown > 0 then damage / cooldown else damage
 end
 
 -- "7.5", "1,571": a weapon's DPS as a number, one decimal below 100, whole with commas above.
-function WeaponTile.dpsNumber(def: any): string
-	local dps = WeaponTile.dps(def)
+function WeaponTile.dpsNumber(def: any, base: boolean?): string
+	local dps = WeaponTile.dps(def, base)
 	return if dps < 100 then (("%.1f"):format(dps):gsub("%.0$", "")) else Format.commas(math.floor(dps + 0.5))
 end
 
 -- "7.5 DPS", "1,571 DPS"
-function WeaponTile.dpsText(def: any): string
-	return (WeaponTile.attribute("DpsFormat", "%s DPS") :: string):format(WeaponTile.dpsNumber(def))
+function WeaponTile.dpsText(def: any, base: boolean?): string
+	return (WeaponTile.attribute("DpsFormat", "%s DPS") :: string):format(WeaponTile.dpsNumber(def, base))
 end
 
 function WeaponTile.skin(rarity: string?): string

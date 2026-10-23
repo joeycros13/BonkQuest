@@ -44,6 +44,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = Shared:WaitForChild("Config")
 local Remotes = require(Shared:WaitForChild("Remotes"))
 local Armor = require(Config:WaitForChild("Armor"))
+local Bonuses = require(Config:WaitForChild("Bonuses"))
 local Materials = require(Config:WaitForChild("Materials"))
 local Potions = require(Config:WaitForChild("Potions"))
 local Worlds = require(Config:WaitForChild("Worlds"))
@@ -317,7 +318,8 @@ local function fillDetail(def: Armor.ArmorDef, counts: { [string]: number })
 	showCards(false, def)
 	info.Blurb.Text = def.blurb
 	card("DefenseCard").Value.Text = math.floor(def.defense * 100 + 0.5) .. "%"
-	card("HealthCard").Value.Text = "+" .. Format.commas(def.health)
+	-- with the Health upgrade (Config/Bonuses; 2026-10-23, the user: real numbers everywhere but the Index)
+	card("HealthCard").Value.Text = "+" .. Format.commas(math.floor(def.health * Bonuses.health(player) + 0.5))
 	card("RegenCard").Value.Text = "+" .. percentText(def.regen or 0) .. "%/s"
 	card("SpeedCard").Value.Text = "+" .. percentText(def.speed or 0) .. "%"
 
@@ -546,7 +548,7 @@ local function wire(found: ScreenGui)
 			end)
 		end
 	end
-	for _, name in { "Coins", "Level", "Materials", "Potions", "OwnedArmor", "EquippedArmor", "CurrentWorld" } do
+	for _, name in { "Coins", "Level", "Materials", "Potions", "OwnedArmor", "EquippedArmor", "CurrentWorld", "Upgrade_Health" } do
 		player:GetAttributeChangedSignal(name):Connect(CraftingUI.refresh)
 	end
 	found:GetPropertyChangedSignal("Enabled"):Connect(CraftingUI.refresh)

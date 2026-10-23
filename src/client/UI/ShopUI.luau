@@ -52,6 +52,7 @@ local Materials = require(Shared:WaitForChild("Config"):WaitForChild("Materials"
 local Weapons = require(Shared:WaitForChild("Config"):WaitForChild("Weapons"))
 local Worlds = require(Shared:WaitForChild("Config"):WaitForChild("Worlds"))
 local Format = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("Format"))
+local Bonuses = require(Shared:WaitForChild("Config"):WaitForChild("Bonuses"))
 
 local ShopUI = {}
 
@@ -249,6 +250,26 @@ local function styleButton(row: Instance, def: any, balance: number)
 	buy.AutoButtonColor = false
 end
 
+-- A weapon row's stat chips come from Config/Weapons (2026-10-20: they were typed by hand and
+-- went stale when the health ladder rescaled World 2 and 3's weapons): Dps (the purple chip in
+-- front, "15 DPS", WeaponTile.dpsText; 2026-10-22, like the Inventory), Damage, Speed (swings a
+-- second, "2.5/s") and Reach, each chip's Content/Value. They show what the player would really
+-- swing, with every bonus they have (Config/Bonuses; 2026-10-23, the user), so refresh refills them.
+local function fillStats(row: Instance, def: any)
+	local function stat(chip: string, text: string)
+		local holder = row:FindFirstChild(chip)
+		local value = holder and holder:FindFirstChild("Value", true)
+		if value and value:IsA("TextLabel") then
+			value.Text = text
+		end
+	end
+	local swing = Bonuses.weapon(player, def)
+	stat("Dps", WeaponTile.dpsText(def))
+	stat("Damage", Format.commas(math.floor((swing.damage or 0) + 0.5)))
+	stat("Speed", (("%.1f"):format(1 / (swing.cooldown or 1)):gsub("%.0$", "")) .. "/s")
+	stat("Reach", (("%.1f"):format(swing.reach or 0):gsub("%.0$", "")))
+end
+
 local function refresh()
 	if not shop then
 		return
@@ -273,6 +294,8 @@ local function refresh()
 			styleButton(row, def, balance)
 			if isTool(row) then
 				fillRecipe(row, def)
+			else
+				fillStats(row, def)
 			end
 		end
 		if row:IsA("GuiObject") then
@@ -317,23 +340,6 @@ local function wire(gui: ScreenGui)
 				tile.Size = UDim2.fromScale(1, 1)
 				tile.Parent = art
 			end
-		end
-		-- a weapon row's stat chips come from Config/Weapons (2026-10-20: they were typed by hand and
-		-- went stale when the health ladder rescaled World 2 and 3's weapons): Dps (the purple chip in
-		-- front, "15 DPS", WeaponTile.dpsText; 2026-10-22, like the Inventory), Damage, Speed (swings a
-		-- second, "2.5/s") and Reach, each chip's Content/Value
-		if def and not isTool(row) then
-			local function stat(chip: string, text: string)
-				local holder = row:FindFirstChild(chip)
-				local value = holder and holder:FindFirstChild("Value", true)
-				if value and value:IsA("TextLabel") then
-					value.Text = text
-				end
-			end
-			stat("Dps", WeaponTile.dpsText(def))
-			stat("Damage", Format.commas(def.damage or 0))
-			stat("Speed", (("%.1f"):format(1 / (def.cooldown or 1)):gsub("%.0$", "")) .. "/s")
-			stat("Reach", (("%.1f"):format(def.reach or 0):gsub("%.0$", "")))
 		end
 		-- an upgrade's path: the previous tool's tile in UpgradeFrom (the shared tile, like Art)
 		local from = row:FindFirstChild("UpgradeFrom")
@@ -388,6 +394,9 @@ local function wire(gui: ScreenGui)
 		end
 	end
 	player:GetAttributeChangedSignal("CurrentWorld"):Connect(refresh)
+	for _, name in Bonuses.Watch do
+		player:GetAttributeChangedSignal(name):Connect(refresh)
+	end
 	gui:GetPropertyChangedSignal("Enabled"):Connect(refresh)
 	refresh()
 end

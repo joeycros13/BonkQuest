@@ -76,6 +76,7 @@ local Potions = require(Config:WaitForChild("Potions"))
 local Fishing = require(Config:WaitForChild("Fishing"))
 local Gathering = require(Config:WaitForChild("Gathering"))
 local Infuse = require(Config:WaitForChild("Infuse"))
+local Bonuses = require(Config:WaitForChild("Bonuses"))
 
 local Util = script.Parent.Parent:WaitForChild("Util")
 local WeaponTile = require(Util:WaitForChild("WeaponTile"))
@@ -247,8 +248,8 @@ end
 -- A drop chance with this player's luck applied (LuckBoost: passes and timed
 -- boosts multiply together, ShopService), capped at 100% like the server's roll.
 function IndexUI.luckyChance(chance: number): number
-	local luck = Players.LocalPlayer:GetAttribute("LuckBoost")
-	luck = (if type(luck) == "number" and luck > 0 then luck else 1) * Upgrades.value(Players.LocalPlayer, "Luck")
+	-- passes, boosts and the Luck upgrade, added (Config/Bonuses)
+	local luck = Bonuses.luck(Players.LocalPlayer)
 	return math.min(1, chance * luck)
 end
 local luckyChance = IndexUI.luckyChance
@@ -581,7 +582,7 @@ local function renderWeaponSlip(slip: Instance, def: any)
 		local swing = Infuse.adjust(Players.LocalPlayer, def)
 		local dps = stats:FindFirstChild("DpsStat")
 		if dps then
-			setText(dps, "Value", (attribute(stats, "DpsFormat", "%s DPS") :: string):format(WeaponTile.dpsNumber(def)))
+			setText(dps, "Value", (attribute(stats, "DpsFormat", "%s DPS") :: string):format(WeaponTile.dpsNumber(def, true)))
 		end
 		local damage = stats:FindFirstChild("DamageStat")
 		if damage then

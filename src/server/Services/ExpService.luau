@@ -30,6 +30,7 @@ local Balance = require(Config:WaitForChild("Balance"))
 local Enemies = require(Config:WaitForChild("Enemies"))
 local Leveling = require(Config:WaitForChild("Leveling"))
 local Upgrades = require(Config:WaitForChild("Upgrades"))
+local Bonuses = require(Config:WaitForChild("Bonuses"))
 
 local ExpService = {}
 
@@ -85,7 +86,7 @@ function ExpService.maxHealth(player: Player): number
 	local armor = player:GetAttribute("ArmorHealth")
 	local bonus = if type(armor) == "number" and armor > 0 then armor else 0
 	-- the Health upgrade multiplies the lot (Config/Upgrades)
-	return math.floor((Leveling.maxHealth((Leveling.fromTotal(ExpService.get(player)))) + bonus) * Upgrades.value(player, "Health") + 0.5)
+	return math.floor((Leveling.maxHealth((Leveling.fromTotal(ExpService.get(player)))) + bonus) * Bonuses.health(player) + 0.5)
 end
 
 -- Bring the character's max health in line. Health rises by any gain (so a
@@ -143,8 +144,8 @@ local function onKill(enemy: any, killer: Player?)
 	if not amount or amount <= 0 then
 		return
 	end
-	local boost = killer:GetAttribute("ExpBoost")
-	boost = (if type(boost) == "number" and boost > 0 then boost else 1) * Upgrades.value(killer, "Exp")
+	-- passes and boosts (ExpBoost) plus the EXP upgrade, added (Config/Bonuses)
+	local boost = Bonuses.exp(killer)
 	if boost ~= 1 then
 		amount = math.max(1, math.floor(amount * boost + 0.5))
 	end
