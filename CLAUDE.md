@@ -14,7 +14,7 @@ C:\FirstRobloxGame\           the git repo (GitHub joeycros13/BonkQuest), branch
               ui\ (hud, inventory, shop, quest, index, tiles, buttons, admin, leaderboard...)
               portraits\ (quest, enemies, worlds)  tools\ (the Python/HTML/SVG generators)
   blender\    models.blend            NOT in git; backed up to Google Drive
-  place\      BonkQuest.rbxlx       the live place; NOT in git; backed up to Google Drive
+  place\      BonkQuest.rbxlx       a local backup of the place (the real one is on Roblox since 2026-10-23); NOT in git; Google Drive
   .claude\worktrees\   one per Claude session (managed by the app; not in git)
 ```
 
@@ -48,9 +48,10 @@ The user had the whole map moved so World 1's `Spawns/PlayerSpawn` sits at x 0, 
 
 ## Studio
 
-- Studio opens `place\BonkQuest.rbxlx`. Find the Studio instance with `list_roblox_studios` every session; its id changes whenever Studio reopens.
+- **The place lives on Roblox since 2026-10-23** (the user saved it: place id `101820207841975`, universe `10772560777`, owned by the user's account, private). Studio opens it from the start page (My Experiences), its title reads "Bonk Quest", and **Ctrl+S saves to Roblox** (a version in Game Settings → Version History); **File → Publish to Roblox** (Alt+P) is what players get, so saving never changes the live game. `place\BonkQuest.rbxlx` is now only a backup: File → Save to File As… after a big batch of work, for Google Drive (then reopen from Roblox if the title switches back to the file). Rojo, the MCP tools and playtests work as before. Find the Studio instance with `list_roblox_studios` every session; its id changes whenever Studio reopens.
+- **Remind the user after publishing changes:** DataStores need Game Settings → Security → Enable Studio Access to API Services; the game passes and products in `Config/Shop` still need real ids from the website.
 - Map, UI and model work uses `execute_luau` in the **Edit** datamodel. Edit mode is unavailable while a playtest runs, so stop play first.
-- Changes live in Studio's memory until the user saves. Remind them to save the place (Ctrl+S) after a batch of work.
+- Changes live in Studio's memory until the user saves. Remind them to save the place (Ctrl+S, which saves to Roblox) after a batch of work.
 - **Backups live outside the place (2026-10-20, the user's call: the place had reached 245 MB, 70% of it old backups).** Every dated backup folder these notes name in ServerStorage (`MapBackup_*`, `*SwapBackup_*`, `DecorBackup_*`, `UIBackup_*`, `CodeBackup_2026-10-17_PreRojo`, `HouseBackup` / `FountainBackup` / `TrimsBackup` and the rest, plus `_OldFrame`) is now in `place/backups/ServerStorageBackups_2026-10-20.rbxmx`, one Folder holding all 31 (45,815 instances). To get one back, insert that file in Studio (File → Insert from file, or drag it in) and take what you need. A full copy of the place from before the cleanup is `place/backups/BonkQuest_before_backup_cleanup_2026-10-20.rbxlx`. ServerStorage now holds only `Assets`, `DevTools`, `AudioCandidates_2026-10-07` and the W2/W3 swap and offset modules. A job may still park a backup in ServerStorage, but move it out the same way once the user has approved the change.
 
 ### World folder layout (World 1 tidied 2026-10-20, World 2 the same day; W3 will follow it)
