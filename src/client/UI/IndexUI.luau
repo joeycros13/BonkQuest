@@ -80,6 +80,7 @@ local Infuse = require(Config:WaitForChild("Infuse"))
 local Util = script.Parent.Parent:WaitForChild("Util")
 local WeaponTile = require(Util:WaitForChild("WeaponTile"))
 local Format = require(Util:WaitForChild("Format"))
+local FontDrop = require(Util:WaitForChild("FontDrop"))
 
 local IndexUI = {}
 
@@ -1186,6 +1187,10 @@ local function wirePanel(gui: ScreenGui)
 		end)
 	end
 	local bar = find("Tabs")
+	-- the tab names (Luckiest Guy) sit centred on each pill's face (2026-10-22: they drew high)
+	if bar then
+		FontDrop.watch(bar)
+	end
 	for _, button in (if bar then bar:GetChildren() else {}) :: { Instance } do
 		local name = button:GetAttribute("Tab")
 		if button:IsA("GuiButton") and type(name) == "string" then

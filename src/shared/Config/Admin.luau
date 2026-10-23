@@ -49,7 +49,7 @@ Admin.Text = {
 	healthTitle = "Health",
 	damageTitle = "Damage",
 	giveAll = "Give All",
-	giveAllDone = "Gave %d weapons, %d tools, %d armour sets, %d of every material and %d of every potion",
+	giveAllDone = "Gave %d weapons, %d tools, %d armor sets, %d of every material and %d of every potion",
 	potionsEnded = "Every running potion ended",
 	-- the Upgrades page (2026-10-22)
 	upgradeNote = "Level %d of %d · %s", -- level, max, what it gives now (Upgrades.describe)

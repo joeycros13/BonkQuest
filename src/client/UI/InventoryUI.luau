@@ -223,7 +223,11 @@ local function renderButtons()
 	end
 end
 
--- The Weapon / Armor sockets: the equipped item's icon, or the placeholder.
+-- The Weapon / Armor sockets: the equipped item's rarity tile and icon, filling the whole
+-- socket (Inner/RarityTile is sized past Inner to the socket's edge, and the socket's own
+-- dashed Skin hides under it; 2026-10-22, the user), or the placeholder Skin + SlotIcon.
+-- A weapon is always selected (the Dagger at least), so only the Armor socket ever shows
+-- its placeholder.
 local function renderSockets()
 	local equipment = find("Equipment", "GuiObject")
 	local current = WeaponController.selected()
@@ -246,6 +250,10 @@ local function renderSockets()
 		end
 		if placeholder and placeholder:IsA("GuiObject") then
 			placeholder.Visible = icon == nil
+		end
+		local slotSkin = socket and socket:FindFirstChild("Skin")
+		if slotSkin and slotSkin:IsA("GuiObject") then
+			slotSkin.Visible = def == nil
 		end
 	end
 end
@@ -316,7 +324,7 @@ local function renderStatCards()
 		local none = (armorCard:GetAttribute("NoneText") or "None") :: string
 		local name = armorCard:FindFirstChild("ItemName", true)
 		if name and name:IsA("TextLabel") then
-			name.Text = if set then set.name else (armorCard:GetAttribute("EmptyName") or "No armour") :: string
+			name.Text = if set then set.name else (armorCard:GetAttribute("EmptyName") or "No armor") :: string
 		end
 		local function percent(share: number): string
 			return (("%.2f"):format(share * 100):gsub("0+$", ""):gsub("%.$", "")) .. "%"

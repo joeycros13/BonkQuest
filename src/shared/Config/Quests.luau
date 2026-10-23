@@ -228,7 +228,7 @@ lines.DaleFarm = {
 			reminder = { "That pumpkin-headed menace is still up there! [Defeat the Scarecrow King]." },
 			complete = {
 				"You beat the Scarecrow King?! Well, I'll be a monkey's uncle!",
-				"Here, take my [lucky horseshoe]. The crafter in town can work it into some fine armour.",
+				"Here, take my [lucky horseshoe]. The crafter in town can work it into some fine armor.",
 			},
 		},
 		{
@@ -563,7 +563,7 @@ lines.ExplorerCaverns = {
 			reminder = { "She's in the big hall past the webs. [Defeat the Spider Queen]." },
 			complete = {
 				"That lantern! It's our miner's. And if she dropped it, the crew got past her.",
-				"Keep the [miner's lantern]. The crafter here can work it into some fine armour.",
+				"Keep the [miner's lantern]. The crafter here can work it into some fine armor.",
 			},
 		},
 		{
