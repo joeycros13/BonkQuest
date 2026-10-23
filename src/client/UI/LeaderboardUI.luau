@@ -6,7 +6,10 @@
 --
 -- Hand-built StarterGui/LeaderboardPanel (Panel = "Leaderboards"), laid out as Ranks A
 -- "Spotlight stage" (2026-10-21, https://claude.ai/artifact/BW6XYrhkThRjExFbRB41Xj):
---   Window/Periods/<Daily|Weekly|All>   pills in a dark header pill (Period attribute, Label)
+--   Window/Periods/<Weekly|All|Trophies> pills in a dark header pill (Period attribute, Label);
+--                                       Trophies (2026-10-22, view B on the "Leaderboard rewards"
+--                                       canvas, https://claude.ai/artifact/Sjkt4yWCvqYH2dWYRot9Vg)
+--                                       swaps the board for Window/Trophies
 --   Window/Tabs/<Coins|Levels|Kills>    big stat pills under the header (Stat attribute,
 --                                       IconRing/Icon, Label)
 --   Window/ResetPill/Reset              the header's dark pill, a Util.CenterRow with its Clock:
@@ -23,6 +26,13 @@
 --   Window/Rewards                      Title, Tiers (Templates/TierCard clones: Label = the
 --                                       tier's badge in its Fill1..3 colour, Chips holding one
 --                                       Templates/Chip with every prize on a line), Note (all-time)
+--   Window/Trophies                     the trophy cabinet (hidden until Trophies is picked):
+--                                       Title, Note (shown with no trophies yet) and a
+--                                       Row_<Coins|Levels|Kills> per board (IconRing/Icon,
+--                                       BoardName, and Gold / Silver / Bronze slots, each a Cup,
+--                                       Count "x2" and Place "#1"); counts from the player's
+--                                       Trophies attribute (LeaderboardService); an empty cup fades
+--                                       to the frame's EmptyCupTransparency
 -- Colours: the gui's TabSelected / TabIdle / PillSelected / PillIdle / PillSelectedText /
 -- PillIdleText attributes.
 
@@ -50,7 +60,7 @@ local PanelWindow: any = nil
 local gui: any = nil
 local window: any = nil
 local stat = "Coins"
-local period = "Daily"
+local period = "Weekly"
 local boards: { [string]: { data: any, at: number } } = {}
 local shownResetsAt: number? = nil
 
@@ -138,6 +148,82 @@ local function fillRewards()
 	end
 end
 
+-- The board's pieces, all hidden while the Trophies view shows.
+local BOARD_PARTS = { "Tabs", "Stage", "Podium", "ListCard", "List", "Empty", "You", "Rewards", "ResetPill" }
+
+local function trophyCounts(): { [string]: number }
+	local out = {}
+	local raw = player:GetAttribute("Trophies")
+	if type(raw) == "string" then
+		for key, n in raw:gmatch("([%w_]+)=(%d+)") do
+			out[key] = tonumber(n) :: number
+		end
+	end
+	return out
+end
+
+local function renderTrophies()
+	local box = window:FindFirstChild("Trophies")
+	if not box then
+		return
+	end
+	local counts = trophyCounts()
+	local total = 0
+	local faded = box:GetAttribute("EmptyCupTransparency")
+	for _, board in Leaderboards.Stats do
+		local row = box:FindFirstChild("Row_" .. board, true)
+		if row then
+			local name = row:FindFirstChild("BoardName")
+			if name and name:IsA("TextLabel") then
+				name.Text = Text.statShort[board] or board
+			end
+			for _, tier in Leaderboards.MedalOrder do
+				local slot = row:FindFirstChild(tier)
+				local n = counts[board .. "_" .. tier] or 0
+				total += n
+				if slot then
+					local cup = slot:FindFirstChild("Cup")
+					if cup and cup:IsA("ImageLabel") then
+						cup.Image = Leaderboards.Medals[tier].cup
+						cup.ImageTransparency = if n > 0 then 0 else (if type(faded) == "number" then faded else 0.65)
+					end
+					local count = slot:FindFirstChild("Count")
+					if count and count:IsA("TextLabel") then
+						count.Text = Text.trophyCount:format(n)
+					end
+					local place = slot:FindFirstChild("Place")
+					if place and place:IsA("TextLabel") then
+						place.Text = Text.trophyPlace[tier] or tier
+					end
+				end
+			end
+		end
+	end
+	local title = box:FindFirstChild("Title")
+	if title and title:IsA("TextLabel") then
+		title.Text = Text.trophiesTitle
+	end
+	local note = box:FindFirstChild("Note")
+	if note and note:IsA("TextLabel") then
+		note.Text = Text.noTrophies
+		note.Visible = total == 0
+	end
+end
+
+-- Show the board or the Trophies view.
+local function showView(trophies: boolean)
+	for _, name in BOARD_PARTS do
+		local part = window:FindFirstChild(name)
+		if part and part:IsA("GuiObject") then
+			part.Visible = not trophies and (name ~= "Empty" or part.Visible)
+		end
+	end
+	local box = window:FindFirstChild("Trophies")
+	if box and box:IsA("GuiObject") then
+		box.Visible = trophies
+	end
+end
+
 local function fitList()
 	local layout = window.List:FindFirstChildOfClass("UIListLayout")
 	local pad = window.List:FindFirstChildOfClass("UIPadding")
@@ -152,6 +238,12 @@ function LeaderboardUI.refresh()
 		return
 	end
 	styleTabs()
+	if period == "Trophies" then
+		showView(true)
+		renderTrophies()
+		return
+	end
+	showView(false)
 	fillRewards()
 	local data = fetch()
 	local rows = if data then data.rows or {} else {}
@@ -260,6 +352,11 @@ local function wire(found: ScreenGui)
 	if rays and rays:IsA("GuiObject") then
 		TweenService:Create(rays, TweenInfo.new(40, Enum.EasingStyle.Linear, Enum.EasingDirection.In, -1), { Rotation = 360 }):Play()
 	end
+	player:GetAttributeChangedSignal("Trophies"):Connect(function()
+		if period == "Trophies" and found.Enabled then
+			renderTrophies()
+		end
+	end)
 	local hud = player:WaitForChild("PlayerGui"):WaitForChild("WeaponHud", GUI_TIMEOUT)
 	local button = hud and hud:FindFirstChild("LeaderboardButton", true)
 	if button and button:IsA("GuiButton") then

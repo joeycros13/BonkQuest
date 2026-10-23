@@ -67,6 +67,8 @@ local CONTROLLER_ORDER = {
 	"SettingsController",
 	-- a hit's red glow, recoil and stumble; the low-health edge glow; a healing potion's + signs
 	"HurtController",
+	-- the weekly leaderboard winners' medal over the head and #1 trail
+	"LeaderFlairController",
 }
 
 local UI_ORDER = {
