@@ -42,7 +42,7 @@ Admin.quick = {
 Admin.Text = {
 	title = "Admin Panel",
 	hint = "F2 opens and closes",
-	tabs = { PagePlayer = "Player", PageWeapons = "Weapons", PageArmor = "Armor", PageTools = "Tools", PageMaterials = "Materials", PagePotions = "Potions", PageQuests = "Quests", PageMobs = "Mobs" },
+	tabs = { PagePlayer = "Player", PageWeapons = "Weapons", PageArmor = "Armor", PageTools = "Tools", PageMaterials = "Materials", PagePotions = "Potions", PageUpgrades = "Upgrades", PageQuests = "Quests", PageMobs = "Mobs" },
 	coinsTitle = "Coins",
 	expTitle = "EXP",
 	levelTitle = "Level",
@@ -51,6 +51,16 @@ Admin.Text = {
 	giveAll = "Give All",
 	giveAllDone = "Gave %d weapons, %d tools, %d armour sets, %d of every material and %d of every potion",
 	potionsEnded = "Every running potion ended",
+	-- the Upgrades page (2026-10-22)
+	upgradeNote = "Level %d of %d · %s", -- level, max, what it gives now (Upgrades.describe)
+	setLevel = "Set",
+	upOne = "+1",
+	allUpgrades = "All upgrades",
+	allUpgradesNote = "Every upgrade at once",
+	maxAll = "Max all",
+	resetAll = "Reset all",
+	upgradeSet = "%s: level %d",
+	upgradesAll = "Every upgrade now at level %d",
 	-- the Quests page (2026-10-19)
 	questNote = "Step %d of %d · %s", -- step, steps, state (Offer / Active / Ready)
 	questFinished = "All %d steps done",
