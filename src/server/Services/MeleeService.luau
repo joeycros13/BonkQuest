@@ -553,6 +553,8 @@ local function beginAttack(enemy: any, fight: Fight, melee: any, now: number)
 			-- and the Defense upgrade cuts it again (Config/Upgrades)
 			local guard = Upgrades.value(target, "Defense")
 			humanoid:TakeDamage(math.max(1, math.floor(melee.damage * (1 - defense) * skin * guard + 0.5)))
+			-- every client shows the hit on that body; the hit player stumbles back from here
+			deps.Remotes.getEvent("PlayerHurt"):FireAllClients({ character = target.Character, from = fight.position })
 		end
 	end)
 end

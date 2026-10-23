@@ -65,6 +65,8 @@ local CONTROLLER_ORDER = {
 	"HealZoneController",
 	-- applies the player's settings (volumes, guide arrow, particles, shadows; Config/Settings)
 	"SettingsController",
+	-- a hit's red glow, recoil and stumble; the low-health edge glow; a healing potion's + signs
+	"HurtController",
 }
 
 local UI_ORDER = {

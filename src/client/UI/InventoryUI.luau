@@ -486,6 +486,11 @@ local function wireTile(st: TileState)
 			if ok and okDrink then
 				openPotion = nil
 				drinkNote[id] = nil
+				-- a healing potion: + signs off the body and a green edge glow (HurtController)
+				local drunk = Potions.get(id)
+				if drunk and drunk.kind == "Health" and deps.Controllers.HurtController then
+					deps.Controllers.HurtController.healed()
+				end
 			else
 				drinkNote[id] = refusal(if ok then reason else nil)
 			end
