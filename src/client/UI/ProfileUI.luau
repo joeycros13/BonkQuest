@@ -302,6 +302,21 @@ function ProfileUI.fillGear(weaponCard: Instance, armorCard: Instance, who: Play
 	local aName = armorCard:FindFirstChild("ItemName")
 	if aName and aName:IsA("TextLabel") then
 		aName.Text = if set then set.name else attribute(armorCard, "EmptyName", Text.noArmor)
+		-- with no set worn there's no tile, so "No armor" sits in the middle of the card
+		-- (below a head, if the card has one); its authored spot is kept to go back to
+		if aName:GetAttribute("BasePosition") == nil then
+			aName:SetAttribute("BasePosition", aName.Position)
+			aName:SetAttribute("BaseAnchor", aName.AnchorPoint)
+		end
+		if set then
+			aName.Position = aName:GetAttribute("BasePosition")
+			aName.AnchorPoint = aName:GetAttribute("BaseAnchor")
+		else
+			local head = armorCard:FindFirstChild("Head")
+			local top = if head and head:IsA("GuiObject") then head.Size.Y.Scale else 0
+			aName.AnchorPoint = Vector2.new(0.5, 0.5)
+			aName.Position = UDim2.fromScale(0.5, top + (1 - top) / 2)
+		end
 	end
 	local aRarity = armorCard:FindFirstChild("Rarity")
 	if aRarity and aRarity:IsA("TextLabel") then

@@ -71,6 +71,8 @@ local CONTROLLER_ORDER = {
 	"HurtController",
 	-- the weekly leaderboard winners' medal over the head and #1 trail
 	"LeaderFlairController",
+	-- every other player's name over their head in the game's font (Roblox's own is hidden)
+	"NameTagController",
 }
 
 local UI_ORDER = {
