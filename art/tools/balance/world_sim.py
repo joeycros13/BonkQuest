@@ -220,16 +220,24 @@ class Run:
         self.t += seconds
         self.log[what] = self.log.get(what, 0) + seconds
         # regen while doing anything
-        self.hp = min(self.maxhp(), self.hp + self.maxhp() * PLAYER["regen"] * seconds)
+        self.hp = min(self.maxhp(), self.hp + self.maxhp() * (PLAYER["regen"] + self.worn("regen")) * seconds)
 
     def level(self):
         return self.w.level_of(self.exp)
+
+    def worn(self, key):
+        """An armour bonus of the set worn (Config/Armor regen / speed), 0 without one."""
+        return self.w.armor[self.wearing].get(key, 0) if self.wearing else 0
+
+    def spd(self):
+        # walk speed x (1 + armour speed), capped like Armor.MAX_SPEED (Swiftness is outside the run)
+        return self.w.speed * (1 + min(self.worn("speed"), 0.5))
 
     def maxhp(self):
         return self.w.max_hp(self.level(), self.wearing) * upg("health")
 
     def walk(self, to, what="walking"):
-        seconds = dist(self.pos, to) * PLAYER["detour"] / self.w.speed
+        seconds = dist(self.pos, to) * PLAYER["detour"] / self.spd()
         self.spend(what, seconds)
         self.pos = list(to)
 
@@ -320,9 +328,9 @@ class Run:
         target = min(markers, key=lambda m: dist(self.pos, m["pos"]))["pos"]
         best = None
         for z in self.w.healZones:
-            go = dist(self.pos, z["pos"]) * PLAYER["detour"] / self.w.speed
-            back = dist(z["pos"], target) * PLAYER["detour"] / self.w.speed
-            direct = dist(self.pos, target) * PLAYER["detour"] / self.w.speed
+            go = dist(self.pos, z["pos"]) * PLAYER["detour"] / self.spd()
+            back = dist(z["pos"], target) * PLAYER["detour"] / self.spd()
+            direct = dist(self.pos, target) * PLAYER["detour"] / self.spd()
             wait = max(0, self.zoneReady - (self.t + go))
             extra = go + wait + back - direct
             if best is None or extra < best[0]:
@@ -350,7 +358,7 @@ class Run:
         # resting first if this fight would kill us
         _, expect = self.fight(enemy, weapon, dry=True)
         if expect >= self.hp * PLAYER["restBelow"] and expect < self.maxhp():
-            need = (expect * 1.1 - self.hp) / (self.maxhp() * PLAYER["regen"])
+            need = (expect * 1.1 - self.hp) / (self.maxhp() * (PLAYER["regen"] + self.worn("regen")))
             if need > 0 and not self.use_fountain(markers, need):
                 self.rests += need
                 if self.t < 600:
@@ -360,7 +368,7 @@ class Run:
         best = None
         for i, m in enumerate(markers):
             ready = self.dead.get((enemy, i), 0)
-            arrive = self.t + dist(self.pos, m["pos"]) * PLAYER["detour"] / w.speed
+            arrive = self.t + dist(self.pos, m["pos"]) * PLAYER["detour"] / self.spd()
             when = max(arrive, ready)
             if best is None or when < best[0]:
                 best = (when, i, m)
@@ -417,7 +425,7 @@ class Run:
         best = None
         for i, p in enumerate(w.nodes[kind]):
             up = self.nodeDown.get((kind, i), 0)
-            arrive = self.t + dist(self.pos, p) * PLAYER["detour"] / w.speed
+            arrive = self.t + dist(self.pos, p) * PLAYER["detour"] / self.spd()
             when = max(arrive, up)
             if best is None or when < best[0]:
                 best = (when, i, p)
@@ -619,7 +627,7 @@ class Run:
                 return None
             tv = w.tools[tool]
             n = len(w.nodes[activity])
-            per = PLAYER["engageSeconds"] + tv["hitTime"] + (math.ceil(g["hp"] / tv["power"]) - 1) * tv["cooldown"] + 25 / w.speed * PLAYER["detour"]
+            per = PLAYER["engageSeconds"] + tv["hitTime"] + (math.ceil(g["hp"] / tv["power"]) - 1) * tv["cooldown"] + 25 / self.spd() * PLAYER["detour"]
             cycle = max(per, (per * n + g["respawn"]) / n)
             out = {}
             for x in g["drops"]:
@@ -630,7 +638,7 @@ class Run:
         fight, _ = self.fight(activity, weapon, dry=True)
         n = len(w.markers[activity])
         gap = 0 if n == 1 else 45
-        per = fight + gap * PLAYER["detour"] / w.speed
+        per = fight + gap * PLAYER["detour"] / self.spd()
         cycle = max(per, (fight + w.respawn[activity]) / n)
         out = {"coins": (e["coins"]["min"] + e["coins"]["max"]) / 2 / cycle, "exp": e.get("exp", 0) / cycle}
         for x in e["materials"]:
