@@ -297,7 +297,10 @@ end
 -- critical hit gets the gold bubble and a lower, louder hit (the sound's
 -- CritPitch / CritVolume attributes). The killing blow gets neither the sound
 -- nor the bubble: a death shows only the defeat's BONK and pop (the user).
-local function showHit(enemy: Enemy, amount: number, crit: boolean, killing: boolean)
+-- The bubble is only for the player who landed the hit (`mine`, from the enemy's
+-- HitBy attribute; 2026-10-23, the user): everyone else still sees the spark,
+-- flash and recoil and hears the hit.
+local function showHit(enemy: Enemy, amount: number, crit: boolean, killing: boolean, mine: boolean)
 	if EnemyAnimator then
 		EnemyAnimator.flinch(enemy.instance)
 	end
@@ -312,7 +315,7 @@ local function showHit(enemy: Enemy, amount: number, crit: boolean, killing: boo
 		local volume = if crit then numberAttr(hit, "CritVolume", 1.4) else 1
 		Effects.sound(hit, at, { pitch = hit.PlaybackSpeed * pitch * math.random(92, 110) / 100, volume = hit.Volume * volume })
 	end
-	if not killing then
+	if not killing and mine then
 		BonkPop.hit(enemy.anchor.Position + Vector3.new(0, enemy.height / 2, 0), enemy.height / 4, amount, enemy.isBoss, crit)
 	end
 end
@@ -320,8 +323,9 @@ end
 -- A defeat (user, 2026-10-11: kills were too quiet): a white Poof cloud, gold
 -- DeathPop stars with a flash, a ground ring, and the EnemyPop sound
 -- (ReplicatedStorage/Assets/Sounds), all sized up for bigger bodies (bosses).
--- No camera shake.
-local function showDefeat(enemy: Enemy)
+-- No camera shake. The BONK is only for the player whose hit finished it (`mine`);
+-- everyone sees the cloud and hears the pop.
+local function showDefeat(enemy: Enemy, mine: boolean)
 	local scale = math.clamp(enemy.height / 4, 0.8, 2.5)
 	local at = enemy.anchor.Position + Vector3.new(0, enemy.height * 0.1, 0)
 	Effects.burst(at, "Poof", { count = math.floor(22 * scale) })
@@ -335,6 +339,9 @@ local function showDefeat(enemy: Enemy)
 		Effects.sound(pop, at, { pitch = math.random(95, 108) / 100 / math.sqrt(scale) })
 	end
 	-- and the comic "BONK!" over the top of the body (2026-10-17, Bonk Quest)
+	if not mine then
+		return
+	end
 	BonkPop.show(enemy.anchor.Position + Vector3.new(0, enemy.height / 2, 0), enemy.height / 4, enemy.isBoss)
 end
 
@@ -354,14 +361,16 @@ local function refreshFromAttributes(enemy: Enemy)
 	enemy.aiState = nextState
 
 	-- enemy.alive is the state BEFORE this update, so the killing blow shows too.
+	-- HitBy names the player whose hit this was (set with Hp by WorldEnemyService).
+	local mine = inst:GetAttribute("HitBy") == Players.LocalPlayer.UserId
 	if hp < enemy.lastHp and enemy.alive then
-		showHit(enemy, math.floor(enemy.lastHp - hp + 0.5), inst:GetAttribute("CritHp") == hp, hp <= 0 or not alive)
+		showHit(enemy, math.floor(enemy.lastHp - hp + 0.5), inst:GetAttribute("CritHp") == hp, hp <= 0 or not alive, mine)
 	end
 	enemy.lastHp = hp
 
 	if alive ~= enemy.alive then
 		if not alive and enemy.ready then
-			showDefeat(enemy)
+			showDefeat(enemy, mine)
 		end
 		enemy.alive = alive
 		applyVisible(enemy, alive)
