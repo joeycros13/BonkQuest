@@ -253,7 +253,7 @@ end
 -- The two stat cards beside the window (2026-10-22, option B on
 -- https://claude.ai/artifact/6LM4U8XgrVihfD1RrWvCMQ, both on the left as the user asked):
 --   Window/WeaponStats  the selected weapon: ItemName, Dps/Value (its DPS, WeaponTile.dps),
---                       Row_Damage / Row_Range / Row_Speed (each Label + Value; the card's
+--                       Row_Damage / Row_Range / Row_Speed (each Icon + Label + Value; the card's
 --                       RangeFormat "%s" studs and SpeedFormat "%s s" per swing)
 --   Window/ArmorStats   the worn set: ItemName (EmptyName when none), Row_Health / Row_Defense
 --                       (NoneText greyed, the card's Off* colours, while nothing is worn) and
@@ -281,6 +281,12 @@ local function setRow(card: Instance, row: string, value: string, on: boolean)
 	if text and text:IsA("TextLabel") then
 		text.Text = value
 		text.TextColor3 = colour(state .. "Value", text.TextColor3)
+	end
+	-- the row's Upgrades icon (2026-10-22) fades with a greyed row (the card's OffIconTransparency)
+	local icon = frame:FindFirstChild("Icon")
+	if icon and icon:IsA("ImageLabel") then
+		local off = card:GetAttribute("OffIconTransparency")
+		icon.ImageTransparency = if on then 0 else (if type(off) == "number" then off else 0.55)
 	end
 end
 
