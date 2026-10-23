@@ -105,6 +105,22 @@ end
 -- it is measured; the badge grows (to the left: it's anchored on its right edge, away from
 -- the bars) just enough for the label, `Slack` x that width wide, to hold it. The badge's
 -- `MinAspect` (1, square) and `Slack` (1.12) attributes set it.
+-- FredokaOne's digits and comma, in em (measured 2026-10-23 in a browser from the Google
+-- Fonts copy): advance width, the ink's centre of mass from the glyph's left, its ink area.
+local GLYPHS: { [string]: { adv: number, mass: number, area: number } } = {
+	["0"] = { adv = 0.608, mass = 0.3014, area = 0.2778 },
+	["1"] = { adv = 0.407, mass = 0.2445, area = 0.1575 },
+	["2"] = { adv = 0.609, mass = 0.3039, area = 0.2873 },
+	["3"] = { adv = 0.608, mass = 0.3254, area = 0.2665 },
+	["4"] = { adv = 0.592, mass = 0.3218, area = 0.2467 },
+	["5"] = { adv = 0.530, mass = 0.2563, area = 0.2578 },
+	["6"] = { adv = 0.560, mass = 0.2737, area = 0.2544 },
+	["7"] = { adv = 0.561, mass = 0.2840, area = 0.1968 },
+	["8"] = { adv = 0.582, mass = 0.2884, area = 0.2921 },
+	["9"] = { adv = 0.560, mass = 0.2812, area = 0.2548 },
+	[","] = { adv = 0.238, mass = 0.1138, area = 0.0475 },
+}
+
 local function fitBadge(badge: TextLabel)
 	local holder = badge.Parent
 	local ratio = holder and holder:FindFirstChildOfClass("UIAspectRatioConstraint")
@@ -127,6 +143,30 @@ local function fitBadge(badge: TextLabel)
 	local aspect = math.max(get("MinAspect", 1), need)
 	if math.abs(ratio.AspectRatio - aspect) > 0.005 then
 		ratio.AspectRatio = aspect
+	end
+	-- Centred by its weight, not its box (2026-10-23, the user: "centered at all times"):
+	-- Roblox centres the digits' advance box, but a "1" is a stem with its flag on the
+	-- left, so it read as pushed right. Each digit's visual centre (its ink's centre of
+	-- mass) is measured in FredokaOne (GLYPHS, in em); the label moves by the string's
+	-- mass centre minus its box centre.
+	local text = badge.Text
+	local total, massX, mass = 0, 0, 0
+	for i = 1, #text do
+		local glyph = GLYPHS[text:sub(i, i)]
+		if glyph then
+			massX += (total + glyph.mass) * glyph.area
+			mass += glyph.area
+			total += glyph.adv
+		end
+	end
+	local shift = 0
+	if mass > 0 and total > 0 and holder.AbsoluteSize.X > 0 then
+		local pxPerEm = bounds.X / total
+		shift = -(massX / mass - total / 2) * pxPerEm / holder.AbsoluteSize.X
+	end
+	local x = 0.5 + shift
+	if math.abs(badge.Position.X.Scale - x) > 0.001 then
+		badge.Position = UDim2.new(x, 0, badge.Position.Y.Scale, 0)
 	end
 end
 
@@ -293,12 +333,14 @@ function PlayerCardUI.start()
 		local badge = find("Level", "TextLabel")
 		if badge then
 			-- FredokaOne draws centred in its box, so the number needs no drop (measured
-			-- within 1 px of the badge's middle, 2026-10-21)
-			for _, property in { "AbsoluteSize", "TextBounds" } do
+			-- within 1 px of the badge's middle, 2026-10-21); fitBadge centres it by weight
+			for _, property in { "AbsoluteSize", "TextBounds", "Text" } do
 				badge:GetPropertyChangedSignal(property):Connect(function()
 					fitBadge(badge)
 				end)
 			end
+			-- the join's level can equal the template's "1", so no change fires: fit once
+			task.defer(fitBadge, badge)
 		end
 		showExp(expTotal())
 		player:GetAttributeChangedSignal("Level"):Connect(function()

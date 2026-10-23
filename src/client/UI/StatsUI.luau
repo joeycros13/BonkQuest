@@ -10,7 +10,8 @@
 --                 ExpBoost, ShopService) + the upgrade's share
 --   Damage        1 + the Strength potion's share + the Attack upgrade's
 -- Bonuses ADD (2026-10-23, the user: x1.5 and x2 make x2.5): the totals come from
--- Config/Bonuses, the same numbers the server uses, and each chip shows its share ("+50%").
+-- Config/Bonuses, the same numbers the server uses, and each chip shows its share as a
+-- multiplier ("Passes & boosts +1.5×" on a ×2.50 total).
 --   Defense       how much tougher: 1 / (armour's damage x Stoneskin x the Defense upgrade)
 --   Attack Speed  the upgrade (Upgrades.multiplier)
 --   Gathering     the chance a tree's or rock's drop comes doubled (the upgrade; a Gatherer's
@@ -61,9 +62,9 @@ local Text = {
 	armourDefense = "Armor %s",
 	base = "Base 1% a second",
 	critBase = "Base %s of hits",
-	plus = "+%s", -- an upgrade's or potion's share, "Upgrade +0.45%"
+	plus = "+%s", -- a share: "+1.5×", or for the percentage stats "+0.45%"
 	armourRegen = "Armor +%s",
-	armourSpeed = "Armor +%s",
+	armourSpeed = "Armor %s",
 	doubleNote = "Chance to double drops",
 	critDamageBase = "Base %s",
 	adminX = "Admin %s",
@@ -91,9 +92,15 @@ end
 
 local times = Upgrades.times
 
--- A multiplier's share as a chip amount: x1.5 -> "+50%".
+-- A bonus's share as a chip amount, always a multiplier (2026-10-23, the user: "the only
+-- thing the stats should be displaying is the multiplier values"): x2.5 -> "+1.5×",
+-- x1.15 -> "+0.15×". The shares add up to the total (×1 + +1.5× = ×2.50).
+local function added(amount: number): string
+	local text = ("%.2f"):format(amount):gsub("0+$", ""):gsub("%.$", "")
+	return Text.plus:format(text .. "×")
+end
 local function share(multiplier: number): string
-	return Text.plus:format(Upgrades.percent(multiplier - 1))
+	return added(multiplier - 1)
 end
 
 local function upgradeX(id: string): number
@@ -177,7 +184,7 @@ local function measure(id: string): (string, { string }, boolean)
 		local armour = number("ArmorSpeed", 0)
 		if not up then
 			if armour > 0 then
-				return Text.locked, { Text.armourSpeed:format(Upgrades.percent(armour)) }, false
+				return Text.locked, { Text.armourSpeed:format(added(armour)) }, false
 			end
 			return Text.locked, { Text.noBonus }, false
 		end
@@ -188,7 +195,7 @@ local function measure(id: string): (string, { string }, boolean)
 			table.insert(parts, Text.potion:format(name, share(swift)))
 		end
 		if armour > 0 then
-			table.insert(parts, Text.armourSpeed:format(Upgrades.percent(armour)))
+			table.insert(parts, Text.armourSpeed:format(added(armour)))
 		end
 		return times(Bonuses.speed(player, true)), parts, true
 	elseif id == "Regen" then
@@ -214,7 +221,7 @@ local function measure(id: string): (string, { string }, boolean)
 		local def = Upgrades.get(id)
 		table.insert(parts, Text.critDamageBase:format(times(def and def.base or 1.5)))
 		if up then
-			table.insert(parts, Text.upgrade:format("+" .. ("%.2f"):format(Upgrades.value(player, id) - (def and def.base or 1.5))))
+			table.insert(parts, Text.upgrade:format(added(Upgrades.value(player, id) - (def and def.base or 1.5))))
 		end
 		return times(Upgrades.value(player, id)), parts, up
 	elseif id == "CritChance" then
