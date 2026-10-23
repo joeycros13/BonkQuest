@@ -34,6 +34,9 @@
 --   sell      coins for selling it from the Inventory (placeholder, 2026-10-20)
 --   icon      its drawn picture (designed on the Crafting & Armor canvas, art/icons/)
 
+-- World scale (2026-10-23, Config/Leveling): health x1 / x4 / x16 for Worlds 1 / 2 / 3, like the
+-- player's own health at those levels and the enemies' damage. Defence, regen and speed are shares.
+
 local Armor = {}
 
 export type Ingredient = { id: string, count: number }
@@ -118,7 +121,7 @@ Armor.Defs = {
 			{ id = "RedwoodLog", count = 10 }, -- gathered (2026-10-21, user: like World 1's sets)
 		},
 		defense = 0.25,
-		health = 110,
+		health = 440,
 		speed = 0.05,
 	},
 	HeartwoodBark = {
@@ -140,7 +143,7 @@ Armor.Defs = {
 			{ id = "AmberSap", count = 1 },
 		},
 		defense = 0.32,
-		health = 160,
+		health = 640,
 		regen = 0.0025,
 	},
 	-- ==================== World 3 (The Crystal Caverns), 2026-10-13 ====================
@@ -161,7 +164,7 @@ Armor.Defs = {
 			{ id = "GolemPebble", count = 10 },
 		},
 		defense = 0.38,
-		health = 220,
+		health = 3520,
 		speed = 0.10,
 	},
 	CrystalQueen = {
@@ -181,7 +184,7 @@ Armor.Defs = {
 			{ id = "MinersLantern", count = 1 },
 		},
 		defense = 0.44,
-		health = 280,
+		health = 4480,
 		regen = 0.005,
 		speed = 0.08,
 	},

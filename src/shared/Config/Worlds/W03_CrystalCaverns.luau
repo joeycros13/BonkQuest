@@ -17,6 +17,9 @@
 -- 1,415 at 10%). Coins and EXP are not re-simulated yet (World 3 has no world_sim dump).
 local WorldTypes = require(script.Parent.Parent.WorldTypes)
 
+-- World scale (2026-10-23, Config/Leveling), PROVISIONAL until World 3 is rebuilt and simulated:
+-- health x32 (the weapons are x32), damage and EXP x16. Numbers in older comments are before it.
+
 local World: WorldTypes.WorldDef = {
 	id = 3,
 	name = "The Crystal Caverns",
@@ -37,10 +40,10 @@ local World: WorldTypes.WorldDef = {
 			tier = "small",
 			name = "Cave Bat",
 			portrait = "rbxassetid://72271902069536", -- calm face (2026-10-13)
-			hp = 314, -- 240 before the 2026-10-20 ladder
-			melee = { damage = 74, cooldown = 1.2, windup = 0.47, range = 1.6, chaseSpeed = 18, armor = 0, move = "swoop" },
+			hp = 10048, -- 240 before the 2026-10-20 ladder
+			melee = { damage = 1184, cooldown = 1.2, windup = 0.47, range = 1.6, chaseSpeed = 18, armor = 0, move = "swoop" },
 			coins = { min = 30, max = 50 },
-			exp = 70,
+			exp = 1120,
 			drops = {
 				{ weapon = "BatwingBlade", chance = 0.20 },
 				{ weapon = "IronPickaxe", chance = 0.05 },
@@ -54,10 +57,10 @@ local World: WorldTypes.WorldDef = {
 			tier = "medium",
 			name = "Pebble Golem",
 			portrait = "rbxassetid://92185614445143", -- calm face (2026-10-13)
-			hp = 747, -- 550 before the 2026-10-20 ladder
-			melee = { damage = 149, cooldown = 1.8, windup = 0.48, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "punch" },
+			hp = 23904, -- 550 before the 2026-10-20 ladder
+			melee = { damage = 2384, cooldown = 1.8, windup = 0.48, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "punch" },
 			coins = { min = 65, max = 95 },
-			exp = 150,
+			exp = 2400,
 			drops = {
 				{ weapon = "IronPickaxe", chance = 0.20 },
 				{ weapon = "PebbleMallet", chance = 0.15 },
@@ -72,10 +75,10 @@ local World: WorldTypes.WorldDef = {
 			tier = "elite",
 			name = "Crystal Golem",
 			portrait = "rbxassetid://84986641261720", -- calm face (2026-10-13)
-			hp = 1022, -- 1,100 before the 2026-10-20 ladder
-			melee = { damage = 248, cooldown = 2.4, windup = 0.74, range = 1.6, chaseSpeed = 12, armor = 0.15, move = "smash" },
+			hp = 32704, -- 1,100 before the 2026-10-20 ladder
+			melee = { damage = 3968, cooldown = 2.4, windup = 0.74, range = 1.6, chaseSpeed = 12, armor = 0.15, move = "smash" },
 			coins = { min = 130, max = 190 },
-			exp = 320,
+			exp = 5120,
 			drops = {
 				{ weapon = "GoldGauntlets", chance = 0.15 },
 				{ weapon = "GeodeGlaive", chance = 0.10 },
@@ -94,12 +97,12 @@ local World: WorldTypes.WorldDef = {
 		GemMole = {
 			id = "GemMole",
 			name = "Gem Mole",
-			hp = 1415, -- 1,200 before the 2026-10-20 ladder
+			hp = 45280, -- 1,200 before the 2026-10-20 ladder
 			secret = true,
 			adminPortrait = "rbxassetid://95259297161320", -- admin panel only, never the Index (2026-10-17)
-			melee = { damage = 186, cooldown = 1.8, windup = 0.48, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
+			melee = { damage = 2976, cooldown = 1.8, windup = 0.48, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
 			coins = { min = 160, max = 230 },
-			exp = 360,
+			exp = 5760,
 			-- the Cave Core: about 1%, once per player (trial numbers)
 			materials = { { id = "CaveCore", chance = 0.01, min = 1, max = 1 } },
 		},
@@ -113,10 +116,10 @@ local World: WorldTypes.WorldDef = {
 			id = "SpiderQueen",
 			name = "Spider Queen",
 			portrait = "rbxassetid://80870479752276", -- calm face (2026-10-13)
-			hp = 1572, -- 2,600 with 30% armour before the 2026-10-20 ladder
-			melee = { damage = 273, cooldown = 2.4, windup = 0.74, range = 1.5, chaseSpeed = 11, armor = 0.2, move = "legstab", moves = { "legstab", "rearslam" } },
+			hp = 50304, -- 2,600 with 30% armour before the 2026-10-20 ladder
+			melee = { damage = 4368, cooldown = 2.4, windup = 0.74, range = 1.5, chaseSpeed = 11, armor = 0.2, move = "legstab", moves = { "legstab", "rearslam" } },
 			coins = { min = 320, max = 460 },
-			exp = 850,
+			exp = 13600,
 			drops = {
 				{ weapon = "GeodeGlaive", chance = 0.20 },
 				{ weapon = "EmberCoalMaul", chance = 0.20 },

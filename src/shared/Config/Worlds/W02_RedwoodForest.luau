@@ -34,6 +34,12 @@ local WorldTypes = require(script.Parent.Parent.WorldTypes)
 --     --start-weapons PumpkinMace: 44.1 min typical, 1.6 deaths; an unprepared arrival (no upgrades, the
 --     Spear) 49.1 min and 6.5 deaths.
 
+-- World scale (2026-10-23, Config/Leveling): health x8 (the weapons are x8), EXP x4 (a level needs
+-- x4 from 25 on), and damage x3.46: the same share of the prepared arrival as before, which is now
+-- (340 x 4 + 75 Harvest Knight) x 1.15 = 1,650 HP (Harvest Knight is World 1 armour, unscaled).
+-- world_sim.py after it: 47.9 min prepared, 1.1 deaths; 53.0 unprepared, 4.4. Numbers in the comments
+-- above and below are before it.
+
 local World: WorldTypes.WorldDef = {
 	id = 2,
 	name = "The Redwood Forest",
@@ -67,11 +73,11 @@ local World: WorldTypes.WorldDef = {
 			tier = "small",
 			name = "Snarling Fox",
 			portrait = "rbxassetid://102792357956654", -- calm face (2026-10-11)
-			hp = 113, -- 276 before the 2026-10-20 health ladder
+			hp = 904, -- 276 before the 2026-10-20 health ladder
 			-- Quick pounces with a snap at the end.
-			melee = { damage = 36, cooldown = 1.0, windup = 0.5, range = 1.5, chaseSpeed = 17, armor = 0, move = "pounce" },
+			melee = { damage = 125, cooldown = 1.0, windup = 0.5, range = 1.5, chaseSpeed = 17, armor = 0, move = "pounce" },
 			coins = { min = 16, max = 32 }, -- 22-45 before the 2026-10-20 ladder
-			exp = 10, -- 35
+			exp = 40, -- 35
 			drops = {
 				{ weapon = "Hatchet", chance = 0.20 },
 				{ weapon = "Cleaver", chance = 0.05 },
@@ -86,10 +92,10 @@ local World: WorldTypes.WorldDef = {
 			tier = "medium",
 			name = "Wild Boar",
 			portrait = "rbxassetid://105726195455752", -- calm face (2026-10-11)
-			hp = 268, -- 966 before the 2026-10-20 health ladder
-			melee = { damage = 72, cooldown = 1.8, windup = 0.55, range = 1.5, chaseSpeed = 15, armor = 0.1, move = "charge" },
+			hp = 2144, -- 966 before the 2026-10-20 health ladder
+			melee = { damage = 249, cooldown = 1.8, windup = 0.55, range = 1.5, chaseSpeed = 15, armor = 0.1, move = "charge" },
 			coins = { min = 65, max = 108 }, -- 90-150 before the 2026-10-20 ladder
-			exp = 38, -- 70
+			exp = 152, -- 70
 			drops = {
 				{ weapon = "Cleaver", chance = 0.20 },
 				{ weapon = "Quarterstaff", chance = 0.15 },
@@ -104,10 +110,10 @@ local World: WorldTypes.WorldDef = {
 			tier = "elite",
 			name = "Grizzly Bear",
 			portrait = "rbxassetid://117018743106247", -- calm face (2026-10-11)
-			hp = 366, -- 1,520 before the 2026-10-20 health ladder
-			melee = { damage = 120, cooldown = 2.4, windup = 0.78, range = 1.6, chaseSpeed = 13, armor = 0.15, move = "slam" },
+			hp = 2928, -- 1,520 before the 2026-10-20 health ladder
+			melee = { damage = 415, cooldown = 2.4, windup = 0.78, range = 1.6, chaseSpeed = 13, armor = 0.15, move = "slam" },
 			coins = { min = 108, max = 163 }, -- 150-226 before the 2026-10-20 ladder
-			exp = 56, -- 150
+			exp = 224, -- 150
 			drops = {
 				{ weapon = "Mace", chance = 0.15 },
 				{ weapon = "WoodsmansAxe", chance = 0.10 },
@@ -125,12 +131,12 @@ local World: WorldTypes.WorldDef = {
 		Fairy = {
 			id = "Fairy",
 			name = "Fairy",
-			hp = 507, -- 600 before the 2026-10-20 ladder
+			hp = 4056, -- 600 before the 2026-10-20 ladder
 			secret = true,
 			adminPortrait = "rbxassetid://128352315360379", -- admin panel only, never the Index (2026-10-17)
-			melee = { damage = 90, cooldown = 1.6, windup = 0.45, range = 2.2, chaseSpeed = 18, armor = 0.1, move = "zap" },
+			melee = { damage = 311, cooldown = 1.6, windup = 0.45, range = 2.2, chaseSpeed = 18, armor = 0.1, move = "zap" },
 			coins = { min = 80, max = 120 },
-			exp = 180,
+			exp = 720,
 			-- the Forest Core: about 1%, once per player (trial numbers)
 			materials = { { id = "ForestCore", chance = 0.01, min = 1, max = 1 } },
 		},
@@ -143,12 +149,12 @@ local World: WorldTypes.WorldDef = {
 			id = "ElderTreant",
 			name = "Elder Treant",
 			portrait = "rbxassetid://98505547017601", -- calm face (2026-10-11)
-			hp = 563, -- 1,200 with 30% armour before the 2026-10-20 ladder
+			hp = 4504, -- 1,200 with 30% armour before the 2026-10-20 ladder
 			-- Two attacks, picked 50/50, same damage and timing (user, 2026-10-11): the
 			-- knee-up stomp and an overhead double-arm smash.
-			melee = { damage = 132, cooldown = 2.4, windup = 0.72, range = 1.5, chaseSpeed = 10, armor = 0.2, move = "stomp", moves = { "stomp", "smash" } },
+			melee = { damage = 457, cooldown = 2.4, windup = 0.72, range = 1.5, chaseSpeed = 10, armor = 0.2, move = "stomp", moves = { "stomp", "smash" } },
 			coins = { min = 243, max = 379 }, -- 338-526 before the 2026-10-20 ladder
-			exp = 150, -- 400
+			exp = 600, -- 400
 			drops = {
 				{ weapon = "WoodsmansAxe", chance = 0.20 },
 				{ weapon = "Greatclub", chance = 0.20 },

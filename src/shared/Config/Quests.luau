@@ -53,6 +53,9 @@
 local Gathering = require(script.Parent:WaitForChild("Gathering"))
 local Tools = require(script.Parent:WaitForChild("Tools"))
 
+-- World scale (2026-10-23, Config/Leveling): every step's EXP x1 / x4 / x16 for Worlds 1 / 2 / 3, like
+-- the EXP a level needs there. Coins are unscaled (they already grew x10 a world).
+
 local Quests = {}
 
 -- The tracker's tool phase: the line (a tool's name goes in the braces) and the note
@@ -289,7 +292,7 @@ lines.RangerRedwoods = {
 			count = 5,
 			objective = "Defeat 5 Snarling Foxes",
 			track = "Defeat {Snarling Foxes}",
-			reward = { coins = 60, exp = 50 },
+			reward = { coins = 60, exp = 200 },
 			offer = {
 				"Evening, traveller. I'm Ranger Rowan. I look after these redwoods.",
 				"Something has the wildlife riled up. The foxes snap at anything that moves.",
@@ -305,7 +308,7 @@ lines.RangerRedwoods = {
 			count = 6,
 			objective = "Collect 6 Fox Fur",
 			track = "Collect {Fox Fur}",
-			reward = { coins = 80, exp = 80 },
+			reward = { coins = 80, exp = 320 },
 			offer = {
 				"Your old wooden axe won't bite into a redwood. You'll want a Stone Axe.",
 				"The weaponsmith wraps their grips in fox fur. Go and [collect 6 Fox Fur] from the foxes on the trail.",
@@ -319,7 +322,7 @@ lines.RangerRedwoods = {
 			count = 10,
 			objective = "Defeat 10 Snarling Foxes",
 			track = "Defeat {Snarling Foxes}",
-			reward = { coins = 100, exp = 100 },
+			reward = { coins = 100, exp = 400 },
 			offer = {
 				"I counted tracks this morning. Far more foxes than there should be.",
 				"Please [defeat 10 Snarling Foxes] before they overrun the camp.",
@@ -333,7 +336,7 @@ lines.RangerRedwoods = {
 			count = 3,
 			objective = "Defeat 3 Wild Boars",
 			track = "Defeat {Wild Boars}",
-			reward = { coins = 150, exp = 150 },
+			reward = { coins = 150, exp = 600 },
 			offer = {
 				"Now the boars are charging hikers right off the trail.",
 				"Their hides are thick, so hit hard. [Defeat 3 Wild Boars].",
@@ -360,7 +363,7 @@ lines.RangerRedwoods = {
 			items = { { id = "RedwoodLog", count = 10 }, { id = "BoarTusk", count = 4 } },
 			objective = "Bring Rowan 10 Redwood Logs and 4 Boar Tusks",
 			track = "Bring Rowan {Logs and Tusks}",
-			reward = { coins = 200, exp = 300 },
+			reward = { coins = 200, exp = 1200 },
 			offer = {
 				"The boars battered the lookout tower. I can't keep watch from up there like this.",
 				"Could you [bring me 10 Redwood Logs and 4 Boar Tusks]? Logs for the beams, tusks for pegs.",
@@ -375,7 +378,7 @@ lines.RangerRedwoods = {
 			count = 2,
 			objective = "Defeat 2 Grizzly Bears",
 			track = "Defeat {Grizzly Bears}",
-			reward = { coins = 250, exp = 250 },
+			reward = { coins = 250, exp = 1000 },
 			offer = {
 				"From the tower I spotted two grizzlies guarding the path to the old ruins.",
 				"[Defeat 2 Grizzly Bears] so we can find out what's stirring in there.",
@@ -389,7 +392,7 @@ lines.RangerRedwoods = {
 			count = 1,
 			objective = "Defeat the Elder Treant",
 			track = "Defeat the {Elder Treant}",
-			reward = { coins = 400, exp = 400, item = "RangerBadge" },
+			reward = { coins = 400, exp = 1600, item = "RangerBadge" },
 			offer = {
 				"The Elder Treant. The oldest tree in the forest has woken, and it's furious.",
 				"Its rage is spreading to every creature here. Go to the ruins and [defeat the Elder Treant].",
@@ -420,7 +423,7 @@ lines.RangerRedwoods = {
 			objective = "Defeat the Elder Treant 5 times",
 			track = "Defeat the {Elder Treant}",
 			-- The quest-only Firefly Lantern (Legendary, 2026-10-11).
-			reward = { coins = 750, exp = 750, weapon = "LanternFlail" },
+			reward = { coins = 750, exp = 3000, weapon = "LanternFlail" },
 			offer = {
 				"This is it. We have to calm that old tree for good.",
 				"[Defeat the Elder Treant 5 times] and the forest can finally rest.",
@@ -459,7 +462,7 @@ lines.ExplorerCaverns = {
 			count = 5,
 			objective = "Defeat 5 Cave Bats",
 			track = "Defeat {Cave Bats}",
-			reward = { coins = 150, exp = 120 },
+			reward = { coins = 150, exp = 1920 },
 			offer = {
 				"Oh! A real person, down here! I'm Pip, explorer and map-maker.",
 				"My crew went deeper into these caverns to map them, and they never came back.",
@@ -473,7 +476,7 @@ lines.ExplorerCaverns = {
 			amount = 800,
 			objective = "Earn 800 coins",
 			track = "Earn {Coins}",
-			reward = { coins = 200, exp = 200 },
+			reward = { coins = 200, exp = 3200 },
 			offer = {
 				"My rope's frayed and my lamp oil's nearly gone.",
 				"[Earn 800 coins] down here and I'll know you can handle the deep tunnels.",
@@ -487,7 +490,7 @@ lines.ExplorerCaverns = {
 			count = 10,
 			objective = "Defeat 10 Cave Bats",
 			track = "Defeat {Cave Bats}",
-			reward = { coins = 250, exp = 250 },
+			reward = { coins = 250, exp = 4000 },
 			offer = {
 				"My crew marked their path on the walls, but the bats nested right over it.",
 				"[Defeat 10 Cave Bats] and clear the way.",
@@ -501,7 +504,7 @@ lines.ExplorerCaverns = {
 			count = 3,
 			objective = "Defeat 3 Pebble Golems",
 			track = "Defeat {Pebble Golems}",
-			reward = { coins = 350, exp = 350 },
+			reward = { coins = 350, exp = 5600 },
 			offer = {
 				"The arrows point down the tunnels, but the rocks there walk.",
 				"[Defeat 3 Pebble Golems] so I can chart it.",
@@ -527,7 +530,7 @@ lines.ExplorerCaverns = {
 			amount = 1500,
 			objective = "Give Pip 1,500 coins",
 			track = "Bring Pip {1,500 Coins}",
-			reward = { exp = 700 },
+			reward = { exp = 11200 },
 			offer = {
 				"The old winch at the drop is busted, and new gears cost a fortune.",
 				"Could you [bring me 1,500 coins] to fix it? It's the only way down.",
@@ -541,7 +544,7 @@ lines.ExplorerCaverns = {
 			count = 2,
 			objective = "Defeat 2 Crystal Golems",
 			track = "Defeat {Crystal Golems}",
-			reward = { coins = 600, exp = 600 },
+			reward = { coins = 600, exp = 9600 },
 			offer = {
 				"Bad news: the lower hall is guarded by Crystal Golems. Big shiny ones.",
 				"[Defeat 2 Crystal Golems] and we're through.",
@@ -555,7 +558,7 @@ lines.ExplorerCaverns = {
 			count = 1,
 			objective = "Defeat the Spider Queen",
 			track = "Defeat the {Spider Queen}",
-			reward = { coins = 1000, exp = 1000, item = "MinersLantern" },
+			reward = { coins = 1000, exp = 16000, item = "MinersLantern" },
 			offer = {
 				"That's the one hall nobody's ever mapped. The Spider Queen lives there.",
 				"I think she has my crew's gear. [Defeat the Spider Queen] and look for anything of theirs.",
@@ -586,7 +589,7 @@ lines.ExplorerCaverns = {
 			objective = "Defeat the Spider Queen 3 times",
 			track = "Defeat the {Spider Queen}",
 			-- The quest-only Diamond Pickaxe (Legendary).
-			reward = { coins = 1800, exp = 1800, weapon = "DiamondPickaxe" },
+			reward = { coins = 1800, exp = 28800, weapon = "DiamondPickaxe" },
 			offer = {
 				"She keeps coming back, and every time she seals the tunnel behind her with web.",
 				"[Defeat the Spider Queen 3 times] and we'll break through for good.",

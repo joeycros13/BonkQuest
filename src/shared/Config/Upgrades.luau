@@ -61,9 +61,10 @@ export type UpgradeDef = {
 Upgrades.LEVELS_PER_WORLD = 3
 Upgrades.MAX_WORLD = 8
 
--- Coins for the 1st / 2nd / 3rd level bought inside a world, x that world's scale.
+-- Coins for the 1st / 2nd / 3rd level bought inside a world, x that world's scale: x10 a world
+-- since 2026-10-23 (it was 1, 4, 12, 30...), like the gates' coins (Config/Leveling, world scale).
 Upgrades.STEP_PRICES = { 100, 250, 500 }
-Upgrades.WORLD_SCALE = { 1, 4, 12, 30, 70, 150, 300, 600 }
+Upgrades.WORLD_SCALE = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000 }
 
 Upgrades.Defs = {
 	Sprint = { id = "Sprint", name = "Sprint", icon = "rbxassetid://73296530776054", base = 1.16, step = 0.04, show = "x", format = "%s sprint speed", costScale = 0.5, order = 1 },

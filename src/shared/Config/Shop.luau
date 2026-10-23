@@ -28,8 +28,9 @@ export type Bundle = { id: string, name: string, coins: number, productId: numbe
 export type Pass = { id: string, name: string, passId: number, price: number, luck: number?, coins: number?, exp: number?, chatTag: boolean? }
 export type Boost = { id: string, name: string, productId: number, price: number, seconds: number, luck: number?, coins: number?, exp: number? }
 
--- Coin bundles grow with the highest world the player has unlocked.
-Shop.WorldScale = { 1, 4, 16 }
+-- Coin bundles grow with the highest world the player has unlocked: x10 a world since
+-- 2026-10-23 (it was 1, 4, 16), like the gates' coins (Config/Leveling, world scale).
+Shop.WorldScale = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000 }
 
 Shop.Bundles = {
 	Handful = { id = "Handful", name = "Handful", coins = 250, productId = 0, price = 25, order = 1 },

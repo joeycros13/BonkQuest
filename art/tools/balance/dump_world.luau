@@ -87,13 +87,18 @@ local data: any = {
 	tools = pick(Tools.Defs),
 	armor = pick(Armor.Defs),
 	gathering = pick(Gathering.Nodes),
-	leveling = { start = Leveling.START, first = Leveling.FIRST, step = Leveling.STEP, baseHealth = Leveling.BASE_HEALTH, healthPerLevel = Leveling.HEALTH_PER_LEVEL },
+	leveling = { start = Leveling.START, first = Leveling.FIRST, step = Leveling.STEP, baseHealth = Leveling.BASE_HEALTH, healthPerLevel = Leveling.HEALTH_PER_LEVEL, scale = {} },
 	-- no base sprint since 2026-10-19 (the Sprint upgrade unlocks it; upgrades are outside the run)
 	balance = { sprint = 1, leash = Balance.Melee.leashRange, gatherHealAfter = Gathering.healAfter },
 	walkSpeed = game.StarterPlayer.CharacterWalkSpeed,
 	respawnTime = game.Players.RespawnTime,
 	map = { markers = {}, nodes = {}, places = {}, healZones = {} },
 }
+-- the world scale's steps (Leveling.scaleAt): { level, multiplier } from each gate's level on
+table.insert(data.leveling.scale, { Leveling.START, Leveling.SCALE[1] })
+for _, g in Gates.list do
+	table.insert(data.leveling.scale, { g.level, Leveling.SCALE[g.world] })
+end
 for _, g in Gates.list do
 	if g.world == WORLD + 1 then
 		data.gate = plain(g)

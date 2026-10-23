@@ -148,18 +148,30 @@ class World:
         return not w.get("starter") and not w.get("carried") and not self.secret_weapon(w["id"])
 
     # level curve
+    def scale_at(self, level):
+        """Leveling.scaleAt: the world scale from each gate's level on (2026-10-23)."""
+        m = 1
+        for at, mult in self.lv.get("scale", []):
+            if level >= at:
+                m = mult
+        return m
+
+    def need(self, level):
+        return (self.lv["first"] + self.lv["step"] * (level - self.lv["start"])) * self.scale_at(level)
+
     def level_of(self, total):
         level, left = self.lv["start"], total
-        while left >= self.lv["first"] + self.lv["step"] * (level - self.lv["start"]):
-            left -= self.lv["first"] + self.lv["step"] * (level - self.lv["start"])
+        while left >= self.need(level):
+            left -= self.need(level)
             level += 1
         return level
 
     def exp_for(self, level):
-        return sum(self.lv["first"] + self.lv["step"] * (l - self.lv["start"]) for l in range(self.lv["start"], level))
+        return sum(self.need(l) for l in range(self.lv["start"], level))
 
     def max_hp(self, level, armor):
-        return self.lv["baseHealth"] + self.lv["healthPerLevel"] * (level - self.lv["start"]) + (self.armor[armor]["health"] if armor else 0)
+        base = (self.lv["baseHealth"] + self.lv["healthPerLevel"] * (level - self.lv["start"])) * self.scale_at(level)
+        return base + (self.armor[armor]["health"] if armor else 0)
 
 
 # ---------------------------------------------------------------------------
@@ -177,6 +189,7 @@ class Run:
     def __init__(self, world, rng, overrides=None, trace=False):
         self.w, self.rng, self.trace_on = world, rng, trace
         self.t = 0.0
+        self.probe = {"kill": {}, "step": {}, "wear": {}}  # levels things happen at (--probe)
         self.pos = list(world.places["spawn"])
         self.coins = 0
         self.exp = 0
@@ -219,6 +232,10 @@ class Run:
     def spend(self, what, seconds):
         self.t += seconds
         self.log[what] = self.log.get(what, 0) + seconds
+        if self.wearing:  # --probe: time worn at each level
+            h = self.probe["wear"].setdefault(self.wearing, {})
+            lv = self.level()
+            h[lv] = h.get(lv, 0) + seconds
         # regen while doing anything
         self.hp = min(self.maxhp(), self.hp + self.maxhp() * (PLAYER["regen"] + self.worn("regen")) * seconds)
 
@@ -393,6 +410,8 @@ class Run:
         self.dead[(enemy, i)] = self.t + w.respawn[enemy]
         e = w.enemies[enemy]
         self.kills[enemy] = self.kills.get(enemy, 0) + 1
+        h = self.probe["kill"].setdefault(enemy, {})
+        h[self.level()] = h.get(self.level(), 0) + 1
         got = self.rng.randint(e["coins"]["min"], e["coins"]["max"])
         self.coins += got
         if self.accepted and self.cur() and self.cur()["kind"] == "earn":
@@ -493,6 +512,8 @@ class Run:
             if c["kind"] == "give":
                 self.coins -= c.get("count", c.get("amount", 0))
             r = c.get("reward", {})
+            self.probe["step"].setdefault(str(self.step + 1), {}).setdefault(self.level(), 0)
+            self.probe["step"][str(self.step + 1)][self.level()] += 1
             self.coins += r.get("coins", 0)
             self.add_exp(r.get("exp", 0))
             if r.get("item"):
@@ -878,6 +899,7 @@ def main():
     ap.add_argument("--world", type=int, default=1)
     ap.add_argument("--runs", type=int, default=2000)
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--probe", help="write the levels kills, quest hand-ins and worn armour happen at to this JSON file")
     ap.add_argument("--rod", action="store_true", help="count the fishing rod as a tool to buy")
     ap.add_argument("--goal", choices=("gate", "all"), default="gate", help="gate: stop at the gate; all: finish the world first")
     ap.add_argument("--from", dest="prev", type=int, default=None, help="arrive from this world: load its weapons and armour for the carried gear")
@@ -919,6 +941,16 @@ def main():
         print("total %.1f min, deaths %d, level %d" % (r.t / 60, r.deaths, r.level()))
         return
     runs = [Run(world, rng).play() for _ in range(a.runs)]
+    if a.probe:
+        merged = {"kill": {}, "step": {}, "wear": {}}
+        for r in runs:
+            for kind, groups in r.probe.items():
+                for key, hist in groups.items():
+                    out = merged[kind].setdefault(key, {})
+                    for lv, n in hist.items():
+                        out[lv] = out.get(lv, 0) + n
+        with open(a.probe, "w") as f:
+            json.dump(merged, f)
     times = [r.t / 60 for r in runs]
     if a.goal == "gate":
         print("World %d: %d runs (goal: buy the gate: level %d, %d coins, %s)" % (a.world, a.runs, world.gate["level"], world.gate["coins"],

@@ -30,6 +30,9 @@
 -- and swings by `swing`), so each tool has the same swing fields a weapon has:
 --   handed, cooldown, hitTime, reach, arc, maxTargets, swing
 
+-- World scale (2026-10-23, Config/Leveling): power x2 / x8 for Worlds 1 / 2, like the nodes'
+-- health (Config/Gathering), so a node takes the same number of hits.
+
 local Tools = {}
 
 export type Recipe = { tool: string?, materials: { { id: string, count: number } } }
@@ -77,7 +80,7 @@ Tools.Defs = {
 		tier = 1,
 		world = 1,
 		sell = 11,
-		power = 10,
+		power = 20,
 		rarity = "Common",
 		price = 50,
 		icon = "rbxassetid://120793441722751",
@@ -98,7 +101,7 @@ Tools.Defs = {
 		tier = 1,
 		world = 1,
 		sell = 14,
-		power = 10,
+		power = 20,
 		rarity = "Common",
 		price = 50,
 		icon = "rbxassetid://123876463543492",
@@ -149,7 +152,7 @@ Tools.Defs = {
 		tier = 2,
 		world = 2,
 		sell = 120,
-		power = 20,
+		power = 160,
 		rarity = "Uncommon",
 		price = 600,
 		icon = "rbxassetid://138518954912606",

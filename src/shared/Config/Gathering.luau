@@ -25,6 +25,9 @@
 -- A node's model may hold a child named `Remains` (a stump, rubble): it shows only
 -- while the node is broken, and the rest only while it stands.
 
+-- World scale (2026-10-23, Config/Leveling): node health x2 / x8 for Worlds 1 / 2, like the tools'
+-- power (Config/Tools).
+
 local Gathering = {}
 
 export type Drop = { id: string, min: number, max: number, chance: number }
@@ -58,7 +61,7 @@ Gathering.Nodes = {
 		verb = "Chop",
 		tool = "Axe",
 		tier = 1,
-		hp = 50,
+		hp = 100,
 		respawn = 45,
 		drops = {
 			{ id = "OakLog", min = 2, max = 3, chance = 1 },
@@ -71,7 +74,7 @@ Gathering.Nodes = {
 		verb = "Mine",
 		tool = "Pickaxe",
 		tier = 1,
-		hp = 60,
+		hp = 120,
 		respawn = 45,
 		drops = {
 			{ id = "Stone", min = 2, max = 3, chance = 1 },
@@ -87,7 +90,7 @@ Gathering.Nodes = {
 		verb = "Chop",
 		tool = "Axe",
 		tier = 2,
-		hp = 100,
+		hp = 800,
 		respawn = 45,
 		drops = {
 			{ id = "RedwoodLog", min = 2, max = 3, chance = 1 },
