@@ -256,8 +256,11 @@ end
 --                       Row_Damage / Row_Range / Row_Speed (each Label + Value; the card's
 --                       RangeFormat "%s" studs and SpeedFormat "%s s" per swing)
 --   Window/ArmorStats   the worn set: ItemName (EmptyName when none), Row_Health / Row_Defense
---                       / Row_Regen / Row_Speed; a bonus the set doesn't have shows NoneText
---                       greyed (the card's Off* colours, On* otherwise)
+--                       (NoneText greyed, the card's Off* colours, while nothing is worn) and
+--                       Row_Regen / Row_Speed only when the set has that bonus (2026-10-22, the
+--                       user): Speed moves up into Regen's slot, and the card's Face / Lip /
+--                       Blocker end under the last row shown (each row's SlotY attribute keeps
+--                       its authored spot)
 -- Both follow the Worldheart Blade's tier (Infuse.adjust).
 local function setRow(card: Instance, row: string, value: string, on: boolean)
 	local frame = card:FindFirstChild(row, true)
@@ -316,8 +319,44 @@ local function renderStatCards()
 		setRow(armorCard, "Row_Defense", if set then percent(set.defense) else none, set ~= nil)
 		local regen = set and set.regen or 0
 		local fast = set and set.speed or 0
-		setRow(armorCard, "Row_Regen", if regen > 0 then "+" .. percent(regen) .. "/s" else none, regen > 0)
-		setRow(armorCard, "Row_Speed", if fast > 0 then "+" .. percent(fast) else none, fast > 0)
+		setRow(armorCard, "Row_Regen", "+" .. percent(regen) .. "/s", true)
+		setRow(armorCard, "Row_Speed", "+" .. percent(fast), true)
+		-- only the bonuses the set has show, packed up under Defense
+		local slots = {}
+		for _, name in { "Row_Health", "Row_Defense", "Row_Regen", "Row_Speed" } do
+			local row = armorCard:FindFirstChild(name)
+			if row and row:IsA("GuiObject") then
+				local y = row:GetAttribute("SlotY")
+				if type(y) ~= "number" then
+					y = row.Position.Y.Scale
+					row:SetAttribute("SlotY", y)
+				end
+				table.insert(slots, { row = row, y = y })
+			end
+		end
+		local shown = { Row_Health = true, Row_Defense = true, Row_Regen = regen > 0, Row_Speed = fast > 0 }
+		local slot, bottom = 1, 0
+		for _, entry in slots do
+			local row = entry.row
+			row.Visible = shown[row.Name] == true
+			if row.Visible then
+				local y = slots[slot].y
+				row.Position = UDim2.new(row.Position.X, UDim.new(y, 0))
+				bottom = y + row.Size.Y.Scale
+				slot += 1
+			end
+		end
+		-- the drawn card ends the same gap under its last row as it was authored with
+		local last = slots[#slots]
+		if last then
+			local pad = 1 - (last.y + last.row.Size.Y.Scale)
+			for _, name in { "Face", "Lip", "Blocker" } do
+				local piece = armorCard:FindFirstChild(name)
+				if piece and piece:IsA("GuiObject") then
+					piece.Size = UDim2.new(piece.Size.X, UDim.new(bottom + pad, 0))
+				end
+			end
+		end
 	end
 end
 
