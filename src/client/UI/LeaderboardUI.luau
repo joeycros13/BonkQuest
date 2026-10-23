@@ -151,9 +151,9 @@ end
 -- The board's pieces, all hidden while the Trophies view shows.
 local BOARD_PARTS = { "Tabs", "Stage", "Podium", "ListCard", "List", "Empty", "You", "Rewards", "ResetPill" }
 
-local function trophyCounts(): { [string]: number }
+local function trophyCounts(who: Player): { [string]: number }
 	local out = {}
-	local raw = player:GetAttribute("Trophies")
+	local raw = who:GetAttribute("Trophies")
 	if type(raw) == "string" then
 		for key, n in raw:gmatch("([%w_]+)=(%d+)") do
 			out[key] = tonumber(n) :: number
@@ -162,12 +162,9 @@ local function trophyCounts(): { [string]: number }
 	return out
 end
 
-local function renderTrophies()
-	local box = window:FindFirstChild("Trophies")
-	if not box then
-		return
-	end
-	local counts = trophyCounts()
+-- Fill a trophy shelf (this panel's Trophies, or the profile's copy) with `who`'s cups.
+local function fillTrophies(box: Instance, who: Player)
+	local counts = trophyCounts(who)
 	local total = 0
 	local faded = box:GetAttribute("EmptyCupTransparency")
 	for _, board in Leaderboards.Stats do
@@ -208,6 +205,18 @@ local function renderTrophies()
 		note.Text = Text.noTrophies
 		note.Visible = total == 0
 	end
+end
+
+local function renderTrophies()
+	local box = window:FindFirstChild("Trophies")
+	if box then
+		fillTrophies(box, player)
+	end
+end
+
+-- The profile card's Trophies tab shows another player's shelf the same way.
+function LeaderboardUI.fillTrophies(box: Instance, who: Player)
+	fillTrophies(box, who)
 end
 
 -- Show the board or the Trophies view.

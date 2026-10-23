@@ -19,7 +19,7 @@
 --   WeaponTile.skin(rarity)          the rarity's skin image
 --   WeaponTile.attribute(name)       any template attribute
 --   WeaponTile.showModel(viewport, id) a weapon framed in a 3D view
---   WeaponTile.dps(def, base?) / dpsText(def, base?)  a weapon's damage per second as the
+--   WeaponTile.dps(def, base?, who?) / dpsText(def, base?, who?)  a weapon's damage per second as the
 --                                    player swings it (Config/Bonuses.dps: the Worldheart tier,
 --                                    the Attack Speed upgrade, Strength, the Attack upgrade...;
 --                                    2026-10-23, the user: every screen but the Index shows
@@ -61,25 +61,27 @@ function WeaponTile.attribute(name: string, fallback: any): any
 end
 
 -- A weapon's damage per second as the player swings it (Config/Bonuses), or with `base`
--- only its Worldheart tier (Infuse.adjust), as the Index shows it.
-function WeaponTile.dps(def: any, base: boolean?): number
+-- only its Worldheart tier (Infuse.adjust), as the Index shows it. `who` is whose bonuses
+-- and tier count (default the local player; the profile cards pass the player shown).
+function WeaponTile.dps(def: any, base: boolean?, who: Player?): number
+	local holder = who or Players.LocalPlayer
 	if not base then
-		return Bonuses.dps(Players.LocalPlayer, def)
+		return Bonuses.dps(holder, def)
 	end
-	local swing = Infuse.adjust(Players.LocalPlayer, def)
+	local swing = Infuse.adjust(holder, def)
 	local damage, cooldown = swing.damage or 0, swing.cooldown or 1
 	return if cooldown > 0 then damage / cooldown else damage
 end
 
 -- "7.5", "1,571": a weapon's DPS as a number, one decimal below 100, whole with commas above.
-function WeaponTile.dpsNumber(def: any, base: boolean?): string
-	local dps = WeaponTile.dps(def, base)
+function WeaponTile.dpsNumber(def: any, base: boolean?, who: Player?): string
+	local dps = WeaponTile.dps(def, base, who)
 	return if dps < 100 then (("%.1f"):format(dps):gsub("%.0$", "")) else Format.commas(math.floor(dps + 0.5))
 end
 
 -- "7.5 DPS", "1,571 DPS"
-function WeaponTile.dpsText(def: any, base: boolean?): string
-	return (WeaponTile.attribute("DpsFormat", "%s DPS") :: string):format(WeaponTile.dpsNumber(def, base))
+function WeaponTile.dpsText(def: any, base: boolean?, who: Player?): string
+	return (WeaponTile.attribute("DpsFormat", "%s DPS") :: string):format(WeaponTile.dpsNumber(def, base, who))
 end
 
 function WeaponTile.skin(rarity: string?): string

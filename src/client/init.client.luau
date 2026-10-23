@@ -23,6 +23,8 @@ local UTIL_ORDER = {
 	"Format",
 	-- the shared weapon tile every screen clones
 	"WeaponTile",
+	-- every stat's shown total, for any player (the Stats panel and the profile cards)
+	"StatSheet",
 	-- sizes the text in icon + text rows so they stay centred
 	"CenterRow",
 }
@@ -84,6 +86,10 @@ local UI_ORDER = {
 	"DailyRewardsUI",
 	-- the HUD's Stats panel: every multiplier and where it comes from
 	"StatsUI",
+	-- the player card (yours from the HUD avatar, anyone's from the player list) and
+	-- the press-E peek on other players
+	"ProfileUI",
+	"InspectUI",
 	-- the HUD's Leaderboards panel (LeaderboardService)
 	"LeaderboardUI",
 	-- the HUD's Settings panel (Config/Settings; SettingsController applies them)

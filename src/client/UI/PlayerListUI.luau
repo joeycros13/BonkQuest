@@ -15,7 +15,8 @@
 --       Heads                 Player / Level / Coins column heads
 --       Rows (ScrollingFrame) clones of Templates/Row
 --       Foot                  the gap under the last row
---   Templates/Row             PlayerName, Level, Coins, Medal (a hidden dark chip right of
+--   Templates/Row             Hit (an invisible button over the row: opens that player's
+--                             profile card, ProfileUI), PlayerName, Level, Coins, Medal (a hidden dark chip right of
 --                             the name: Icon = the medal, Label "#1 Coins" in the medal's
 --                             colour, its UIStroke the same; shown while the player wears a
 --                             weekly leaderboard medal, and the name box narrows to its
@@ -251,6 +252,16 @@ local function add(who: Player)
 	row.Visible = true
 	row.Parent = list
 	rows[who] = row
+	-- a click on a row opens that player's profile card (ProfileUI; 2026-10-23)
+	local hit = row:FindFirstChild("Hit")
+	if hit and hit:IsA("GuiButton") then
+		hit.Activated:Connect(function()
+			local profile = deps and deps.UI and deps.UI.ProfileUI
+			if profile and who.Parent then
+				profile.show(who)
+			end
+		end)
+	end
 	watching[who] = {
 		who:GetAttributeChangedSignal("Level"):Connect(queue),
 		who:GetAttributeChangedSignal("Coins"):Connect(queue),

@@ -311,6 +311,20 @@ local function showIdentity()
 	end
 end
 
+-- Keep a level badge's number fitted and centred (the HUD's, and the copies on the
+-- profile and inspect cards): the badge widens for big numbers and the number is
+-- centred by its weight (fitBadge).
+function PlayerCardUI.watchBadge(badge: TextLabel)
+	for _, property in { "AbsoluteSize", "TextBounds", "Text" } do
+		badge:GetPropertyChangedSignal(property):Connect(function()
+			fitBadge(badge)
+		end)
+	end
+	-- a badge whose number never changes (the join's level can equal the template's
+	-- "1") gets no change event: fit once
+	task.defer(fitBadge, badge)
+end
+
 function PlayerCardUI.init(injected: any)
 	HudFly = injected.Util.HudFly
 	Format = injected.Util.Format
@@ -334,13 +348,7 @@ function PlayerCardUI.start()
 		if badge then
 			-- FredokaOne draws centred in its box, so the number needs no drop (measured
 			-- within 1 px of the badge's middle, 2026-10-21); fitBadge centres it by weight
-			for _, property in { "AbsoluteSize", "TextBounds", "Text" } do
-				badge:GetPropertyChangedSignal(property):Connect(function()
-					fitBadge(badge)
-				end)
-			end
-			-- the join's level can equal the template's "1", so no change fires: fit once
-			task.defer(fitBadge, badge)
+			PlayerCardUI.watchBadge(badge)
 		end
 		showExp(expTotal())
 		player:GetAttributeChangedSignal("Level"):Connect(function()
