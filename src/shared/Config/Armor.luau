@@ -23,6 +23,14 @@
 --             quicker level curve) a set adds about a quarter of a player's HP at its
 --             level for the first World 1 set, rising to about half by World 3, so
 --             armour stays worth wearing
+--   regen     (optional) extra share of max HP healed a second while it's worn, on top of
+--             Roblox's 1% and the Regen upgrade / potion (UpgradeService's regen tick)
+--   speed     (optional) extra walk and sprint speed while it's worn, a share (0.05 = +5%;
+--             SprintController; armour and Swiftness together never pass Armor.MAX_SPEED)
+--             Bonuses (2026-10-22, the user: beginner sets have none, later ones one,
+--             later still both, growing big): World 1 none; World 2 Woodland Hide +5% speed,
+--             Heartwood Bark +0.25% regen; World 3 Cave Runner +10% speed, Crystal Queen
+--             +0.5% regen and +8% speed; Worlds 4-7 both, up to about +2% / +25%.
 --   sell      coins for selling it from the Inventory (placeholder, 2026-10-20)
 --   icon      its drawn picture (designed on the Crafting & Armor canvas, art/icons/)
 
@@ -41,9 +49,14 @@ export type ArmorDef = {
 	recipe: { Ingredient },
 	defense: number,
 	health: number,
+	regen: number?,
+	speed: number?,
 	sell: number?,
 	icon: string?,
 }
+
+-- Worn armour and a Swiftness potion together never make walking more than this much faster.
+Armor.MAX_SPEED = 0.5
 
 Armor.Defs = {
 	-- ==================== World 1 (The Sunny Meadows) ====================
@@ -106,6 +119,7 @@ Armor.Defs = {
 		},
 		defense = 0.25,
 		health = 110,
+		speed = 0.05,
 	},
 	HeartwoodBark = {
 		id = "HeartwoodBark",
@@ -127,6 +141,7 @@ Armor.Defs = {
 		},
 		defense = 0.32,
 		health = 160,
+		regen = 0.0025,
 	},
 	-- ==================== World 3 (The Crystal Caverns), 2026-10-13 ====================
 	-- Trial numbers carrying on World 2's climb. No icons drawn yet.
@@ -147,6 +162,7 @@ Armor.Defs = {
 		},
 		defense = 0.38,
 		health = 220,
+		speed = 0.10,
 	},
 	CrystalQueen = {
 		id = "CrystalQueen",
@@ -166,6 +182,8 @@ Armor.Defs = {
 		},
 		defense = 0.44,
 		health = 280,
+		regen = 0.005,
+		speed = 0.08,
 	},
 } :: { [string]: ArmorDef }
 

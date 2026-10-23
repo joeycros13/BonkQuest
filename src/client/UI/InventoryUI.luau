@@ -30,7 +30,7 @@
 --     from the DrinkMenu's CooldownText and the "PotionHealReady" attribute).
 --   * TopBar: the Filter dropdown (All / Weapons / Tools / Armor / Potions / Materials) and the
 --     SearchBox (matches names) narrow the grid.
---   * BottomBar: Equip Best equips the highest-damage weapon and the highest-defense
+--   * BottomBar: Equip Best equips the highest-DPS weapon (WeaponTile.dps) and the highest-defense
 --     set owned. Sell Mode (2026-10-20: everything sells but quest items and cores,
 --     Config/Sell) makes clicks pick tiles instead (SellMark + Sell* rim) and each tile's
 --     pill shows what it sells for (the template's SellFormat, or NoSellText for what
@@ -58,6 +58,7 @@ local UiSound = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = Shared:WaitForChild("Config")
 local Armor = require(Config:WaitForChild("Armor"))
+local Infuse = require(Config:WaitForChild("Infuse"))
 local Materials = require(Config:WaitForChild("Materials"))
 local Potions = require(Config:WaitForChild("Potions"))
 local Sell = require(Config:WaitForChild("Sell"))
@@ -156,8 +157,11 @@ local function ownedWeapons(): { Weapons.WeaponDef }
 			end
 		end
 	end
+	-- best first by damage per second as it swings (the Worldheart Blade's tier counted), so
+	-- Equip Best takes the fastest killer, not the hardest single hit
 	table.sort(list, function(a, b)
-		return if a.damage == b.damage then a.order < b.order else a.damage > b.damage
+		local da, db = WeaponTile.dps(a), WeaponTile.dps(b)
+		return if da == db then a.order < b.order else da > db
 	end)
 	return list
 end
@@ -246,9 +250,81 @@ local function renderSockets()
 	end
 end
 
+-- The two stat cards beside the window (2026-10-22, option B on
+-- https://claude.ai/artifact/6LM4U8XgrVihfD1RrWvCMQ, both on the left as the user asked):
+--   Window/WeaponStats  the selected weapon: ItemName, Dps/Value (its DPS, WeaponTile.dps),
+--                       Row_Damage / Row_Range / Row_Speed (each Label + Value; the card's
+--                       RangeFormat "%s" studs and SpeedFormat "%s s" per swing)
+--   Window/ArmorStats   the worn set: ItemName (EmptyName when none), Row_Health / Row_Defense
+--                       / Row_Regen / Row_Speed; a bonus the set doesn't have shows NoneText
+--                       greyed (the card's Off* colours, On* otherwise)
+-- Both follow the Worldheart Blade's tier (Infuse.adjust).
+local function setRow(card: Instance, row: string, value: string, on: boolean)
+	local frame = card:FindFirstChild(row, true)
+	if not (frame and frame:IsA("GuiObject")) then
+		return
+	end
+	local function colour(name: string, fallback: Color3): Color3
+		local c = card:GetAttribute(name)
+		return if typeof(c) == "Color3" then c else fallback
+	end
+	local state = if on then "On" else "Off"
+	frame.BackgroundColor3 = colour(state .. "Fill", frame.BackgroundColor3)
+	local label = frame:FindFirstChild("Label")
+	if label and label:IsA("TextLabel") then
+		label.TextColor3 = colour(state .. "Label", label.TextColor3)
+	end
+	local text = frame:FindFirstChild("Value")
+	if text and text:IsA("TextLabel") then
+		text.Text = value
+		text.TextColor3 = colour(state .. "Value", text.TextColor3)
+	end
+end
+
+local function renderStatCards()
+	local weaponCard = find("WeaponStats", "GuiObject")
+	if weaponCard then
+		local def = WeaponController.selected()
+		local swing = def and Infuse.adjust(player, def)
+		local name = weaponCard:FindFirstChild("ItemName", true)
+		if name and name:IsA("TextLabel") then
+			name.Text = def and def.name or ""
+		end
+		local dps = weaponCard:FindFirstChild("Dps", true)
+		local value = dps and dps:FindFirstChild("Value")
+		if value and value:IsA("TextLabel") then
+			value.Text = if def then WeaponTile.dpsNumber(def) else "0"
+		end
+		local range = (weaponCard:GetAttribute("RangeFormat") or "%s") :: string
+		local speed = (weaponCard:GetAttribute("SpeedFormat") or "%s s") :: string
+		setRow(weaponCard, "Row_Damage", Format.commas(swing and swing.damage or 0), true)
+		setRow(weaponCard, "Row_Range", range:format(("%.1f"):format(swing and swing.reach or 0):gsub("%.0$", "")), true)
+		setRow(weaponCard, "Row_Speed", speed:format(("%.2f"):format(swing and swing.cooldown or 0):gsub("0$", "")), true)
+	end
+	local armorCard = find("ArmorStats", "GuiObject")
+	if armorCard then
+		local set = wornArmor()
+		local none = (armorCard:GetAttribute("NoneText") or "None") :: string
+		local name = armorCard:FindFirstChild("ItemName", true)
+		if name and name:IsA("TextLabel") then
+			name.Text = if set then set.name else (armorCard:GetAttribute("EmptyName") or "No armour") :: string
+		end
+		local function percent(share: number): string
+			return (("%.2f"):format(share * 100):gsub("0+$", ""):gsub("%.$", "")) .. "%"
+		end
+		setRow(armorCard, "Row_Health", if set then "+" .. Format.commas(set.health) else none, set ~= nil)
+		setRow(armorCard, "Row_Defense", if set then percent(set.defense) else none, set ~= nil)
+		local regen = set and set.regen or 0
+		local fast = set and set.speed or 0
+		setRow(armorCard, "Row_Regen", if regen > 0 then "+" .. percent(regen) .. "/s" else none, regen > 0)
+		setRow(armorCard, "Row_Speed", if fast > 0 then "+" .. percent(fast) else none, fast > 0)
+	end
+end
+
 -- The Damage / Health / Defense cards under the character, and the item count
 -- in the header (its Format attribute sets the wording).
 local function renderStats(count: number)
+	renderStatCards()
 	local current = WeaponController.selected()
 	local damage = find("DamageValue", "TextLabel")
 	if damage then
@@ -602,7 +678,7 @@ doRender = function()
 	if shows.weapons then
 		for _, def in owned do
 			if matches(def.name) then
-				table.insert(entries, { kind = "weapon", def = def, rank = rank(def.rarity), typeRank = 1, strength = def.damage })
+				table.insert(entries, { kind = "weapon", def = def, rank = rank(def.rarity), typeRank = 1, strength = WeaponTile.dps(def) })
 			end
 		end
 	end
@@ -879,6 +955,14 @@ end
 
 local function wirePanel(gui: ScreenGui)
 	panel = gui
+
+	-- the stat cards' Luckiest Guy words sit centred in their boxes (Util.FontDrop)
+	for _, name in { "WeaponStats", "ArmorStats" } do
+		local card = gui:FindFirstChild(name, true)
+		if card and deps.Util.FontDrop then
+			deps.Util.FontDrop.watch(card)
+		end
+	end
 
 	local grid = find("Grid", "ScrollingFrame")
 	local gridLayout = grid and grid:FindFirstChildOfClass("UIGridLayout")

@@ -9,9 +9,10 @@
 -- this only adds a small camera FOV push, as an Animation.CameraFX zoom layer
 -- ("Sprint") that eases in and out.
 --
--- A Swiftness potion (Config/Potions, 2026-10-19) multiplies both walking and
--- sprinting, so the walk speed is set every step from StarterPlayer's
--- CharacterWalkSpeed x the potion x the sprint multiplier.
+-- A Swiftness potion (Config/Potions, 2026-10-19) and the worn armour's speed bonus
+-- (Config/Armor, the player's ArmorSpeed attribute, 2026-10-22) multiply both walking and
+-- sprinting, together never past 1 + Armor.MAX_SPEED, so the walk speed is set every step
+-- from StarterPlayer's CharacterWalkSpeed x that x the sprint multiplier.
 
 local Players = game:GetService("Players")
 local StarterPlayer = game:GetService("StarterPlayer")
@@ -23,6 +24,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Upgrades = require(Shared:WaitForChild("Config"):WaitForChild("Upgrades"))
 local Potions = require(Shared:WaitForChild("Config"):WaitForChild("Potions"))
 local Settings = require(Shared:WaitForChild("Config"):WaitForChild("Settings"))
+local Armor = require(Shared:WaitForChild("Config"):WaitForChild("Armor"))
 local CameraFX = require(Shared:WaitForChild("Animation")).CameraFX
 
 local SprintController = {}
@@ -67,8 +69,14 @@ local function step(dt: number)
 			CameraFX.release("Sprint")
 		end
 	end
+	-- a Swiftness potion and the worn armour's speed (Config/Armor) together, capped
+	local armour = player:GetAttribute("ArmorSpeed")
+	local boost = math.min(
+		Potions.multiplier(player, "Swiftness") * (1 + (if type(armour) == "number" then armour else 0)),
+		1 + Armor.MAX_SPEED
+	)
 	local speed = StarterPlayer.CharacterWalkSpeed
-		* Potions.multiplier(player, "Swiftness")
+		* boost
 		* (if sprinting then Upgrades.value(player, "Sprint") else 1)
 	if math.abs(humanoid.WalkSpeed - speed) > 0.01 then
 		humanoid.WalkSpeed = speed

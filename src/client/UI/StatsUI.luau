@@ -33,6 +33,7 @@ local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
 local Upgrades = require(Config:WaitForChild("Upgrades"))
 local Potions = require(Config:WaitForChild("Potions"))
 local Leveling = require(Config:WaitForChild("Leveling"))
+local Armor = require(Config:WaitForChild("Armor"))
 
 local Util = script.Parent.Parent:WaitForChild("Util")
 local Format = require(Util:WaitForChild("Format"))
@@ -58,6 +59,8 @@ local Text = {
 	base = "Base 1% a second",
 	critBase = "Base %s of hits",
 	plus = "+%s", -- an upgrade's or potion's share, "Upgrade +0.45%"
+	armourRegen = "Armour +%s",
+	armourSpeed = "Armour +%s",
 	doubleNote = "Chance to double drops",
 	critDamageBase = "Base %s",
 	adminX = "Admin %s",
@@ -160,7 +163,13 @@ local function measure(id: string): (string, { string }, boolean)
 		local total = 1 / (armour * skin * Upgrades.value(player, "Defense"))
 		return times(total), parts, total > 1.0001
 	elseif id == "Sprint" then
+		-- the worn armour's speed (Config/Armor) works on walking too, so it shows even
+		-- before sprinting is unlocked
+		local armour = number("ArmorSpeed", 0)
 		if not up then
+			if armour > 0 then
+				return Text.locked, { Text.armourSpeed:format(Upgrades.percent(armour)) }, false
+			end
 			return Text.locked, { Text.noBonus }, false
 		end
 		table.insert(parts, Text.upgrade:format(times(upgradeX(id))))
@@ -169,7 +178,11 @@ local function measure(id: string): (string, { string }, boolean)
 		if name then
 			table.insert(parts, Text.potion:format(name, times(swift)))
 		end
-		return times(upgradeX(id) * swift), parts, true
+		if armour > 0 then
+			table.insert(parts, Text.armourSpeed:format(Upgrades.percent(armour)))
+		end
+		local boost = math.min(swift * (1 + armour), 1 + Armor.MAX_SPEED)
+		return times(upgradeX(id) * boost), parts, true
 	elseif id == "Regen" then
 		-- percentages of max HP a second: Roblox's own 1%, the upgrade's share, a potion's
 		table.insert(parts, Text.base)
@@ -182,7 +195,12 @@ local function measure(id: string): (string, { string }, boolean)
 		if name and potion > 0 then
 			table.insert(parts, Text.potion:format(name, Text.plus:format(Upgrades.percent(potion))))
 		end
-		local total = Upgrades.BASE_REGEN + upgrade + potion
+		-- the worn armour's (Config/Armor)
+		local armour = number("ArmorRegen", 0)
+		if armour > 0 then
+			table.insert(parts, Text.armourRegen:format(Upgrades.percent(armour)))
+		end
+		local total = Upgrades.BASE_REGEN + upgrade + potion + armour
 		return Upgrades.percent(total), parts, total > Upgrades.BASE_REGEN + 1e-6
 	elseif id == "CritDamage" then
 		local def = Upgrades.get(id)
