@@ -19,9 +19,8 @@
 --   recipe    the materials it takes, in display order (Config/Materials ids);
 --             all of them are used up
 --   defense   0..1: the fraction taken off every enemy hit while it's worn
---   health    extra max HP while it's worn, on top of the level's. Since 2026-10-19 (the
---             quicker level curve) a set adds about a quarter of a player's HP at its
---             level for the first World 1 set, rising to about half by World 3, so
+--   health    extra max HP while it's worn, on top of the level's: about a quarter to a
+--             third of a player's HP at the set's level (see World scale below), so
 --             armour stays worth wearing
 --   regen     (optional) extra share of max HP healed a second while it's worn, on top of
 --             Roblox's 1% and the Regen upgrade / potion (UpgradeService's regen tick)
@@ -34,8 +33,11 @@
 --   sell      coins for selling it from the Inventory (placeholder, 2026-10-20)
 --   icon      its drawn picture (designed on the Crafting & Armor canvas, art/icons/)
 
--- World scale (2026-10-23, Config/Leveling): health x1 / x4 / x16 for Worlds 1 / 2 / 3, like the
--- player's own health at those levels and the enemies' damage. Defence, regen and speed are shares.
+-- World scale (the rescale, 2026-10-24): health, coins and sell prices go x10 a world, like the player's own
+-- health (Config/Leveling grows x10 every 25 levels), so every set adds about a quarter to a third of the
+-- level's max HP when it unlocks: Farmhand's Gear 35 of 145 at level 5, Harvest Knight 75 of 331 at 14,
+-- Woodland Hide 350 of 1,202 at 28, Heartwood Bark 750 of 2,089 at 34, Cave Runner 3,500 of 12,023 at 53,
+-- Crystal Queen 7,500 of 20,893 at 59. Defence, regen and speed are shares and don't scale.
 
 local Armor = {}
 
@@ -147,7 +149,6 @@ Armor.Defs = {
 		regen = 0.0025,
 	},
 	-- ==================== World 3 (The Crystal Caverns), 2026-10-13 ====================
-	-- Trial numbers carrying on World 2's climb. No icons drawn yet.
 	CaveRunner = {
 		id = "CaveRunner",
 		icon = "rbxassetid://114489790834583",
