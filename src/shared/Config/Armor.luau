@@ -110,18 +110,18 @@ Armor.Defs = {
 		name = "Woodland Hide",
 		blurb = "Fox fur and tusk toggles. Warm and tough.",
 		world = 2,
-		sell = 490,
+		sell = 620,
 		order = 3,
 		rarity = "Rare",
 		level = 28, -- 20 until 2026-10-21: players arrive at 25, so it unlocked on arrival
-		coins = 1200,
+		coins = 1500,
 		recipe = {
 			{ id = "FoxFur", count = 15 },
 			{ id = "BoarTusk", count = 10 },
 			{ id = "RedwoodLog", count = 10 }, -- gathered (2026-10-21, user: like World 1's sets)
 		},
 		defense = 0.25,
-		health = 440,
+		health = 350,
 		speed = 0.05,
 	},
 	HeartwoodBark = {
@@ -130,11 +130,11 @@ Armor.Defs = {
 		name = "Heartwood Bark",
 		blurb = "Living bark, bear claws and the ranger's badge.",
 		world = 2,
-		sell = 1000,
+		sell = 1500,
 		order = 4,
 		rarity = "Epic",
 		level = 34, -- 27 until 2026-10-21: Rowan's second level step, like Harvest Knight and Dale's
-		coins = 3500,
+		coins = 7500,
 		recipe = {
 			{ id = "BearClaw", count = 10 },
 			{ id = "HeartwoodSap", count = 3 },
@@ -143,7 +143,7 @@ Armor.Defs = {
 			{ id = "AmberSap", count = 1 },
 		},
 		defense = 0.32,
-		health = 640,
+		health = 750,
 		regen = 0.0025,
 	},
 	-- ==================== World 3 (The Crystal Caverns), 2026-10-13 ====================

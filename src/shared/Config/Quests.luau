@@ -271,6 +271,7 @@ lines.DaleFarm = {
 
 -- Ranger Rowan on the cabin porch at the World 2 camp (2026-10-11). Numbers are
 -- starting values (the user will tune them later).
+-- Rewards are x10 Dale's, step for step (2026-10-24, the rescale: coins and EXP x10 a world).
 lines.RangerRedwoods = {
 	id = "RangerRedwoods",
 	name = "Trouble in the Redwoods",
@@ -292,7 +293,7 @@ lines.RangerRedwoods = {
 			count = 5,
 			objective = "Defeat 5 Snarling Foxes",
 			track = "Defeat {Snarling Foxes}",
-			reward = { coins = 60, exp = 200 },
+			reward = { coins = 250, exp = 200 },
 			offer = {
 				"Evening, traveller. I'm Ranger Rowan. I look after these redwoods.",
 				"Something has the wildlife riled up. The foxes snap at anything that moves.",
@@ -308,7 +309,7 @@ lines.RangerRedwoods = {
 			count = 6,
 			objective = "Collect 6 Fox Fur",
 			track = "Collect {Fox Fur}",
-			reward = { coins = 80, exp = 320 },
+			reward = { coins = 300, exp = 300 },
 			offer = {
 				"Your old wooden axe won't bite into a redwood. You'll want a Stone Axe.",
 				"The weaponsmith wraps their grips in fox fur. Go and [collect 6 Fox Fur] from the foxes on the trail.",
@@ -322,7 +323,7 @@ lines.RangerRedwoods = {
 			count = 10,
 			objective = "Defeat 10 Snarling Foxes",
 			track = "Defeat {Snarling Foxes}",
-			reward = { coins = 100, exp = 400 },
+			reward = { coins = 400, exp = 400 },
 			offer = {
 				"I counted tracks this morning. Far more foxes than there should be.",
 				"Please [defeat 10 Snarling Foxes] before they overrun the camp.",
@@ -336,7 +337,7 @@ lines.RangerRedwoods = {
 			count = 3,
 			objective = "Defeat 3 Wild Boars",
 			track = "Defeat {Wild Boars}",
-			reward = { coins = 150, exp = 600 },
+			reward = { coins = 600, exp = 600 },
 			offer = {
 				"Now the boars are charging hikers right off the trail.",
 				"Their hides are thick, so hit hard. [Defeat 3 Wild Boars].",
@@ -349,7 +350,7 @@ lines.RangerRedwoods = {
 			level = 30, -- 22 until 2026-10-20: players arrive at 25 since the World 2 gate moved to level 25
 			objective = "Reach level 30",
 			track = "Reach {Level 30}",
-			reward = { coins = 150 },
+			reward = { coins = 500 },
 			offer = {
 				"Deeper in, the bears are waking up angry. You're not ready for them yet.",
 				"Train up and [reach level 30]. I'll be right here by the fire.",
@@ -363,7 +364,7 @@ lines.RangerRedwoods = {
 			items = { { id = "RedwoodLog", count = 10 }, { id = "BoarTusk", count = 4 } },
 			objective = "Bring Rowan 10 Redwood Logs and 4 Boar Tusks",
 			track = "Bring Rowan {Logs and Tusks}",
-			reward = { coins = 200, exp = 1200 },
+			reward = { coins = 800, exp = 1000 },
 			offer = {
 				"The boars battered the lookout tower. I can't keep watch from up there like this.",
 				"Could you [bring me 10 Redwood Logs and 4 Boar Tusks]? Logs for the beams, tusks for pegs.",
@@ -378,7 +379,7 @@ lines.RangerRedwoods = {
 			count = 2,
 			objective = "Defeat 2 Grizzly Bears",
 			track = "Defeat {Grizzly Bears}",
-			reward = { coins = 250, exp = 1000 },
+			reward = { coins = 1000, exp = 1000 },
 			offer = {
 				"From the tower I spotted two grizzlies guarding the path to the old ruins.",
 				"[Defeat 2 Grizzly Bears] so we can find out what's stirring in there.",
@@ -392,7 +393,7 @@ lines.RangerRedwoods = {
 			count = 1,
 			objective = "Defeat the Elder Treant",
 			track = "Defeat the {Elder Treant}",
-			reward = { coins = 400, exp = 1600, item = "RangerBadge" },
+			reward = { coins = 1500, exp = 1500, item = "RangerBadge" },
 			offer = {
 				"The Elder Treant. The oldest tree in the forest has woken, and it's furious.",
 				"Its rage is spreading to every creature here. Go to the ruins and [defeat the Elder Treant].",
@@ -408,7 +409,7 @@ lines.RangerRedwoods = {
 			level = 34, -- 27 until 2026-10-20 (World 2 balance)
 			objective = "Reach level 34",
 			track = "Reach {Level 34}",
-			reward = { coins = 300 },
+			reward = { coins = 1000 },
 			offer = {
 				"Bad news. Roots don't die easily. The treant is growing back, stronger than before.",
 				"You'll need to be stronger too. [Reach level 34].",
@@ -423,7 +424,7 @@ lines.RangerRedwoods = {
 			objective = "Defeat the Elder Treant 5 times",
 			track = "Defeat the {Elder Treant}",
 			-- The quest-only Firefly Lantern (Legendary, 2026-10-11).
-			reward = { coins = 750, exp = 3000, weapon = "LanternFlail" },
+			reward = { coins = 3000, exp = 3000, weapon = "LanternFlail" },
 			offer = {
 				"This is it. We have to calm that old tree for good.",
 				"[Defeat the Elder Treant 5 times] and the forest can finally rest.",

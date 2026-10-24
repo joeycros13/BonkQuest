@@ -39,6 +39,21 @@ local WorldTypes = require(script.Parent.Parent.WorldTypes)
 -- (340 x 4 + 75 Harvest Knight) x 1.15 = 1,650 HP (Harvest Knight is World 1 armour, unscaled).
 -- world_sim.py after it: 47.9 min prepared, 1.1 deaths; 53.0 unprepared, 4.4. Numbers in the comments
 -- above and below are before it.
+--
+-- The base fight (2026-10-24, the user's anchor, memory world-scaling-baseline): a player arriving maxed from
+-- World 1 -- level 25 (912 HP on the new curve, Config/Leveling), Harvest Knight, every upgrade at level 3, the
+-- Pumpkin King's Mace: 1,135 HP, taking x0.795, 84.5 damage a second -- loses about 50% of their health
+-- fighting a Fox (art/tools/balance/base_fights.py, counted without the Mace's knockback, which in the game
+-- shoves the Fox out of reach and makes the fight easier). Health is x10 World 1's (Fox 800, Boar 1,900,
+-- Bear 2,600, Elder Treant 4,000, Fairy 3,600), the Fox hits for 80 (51% over a 10 s fight) and the rest
+-- keep World 2's damage ratios to it (x2 / x3.3 / x3.66, Fairy x2.5): Boar 159, Bear 266, Treant 293, Fairy
+-- 199. A Fox hits only 3.6x the Chicken, not x10, because the arrival's Mace is only 2.8x the Trowel against
+-- x10 health, so its fights run three times as long. Kill EXP is x4 and kill coins x3 of the World 1
+-- counterparts (a maxed player kills fast and World 2 is meant to last 45-60 min, not 30): world_sim.py
+-- --world 2 --from 1 --upgrades 3 --start-weapons PumpkinMace: 48.4 min typical to the World 3 gate (9 in
+-- 10 by 51.9), 0.1 deaths, ~16,000 coins spare toward World 2's upgrades; an unprepared arrival (no
+-- upgrades, the Spear) 64.9 min, 1.3 deaths. Prices, rewards and sells are x10 World 1's (Config/Weapons,
+-- Armor, Tools, Quests, Materials, Potions).
 
 local World: WorldTypes.WorldDef = {
 	id = 2,
@@ -73,11 +88,11 @@ local World: WorldTypes.WorldDef = {
 			tier = "small",
 			name = "Snarling Fox",
 			portrait = "rbxassetid://102792357956654", -- calm face (2026-10-11)
-			hp = 904, -- 276 before the 2026-10-20 health ladder
+			hp = 800, -- x10 the Chicken (2026-10-24); 904 before
 			-- Quick pounces with a snap at the end.
-			melee = { damage = 125, cooldown = 1.0, windup = 0.5, range = 1.5, chaseSpeed = 17, armor = 0, move = "pounce" },
-			coins = { min = 16, max = 32 }, -- 22-45 before the 2026-10-20 ladder
-			exp = 40, -- 35
+			melee = { damage = 80, cooldown = 1.0, windup = 0.5, range = 1.5, chaseSpeed = 17, armor = 0, move = "pounce" },
+			coins = { min = 18, max = 36 }, -- x3 the Chicken's (2026-10-24); 16-32 before
+			exp = 40, -- x4 the Chicken's (2026-10-24)
 			drops = {
 				{ weapon = "Hatchet", chance = 0.20 },
 				{ weapon = "Cleaver", chance = 0.05 },
@@ -92,10 +107,10 @@ local World: WorldTypes.WorldDef = {
 			tier = "medium",
 			name = "Wild Boar",
 			portrait = "rbxassetid://105726195455752", -- calm face (2026-10-11)
-			hp = 2144, -- 966 before the 2026-10-20 health ladder
-			melee = { damage = 249, cooldown = 1.8, windup = 0.55, range = 1.5, chaseSpeed = 15, armor = 0.1, move = "charge" },
-			coins = { min = 65, max = 108 }, -- 90-150 before the 2026-10-20 ladder
-			exp = 152, -- 70
+			hp = 1900, -- x10 the Bull (2026-10-24); 2,144 before
+			melee = { damage = 159, cooldown = 1.8, windup = 0.55, range = 1.5, chaseSpeed = 15, armor = 0.1, move = "charge" },
+			coins = { min = 72, max = 120 }, -- 65-108 before
+			exp = 120, -- 152 before
 			drops = {
 				{ weapon = "Cleaver", chance = 0.20 },
 				{ weapon = "Quarterstaff", chance = 0.15 },
@@ -110,10 +125,10 @@ local World: WorldTypes.WorldDef = {
 			tier = "elite",
 			name = "Grizzly Bear",
 			portrait = "rbxassetid://117018743106247", -- calm face (2026-10-11)
-			hp = 2928, -- 1,520 before the 2026-10-20 health ladder
-			melee = { damage = 415, cooldown = 2.4, windup = 0.78, range = 1.6, chaseSpeed = 13, armor = 0.15, move = "slam" },
-			coins = { min = 108, max = 163 }, -- 150-226 before the 2026-10-20 ladder
-			exp = 224, -- 150
+			hp = 2600, -- x10 the Stallion (2026-10-24); 2,928 before
+			melee = { damage = 266, cooldown = 2.4, windup = 0.78, range = 1.6, chaseSpeed = 13, armor = 0.15, move = "slam" },
+			coins = { min = 120, max = 180 }, -- 108-163 before
+			exp = 168, -- 224 before
 			drops = {
 				{ weapon = "Mace", chance = 0.15 },
 				{ weapon = "WoodsmansAxe", chance = 0.10 },
@@ -131,12 +146,12 @@ local World: WorldTypes.WorldDef = {
 		Fairy = {
 			id = "Fairy",
 			name = "Fairy",
-			hp = 4056, -- 600 before the 2026-10-20 ladder
+			hp = 3600, -- x10 the Corn Wraith (2026-10-24); 4,056 before
 			secret = true,
 			adminPortrait = "rbxassetid://128352315360379", -- admin panel only, never the Index (2026-10-17)
-			melee = { damage = 311, cooldown = 1.6, windup = 0.45, range = 2.2, chaseSpeed = 18, armor = 0.1, move = "zap" },
-			coins = { min = 80, max = 120 },
-			exp = 720,
+			melee = { damage = 199, cooldown = 1.6, windup = 0.45, range = 2.2, chaseSpeed = 18, armor = 0.1, move = "zap" },
+			coins = { min = 75, max = 120 },
+			exp = 240, -- 720 before (2026-10-24)
 			-- the Forest Core: about 1%, once per player (trial numbers)
 			materials = { { id = "ForestCore", chance = 0.01, min = 1, max = 1 } },
 		},
@@ -149,12 +164,12 @@ local World: WorldTypes.WorldDef = {
 			id = "ElderTreant",
 			name = "Elder Treant",
 			portrait = "rbxassetid://98505547017601", -- calm face (2026-10-11)
-			hp = 4504, -- 1,200 with 30% armour before the 2026-10-20 ladder
+			hp = 4000, -- x10 the Scarecrow King (2026-10-24); 4,504 before
 			-- Two attacks, picked 50/50, same damage and timing (user, 2026-10-11): the
 			-- knee-up stomp and an overhead double-arm smash.
-			melee = { damage = 457, cooldown = 2.4, windup = 0.72, range = 1.5, chaseSpeed = 10, armor = 0.2, move = "stomp", moves = { "stomp", "smash" } },
-			coins = { min = 243, max = 379 }, -- 338-526 before the 2026-10-20 ladder
-			exp = 600, -- 400
+			melee = { damage = 293, cooldown = 2.4, windup = 0.72, range = 1.5, chaseSpeed = 10, armor = 0.2, move = "stomp", moves = { "stomp", "smash" } },
+			coins = { min = 270, max = 420 }, -- 243-379 before
+			exp = 600,
 			drops = {
 				{ weapon = "WoodsmansAxe", chance = 0.20 },
 				{ weapon = "Greatclub", chance = 0.20 },

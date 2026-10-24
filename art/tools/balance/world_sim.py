@@ -185,13 +185,26 @@ class World:
 
 # ---------------------------------------------------------------------------
 START = {}
-# upgrade levels (Health, Defense, Attack, AttackSpeed), --upgrades
-UPG = {"health": 0, "defense": 0, "attack": 0, "speed": 0}
-UPG_STEP = {"health": 0.05, "defense": -0.01, "attack": 0.03, "speed": -0.015}
+# upgrade levels, --upgrades N (every upgrade at N since 2026-10-24: the base player arrives maxed;
+# it was only Health, Defense, Attack and Attack Speed). Config/Upgrades steps a level.
+UPG = {"health": 0, "defense": 0, "attack": 0, "speed": 0, "critChance": 0, "critDamage": 0,
+       "regen": 0, "coins": 0, "exp": 0, "luck": 0, "gathering": 0, "sprint": 0}
+UPG_STEP = {"health": 0.05, "defense": -0.01, "attack": 0.03, "speed": -0.015, "critChance": 0.01, "critDamage": 0.05,
+            "regen": 0.0015, "coins": 0.04, "exp": 0.04, "luck": 0.05, "gathering": 0.01, "sprint": 0.04}
 
 
 def upg(name):
     return 1 + UPG_STEP[name] * UPG[name]
+
+
+def crit():
+    """(chance, multiplier) with the Crit upgrades."""
+    return (PLAYER["critChance"] + UPG_STEP["critChance"] * UPG["critChance"],
+            PLAYER["critMultiplier"] + UPG_STEP["critDamage"] * UPG["critDamage"])
+
+
+def lucky(chance):
+    return min(1.0, chance * upg("luck"))
 
 
 class Run:
@@ -246,7 +259,7 @@ class Run:
             lv = self.level()
             h[lv] = h.get(lv, 0) + seconds
         # regen while doing anything
-        self.hp = min(self.maxhp(), self.hp + self.maxhp() * (PLAYER["regen"] + self.worn("regen")) * seconds)
+        self.hp = min(self.maxhp(), self.hp + self.maxhp() * self.regen() * seconds)
 
     def level(self):
         return self.w.level_of(self.exp)
@@ -255,9 +268,17 @@ class Run:
         """An armour bonus of the set worn (Config/Armor regen / speed), 0 without one."""
         return self.w.armor[self.wearing].get(key, 0) if self.wearing else 0
 
+    def regen(self):
+        """Share of max HP healed a second: Roblox's 1%, the set's regen, the Regen upgrade."""
+        return PLAYER["regen"] + self.worn("regen") + UPG_STEP["regen"] * UPG["regen"]
+
     def spd(self):
-        # walk speed x (1 + armour speed), capped like Armor.MAX_SPEED (Swiftness is outside the run)
-        return self.w.speed * (1 + min(self.worn("speed"), 0.5))
+        # walk speed x (1 + armour speed), capped like Armor.MAX_SPEED (Swiftness is outside the run);
+        # with the Sprint upgrade the player sprints everywhere (Bonuses.speed adds its share)
+        boost = min(self.worn("speed"), 0.5)
+        if UPG["sprint"] > 0:
+            boost += 0.16 + UPG_STEP["sprint"] * UPG["sprint"]
+        return self.w.speed * (1 + boost)
 
     def maxhp(self):
         return self.w.max_hp(self.level(), self.wearing) * upg("health")
@@ -299,7 +320,8 @@ class Run:
         for wid in self.weapons:
             v = self.w.weapons[wid]
             per = v["damage"] * upg("attack") * (1 - (0 if v.get("ignoreArmor") else armor))
-            per *= 1 + PLAYER["critChance"] * (PLAYER["critMultiplier"] - 1)  # crits on average
+            chance, mult = crit()
+            per *= 1 + chance * (mult - 1)  # crits on average
             hits = math.ceil(e["hp"] / per)
             ttk = (v["hitTime"] + (hits - 1) * v["cooldown"] / PLAYER["hitRate"]) * upg("speed")
             if best is None or ttk < best[1]:
@@ -318,9 +340,10 @@ class Run:
         t = PLAYER["engageSeconds"] + v["hitTime"] * upg("speed")
         first_hit = None
         knocks = []           # times the enemy was knocked back
+        chance, mult = crit()
         while True:
             if rng.random() < PLAYER["hitRate"]:
-                hp -= per * (PLAYER["critMultiplier"] if rng.random() < PLAYER["critChance"] else 1)
+                hp -= per * (mult if rng.random() < chance else 1)
                 if first_hit is None:
                     first_hit = t
                 knocks.append(t)
@@ -385,7 +408,7 @@ class Run:
         _, expect = self.fight(enemy, weapon, dry=True)
         want = min(self.maxhp(), expect * PLAYER["restMargin"])
         if self.hp < want and expect < self.maxhp():
-            need = (want - self.hp) / (self.maxhp() * (PLAYER["regen"] + self.worn("regen")))
+            need = (want - self.hp) / (self.maxhp() * self.regen())
             if need > 0 and not self.use_fountain(markers, need):
                 self.rests += need
                 if self.t < 600:
@@ -422,20 +445,20 @@ class Run:
         self.kills[enemy] = self.kills.get(enemy, 0) + 1
         h = self.probe["kill"].setdefault(enemy, {})
         h[self.level()] = h.get(self.level(), 0) + 1
-        got = self.rng.randint(e["coins"]["min"], e["coins"]["max"])
+        got = round(self.rng.randint(e["coins"]["min"], e["coins"]["max"]) * upg("coins"))
         self.coins += got
         if self.accepted and self.cur() and self.cur()["kind"] == "earn":
             self.progress += got
-        self.add_exp(e.get("exp", 0))
+        self.add_exp(round(e.get("exp", 0) * upg("exp")))
         for x in e["materials"]:
-            if self.rng.random() < x["chance"]:
+            if self.rng.random() < lucky(x["chance"]):
                 n = self.rng.randint(x["min"], max(x["min"], x["max"]))
                 self.mats[x["id"]] = self.mats.get(x["id"], 0) + n
                 c = self.cur()
                 if self.accepted and c and c["kind"] == "gather" and c["target"] == x["id"]:
                     self.progress += n
         for x in e["drops"]:
-            if x["weapon"] not in self.weapons and self.rng.random() < x["chance"]:
+            if x["weapon"] not in self.weapons and self.rng.random() < lucky(x["chance"]):
                 self.weapons.add(x["weapon"])
                 self.got[x["weapon"]] = (self.t, "dropped by " + enemy)
                 self.say("drop!", x["weapon"], "from", enemy)
@@ -474,6 +497,8 @@ class Run:
         for x in g["drops"]:
             if self.rng.random() < x["chance"]:
                 n = self.rng.randint(x["min"], max(x["min"], x["max"]))
+                if self.rng.random() < UPG_STEP["gathering"] * UPG["gathering"]:
+                    n *= 2  # the Gathering upgrade doubles a drop
                 self.mats[x["id"]] = self.mats.get(x["id"], 0) + n
                 c = self.cur()
                 if self.accepted and c and c["kind"] == "gather" and c["target"] == x["id"]:
@@ -921,7 +946,7 @@ def main():
     ap.add_argument("--start-armor", default="FarmhandsGear,HarvestKnight")
     ap.add_argument("--start-wear", default="HarvestKnight")
     ap.add_argument("--set", action="append", default=[])
-    ap.add_argument("--upgrades", type=int, default=0, help="Health, Defense, Attack and Attack Speed upgrades at this level")
+    ap.add_argument("--upgrades", type=int, default=0, help="every upgrade at this level (the maxed arrival: 3 in World 2, 6 in World 3)")
     ap.add_argument("--trace", action="store_true")
     ap.add_argument("--remap", action="store_true", help="after level.* changes, move level requirements to the same EXP")
     a = ap.parse_args()

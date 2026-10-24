@@ -151,10 +151,10 @@ Tools.Defs = {
 		kind = "Axe",
 		tier = 2,
 		world = 2,
-		sell = 120,
-		power = 160,
+		sell = 110,
+		power = 200,
 		rarity = "Uncommon",
-		price = 600,
+		price = 500,
 		icon = "rbxassetid://138518954912606",
 		-- the upgrade (2026-10-20): the Wooden Axe, World 1's gathered wood and stone, and World
 		-- 2's enemy drops (the user: "giving the requirements depth and an actual tree"). Not
@@ -186,7 +186,7 @@ Tools.Defs = {
 		sell = 160,
 		power = 0,
 		rarity = "Uncommon",
-		price = 800,
+		price = 750,
 		icon = "rbxassetid://115528900023286",
 		-- the upgrade (2026-10-20, the user: like the axe's): the Wooden Rod, World 1's wood and
 		-- stone, and World 2's Fox Fur and Boar Tusk. Not fish: a Stone Rod catches World 2's.

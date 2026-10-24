@@ -90,7 +90,7 @@ Gathering.Nodes = {
 		verb = "Chop",
 		tool = "Axe",
 		tier = 2,
-		hp = 800,
+		hp = 1000,
 		respawn = 45,
 		drops = {
 			{ id = "RedwoodLog", min = 2, max = 3, chance = 1 },
