@@ -208,6 +208,70 @@ Tools.Defs = {
 		knockback = 0,
 		swing = "Cast",
 	},
+
+	-- ==================== World 3 (The Crystal Caverns) ====================
+	-- (2026-10-24, the user: "Crystal" fits the caves) World 3 sells a Crystal Pickaxe (from the
+	-- Wooden Pickaxe: World 2 had none) and a Crystal Rod (from the Stone Rod); the Stone Axe carries
+	-- on. Models: Blender w3_tools_build, art/meshes/w3_tools.fbx, the wooden / stone ones' sizes
+	-- (crystal arms in iron, a purple grip; a jointed cyan / pink / purple rod, a pink reel). The
+	-- recipes follow World 2's: the tool before, the last world's gathered things, this world's
+	-- enemy drops. Prices, power x10 World 2's; all placeholders.
+	CrystalPickaxe = {
+		id = "CrystalPickaxe",
+		name = "Crystal Pickaxe",
+		kind = "Pickaxe",
+		tier = 3,
+		world = 3,
+		sell = 1100,
+		power = 2000,
+		rarity = "Rare",
+		price = 5000,
+		recipe = {
+			tool = "WoodenPickaxe",
+			materials = {
+				{ id = "RedwoodLog", count = 8 },
+				{ id = "AmberSap", count = 1 },
+				{ id = "BatWing", count = 6 },
+				{ id = "GolemPebble", count = 2 },
+			},
+		},
+		handed = 1,
+		cooldown = 0.9,
+		hitTime = 0.58,
+		reach = 5,
+		arc = 70,
+		maxTargets = 1,
+		knockback = 0,
+		swing = "Mine",
+	},
+	CrystalRod = {
+		id = "CrystalRod",
+		name = "Crystal Rod",
+		kind = "Rod",
+		tier = 3,
+		world = 3,
+		sell = 1600,
+		power = 0,
+		rarity = "Rare",
+		price = 7500,
+		recipe = {
+			tool = "StoneRod",
+			materials = {
+				{ id = "RedwoodLog", count = 6 },
+				{ id = "Perch", count = 4 },
+				{ id = "BatWing", count = 4 },
+				{ id = "GolemPebble", count = 3 },
+			},
+		},
+		handed = 2,
+		cooldown = 1.0,
+		hitTime = 0.56,
+		reach = 0,
+		arc = 0,
+		maxTargets = 0,
+		knockback = 0,
+		swing = "Cast",
+	},
 } :: { [string]: ToolDef }
 
 -- Studio only (testing): every player owns these from the start. Emptied 2026-10-19 now

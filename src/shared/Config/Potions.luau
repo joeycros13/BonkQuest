@@ -148,9 +148,11 @@ local RECIPES: { [string]: { recipe: { Ingredient }, coins: number } } = {
 	Regen1 = { recipe = { { id = "Trout", count = 2 }, { id = "FoxFur", count = 3 }, { id = "AmberSap", count = 1 } }, coins = 400 },
 	Gatherer1 = { recipe = { { id = "Perch", count = 2 }, { id = "BoarTusk", count = 2 }, { id = "RedwoodLog", count = 4 } }, coins = 450 },
 	Angler1 = { recipe = { { id = "RainbowTrout", count = 1 }, { id = "Perch", count = 2 }, { id = "BearClaw", count = 1 } }, coins = 500 },
-	Health2 = { recipe = { { id = "Health1", count = 1 }, { id = "BatWing", count = 3 } }, coins = 4000 },
-	Strength2 = { recipe = { { id = "Strength1", count = 1 }, { id = "GolemCrystal", count = 2 }, { id = "GolemPebble", count = 2 } }, coins = 5000 },
-	Stoneskin2 = { recipe = { { id = "Stoneskin1", count = 1 }, { id = "GolemPebble", count = 4 } }, coins = 5000 },
+	-- World 3's Tier II (2026-10-24, the user: Health, Strength and Stoneskin II are World 3's; Swiftness II
+	-- belongs to World 4): the Tier I potion, the glowing lake's fish, the mined ore or shards, an enemy drop
+	Health2 = { recipe = { { id = "Health1", count = 1 }, { id = "Glowfish", count = 2 }, { id = "BatWing", count = 3 } }, coins = 4000 },
+	Strength2 = { recipe = { { id = "Strength1", count = 1 }, { id = "CrystalEel", count = 1 }, { id = "IronOre", count = 4 }, { id = "GolemCrystal", count = 2 } }, coins = 5000 },
+	Stoneskin2 = { recipe = { { id = "Stoneskin1", count = 1 }, { id = "BlindCavefish", count = 2 }, { id = "CrystalShard", count = 4 }, { id = "GolemPebble", count = 2 } }, coins = 5000 },
 	Swiftness2 = { recipe = { { id = "Swiftness1", count = 1 }, { id = "BatWing", count = 3 }, { id = "GolemCrystal", count = 1 } }, coins = 4500 },
 }
 

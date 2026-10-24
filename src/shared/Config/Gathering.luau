@@ -97,6 +97,39 @@ Gathering.Nodes = {
 			{ id = "AmberSap", min = 1, max = 1, chance = 0.1 },
 		},
 	},
+	-- ==================== World 3 (The Crystal Caverns) ====================
+	-- (2026-10-24, the user's design) Mining only: both need the Crystal Pickaxe (power 2,000),
+	-- an Ore Rock in 6 hits like World 1's boulder and a cluster in 5. Models: Blender
+	-- w3_gather_build, art/meshes/w3_gathering.fbx (a grey rock with orange ore veins and nuggets;
+	-- a rounded rock with cyan, pink and purple crystals and a pink gem), unlike the cave's
+	-- decoration ores and crystals. The Raw Gem is the cluster's rare drop (placeholder 10%).
+	OreRock = {
+		id = "OreRock",
+		name = "Ore Rock",
+		world = 3,
+		verb = "Mine",
+		tool = "Pickaxe",
+		tier = 3,
+		hp = 12000,
+		respawn = 45,
+		drops = {
+			{ id = "IronOre", min = 2, max = 3, chance = 1 },
+		},
+	},
+	CrystalCluster = {
+		id = "CrystalCluster",
+		name = "Crystal Cluster",
+		world = 3,
+		verb = "Mine",
+		tool = "Pickaxe",
+		tier = 3,
+		hp = 10000,
+		respawn = 45,
+		drops = {
+			{ id = "CrystalShard", min = 2, max = 3, chance = 1 },
+			{ id = "RawGem", min = 1, max = 1, chance = 0.1 },
+		},
+	},
 } :: { [string]: NodeDef }
 
 function Gathering.get(id: any): NodeDef?

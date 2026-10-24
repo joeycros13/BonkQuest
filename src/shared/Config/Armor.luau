@@ -162,6 +162,7 @@ Armor.Defs = {
 		recipe = {
 			{ id = "BatWing", count = 15 },
 			{ id = "GolemPebble", count = 10 },
+			{ id = "IronOre", count = 12 }, -- mined (2026-10-24), like Woodland Hide's Redwood Logs
 		},
 		defense = 0.38,
 		health = 3500,
@@ -182,6 +183,8 @@ Armor.Defs = {
 			{ id = "GolemCrystal", count = 10 },
 			{ id = "QueensSilk", count = 3 },
 			{ id = "MinersLantern", count = 1 },
+			{ id = "CrystalShard", count = 12 }, -- mined (2026-10-24), like Heartwood Bark's logs and sap
+			{ id = "RawGem", count = 1 },
 		},
 		defense = 0.44,
 		health = 7500,
