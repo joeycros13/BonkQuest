@@ -40,6 +40,10 @@ local WorldTypes = require(script.Parent.Parent.WorldTypes)
 -- is then scaled to its time target with world_sim.py.
 -- World 3 at 0.95x the old Crystal Golem: 49.6 min (a player who fights whatever pays within 25%: 56.1 min,
 -- mostly Pebble Golems).
+-- Then x0.9 (2026-10-24, the user): the four Crystal Golems moved into the boss hall round the altar (30-90
+-- studs apart, like World 2's bears; they stood 98-160 apart, so a fifth of the run was walking between them),
+-- which took the run to 44.3 min, and every World 3 kill reward went x0.9 (rounded to 5s): 47.7 min prepared
+-- (World 2 48.6), 75.4 unprepared.
 
 local World: WorldTypes.WorldDef = {
 	id = 3,
@@ -77,8 +81,8 @@ local World: WorldTypes.WorldDef = {
 			portrait = "rbxassetid://72271902069536", -- calm face (2026-10-13)
 			hp = 8000, -- x10 the Fox (2026-10-24); 10,048 before
 			melee = { damage = 1220, cooldown = 1.2, windup = 0.47, range = 1.6, chaseSpeed = 18, armor = 0, move = "swoop" },
-			coins = { min = 195, max = 385 },
-			exp = 320,
+			coins = { min = 175, max = 345 },
+			exp = 290,
 			drops = {
 				{ weapon = "BatwingBlade", chance = 0.20 },
 				{ weapon = "IronPickaxe", chance = 0.05 },
@@ -94,8 +98,8 @@ local World: WorldTypes.WorldDef = {
 			portrait = "rbxassetid://92185614445143", -- calm face (2026-10-13)
 			hp = 19000, -- x10 the Boar (2026-10-24); 23,904 before
 			melee = { damage = 2460, cooldown = 1.8, windup = 0.48, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "punch" },
-			coins = { min = 370, max = 730 },
-			exp = 610,
+			coins = { min = 335, max = 655 },
+			exp = 550,
 			drops = {
 				{ weapon = "IronPickaxe", chance = 0.20 },
 				{ weapon = "PebbleMallet", chance = 0.15 },
@@ -112,8 +116,8 @@ local World: WorldTypes.WorldDef = {
 			portrait = "rbxassetid://84986641261720", -- calm face (2026-10-13)
 			hp = 26000, -- x10 the Bear (2026-10-24); 32,704 before
 			melee = { damage = 4090, cooldown = 2.4, windup = 0.74, range = 1.6, chaseSpeed = 12, armor = 0.15, move = "smash" },
-			coins = { min = 525, max = 1045 },
-			exp = 875,
+			coins = { min = 470, max = 940 },
+			exp = 790,
 			drops = {
 				{ weapon = "GoldGauntlets", chance = 0.15 },
 				{ weapon = "GeodeGlaive", chance = 0.10 },
@@ -136,8 +140,8 @@ local World: WorldTypes.WorldDef = {
 			secret = true,
 			adminPortrait = "rbxassetid://95259297161320", -- admin panel only, never the Index (2026-10-17)
 			melee = { damage = 3070, cooldown = 1.8, windup = 0.48, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
-			coins = { min = 735, max = 1460 },
-			exp = 1225,
+			coins = { min = 660, max = 1315 },
+			exp = 1100,
 			-- the Cave Core: about 1%, once per player (trial numbers)
 			materials = { { id = "CaveCore", chance = 0.01, min = 1, max = 1 } },
 		},
@@ -153,8 +157,8 @@ local World: WorldTypes.WorldDef = {
 			portrait = "rbxassetid://80870479752276", -- calm face (2026-10-13)
 			hp = 40000, -- x10 the Elder Treant (2026-10-24); 50,304 before
 			melee = { damage = 4500, cooldown = 2.4, windup = 0.74, range = 1.5, chaseSpeed = 11, armor = 0.2, move = "legstab", moves = { "legstab", "rearslam" } },
-			coins = { min = 2260, max = 4480 },
-			exp = 3760,
+			coins = { min = 2035, max = 4030 },
+			exp = 3385,
 			drops = {
 				{ weapon = "GeodeGlaive", chance = 0.20 },
 				{ weapon = "EmberCoalMaul", chance = 0.20 },
