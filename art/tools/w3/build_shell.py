@@ -41,7 +41,6 @@ FLOOR_THICK = 4               # every floor block is this thick under its top (t
                               # the way down's columns reached down to y -30 for nothing)
 RINGS = 2                     # wall thickness in cells (4 studs; nothing inside sees past the second)
 TOP_EXTRA = 4                 # roof thickness over the ceiling
-CAVE_TOP = L.FLOOR + 54       # the cave's roof top (its highest dome is 50)
 rng = random.Random(23)
 
 
@@ -182,6 +181,27 @@ def main(out_path):
                         q.append((a, b2))
                     elif dist[a][b2] == d + 1 and near[i][j][1] > near[a][b2][1]:
                         near[a][b2] = near[i][j]
+    # --- the roof's flat top: 4 over the highest ceiling anywhere (the way down's mouth) ------
+    highest = max(near[i][j][1] for i in range(NX) for j in range(NZ) if near[i][j] is not None)
+    roof_top = int(math.ceil((highest + 3) / 4) * 4)
+    # --- the rock islands' hollow insides get the roof too (no open spots from above) -------
+    outside = [[False] * NZ for _ in range(NX)]
+    q = deque()
+    for i in range(NX):
+        for j in (0, NZ - 1):
+            if dist[i][j] is None and not outside[i][j]:
+                outside[i][j] = True; q.append((i, j))
+    for j in range(NZ):
+        for i in (0, NX - 1):
+            if dist[i][j] is None and not outside[i][j]:
+                outside[i][j] = True; q.append((i, j))
+    while q:
+        i, j = q.popleft()
+        for di, dj in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            a, b2 = i + di, j + dj
+            if 0 <= a < NX and 0 <= b2 < NZ and dist[a][b2] is None and not outside[a][b2]:
+                outside[a][b2] = True
+                q.append((a, b2))
     # --- boxes ------------------------------------------------------------------------------
     boxes = []
     def q2(v):
@@ -193,7 +213,9 @@ def main(out_path):
             x, z = centre(i, j)
             if d is None:
                 # nothing past the walls (the user, 2026-10-24: the base slab there showed as a
-                # platform outside the cave)
+                # platform outside the cave); an island's hollow inside is roofed over
+                if not outside[i][j] and centre(i, j)[1] < L.Z0:
+                    ceil_key[(i, j)] = (roof_top - 4, roof_top)
                 continue
             nb, nc = near[i][j]
             if d == 0:
@@ -208,21 +230,9 @@ def main(out_path):
                     floor_key[(i, j)] = ("col", H[i][j])
             if x >= L.CURVE_START[0] and nb != L.FLOOR:
                 nc = q2(nc)  # past the narrowing the arch steps 2 studs (fewer roof blocks)
-            if nb == L.FLOOR:
-                # the cave's roof has one flat top, 4 over its highest dome (2026-10-24, fewer parts:
-                # only its underside shows from inside)
-                top = CAVE_TOP
-            else:
-                # the way down's roof reaches 4 over the highest ceiling next to it, so a step
-                # bigger than the roof's thickness leaves no slot open
-                top = nc
-                for di in (-1, 0, 1):
-                    for dj in (-1, 0, 1):
-                        a, b2 = i + di, j + dj
-                        if 0 <= a < NX and 0 <= b2 < NZ and near[a][b2] is not None:
-                            top = max(top, near[a][b2][1] + 1)
-                top += TOP_EXTRA
-                top = int(math.ceil(top / 8) * 8)  # coarse levels, so the roof merges into big blocks
+            # one flat roof top over everything (the user, 2026-10-24); inside, each column still
+            # comes down to its own ceiling, so the domes and the arch keep their steps
+            top = roof_top
             if d == 0:
                 # the roof over the walkable ground; the walls run up to the same top themselves
                 ceil_key[(i, j)] = (nc, top)
