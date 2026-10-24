@@ -19,8 +19,10 @@
 --                    IdleTextColor), the user's call after a white box looked off
 --   Window/Detail    the selected set or potion: Stage/Preview, Info/SetName, Rarity
 --                    (colour from its Color_<Rarity> attributes), Blurb,
---                    DefenseCard / HealthCard (Value) for a set, EffectCard / LastsCard
---                    for a potion (EffectCard's StatIcon is the potion's own picture),
+--                    Cards (a row that packs the shown cards left): DefenseCard / HealthCard
+--                    (Value) for a set, plus RegenCard / SpeedCard only for a set that has
+--                    that bonus (2026-10-22); EffectCard / LastsCard for a potion
+--                    (EffectCard's StatIcon is the potion's own picture),
 --                    Ingredients (a ScrollingFrame, one row per recipe material or potion:
 --                    Slot/Icon, ItemName, Count "have / need", Bar/Fill; its RowShare /
 --                    GapShare attributes are a row's and a gap's share of the visible
@@ -36,11 +38,13 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UiSound = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("UiSound"))
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = Shared:WaitForChild("Config")
 local Remotes = require(Shared:WaitForChild("Remotes"))
 local Armor = require(Config:WaitForChild("Armor"))
+local Bonuses = require(Config:WaitForChild("Bonuses"))
 local Materials = require(Config:WaitForChild("Materials"))
 local Potions = require(Config:WaitForChild("Potions"))
 local Worlds = require(Config:WaitForChild("Worlds"))
@@ -98,8 +102,8 @@ local function setsHere(): { Armor.ArmorDef }
 	return out
 end
 
--- The potions this world's Crafter brews: its band's tier, those with a recipe, and of Tier I
--- only this world's own (Config/Potions `world`).
+-- The potions this world's Crafter brews: its band's tier, those with a recipe, and of Tiers I
+-- and II only this world's own (Config/Potions `world`).
 local function potionsHere(): { Potions.PotionDef }
 	local out = {}
 	local tier = Potions.tierAt(world())
@@ -245,7 +249,9 @@ local function fitRows(rows: Instance)
 	local share = rows:GetAttribute("RowShare") or 0.3
 	local gap = rows:GetAttribute("GapShare") or 0.04
 	local canvas = math.max(1, #list * share + math.max(0, #list - 1) * gap)
-	rows.CanvasSize = UDim2.new(0, 0, 0, math.floor(rows.AbsoluteSize.Y * canvas + 0.5))
+	-- rounded down: a list that fits must not come out a pixel taller than the window, or a
+	-- scroll bar shows over three rows that need none
+	rows.CanvasSize = UDim2.new(0, 0, 0, math.floor(rows.AbsoluteSize.Y * canvas))
 	for _, row in list do
 		row.Size = UDim2.fromScale(1, share / canvas)
 	end
@@ -270,12 +276,24 @@ local function clearRows(rows: Instance)
 	end
 end
 
-local function showCards(potion: boolean)
-	local info = window.Detail.Card.Info
-	info.DefenseCard.Visible = not potion
-	info.HealthCard.Visible = not potion
-	info.EffectCard.Visible = potion
-	info.LastsCard.Visible = potion
+-- one of the detail's stat cards (they sit in Info/Cards)
+local function card(name: string): any
+	return window.Detail.Card.Info:FindFirstChild(name, true)
+end
+
+-- "0.25", "5": a share as a percentage without trailing zeros
+local function percentText(share: number): string
+	return (("%.2f"):format(share * 100):gsub("0+$", ""):gsub("%.$", ""))
+end
+
+-- `set`: the armour set shown (its regen / speed cards show only if it has them)
+local function showCards(potion: boolean, set: Armor.ArmorDef?)
+	card("DefenseCard").Visible = not potion
+	card("HealthCard").Visible = not potion
+	card("RegenCard").Visible = not potion and set ~= nil and (set.regen or 0) > 0
+	card("SpeedCard").Visible = not potion and set ~= nil and (set.speed or 0) > 0
+	card("EffectCard").Visible = potion
+	card("LastsCard").Visible = potion
 end
 
 local function fillHeader(def: any)
@@ -299,10 +317,13 @@ end
 local function fillDetail(def: Armor.ArmorDef, counts: { [string]: number })
 	local info = window.Detail.Card.Info
 	fillHeader(def)
-	showCards(false)
+	showCards(false, def)
 	info.Blurb.Text = def.blurb
-	info.DefenseCard.Value.Text = math.floor(def.defense * 100 + 0.5) .. "%"
-	info.HealthCard.Value.Text = "+" .. Format.commas(def.health)
+	card("DefenseCard").Value.Text = math.floor(def.defense * 100 + 0.5) .. "%"
+	-- with the Health upgrade (Config/Bonuses; 2026-10-23, the user: real numbers everywhere but the Index)
+	card("HealthCard").Value.Text = "+" .. Format.commas(math.floor(def.health * Bonuses.health(player) + 0.5))
+	card("RegenCard").Value.Text = "+" .. percentText(def.regen or 0) .. "%/s"
+	card("SpeedCard").Value.Text = "+" .. percentText(def.speed or 0) .. "%"
 
 	local rows = info.Ingredients
 	clearRows(rows)
@@ -343,18 +364,19 @@ local function fillPotion(def: Potions.PotionDef, counts: { [string]: number }, 
 	showCards(true)
 	info.Blurb.Text = Potions.describe(def)
 	local percent = Potions.percent(def.power)
-	info.EffectCard.Title.Text = EFFECT_TITLE[def.kind] or "Effect"
-	info.EffectCard.Value.Text = if def.kind == "Health"
+	local effect = card("EffectCard")
+	effect.Title.Text = EFFECT_TITLE[def.kind] or "Effect"
+	effect.Value.Text = if def.kind == "Health"
 		then percent .. "%"
 		elseif def.kind == "Regen" then "+" .. percent .. "%/s"
 		else "+" .. percent .. "%"
 	for _, name in { "StatIcon", "StatIconShadow" } do
-		local icon = info.EffectCard:FindFirstChild(name)
+		local icon = effect:FindFirstChild(name)
 		if icon and icon:IsA("ImageLabel") then
 			icon.Image = def.icon or icon.Image
 		end
 	end
-	info.LastsCard.Value.Text = if def.seconds > 0 then ("%d:%02d"):format(def.seconds // 60, def.seconds % 60) else "Instant"
+	card("LastsCard").Value.Text = if def.seconds > 0 then ("%d:%02d"):format(def.seconds // 60, def.seconds % 60) else "Instant"
 
 	local rows = info.Ingredients
 	clearRows(rows)
@@ -485,6 +507,7 @@ local function onCraft()
 		if not ok then
 			warn("[CraftingUI] BrewPotion failed: " .. tostring(result))
 		end
+		UiSound.play(if ok and result == true then "Purchase" else "Refuse")
 		CraftingUI.refresh()
 		return
 	end
@@ -509,6 +532,7 @@ local function onCraft()
 	if not ok then
 		warn("[CraftingUI] CraftArmor failed: " .. tostring(result))
 	end
+	UiSound.play(if ok and result == true then "Purchase" else "Refuse")
 	CraftingUI.refresh()
 end
 
@@ -526,7 +550,7 @@ local function wire(found: ScreenGui)
 			end)
 		end
 	end
-	for _, name in { "Coins", "Level", "Materials", "Potions", "OwnedArmor", "EquippedArmor", "CurrentWorld" } do
+	for _, name in { "Coins", "Level", "Materials", "Potions", "OwnedArmor", "EquippedArmor", "CurrentWorld", "Upgrade_Health" } do
 		player:GetAttributeChangedSignal(name):Connect(CraftingUI.refresh)
 	end
 	found:GetPropertyChangedSignal("Enabled"):Connect(CraftingUI.refresh)

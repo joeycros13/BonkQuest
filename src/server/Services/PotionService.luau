@@ -1,7 +1,7 @@
 --!strict
 -- PotionService: brewing and drinking potions (Config/Potions, 2026-10-19).
 --
---   * Brewing: Remotes.BrewPotion(id) at a Crafter of a world in the potion's tier band
+--   * Brewing: Remotes.BrewPotion(id) at the potion's own world's Crafter (Tiers I and II), or one of its tier band's (Tier III)
 --     (StallService.atStall "Crafting"). It spends the recipe's materials (MaterialService),
 --     any lower-tier potion in it, and the coins, then adds the potion.
 --   * Drinking: Remotes.DrinkPotion(id) from the Inventory. Health heals at once (over
@@ -118,7 +118,7 @@ end
 -- ==================== brewing ====================
 
 local function atCrafterFor(player: Player, def: Potions.PotionDef): boolean
-	-- a Tier I potion belongs to one world's Crafter
+	-- a Tier I or II potion belongs to one world's Crafter
 	if def.world then
 		return deps.Services.StallService.atStall(player, "Crafting", def.world)
 	end
