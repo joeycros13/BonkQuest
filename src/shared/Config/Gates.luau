@@ -44,9 +44,9 @@ Gates.list = {
 		materials = { { id = "RedwoodLog", count = 25 }, { id = "AmberSap", count = 3 } }, -- 3 sap: the user, 2026-10-21
 	},
 	-- World 4's gate is a mock until World 4 exists (2026-10-24, the user: continue the gates' pattern and tune
-	-- World 3 to it): level 75 (a gate every 25 levels), 250,000 coins (x10 a world), 30 Crystal Shards and 5 Raw
-	-- Gems (World 3's mined materials, 2026-10-24; 20 + 20, then 25 + 3 before it).
-	-- World 3's 50-minute run (world_sim.py, world3.json's gate) aims at it. It stands in World 2 and needs
+	-- World 3 to it): level 75 (a gate every 25 levels), 225,000 coins, 20 Crystal Shards and 3 Raw Gems (World 3's
+	-- mined materials; 2026-10-24, the user's pick of the simulated options: 30 + 5 and 250,000 made World 3 58.7 min,
+	-- this 52.9, the middle of its 45-60). World 3's run (world_sim.py, world3.json's gate) aims at it. It stands in World 2 and needs
 	-- World 3 (memory world-map-branches).
 } :: { Gate }
 
