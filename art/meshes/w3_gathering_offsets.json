@@ -12,7 +12,7 @@
      4.767,
      6.5753
     ],
-    "colour": "e7e7e7"
+    "colour": "dba47c"
    },
    "Rock": {
     "offset": [
@@ -25,7 +25,7 @@
      4.6,
      5.6
     ],
-    "colour": "e7e7e7"
+    "colour": "9d9aac"
    }
   },
   "size": [
@@ -49,7 +49,7 @@
      1.061,
      0.6628
     ],
-    "colour": "e7e7e7"
+    "colour": "dba47c"
    },
    "Rock": {
     "offset": [
@@ -62,7 +62,7 @@
      1.6,
      2.9352
     ],
-    "colour": "e7e7e7"
+    "colour": "9d9aac"
    }
   },
   "size": [
@@ -86,7 +86,7 @@
      4.8532,
      3.1605
     ],
-    "colour": "e7e7e7"
+    "colour": "6fd9f0"
    },
    "CrystalLight": {
     "offset": [
@@ -99,7 +99,7 @@
      6.9731,
      4.52
     ],
-    "colour": "e7e7e7"
+    "colour": "caf3fb"
    },
    "CrystalPink": {
     "offset": [
@@ -112,7 +112,7 @@
      3.6884,
      4.2433
     ],
-    "colour": "e7e7e7"
+    "colour": "ff7bc1"
    },
    "CrystalPinkLight": {
     "offset": [
@@ -125,7 +125,7 @@
      3.3521,
      4.2433
     ],
-    "colour": "e7e7e7"
+    "colour": "ffd7ed"
    },
    "CrystalPurple": {
     "offset": [
@@ -138,7 +138,7 @@
      3.9018,
      3.9194
     ],
-    "colour": "e7e7e7"
+    "colour": "a98dff"
    },
    "CrystalPurpleLight": {
     "offset": [
@@ -151,7 +151,7 @@
      3.4278,
      3.6889
     ],
-    "colour": "e7e7e7"
+    "colour": "e3daff"
    },
    "Gem": {
     "offset": [
@@ -164,7 +164,7 @@
      0.8599,
      0.632
     ],
-    "colour": "e7e7e7"
+    "colour": "e1306f"
    },
    "Rock": {
     "offset": [
@@ -177,7 +177,7 @@
      2.0,
      4.4
     ],
-    "colour": "e7e7e7"
+    "colour": "9d9aac"
    }
   },
   "size": [
@@ -201,7 +201,7 @@
      1.1286,
      1.6173
     ],
-    "colour": "e7e7e7"
+    "colour": "6fd9f0"
    },
    "CrystalLight": {
     "offset": [
@@ -214,7 +214,7 @@
      0.1212,
      1.4934
     ],
-    "colour": "e7e7e7"
+    "colour": "caf3fb"
    },
    "CrystalPink": {
     "offset": [
@@ -227,7 +227,7 @@
      1.2698,
      2.2919
     ],
-    "colour": "e7e7e7"
+    "colour": "ff7bc1"
    },
    "CrystalPinkLight": {
     "offset": [
@@ -240,7 +240,7 @@
      0.501,
      2.2485
     ],
-    "colour": "e7e7e7"
+    "colour": "ffd7ed"
    },
    "CrystalPurple": {
     "offset": [
@@ -253,7 +253,7 @@
      1.4535,
      2.2479
     ],
-    "colour": "e7e7e7"
+    "colour": "a98dff"
    },
    "CrystalPurpleLight": {
     "offset": [
@@ -266,7 +266,7 @@
      0.7778,
      2.1981
     ],
-    "colour": "e7e7e7"
+    "colour": "e3daff"
    },
    "Rock": {
     "offset": [
@@ -279,7 +279,7 @@
      2.0,
      4.4
     ],
-    "colour": "e7e7e7"
+    "colour": "9d9aac"
    }
   },
   "size": [
