@@ -12,7 +12,7 @@
      0.1905,
      0.28
     ],
-    "colour": "e7e7e7"
+    "colour": "6fd9f0"
    },
    "CrystalPink": {
     "offset": [
@@ -25,7 +25,7 @@
      0.8991,
      0.431
     ],
-    "colour": "e7e7e7"
+    "colour": "ff7bc1"
    },
    "CrystalPinkTip": {
     "offset": [
@@ -38,7 +38,7 @@
      0.3579,
      0.219
     ],
-    "colour": "e7e7e7"
+    "colour": "ffd7ed"
    },
    "CrystalPurple": {
     "offset": [
@@ -51,7 +51,7 @@
      0.8991,
      0.431
     ],
-    "colour": "e7e7e7"
+    "colour": "a98dff"
    },
    "CrystalPurpleTip": {
     "offset": [
@@ -64,7 +64,7 @@
      0.3579,
      0.219
     ],
-    "colour": "e7e7e7"
+    "colour": "e3daff"
    },
    "CrystalTip": {
     "offset": [
@@ -77,7 +77,7 @@
      0.1645,
      0.2
     ],
-    "colour": "e7e7e7"
+    "colour": "caf3fb"
    },
    "Gem": {
     "offset": [
@@ -90,7 +90,7 @@
      0.22,
      0.1905
     ],
-    "colour": "e7e7e7"
+    "colour": "e1306f"
    },
    "Grip": {
     "offset": [
@@ -103,7 +103,7 @@
      0.3204,
      0.8455
     ],
-    "colour": "e7e7e7"
+    "colour": "8b5cd7"
    },
    "Handle": {
     "offset": [
@@ -116,7 +116,7 @@
      0.3299,
      2.9867
     ],
-    "colour": "e7e7e7"
+    "colour": "8b5a32"
    },
    "Socket": {
     "offset": [
@@ -129,7 +129,7 @@
      0.4804,
      0.44
     ],
-    "colour": "e7e7e7"
+    "colour": "4e5460"
    }
   },
   "size": [
@@ -153,7 +153,7 @@
      0.16,
      0.1386
     ],
-    "colour": "e7e7e7"
+    "colour": "e1306f"
    },
    "Grip": {
     "offset": [
@@ -166,7 +166,7 @@
      0.3178,
      1.53
     ],
-    "colour": "e7e7e7"
+    "colour": "393d45"
    },
    "Iron": {
     "offset": [
@@ -179,7 +179,7 @@
      0.7576,
      4.1438
     ],
-    "colour": "e7e7e7"
+    "colour": "4e5460"
    },
    "Reel": {
     "offset": [
@@ -192,46 +192,46 @@
      0.38,
      0.3614
     ],
-    "colour": "e7e7e7"
+    "colour": "ff7bc1"
    },
    "Rod": {
     "offset": [
      -0.0,
      0.0112,
-     -2.3459
+     -2.3456
     ],
     "size": [
      0.2206,
      0.2134,
-     3.6119
+     3.6121
     ],
-    "colour": "e7e7e7"
+    "colour": "6fd9f0"
    },
    "RodPink": {
     "offset": [
      -0.0,
      0.005,
-     -1.9252
+     -1.9249
     ],
     "size": [
      0.1942,
      0.1699,
      0.9522
     ],
-    "colour": "e7e7e7"
+    "colour": "ff7bc1"
    },
    "RodPurple": {
     "offset": [
      -0.0,
      0.0234,
-     -2.8751
+     -2.8749
     ],
     "size": [
      0.1667,
      0.1555,
      0.9532
     ],
-    "colour": "e7e7e7"
+    "colour": "a98dff"
    },
    "RodTip": {
     "offset": [
@@ -242,9 +242,9 @@
     "size": [
      0.1159,
      0.1158,
-     0.6519
+     0.652
     ],
-    "colour": "e7e7e7"
+    "colour": "caf3fb"
    }
   },
   "size": [
