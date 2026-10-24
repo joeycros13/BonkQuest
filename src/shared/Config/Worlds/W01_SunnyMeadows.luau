@@ -17,6 +17,14 @@ local WorldTypes = require(script.Parent.Parent.WorldTypes)
 -- The rest keep their damage ratio to the Chicken (x3.67): Bull 59, Stallion 73, Scarecrow King 81,
 -- Corn Wraith 55 (16 / 20 / 22 / 15 before). Health, coins and EXP are unchanged; with the new
 -- level curve (Config/Leveling) a typical player still buys the World 2 gate in 29.9 min.
+--
+-- The reward ladder (2026-10-24, the user: spread the elite grind, elites still the best way to level,
+-- the boss worth a hefty amount but not the best to farm; its pull is its weapon drops). Per kill, in
+-- elites, for both EXP and coins: small 0.37, medium 0.7, elite 1, boss 4.3, the secret enemy 1.4. Per
+-- second for a player mid to late in the world (art/tools/balance/rates_probe.py): small 64-73%, medium
+-- 74-84%, elite 100%, boss 77-94% (one spot, a long fight and a 30 s respawn). Each world's whole ladder
+-- is then scaled to its time target with world_sim.py.
+-- World 1 at 0.75x: 30.1 min to the gate (a min-maxer; one who fights whatever pays within 25% 30.7).
 
 local World: WorldTypes.WorldDef = {
 	id = 1,
@@ -54,8 +62,8 @@ local World: WorldTypes.WorldDef = {
 			-- Quick, weak pecks.
 			melee = { damage = 22, cooldown = 1.2, windup = 0.25, range = 1.5, chaseSpeed = 15, armor = 0, move = "peck" },
 			-- Coins and rates are tuned for a ~30-minute World 1 (2026-10-19; see Balance).
-			coins = { min = 6, max = 12 },
-			exp = 10, -- +25% on 2026-10-20 (was 8): the gate in ~30 min, world_sim.py --goal gate
+			coins = { min = 9, max = 18 },
+			exp = 12,
 			drops = {
 				{ weapon = "Sickle", chance = 0.20 },
 				{ weapon = "Machete", chance = 0.05 },
@@ -74,8 +82,8 @@ local World: WorldTypes.WorldDef = {
 			portrait = "rbxassetid://105217136953827", -- calm face (2026-10-11)
 			-- Slow, heavy horn charges with a long reach.
 			melee = { damage = 59, cooldown = 2.0, windup = 0.45, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "gore" },
-			coins = { min = 24, max = 40 },
-			exp = 30, -- 38 until the 2026-10-20 health ladder (quicker fights, the gate still ~31 min)
+			coins = { min = 18, max = 35 },
+			exp = 22,
 			drops = {
 				{ weapon = "Machete", chance = 0.25 },
 				{ weapon = "Pitchfork", chance = 0.15 },
@@ -94,8 +102,8 @@ local World: WorldTypes.WorldDef = {
 			hp = 260, -- 220 until 2026-10-20 (the health ladder)
 			portrait = "rbxassetid://73569429526048", -- calm face (2026-10-12)
 			melee = { damage = 73, cooldown = 2.2, windup = 0.78, range = 1.6, chaseSpeed = 16, armor = 0.15, move = "slam" },
-			coins = { min = 40, max = 60 },
-			exp = 42, -- 56 until the 2026-10-20 health ladder
+			coins = { min = 25, max = 50 },
+			exp = 32,
 			drops = {
 				{ weapon = "Shovel", chance = 0.15 },
 				{ weapon = "Scythe", chance = 0.10 },
@@ -115,8 +123,8 @@ local World: WorldTypes.WorldDef = {
 			secret = true,
 			adminPortrait = "rbxassetid://85851674951625", -- admin panel only, never the Index (2026-10-17)
 			melee = { damage = 55, cooldown = 1.7, windup = 0.48, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
-			coins = { min = 25, max = 40 },
-			exp = 60,
+			coins = { min = 35, max = 70 },
+			exp = 45,
 			-- the Farm Core: 1%, once per player; luck never changes a core's chance
 			materials = { { id = "FarmCore", chance = 0.01, min = 1, max = 1 } },
 		},
@@ -134,8 +142,8 @@ local World: WorldTypes.WorldDef = {
 			-- Pitchfork jabs with the longest reach; armour halves weapon damage so the
 			-- fight outlasts the Bull's.
 			melee = { damage = 81, cooldown = 2.2, windup = 0.5, range = 1.2, chaseSpeed = 11, armor = 0.2, move = "stab" },
-			coins = { min = 90, max = 140 },
-			exp = 150, -- was 120 (+25%, 2026-10-20)
+			coins = { min = 110, max = 215 },
+			exp = 135,
 			drops = {
 				{ weapon = "Pitchfork", chance = 0.25 },
 				{ weapon = "Scythe", chance = 0.20 },

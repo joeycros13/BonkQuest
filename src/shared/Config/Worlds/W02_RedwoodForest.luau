@@ -54,6 +54,15 @@ local WorldTypes = require(script.Parent.Parent.WorldTypes)
 -- 10 by 51.9), 0.1 deaths, ~16,000 coins spare toward World 2's upgrades; an unprepared arrival (no
 -- upgrades, the Spear) 64.9 min, 1.3 deaths. Prices, rewards and sells are x10 World 1's (Config/Weapons,
 -- Armor, Tools, Quests, Materials, Potions).
+--
+-- The reward ladder (2026-10-24, the user: spread the elite grind, elites still the best way to level,
+-- the boss worth a hefty amount but not the best to farm; its pull is its weapon drops). Per kill, in
+-- elites, for both EXP and coins: small 0.37, medium 0.7, elite 1, boss 4.3, the secret enemy 1.4. Per
+-- second for a player mid to late in the world (art/tools/balance/rates_probe.py): small 64-73%, medium
+-- 74-84%, elite 100%, boss 77-94% (one spot, a long fight and a 30 s respawn). Each world's whole ladder
+-- is then scaled to its time target with world_sim.py.
+-- World 2 at 0.95x the old Bear: 48.3 min to the World 3 gate (a player who fights whatever pays within
+-- 25%: 52.9 min, 171 boars and 102 bears).
 
 local World: WorldTypes.WorldDef = {
 	id = 2,
@@ -91,8 +100,8 @@ local World: WorldTypes.WorldDef = {
 			hp = 800, -- x10 the Chicken (2026-10-24); 904 before
 			-- Quick pounces with a snap at the end.
 			melee = { damage = 80, cooldown = 1.0, windup = 0.5, range = 1.5, chaseSpeed = 17, armor = 0, move = "pounce" },
-			coins = { min = 18, max = 36 }, -- x3 the Chicken's (2026-10-24); 16-32 before
-			exp = 40, -- x4 the Chicken's (2026-10-24)
+			coins = { min = 35, max = 70 },
+			exp = 60,
 			drops = {
 				{ weapon = "Hatchet", chance = 0.20 },
 				{ weapon = "Cleaver", chance = 0.05 },
@@ -109,8 +118,8 @@ local World: WorldTypes.WorldDef = {
 			portrait = "rbxassetid://105726195455752", -- calm face (2026-10-11)
 			hp = 1900, -- x10 the Bull (2026-10-24); 2,144 before
 			melee = { damage = 159, cooldown = 1.8, windup = 0.55, range = 1.5, chaseSpeed = 15, armor = 0.1, move = "charge" },
-			coins = { min = 72, max = 120 }, -- 65-108 before
-			exp = 120, -- 152 before
+			coins = { min = 65, max = 135 },
+			exp = 110,
 			drops = {
 				{ weapon = "Cleaver", chance = 0.20 },
 				{ weapon = "Quarterstaff", chance = 0.15 },
@@ -127,8 +136,8 @@ local World: WorldTypes.WorldDef = {
 			portrait = "rbxassetid://117018743106247", -- calm face (2026-10-11)
 			hp = 2600, -- x10 the Stallion (2026-10-24); 2,928 before
 			melee = { damage = 266, cooldown = 2.4, windup = 0.78, range = 1.6, chaseSpeed = 13, armor = 0.15, move = "slam" },
-			coins = { min = 120, max = 180 }, -- 108-163 before
-			exp = 168, -- 224 before
+			coins = { min = 95, max = 190 },
+			exp = 160,
 			drops = {
 				{ weapon = "Mace", chance = 0.15 },
 				{ weapon = "WoodsmansAxe", chance = 0.10 },
@@ -150,8 +159,8 @@ local World: WorldTypes.WorldDef = {
 			secret = true,
 			adminPortrait = "rbxassetid://128352315360379", -- admin panel only, never the Index (2026-10-17)
 			melee = { damage = 199, cooldown = 1.6, windup = 0.45, range = 2.2, chaseSpeed = 18, armor = 0.1, move = "zap" },
-			coins = { min = 75, max = 120 },
-			exp = 240, -- 720 before (2026-10-24)
+			coins = { min = 135, max = 265 },
+			exp = 225,
 			-- the Forest Core: about 1%, once per player (trial numbers)
 			materials = { { id = "ForestCore", chance = 0.01, min = 1, max = 1 } },
 		},
@@ -168,8 +177,8 @@ local World: WorldTypes.WorldDef = {
 			-- Two attacks, picked 50/50, same damage and timing (user, 2026-10-11): the
 			-- knee-up stomp and an overhead double-arm smash.
 			melee = { damage = 293, cooldown = 2.4, windup = 0.72, range = 1.5, chaseSpeed = 10, armor = 0.2, move = "stomp", moves = { "stomp", "smash" } },
-			coins = { min = 270, max = 420 }, -- 243-379 before
-			exp = 600,
+			coins = { min = 410, max = 815 },
+			exp = 690,
 			drops = {
 				{ weapon = "WoodsmansAxe", chance = 0.20 },
 				{ weapon = "Greatclub", chance = 0.20 },

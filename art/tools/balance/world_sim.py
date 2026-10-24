@@ -61,6 +61,7 @@ PLAYER = {
                              # since 2026-10-24 a small enemy takes ~50%, two or three hits, so a real
                              # player tops up first; 1.1 until then, when deaths were rare anyway)
     "replanEvery": 4,        # kills between rethinking what to farm
+    "closeEnough": 0.10,     # activities paying within this share of the best are equal: the nearest wins
     "tooStrong": 0.7,        # skip a fight that would take this share of max HP: get stronger first
                              # (0.9 until 2026-10-24; with ~50% small-enemy fights a player backs off sooner)
 }
@@ -709,7 +710,7 @@ class Run:
         needs.update(self.mat_needs())
         for x in self.drop_only_missing():
             needs["weapon:" + x] = 1
-        best = None
+        scored = []
         for act in list(self.w.enemies) + list(self.w.gather):
             if act in self.w.enemies and not self.beatable(act):
                 continue
@@ -717,9 +718,19 @@ class Run:
             if not r:
                 continue
             score = sum(r.get(k, 0) / v for k, v in needs.items() if v > 0)
-            if best is None or score > best[0]:
-                best = (score, act)
-        return best[1] if best and best[0] > 0 else None
+            if score > 0:
+                scored.append((score, act))
+        if not scored:
+            return None
+        # a real player doesn't walk across the map for a few percent more (2026-10-24): anything
+        # within PLAYER.closeEnough of the best counts, and the nearest of those wins
+        top = max(sc for sc, _ in scored)
+        near = [act for sc, act in scored if sc >= top * (1 - PLAYER["closeEnough"])]
+        return min(near, key=self.distance_to)
+
+    def distance_to(self, act):
+        spots = [m["pos"] for m in self.w.markers[act]] if act in self.w.enemies else self.w.nodes[act]
+        return min(dist(self.pos, p) for p in spots)
 
     def do(self, activity, times=1):
         for _ in range(times):
