@@ -19,6 +19,18 @@ local WorldTypes = require(script.Parent.Parent.WorldTypes)
 
 -- World scale (2026-10-23, Config/Leveling), PROVISIONAL until World 3 is rebuilt and simulated:
 -- health x32 (the weapons are x32), damage and EXP x16. Numbers in older comments are before it.
+--
+-- The base fight (2026-10-24, the user's anchor, memory world-scaling-baseline): a player arriving maxed from
+-- World 2 -- level 50 (9,120 HP on the new curve), Heartwood Bark (+750, 32%), every upgrade at level 6, the
+-- Heartwood Staff: 12,831 HP, taking x0.639, 754 damage a second -- loses about 50% of their health fighting a
+-- Cave Bat (base_fights.py, without the Staff's knockback): Bat 1,220 damage (49% over an 11 s fight). Health
+-- x10 World 2's (Bat 8,000, Pebble Golem 19,000, Crystal Golem 26,000, Spider Queen 40,000, Gem Mole 36,000);
+-- the rest keep World 3's damage ratios to the Bat (x2.01 / x3.35 / x3.69, Mole x2.51): 2,460 / 4,090 /
+-- 4,500 / 3,070. Kill EXP and coins x5.5 World 2's (Bat 220 / 100-200, Pebble 660 / 400-660, Crystal 920 /
+-- 660-990, Queen 3,300 / 1,500-2,300, Mole 1,320 / 410-660), tuned with world_sim.py --world 3 --from 2
+-- --upgrades 6 --start-level 50 --start-weapons HeartwoodStaff to a mock World 4 gate (level 75, 250,000
+-- coins; Config/Gates notes it): 50.3 min typical (9 in 10 by 51.4), no deaths; unprepared (no upgrades, the
+-- Firefly Lantern) 80.5 min. Pip's questline is done by about minute 9 and the rest is mostly Crystal Golems.
 
 local World: WorldTypes.WorldDef = {
 	id = 3,
@@ -54,10 +66,10 @@ local World: WorldTypes.WorldDef = {
 			tier = "small",
 			name = "Cave Bat",
 			portrait = "rbxassetid://72271902069536", -- calm face (2026-10-13)
-			hp = 10048, -- 240 before the 2026-10-20 ladder
-			melee = { damage = 1184, cooldown = 1.2, windup = 0.47, range = 1.6, chaseSpeed = 18, armor = 0, move = "swoop" },
-			coins = { min = 30, max = 50 },
-			exp = 1120,
+			hp = 8000, -- x10 the Fox (2026-10-24); 10,048 before
+			melee = { damage = 1220, cooldown = 1.2, windup = 0.47, range = 1.6, chaseSpeed = 18, armor = 0, move = "swoop" },
+			coins = { min = 100, max = 200 },
+			exp = 220,
 			drops = {
 				{ weapon = "BatwingBlade", chance = 0.20 },
 				{ weapon = "IronPickaxe", chance = 0.05 },
@@ -71,10 +83,10 @@ local World: WorldTypes.WorldDef = {
 			tier = "medium",
 			name = "Pebble Golem",
 			portrait = "rbxassetid://92185614445143", -- calm face (2026-10-13)
-			hp = 23904, -- 550 before the 2026-10-20 ladder
-			melee = { damage = 2384, cooldown = 1.8, windup = 0.48, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "punch" },
-			coins = { min = 65, max = 95 },
-			exp = 2400,
+			hp = 19000, -- x10 the Boar (2026-10-24); 23,904 before
+			melee = { damage = 2460, cooldown = 1.8, windup = 0.48, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "punch" },
+			coins = { min = 400, max = 660 },
+			exp = 660,
 			drops = {
 				{ weapon = "IronPickaxe", chance = 0.20 },
 				{ weapon = "PebbleMallet", chance = 0.15 },
@@ -89,10 +101,10 @@ local World: WorldTypes.WorldDef = {
 			tier = "elite",
 			name = "Crystal Golem",
 			portrait = "rbxassetid://84986641261720", -- calm face (2026-10-13)
-			hp = 32704, -- 1,100 before the 2026-10-20 ladder
-			melee = { damage = 3968, cooldown = 2.4, windup = 0.74, range = 1.6, chaseSpeed = 12, armor = 0.15, move = "smash" },
-			coins = { min = 130, max = 190 },
-			exp = 5120,
+			hp = 26000, -- x10 the Bear (2026-10-24); 32,704 before
+			melee = { damage = 4090, cooldown = 2.4, windup = 0.74, range = 1.6, chaseSpeed = 12, armor = 0.15, move = "smash" },
+			coins = { min = 660, max = 990 },
+			exp = 920,
 			drops = {
 				{ weapon = "GoldGauntlets", chance = 0.15 },
 				{ weapon = "GeodeGlaive", chance = 0.10 },
@@ -111,12 +123,12 @@ local World: WorldTypes.WorldDef = {
 		GemMole = {
 			id = "GemMole",
 			name = "Gem Mole",
-			hp = 45280, -- 1,200 before the 2026-10-20 ladder
+			hp = 36000, -- x10 the Fairy (2026-10-24); 45,280 before
 			secret = true,
 			adminPortrait = "rbxassetid://95259297161320", -- admin panel only, never the Index (2026-10-17)
-			melee = { damage = 2976, cooldown = 1.8, windup = 0.48, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
-			coins = { min = 160, max = 230 },
-			exp = 5760,
+			melee = { damage = 3070, cooldown = 1.8, windup = 0.48, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
+			coins = { min = 410, max = 660 },
+			exp = 1320,
 			-- the Cave Core: about 1%, once per player (trial numbers)
 			materials = { { id = "CaveCore", chance = 0.01, min = 1, max = 1 } },
 		},
@@ -130,17 +142,17 @@ local World: WorldTypes.WorldDef = {
 			id = "SpiderQueen",
 			name = "Spider Queen",
 			portrait = "rbxassetid://80870479752276", -- calm face (2026-10-13)
-			hp = 50304, -- 2,600 with 30% armour before the 2026-10-20 ladder
-			melee = { damage = 4368, cooldown = 2.4, windup = 0.74, range = 1.5, chaseSpeed = 11, armor = 0.2, move = "legstab", moves = { "legstab", "rearslam" } },
-			coins = { min = 320, max = 460 },
-			exp = 13600,
+			hp = 40000, -- x10 the Elder Treant (2026-10-24); 50,304 before
+			melee = { damage = 4500, cooldown = 2.4, windup = 0.74, range = 1.5, chaseSpeed = 11, armor = 0.2, move = "legstab", moves = { "legstab", "rearslam" } },
+			coins = { min = 1500, max = 2300 },
+			exp = 3300,
 			drops = {
 				{ weapon = "GeodeGlaive", chance = 0.20 },
 				{ weapon = "EmberCoalMaul", chance = 0.20 },
 				-- Legendary: the Queen's own fang
 				{ weapon = "QueensFang", chance = 0.05 },
 				-- the secret Rock Candy Club (hidden in the Index until found)
-				{ weapon = "RockCandyClub", chance = 0.02 },
+				{ weapon = "RockCandyClub", chance = 0.001 }, -- secrets drop at 0.1% (the user's rule); 2% until 2026-10-24
 			},
 			materials = { { id = "QueensSilk", chance = 0.5, min = 1, max = 1 } },
 		},

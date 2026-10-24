@@ -13,8 +13,10 @@ applied (level 3 a world unlocked), hits only, no crits, no Worldheart Blade.
 
 The fight is world_sim.py's, hit by hit: an 85% hit rate, crits from the Crit upgrades,
 the enemy attacking from the player's first hit (0.5 s delay, then windup / cooldown),
-knockback pushing it out of reach. World 1 and 2 numbers come from world<N>.json
-(dump_world.luau); World 3's are written below until world3.json exists.
+knockback pushing it out of reach -- except that the base fights leave the base weapon's
+knockback out (2026-10-24: the simulation's knockback timing swung a Fox fight between 21% and
+50% on a 0.1 s windup change; knockback stays a bonus for good play). Every number comes from
+world<N>.json (dump_world.luau).
 
   py base_fights.py               # the three base fights, the ladders and maxed DPS
   py base_fights.py --runs 20000
@@ -32,16 +34,6 @@ CRIT_CHANCE, CRIT_MULT = 0.10, 1.5   # Balance.Melee, the Crit upgrades' level 0
 # Config/Upgrades steps a level
 UP = {"Health": 0.05, "Defense": -0.01, "Attack": 0.03, "AttackSpeed": -0.015,
       "CritDamage": 0.05, "CritChance": 0.01}
-
-# World 3 until it has a dump (Config/Worlds/W03_CrystalCaverns, 2026-10-24)
-W3_ENEMIES = {
-    "CaveBat":      {"hp": 10048, "damage": 1184, "cooldown": 1.2, "windup": 0.47, "armor": 0,    "chaseSpeed": 18, "coins": (30, 50),   "exp": 1120,  "tier": "small"},
-    "PebbleGolem":  {"hp": 23904, "damage": 2384, "cooldown": 1.8, "windup": 0.48, "armor": 0.1,  "chaseSpeed": 14, "coins": (65, 95),   "exp": 2400,  "tier": "medium"},
-    "CrystalGolem": {"hp": 32704, "damage": 3968, "cooldown": 2.4, "windup": 0.74, "armor": 0.15, "chaseSpeed": 12, "coins": (130, 190), "exp": 5120,  "tier": "elite"},
-    "SpiderQueen":  {"hp": 50304, "damage": 4368, "cooldown": 2.4, "windup": 0.74, "armor": 0.2,  "chaseSpeed": 11, "coins": (320, 460), "exp": 13600, "tier": "boss"},
-}
-W3_SECRET = {"id": "RockCandyClub", "damage": 11424, "cooldown": 1.0}
-
 
 def load(n):
     return json.load(open(HERE / f"world{n}.json", encoding="utf-8"))
@@ -116,11 +108,11 @@ def main():
     ap.add_argument("--runs", type=int, default=10000)
     a = ap.parse_args()
     rng = random.Random(1)
-    w1, w2 = load(1), load(2)
+    w1, w2, w3 = load(1), load(2), load(3)
     lv = w1["leveling"]
-    weapons = dict(w1["weapons"]); weapons.update(w2["weapons"])
+    weapons = dict(w1["weapons"]); weapons.update(w2["weapons"]); weapons.update(w3["weapons"])
     armor = dict(w1["armor"]); armor.update(w2["armor"])
-    worlds = {1: enemies_of(w1), 2: enemies_of(w2), 3: W3_ENEMIES}
+    worlds = {1: enemies_of(w1), 2: enemies_of(w2), 3: enemies_of(w3)}
     gate_level = {2: w1["gate"]["level"], 3: w2["gate"]["level"]}
     bases = [
         (1, "Chicken", 1, "Dagger", None, 0),
@@ -129,7 +121,7 @@ def main():
     ]
     print("BASE FIGHTS (target: about 50% of max HP taken)")
     for world, small, level, wid, aid, up in bases:
-        wpn = weapons[wid]
+        wpn = dict(weapons[wid], knockback=0)
         arm = armor[aid] if aid else {"health": 0, "defense": 0}
         hp = max_hp(lv, level, arm["health"], up)
         taken_mult = (1 - arm["defense"]) * (1 + UP["Defense"] * up)
@@ -144,7 +136,7 @@ def main():
                   f"takes {100 * statistics.mean(shares):5.1f}% (median {100 * statistics.median(shares):5.1f}%, a hit {100 * hit:4.1f}%)"
                   f"  coins {e['coins'][0]}-{e['coins'][1]}  exp {e['exp']:,}{mark}")
     print("\nMAXED DPS (target: about 100 / 1,000 / 10,000; secret weapon + the world's upgrades, hits only)")
-    for world, wpn, up in ((1, weapons["CornCob"], 3), (2, weapons["MarshmallowStick"], 6), (3, W3_SECRET, 9)):
+    for world, wpn, up in ((1, weapons["CornCob"], 3), (2, weapons["MarshmallowStick"], 6), (3, weapons["RockCandyClub"], 9)):
         print(f"  World {world}: {wpn['id']} {wpn['damage']:,} / {wpn['cooldown']} s at upgrades {up}: {maxed_dps(wpn, up):,.0f} DPS")
     print("\nBASE WEAPONS' OWN DPS (with the base player's upgrades)")
     for world, small, level, wid, aid, up in bases:

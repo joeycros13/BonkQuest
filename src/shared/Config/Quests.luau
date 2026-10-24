@@ -442,6 +442,8 @@ lines.RangerRedwoods = {
 -- Explorer Pip beside the boarded-up mine entrance at the end of the World 3 entry
 -- hall (2026-10-17). His mapping crew went missing deeper in; they turn up past the
 -- Spider Queen's hall. Numbers are starting values, about twice Rowan's.
+-- Rewards x10 Rowan's step for step; level steps 55 / 59 (players arrive at 50) and the coin steps 2,000 /
+-- 10,000 (2026-10-24, the rescale).
 lines.ExplorerCaverns = {
 	id = "ExplorerCaverns",
 	name = "Into the Crystal Caverns",
@@ -463,7 +465,7 @@ lines.ExplorerCaverns = {
 			count = 5,
 			objective = "Defeat 5 Cave Bats",
 			track = "Defeat {Cave Bats}",
-			reward = { coins = 150, exp = 1920 },
+			reward = { coins = 2500, exp = 2000 },
 			offer = {
 				"Oh! A real person, down here! I'm Pip, explorer and map-maker.",
 				"My crew went deeper into these caverns to map them, and they never came back.",
@@ -474,15 +476,15 @@ lines.ExplorerCaverns = {
 		},
 		{
 			kind = "earn",
-			amount = 800,
-			objective = "Earn 800 coins",
+			amount = 2000,
+			objective = "Earn 2,000 coins",
 			track = "Earn {Coins}",
-			reward = { coins = 200, exp = 3200 },
+			reward = { coins = 3000, exp = 3000 },
 			offer = {
 				"My rope's frayed and my lamp oil's nearly gone.",
-				"[Earn 800 coins] down here and I'll know you can handle the deep tunnels.",
+				"[Earn 2,000 coins] down here and I'll know you can handle the deep tunnels.",
 			},
-			reminder = { "The caverns pay well if you're brave. [Earn 800 coins]." },
+			reminder = { "The caverns pay well if you're brave. [Earn 2,000 coins]." },
 			complete = { "A natural! Now let's go find that trail." },
 		},
 		{
@@ -491,7 +493,7 @@ lines.ExplorerCaverns = {
 			count = 10,
 			objective = "Defeat 10 Cave Bats",
 			track = "Defeat {Cave Bats}",
-			reward = { coins = 250, exp = 4000 },
+			reward = { coins = 4000, exp = 4000 },
 			offer = {
 				"My crew marked their path on the walls, but the bats nested right over it.",
 				"[Defeat 10 Cave Bats] and clear the way.",
@@ -505,7 +507,7 @@ lines.ExplorerCaverns = {
 			count = 3,
 			objective = "Defeat 3 Pebble Golems",
 			track = "Defeat {Pebble Golems}",
-			reward = { coins = 350, exp = 5600 },
+			reward = { coins = 6000, exp = 6000 },
 			offer = {
 				"The arrows point down the tunnels, but the rocks there walk.",
 				"[Defeat 3 Pebble Golems] so I can chart it.",
@@ -515,28 +517,28 @@ lines.ExplorerCaverns = {
 		},
 		{
 			kind = "level",
-			level = 36,
-			objective = "Reach level 36",
-			track = "Reach {Level 36}",
-			reward = { coins = 350 },
+			level = 55,
+			objective = "Reach level 55",
+			track = "Reach {Level 55}",
+			reward = { coins = 5000 },
 			offer = {
 				"The tunnel ends at a sheer drop. Whatever's down there isn't for beginners.",
-				"Come back when you [reach level 36].",
+				"Come back when you [reach level 55].",
 			},
-			reminder = { "Toughen up a bit first. [Reach level 36]." },
+			reminder = { "Toughen up a bit first. [Reach level 55]." },
 			complete = { "Look at you! Tougher than a stalagmite." },
 		},
 		{
 			kind = "give",
-			amount = 1500,
-			objective = "Give Pip 1,500 coins",
-			track = "Bring Pip {1,500 Coins}",
-			reward = { exp = 11200 },
+			amount = 10000,
+			objective = "Give Pip 10,000 coins",
+			track = "Bring Pip {10,000 Coins}",
+			reward = { exp = 10000 },
 			offer = {
 				"The old winch at the drop is busted, and new gears cost a fortune.",
-				"Could you [bring me 1,500 coins] to fix it? It's the only way down.",
+				"Could you [bring me 10,000 coins] to fix it? It's the only way down.",
 			},
-			reminder = { "No gears, no winch, no way down. [Bring me 1,500 coins]." },
+			reminder = { "No gears, no winch, no way down. [Bring me 10,000 coins]." },
 			complete = { "Clank, whirr, perfect! Hold on tight, we're going down." },
 		},
 		{
@@ -545,7 +547,7 @@ lines.ExplorerCaverns = {
 			count = 2,
 			objective = "Defeat 2 Crystal Golems",
 			track = "Defeat {Crystal Golems}",
-			reward = { coins = 600, exp = 9600 },
+			reward = { coins = 10000, exp = 10000 },
 			offer = {
 				"Bad news: the lower hall is guarded by Crystal Golems. Big shiny ones.",
 				"[Defeat 2 Crystal Golems] and we're through.",
@@ -559,7 +561,7 @@ lines.ExplorerCaverns = {
 			count = 1,
 			objective = "Defeat the Spider Queen",
 			track = "Defeat the {Spider Queen}",
-			reward = { coins = 1000, exp = 16000, item = "MinersLantern" },
+			reward = { coins = 15000, exp = 15000, item = "MinersLantern" },
 			offer = {
 				"That's the one hall nobody's ever mapped. The Spider Queen lives there.",
 				"I think she has my crew's gear. [Defeat the Spider Queen] and look for anything of theirs.",
@@ -572,15 +574,15 @@ lines.ExplorerCaverns = {
 		},
 		{
 			kind = "level",
-			level = 42,
-			objective = "Reach level 42",
-			track = "Reach {Level 42}",
-			reward = { coins = 750 },
+			level = 59,
+			objective = "Reach level 59",
+			track = "Reach {Level 59}",
+			reward = { coins = 10000 },
 			offer = {
 				"Fresh tracks lead past her hall, deeper than any map. We'll need you at your best.",
-				"[Reach level 42] first.",
+				"[Reach level 59] first.",
 			},
-			reminder = { "Not yet, not yet. [Reach level 42]." },
+			reminder = { "Not yet, not yet. [Reach level 59]." },
 			complete = { "Ready? Me too. Let's finish this." },
 		},
 		{
@@ -590,7 +592,7 @@ lines.ExplorerCaverns = {
 			objective = "Defeat the Spider Queen 3 times",
 			track = "Defeat the {Spider Queen}",
 			-- The quest-only Diamond Pickaxe (Legendary).
-			reward = { coins = 1800, exp = 28800, weapon = "DiamondPickaxe" },
+			reward = { coins = 30000, exp = 30000, weapon = "DiamondPickaxe" },
 			offer = {
 				"She keeps coming back, and every time she seals the tunnel behind her with web.",
 				"[Defeat the Spider Queen 3 times] and we'll break through for good.",

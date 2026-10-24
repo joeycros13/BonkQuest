@@ -43,6 +43,11 @@ Gates.list = {
 		coins = 25000,
 		materials = { { id = "RedwoodLog", count = 25 }, { id = "AmberSap", count = 3 } }, -- 3 sap: the user, 2026-10-21
 	},
+	-- World 4's gate is a mock until World 4 exists (2026-10-24, the user: continue the gates' pattern and tune
+	-- World 3 to it): level 75 (a gate every 25 levels), 250,000 coins (x10 a world), and about 30 of a common
+	-- and 5 of a rare World 3 gathered material once World 3 has gathering (20 + 20, then 25 + 3 before it).
+	-- World 3's 50-minute run (world_sim.py, world3.json's gate) aims at it. It stands in World 2 and needs
+	-- World 3 (memory world-map-branches).
 } :: { Gate }
 
 -- How close (studs from the sign board) a player must stand to buy.

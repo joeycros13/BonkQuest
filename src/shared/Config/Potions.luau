@@ -148,35 +148,35 @@ local RECIPES: { [string]: { recipe: { Ingredient }, coins: number } } = {
 	Regen1 = { recipe = { { id = "Trout", count = 2 }, { id = "FoxFur", count = 3 }, { id = "AmberSap", count = 1 } }, coins = 400 },
 	Gatherer1 = { recipe = { { id = "Perch", count = 2 }, { id = "BoarTusk", count = 2 }, { id = "RedwoodLog", count = 4 } }, coins = 450 },
 	Angler1 = { recipe = { { id = "RainbowTrout", count = 1 }, { id = "Perch", count = 2 }, { id = "BearClaw", count = 1 } }, coins = 500 },
-	Health2 = { recipe = { { id = "Health1", count = 1 }, { id = "BatWing", count = 3 } }, coins = 150 },
-	Strength2 = { recipe = { { id = "Strength1", count = 1 }, { id = "GolemCrystal", count = 2 }, { id = "GolemPebble", count = 2 } }, coins = 250 },
-	Stoneskin2 = { recipe = { { id = "Stoneskin1", count = 1 }, { id = "GolemPebble", count = 4 } }, coins = 250 },
-	Swiftness2 = { recipe = { { id = "Swiftness1", count = 1 }, { id = "BatWing", count = 3 }, { id = "GolemCrystal", count = 1 } }, coins = 200 },
+	Health2 = { recipe = { { id = "Health1", count = 1 }, { id = "BatWing", count = 3 } }, coins = 4000 },
+	Strength2 = { recipe = { { id = "Strength1", count = 1 }, { id = "GolemCrystal", count = 2 }, { id = "GolemPebble", count = 2 } }, coins = 5000 },
+	Stoneskin2 = { recipe = { { id = "Stoneskin1", count = 1 }, { id = "GolemPebble", count = 4 } }, coins = 5000 },
+	Swiftness2 = { recipe = { { id = "Swiftness1", count = 1 }, { id = "BatWing", count = 3 }, { id = "GolemCrystal", count = 1 } }, coins = 4500 },
 }
 
 -- What one potion sells for from the Inventory (placeholders, 2026-10-20; World 2's Tier I brews and
--- sells x10 World 1's since 2026-10-24).
+-- sells x10 World 1's since 2026-10-24; Tier II, first brewed in World 3, x10 World 2's Tier I).
 local SELL: { [string]: number } = {
 	Health1 = 18,
 	Strength1 = 32,
 	Stoneskin1 = 29,
 	Swiftness1 = 24,
-	Health2 = 110,
-	Strength2 = 175,
-	Stoneskin2 = 160,
-	Swiftness2 = 140,
+	Health2 = 2500,
+	Strength2 = 3200,
+	Stoneskin2 = 3000,
+	Swiftness2 = 2800,
 	Health3 = 420,
 	Strength3 = 560,
 	Stoneskin3 = 515,
 	Swiftness3 = 470,
 	Regen1 = 250,
-	Regen2 = 220,
+	Regen2 = 2800,
 	Regen3 = 700,
 	Gatherer1 = 280,
-	Gatherer2 = 250,
+	Gatherer2 = 3000,
 	Gatherer3 = 790,
 	Angler1 = 320,
-	Angler2 = 300,
+	Angler2 = 3200,
 	Angler3 = 950,
 }
 
