@@ -183,9 +183,6 @@ def main(out_path):
                         q.append((a, b2))
                     elif dist[a][b2] == d + 1 and near[i][j][1] > near[a][b2][1]:
                         near[a][b2] = near[i][j]
-    # --- the roof's top (the user, 2026-10-24): the cave's is flat, 4 over its own highest dome;
-    # the way down's slopes down with its floor, 4 over the arch's crown at each spot ---------
-    cave_top = L.FLOOR + max(h[3] for h in L.HALLS) + TOP_EXTRA
     # --- boxes ------------------------------------------------------------------------------
     boxes = []
     def q2(v):
@@ -215,18 +212,16 @@ def main(out_path):
                 nc = q2(nc)  # past the narrowing the arch steps 2 studs (fewer roof blocks)
             # inside, each column still comes down to its own ceiling, so the domes and the arch
             # keep their steps
-            if nb == L.FLOOR:
-                top = cave_top
-            else:
-                # 4 over the crown, and over any neighbour's ceiling too (where the way down meets
-                # the higher entry hall, a lower roof would leave a slot open to the sky)
-                high = max(crown, nc)
-                for di in (-1, 0, 1):
-                    for dj in (-1, 0, 1):
-                        a, b2 = i + di, j + dj
-                        if 0 <= a < NX and 0 <= b2 < NZ and near[a][b2] is not None:
-                            high = max(high, near[a][b2][1])
-                top = int(math.ceil(high + TOP_EXTRA))
+            # the roof is about 4 thick everywhere (the user, 2026-10-24): 4 over the ceiling (the way
+            # down's arch crown) at each spot, and over any neighbour's ceiling too, so a step down in
+            # the roof never leaves a slot open to the sky
+            high = max(crown, nc)
+            for di in (-1, 0, 1):
+                for dj in (-1, 0, 1):
+                    a, b2 = i + di, j + dj
+                    if 0 <= a < NX and 0 <= b2 < NZ and near[a][b2] is not None:
+                        high = max(high, near[a][b2][1])
+            top = int(math.ceil(high + TOP_EXTRA))
             if d == 0:
                 # the roof over the walkable ground; the walls run up to the same top themselves
                 ceil_key[(i, j)] = (nc, top)
