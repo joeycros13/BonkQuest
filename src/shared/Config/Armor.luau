@@ -36,8 +36,8 @@
 -- World scale (the rescale, 2026-10-24): health, coins and sell prices go x10 a world, like the player's own
 -- health (Config/Leveling grows x10 every 25 levels), so every set adds about a quarter to a third of the
 -- level's max HP when it unlocks: Farmhand's Gear 35 of 145 at level 5, Harvest Knight 75 of 331 at 14,
--- Woodland Hide 350 of 1,202 at 28, Heartwood Bark 750 of 2,089 at 34, Cave Runner 3,500 of 12,023 at 53,
--- Crystal Queen 7,500 of 20,893 at 59. Defence, regen and speed are shares and don't scale.
+-- Woodland Hide 350 of 1,202 at 28, Heartwood Bark 750 of 2,089 at 34, Cave Runner 3,500 of 19,055 at 58,
+-- Crystal Queen 7,500 of 36,308 at 65 (18% / 21%: World 3's sets come later in its levels since 2026-10-24). Defence, regen and speed are shares and don't scale.
 
 local Armor = {}
 
@@ -158,7 +158,7 @@ Armor.Defs = {
 		sell = 6200,
 		order = 5,
 		rarity = "Epic",
-		level = 53,
+		level = 58, -- 53 until 2026-10-24: Pip's EXP rewards got players there in under 4 minutes
 		coins = 15000,
 		recipe = {
 			{ id = "BatWing", count = 15 },
@@ -178,7 +178,7 @@ Armor.Defs = {
 		sell = 15000,
 		order = 6,
 		rarity = "Legendary",
-		level = 59,
+		level = 65, -- 59 until 2026-10-24; Pip's second level step, like Heartwood Bark and Rowan's
 		coins = 75000,
 		recipe = {
 			{ id = "GolemCrystal", count = 10 },

@@ -442,8 +442,9 @@ lines.RangerRedwoods = {
 -- Explorer Pip beside the boarded-up mine entrance at the end of the World 3 entry
 -- hall (2026-10-17). His mapping crew went missing deeper in; they turn up past the
 -- Spider Queen's hall. Numbers are starting values, about twice Rowan's.
--- Rewards x10 Rowan's step for step; level steps 55 / 59 (players arrive at 50) and the coin steps 2,000 /
--- 10,000 (2026-10-24, the rescale).
+-- Rewards x10 Rowan's step for step and the coin steps 2,000 / 10,000 (2026-10-24, the rescale). Level steps 60 / 65
+-- (players arrive at 50; were 55 / 59, but Pip's EXP rewards got a player there in 5 and 8 minutes): with
+-- world_sim.py they come about a third and two fifths of the way through World 3, as Rowan's 30 / 34 do in World 2.
 lines.ExplorerCaverns = {
 	id = "ExplorerCaverns",
 	name = "Into the Crystal Caverns",
@@ -520,15 +521,15 @@ lines.ExplorerCaverns = {
 		},
 		{
 			kind = "level",
-			level = 55,
-			objective = "Reach level 55",
-			track = "Reach {Level 55}",
+			level = 60,
+			objective = "Reach level 60",
+			track = "Reach {Level 60}",
 			reward = { coins = 5000 },
 			offer = {
 				"The tunnel ends at a sheer drop. Whatever's down there isn't for beginners.",
-				"Come back when you [reach level 55].",
+				"Come back when you [reach level 60].",
 			},
-			reminder = { "Toughen up a bit first. [Reach level 55]." },
+			reminder = { "Toughen up a bit first. [Reach level 60]." },
 			complete = { "Look at you! Tougher than a stalagmite." },
 		},
 		{
@@ -579,15 +580,15 @@ lines.ExplorerCaverns = {
 		},
 		{
 			kind = "level",
-			level = 59,
-			objective = "Reach level 59",
-			track = "Reach {Level 59}",
+			level = 65,
+			objective = "Reach level 65",
+			track = "Reach {Level 65}",
 			reward = { coins = 10000 },
 			offer = {
 				"Fresh tracks lead past her hall, deeper than any map. We'll need you at your best.",
-				"[Reach level 59] first.",
+				"[Reach level 65] first.",
 			},
-			reminder = { "Not yet, not yet. [Reach level 59]." },
+			reminder = { "Not yet, not yet. [Reach level 65]." },
 			complete = { "Ready? Me too. Let's finish this." },
 		},
 		{
