@@ -41,10 +41,10 @@ local WorldTypes = require(script.Parent.Parent.WorldTypes)
 -- World 3 at 0.95x the old Crystal Golem: 49.6 min (a player who fights whatever pays within 25%: 56.1 min,
 -- mostly Pebble Golems).
 -- Then x0.9 (2026-10-24, the user, for a grouping of the Crystal Golems that was then replaced): the
--- spawns now follow the user's layout -- the Crystal Golems in the second loop, one at each end (where it
--- splits and where it rejoins) and one in the middle of each lane, Pebble Golems between them and in the
--- middle of the first loop's lanes, the bats spread through the first loop and the middle hall -- and with
--- the x0.9 rewards that plays 52.1 min prepared (x1 would be 48.5), 83.4 unprepared.
+-- spawns now follow the user's layout -- the two lanes from the middle hall into the boss hall each hold
+-- two Crystal Golems, one in the lane's middle and one at its end by the boss hall; the Pebble Golems take
+-- the lanes' upper halves and the middle of each first-loop lane; the bats spread through the first loop
+-- and the middle hall -- and with the x0.9 rewards that plays 51.4 min prepared, 82.8 unprepared.
 
 local World: WorldTypes.WorldDef = {
 	id = 3,
