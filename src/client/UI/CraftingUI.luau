@@ -102,8 +102,8 @@ local function setsHere(): { Armor.ArmorDef }
 	return out
 end
 
--- The potions this world's Crafter brews: its band's tier, those with a recipe, and of Tier I
--- only this world's own (Config/Potions `world`).
+-- The potions this world's Crafter brews: its band's tier, those with a recipe, and of Tiers I
+-- and II only this world's own (Config/Potions `world`).
 local function potionsHere(): { Potions.PotionDef }
 	local out = {}
 	local tier = Potions.tierAt(world())

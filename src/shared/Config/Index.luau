@@ -251,13 +251,13 @@ export type Progress = {
 	items: { [string]: number },
 }
 
--- The world whose page lists a potion: Tier I its own `world`, a later tier the first
+-- The world whose page lists a potion: its own `world` (Tiers I and II), Tier III the first
 -- world of its band. nil when it can't be made yet (no recipe).
 function Index.potionWorld(def: any): number?
 	if not (def and def.recipe) then
 		return nil
 	end
-	if def.tier == 1 then
+	if def.world then
 		return def.world
 	end
 	local band = Potions.Bands[def.tier]
