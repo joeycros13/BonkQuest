@@ -39,8 +39,9 @@ NX, NZ = (GX1 - GX0) // C, (GZ1 - GZ0) // C
 PATH_LEN = 12 + math.pi * L.R / 2   # 128
 FLOOR_THICK = 4               # every floor block is this thick under its top (the user, 2026-10-24:
                               # the way down's columns reached down to y -30 for nothing)
-RINGS = 3                     # wall thickness in cells (6 studs; nothing sees past it)
+RINGS = 2                     # wall thickness in cells (4 studs; nothing inside sees past the second)
 TOP_EXTRA = 4                 # roof thickness over the ceiling
+CAVE_TOP = L.FLOOR + 54       # the cave's roof top (its highest dome is 50)
 rng = random.Random(23)
 
 
@@ -194,39 +195,46 @@ def main(out_path):
                 # nothing past the walls (the user, 2026-10-24: the base slab there showed as a
                 # platform outside the cave)
                 continue
-            if B[i][j] == L.FLOOR:
-                # the cave floor in layers like World 2's hills: one slab, then a 1-stud layer
-                # over every raised patch and another over the highest ones (they merge far better)
-                floor_key[(i, j)] = ("base", L.FLOOR)
-                for lvl in (1, 2):
-                    if H[i][j] >= L.FLOOR + lvl:
-                        layer_keys.setdefault(lvl, {})[(i, j)] = lvl
-            else:
-                floor_key[(i, j)] = ("col", H[i][j])
             nb, nc = near[i][j]
+            if d == 0:
+                if B[i][j] == L.FLOOR:
+                    # the cave floor in layers like World 2's hills: one slab, then a 1-stud layer
+                    # over every raised patch (they merge far better)
+                    floor_key[(i, j)] = ("base", L.FLOOR)
+                    for lvl in (1, 2):
+                        if H[i][j] >= L.FLOOR + lvl:
+                            layer_keys.setdefault(lvl, {})[(i, j)] = lvl
+                else:
+                    floor_key[(i, j)] = ("col", H[i][j])
             if x >= L.CURVE_START[0] and nb != L.FLOOR:
                 nc = q2(nc)  # past the narrowing the arch steps 2 studs (fewer roof blocks)
-            # the roof reaches 4 over the highest ceiling next to it, so a step bigger than the
-            # roof's thickness (the 18-stud way down meeting the 28-stud hall) leaves no slot open
-            top = nc
-            for di in (-1, 0, 1):
-                for dj in (-1, 0, 1):
-                    a, b2 = i + di, j + dj
-                    if 0 <= a < NX and 0 <= b2 < NZ and near[a][b2] is not None:
-                        top = max(top, near[a][b2][1] + 1)
-            top += TOP_EXTRA
-            top = int(math.ceil(top / 8) * 8)  # coarse levels, so the roof merges into big blocks
-            # one roof slab over the open ground and the walls alike (the walls stop under it)
-            ceil_key[(i, j)] = (nc, top)
-            if d == 1 and nb == L.FLOOR:  # the cave's walls; the way down's are plain rock
+            if nb == L.FLOOR:
+                # the cave's roof has one flat top, 4 over its highest dome (2026-10-24, fewer parts:
+                # only its underside shows from inside)
+                top = CAVE_TOP
+            else:
+                # the way down's roof reaches 4 over the highest ceiling next to it, so a step
+                # bigger than the roof's thickness leaves no slot open
+                top = nc
+                for di in (-1, 0, 1):
+                    for dj in (-1, 0, 1):
+                        a, b2 = i + di, j + dj
+                        if 0 <= a < NX and 0 <= b2 < NZ and near[a][b2] is not None:
+                            top = max(top, near[a][b2][1] + 1)
+                top += TOP_EXTRA
+                top = int(math.ceil(top / 8) * 8)  # coarse levels, so the roof merges into big blocks
+            if d == 0:
+                # the roof over the walkable ground; the walls run up to the same top themselves
+                ceil_key[(i, j)] = (nc, top)
+            elif d == 1 and nb == L.FLOOR:  # the cave's walls; the way down's are plain rock
                 ledge = nb + 6
                 over = nc - 4
-                if ledge > H[i][j]:
-                    wall_keys.setdefault("Ledge", {})[(i, j)] = (H[i][j], ledge)
-                lo = over if over - ledge >= 2 else max(H[i][j], ledge)
-                wall_keys.setdefault("Overhang", {})[(i, j)] = (lo, nc)
-            elif d >= 1:
-                wall_keys.setdefault("Rock", {})[(i, j)] = (H[i][j], nc)
+                wall_keys.setdefault("Ledge", {})[(i, j)] = (H[i][j] - FLOOR_THICK, ledge)
+                lo = over if over - ledge >= 2 else ledge
+                wall_keys.setdefault("Overhang", {})[(i, j)] = (lo, top)
+            else:
+                # no floor under the walls: they reach down as far as the floor does
+                wall_keys.setdefault("Rock", {})[(i, j)] = (H[i][j] - FLOOR_THICK, top)
     def merge(cells):
         """Greedy rectangles of equal keys on the grid: [(i0, j0, i1, j1, key)]."""
         used = set()
@@ -249,7 +257,7 @@ def main(out_path):
         return rects
     def colour(hexs, shade=0.0):
         r, g, b = (int(hexs[k:k + 2], 16) for k in (0, 2, 4))
-        f = 1 + shade + rng.uniform(-0.02, 0.02)
+        f = 1 + shade  # one colour per kind, so neighbouring blocks merge (no per-block jitter)
         return "%02x%02x%02x" % tuple(max(0, min(255, int(v * f))) for v in (r, g, b))
     def add(folder, name, rect, y0, y1, hexs, shade=0.0):
         i0, j0, i1, j1 = rect
