@@ -33,11 +33,12 @@
 --   sell      coins for selling it from the Inventory (placeholder, 2026-10-20)
 --   icon      its drawn picture (designed on the Crafting & Armor canvas, art/icons/)
 
--- World scale (the rescale, 2026-10-24): health, coins and sell prices go x10 a world, like the player's own
--- health (Config/Leveling grows x10 every 25 levels), so every set adds about a quarter to a third of the
--- level's max HP when it unlocks: Farmhand's Gear 35 of 145 at level 5, Harvest Knight 75 of 331 at 14,
--- Woodland Hide 350 of 1,202 at 28, Heartwood Bark 750 of 2,089 at 34, Cave Runner 3,500 of 19,055 at 58,
--- Crystal Queen 7,500 of 36,308 at 65 (18% / 21%: World 3's sets come later in its levels since 2026-10-24). Defence, regen and speed are shares and don't scale.
+-- World scale (the rescale, 2026-10-24): coins and sell prices go x10 a world, and health is set so every set
+-- adds about a quarter to a third of the level's max HP when it unlocks (the user: only enemy damage has to follow
+-- the x10; armour, weapons, enemy health and drop rates follow what plays right against it): Farmhand's Gear 35 of
+-- 145 at level 5, Harvest Knight 75 of 331 at 14, Woodland Hide 350 of 1,202 at 28, Heartwood Bark 750 of 2,089 at
+-- 34, Cave Runner 5,500 of 19,055 at 58, Crystal Queen 13,000 of 36,308 at 65 (World 2's 29% / 36%; they were
+-- 3,500 / 7,500, x10 World 2's, until their levels moved up). Defence, regen and speed are shares and don't scale.
 
 local Armor = {}
 
@@ -166,7 +167,7 @@ Armor.Defs = {
 			{ id = "IronOre", count = 12 }, -- mined (2026-10-24), like Woodland Hide's Redwood Logs
 		},
 		defense = 0.38,
-		health = 3500,
+		health = 5500,
 		speed = 0.10,
 	},
 	CrystalQueen = {
@@ -188,7 +189,7 @@ Armor.Defs = {
 			{ id = "RawGem", count = 1 },
 		},
 		defense = 0.44,
-		health = 7500,
+		health = 13000,
 		regen = 0.005,
 		speed = 0.08,
 	},
