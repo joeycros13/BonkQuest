@@ -856,7 +856,7 @@ class Run:
 
 # ---------------------------------------------------------------------------
 def apply_overrides(data, sets):
-    """--set boss.PumpkinMace=0.05, gate.coins=2000, enemy.Chicken.coins=6-12,
+    """--set boss.PumpkinMace=0.05, gate.coins=2000, gate.CrystalShard=20, enemy.Chicken.coins=6-12,
     respawn.boss=30, weapon.Scythe.price=1500, armor.HarvestKnight.coins=600"""
     cfg = data["config"]
     for s in sets:
@@ -882,7 +882,15 @@ def apply_overrides(data, sets):
             else:
                 e[parts[2]] = num(val)
         elif parts[0] == "gate":
-            data["gate"][parts[1]] = num(val)
+            g = data["gate"]
+            if parts[1] in ("level", "coins"):
+                g[parts[1]] = num(val)
+            else:
+                # gate.CrystalShard=20: a material's count (0 drops it)
+                mats = [x for x in listify(g.get("materials")) if x["id"] != parts[1]]
+                if int(val) > 0:
+                    mats.append({"id": parts[1], "count": int(val)})
+                g["materials"] = mats
         elif parts[0] == "respawn":
             cfg.setdefault("respawn", {})[parts[1]] = num(val)
         elif parts[0] == "weapon":
