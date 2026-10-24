@@ -324,8 +324,10 @@ end
 -- DeathPop stars with a flash, a ground ring, and the EnemyPop sound
 -- (ReplicatedStorage/Assets/Sounds), all sized up for bigger bodies (bosses).
 -- No camera shake. The BONK is only for the player whose hit finished it (`mine`);
--- everyone sees the cloud and hears the pop.
-local function showDefeat(enemy: Enemy, mine: boolean)
+-- everyone sees the cloud and hears the pop. A killing blow that was a critical hit
+-- (`crit`: the enemy's CritHp was 0) pops the CRITICAL BONK and a lower, louder pop
+-- (EnemyPop's CritPitch / CritVolume, like EnemyHit's; 2026-10-24, the user).
+local function showDefeat(enemy: Enemy, mine: boolean, crit: boolean)
 	local scale = math.clamp(enemy.height / 4, 0.8, 2.5)
 	local at = enemy.anchor.Position + Vector3.new(0, enemy.height * 0.1, 0)
 	Effects.burst(at, "Poof", { count = math.floor(22 * scale) })
@@ -336,13 +338,15 @@ local function showDefeat(enemy: Enemy, mine: boolean)
 	local pop = sounds and sounds:FindFirstChild("EnemyPop")
 	if pop and pop:IsA("Sound") then
 		-- bigger bodies pop a little lower
-		Effects.sound(pop, at, { pitch = math.random(95, 108) / 100 / math.sqrt(scale) })
+		local pitch = if crit then numberAttr(pop, "CritPitch", 0.85) else 1
+		local volume = if crit then numberAttr(pop, "CritVolume", 1.4) else 1
+		Effects.sound(pop, at, { pitch = math.random(95, 108) / 100 / math.sqrt(scale) * pitch, volume = pop.Volume * volume })
 	end
 	-- and the comic "BONK!" over the top of the body (2026-10-17, Bonk Quest)
 	if not mine then
 		return
 	end
-	BonkPop.show(enemy.anchor.Position + Vector3.new(0, enemy.height / 2, 0), enemy.height / 4, enemy.isBoss)
+	BonkPop.show(enemy.anchor.Position + Vector3.new(0, enemy.height / 2, 0), enemy.height / 4, enemy.isBoss, crit)
 end
 
 -- Mirror the authoritative attributes onto the bar and alive state.
@@ -370,7 +374,7 @@ local function refreshFromAttributes(enemy: Enemy)
 
 	if alive ~= enemy.alive then
 		if not alive and enemy.ready then
-			showDefeat(enemy, mine)
+			showDefeat(enemy, mine, inst:GetAttribute("CritHp") == 0)
 		end
 		enemy.alive = alive
 		applyVisible(enemy, alive)

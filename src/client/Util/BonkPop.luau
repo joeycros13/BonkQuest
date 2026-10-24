@@ -26,6 +26,12 @@
 -- (`CritScale`), tints the white `Burst` and the `Rays` (`CritBurstColor` /
 -- `CritRaysColor`) and shows the hand-built `CritTag` ("CRIT!", hidden otherwise).
 --
+-- A killing blow that was a critical hit pops the CRITICAL BONK (2026-10-24, the user's pick: option B on
+-- https://claude.ai/artifact/3pu9vxxKCTX5dGo8mZaeGA): `BonkPop.show(..., crit)` copies
+-- ReplicatedStorage/Assets/UI/CritBonkPop instead, a BonkPop copy 250 x 165 with a gold `Label` / `Shadow`
+-- BONK!, a red `Critical` / `CriticalShadow` line above it (its `CritWords`, "CRITICAL"), gold
+-- `RaysInner` and white `Sparkles` (the Index popup's), held a little longer (Lifetime 1.25, Hold 0.55).
+--
 -- A level up pops the same way over the player's own head (2026-10-22, the user: like the
 -- BONK, small, never a banner at the top of the screen): `BonkPop.levelUp` copies
 -- ReplicatedStorage/Assets/UI/LevelPop -- gold `Rays` / `RaysInner`, `Shadow` / `Label`
@@ -43,6 +49,7 @@ local Settings = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("
 local BonkPop = {}
 
 local template: BillboardGui? = nil
+local critTemplate: BillboardGui? = nil
 local hitTemplate: BillboardGui? = nil
 local levelTemplate: BillboardGui? = nil
 local FontDrop: any = nil
@@ -59,6 +66,12 @@ function BonkPop.start()
 		template = found
 	else
 		warn("[BonkPop] missing ReplicatedStorage/Assets/UI/BonkPop")
+	end
+	local critBonk = ui and ui:FindFirstChild("CritBonkPop")
+	if critBonk and critBonk:IsA("BillboardGui") then
+		critTemplate = critBonk
+	else
+		warn("[BonkPop] missing ReplicatedStorage/Assets/UI/CritBonkPop")
 	end
 	local hit = ui and ui:FindFirstChild("HitPop")
 	if hit and hit:IsA("BillboardGui") then
@@ -228,11 +241,19 @@ local function play(source: BillboardGui, position: Vector3, size: number, word:
 	return billboard
 end
 
--- The defeat's word (one of the template's Words) over the top of the body.
-function BonkPop.show(position: Vector3, size: number, isBoss: boolean?)
-	if template then
-		play(template, position, size, pickWord(template), { isBoss = isBoss })
+-- The defeat's word (one of the template's Words) over the top of the body; the CRITICAL
+-- BONK when the killing blow was a critical hit.
+function BonkPop.show(position: Vector3, size: number, isBoss: boolean?, crit: boolean?)
+	local source = if crit and critTemplate then critTemplate else template
+	if not source then
+		return
 	end
+	local critWord = source:GetAttribute("CritWords")
+	local line = if type(critWord) == "string" then critWord else "CRITICAL"
+	play(source, position, size, pickWord(source), {
+		isBoss = isBoss,
+		texts = if source == critTemplate then { Critical = line, CriticalShadow = line } else nil,
+	})
 end
 
 -- A hit's damage in the comic burst bubble (gold and bigger for a crit), unless the
