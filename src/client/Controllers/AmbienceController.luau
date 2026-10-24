@@ -4,11 +4,12 @@
 -- sky; per world since 2026-10-21).
 --
 -- World looks: a world's `lighting` in Config/Worlds (World 1 "Golden afternoon",
--- World 2 "Misty morning", the user's picks 2026-10-21) is the look while the
+-- World 2 "Misty morning", the user's picks 2026-10-21; World 3 "Deep sapphire",
+-- 2026-10-24) is the look while the
 -- player's "CurrentWorld" attribute (published by WorldBannerUI) names it: Lighting
 -- properties (ClockTime, Brightness, ExposureCompensation, Ambient, OutdoorAmbient,
 -- ColorShift_Top...) plus tables for Lighting's Atmosphere, ColorCorrection and
--- SunRays. A world with no `lighting` (World 3 for now) uses the lighting as built
+-- SunRays. A world with no `lighting` uses the lighting as built
 -- in Studio, read once on start. Walking into another world eases to its look over
 -- WORLD_EASE seconds.
 --

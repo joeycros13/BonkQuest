@@ -27,6 +27,20 @@ local World: WorldTypes.WorldDef = {
 	-- the Index world card and Worlds-menu banner (2026-10-17, no enemies, past the stalls
 	-- looking at the boarded-up mine entrance; art/portraits/worlds/world_W03_2026-10-17.png)
 	profile = "rbxassetid://106928307558031",
+	-- "Deep sapphire" (the user's pick, 2026-10-24): a blue cave light and haze with more
+	-- contrast and colour, so the glowing crystals and the lake stand out. No sky shows
+	-- underground, so the sun settings only keep the look steady.
+	lighting = {
+		ClockTime = 14,
+		Brightness = 2,
+		ExposureCompensation = -0.1,
+		Ambient = Color3.fromHex("7d7fb8"),
+		OutdoorAmbient = Color3.fromHex("7d7fb8"),
+		ColorShift_Top = Color3.fromHex("e6e8ff"),
+		Atmosphere = { Density = 0.38, Offset = 0, Color = Color3.fromHex("6f78c8"), Decay = Color3.fromHex("2a2d66"), Glare = 0, Haze = 1.6 },
+		ColorCorrection = { Brightness = 0, Contrast = 0.18, Saturation = 0.22, TintColor = Color3.fromHex("d6dcff") },
+		SunRays = { Intensity = 0, Spread = 0.6 },
+	},
 	-- Respawn seconds by kind (the user's rule, 2026-10-19): every enemy of a tier
 	-- comes back after the same time in its world; bosses and the secret enemy
 	-- after `boss` / `secret`. A spawn marker's RespawnSeconds attribute still wins.
