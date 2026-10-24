@@ -184,24 +184,6 @@ def main(out_path):
     # --- the roof's flat top: 4 over the highest ceiling anywhere (the way down's mouth) ------
     highest = max(near[i][j][1] for i in range(NX) for j in range(NZ) if near[i][j] is not None)
     roof_top = int(math.ceil((highest + 3) / 4) * 4)
-    # --- the rock islands' hollow insides get the roof too (no open spots from above) -------
-    outside = [[False] * NZ for _ in range(NX)]
-    q = deque()
-    for i in range(NX):
-        for j in (0, NZ - 1):
-            if dist[i][j] is None and not outside[i][j]:
-                outside[i][j] = True; q.append((i, j))
-    for j in range(NZ):
-        for i in (0, NX - 1):
-            if dist[i][j] is None and not outside[i][j]:
-                outside[i][j] = True; q.append((i, j))
-    while q:
-        i, j = q.popleft()
-        for di, dj in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            a, b2 = i + di, j + dj
-            if 0 <= a < NX and 0 <= b2 < NZ and dist[a][b2] is None and not outside[a][b2]:
-                outside[a][b2] = True
-                q.append((a, b2))
     # --- boxes ------------------------------------------------------------------------------
     boxes = []
     def q2(v):
@@ -213,9 +195,8 @@ def main(out_path):
             x, z = centre(i, j)
             if d is None:
                 # nothing past the walls (the user, 2026-10-24: the base slab there showed as a
-                # platform outside the cave); an island's hollow inside is roofed over
-                if not outside[i][j] and centre(i, j)[1] < L.Z0:
-                    ceil_key[(i, j)] = (roof_top - 4, roof_top)
+                # platform outside the cave); the rock islands' hollow insides stay open too
+                # (the user, 2026-10-24: they need no roof)
                 continue
             nb, nc = near[i][j]
             if d == 0:
