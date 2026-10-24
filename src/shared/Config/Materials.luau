@@ -393,9 +393,10 @@ Materials.Defs = {
 	},
 	-- gathered (2026-10-24, the user's World 3 gathering): mined from the Ore Rocks and Crystal
 	-- Clusters (Config/Gathering, a Crystal Pickaxe or better); the Raw Gem is the cluster's rare
-	-- drop. Sells x10 World 2's. No icons drawn yet (the colour shows).
+	-- drop. Sells x10 World 2's. Icons: art/tools/icons/w3_gather_icons.html.
 	IronOre = {
 		id = "IronOre",
+		icon = "rbxassetid://106398702931897",
 		rarity = "Common",
 		name = "Iron Ore",
 		world = 3,
@@ -407,6 +408,7 @@ Materials.Defs = {
 	},
 	CrystalShard = {
 		id = "CrystalShard",
+		icon = "rbxassetid://126422401668223",
 		rarity = "Common",
 		name = "Crystal Shard",
 		world = 3,
@@ -418,6 +420,7 @@ Materials.Defs = {
 	},
 	RawGem = {
 		id = "RawGem",
+		icon = "rbxassetid://78888808331617",
 		rarity = "Rare",
 		name = "Raw Gem",
 		world = 3,
@@ -431,6 +434,7 @@ Materials.Defs = {
 	-- or better).
 	Glowfish = {
 		id = "Glowfish",
+		icon = "rbxassetid://106802223373555",
 		rarity = "Common",
 		name = "Glowfish",
 		world = 3,
@@ -443,6 +447,7 @@ Materials.Defs = {
 	},
 	BlindCavefish = {
 		id = "BlindCavefish",
+		icon = "rbxassetid://134073876840921",
 		rarity = "Uncommon",
 		name = "Blind Cavefish",
 		world = 3,
@@ -455,6 +460,7 @@ Materials.Defs = {
 	},
 	CrystalEel = {
 		id = "CrystalEel",
+		icon = "rbxassetid://99965290339014",
 		rarity = "Rare",
 		name = "Crystal Eel",
 		world = 3,
