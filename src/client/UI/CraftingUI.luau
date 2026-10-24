@@ -249,7 +249,9 @@ local function fitRows(rows: Instance)
 	local share = rows:GetAttribute("RowShare") or 0.3
 	local gap = rows:GetAttribute("GapShare") or 0.04
 	local canvas = math.max(1, #list * share + math.max(0, #list - 1) * gap)
-	rows.CanvasSize = UDim2.new(0, 0, 0, math.floor(rows.AbsoluteSize.Y * canvas + 0.5))
+	-- rounded down: a list that fits must not come out a pixel taller than the window, or a
+	-- scroll bar shows over three rows that need none
+	rows.CanvasSize = UDim2.new(0, 0, 0, math.floor(rows.AbsoluteSize.Y * canvas))
 	for _, row in list do
 		row.Size = UDim2.fromScale(1, share / canvas)
 	end
