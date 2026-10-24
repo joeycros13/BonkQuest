@@ -88,6 +88,7 @@ def main(out_path):
     B = [[0] * NZ for _ in range(NX)]
     ceil_rel = [[0] * NZ for _ in range(NX)]
     tvals = [[0.0] * NZ for _ in range(NX)]
+    crown_rel = [[0] * NZ for _ in range(NX)]  # the way down's arch crown over a cell's spot
     for i in range(NX):
         for j in range(NZ):
             x, z = centre(i, j)
@@ -100,6 +101,7 @@ def main(out_path):
             if inside:
                 is_open[i][j] = True
                 ceil_rel[i][j] = arch(off, hw)
+                crown_rel[i][j] = arch(0, hw)
             cave_ceil = L.ceil_at(x - 1, z - 1) if z <= L.Z0 else None
             if cave_ceil:
                 is_open[i][j] = True
@@ -158,13 +160,13 @@ def main(out_path):
                             changed = True
     # --- rings: distance to open ground, and the ceiling over the nearest open cell ----------
     dist = [[None] * NZ for _ in range(NX)]
-    near = [[None] * NZ for _ in range(NX)]  # (base, ceil_abs) of the open ground it walls
+    near = [[None] * NZ for _ in range(NX)]  # (base, ceil_abs, crown_abs) of the open ground it walls
     q = deque()
     for i in range(NX):
         for j in range(NZ):
             if is_open[i][j]:
                 dist[i][j] = 0
-                near[i][j] = (B[i][j], B[i][j] + ceil_rel[i][j])
+                near[i][j] = (B[i][j], B[i][j] + ceil_rel[i][j], B[i][j] + max(ceil_rel[i][j], crown_rel[i][j]))
                 q.append((i, j))
     while q:
         i, j = q.popleft()
@@ -181,9 +183,9 @@ def main(out_path):
                         q.append((a, b2))
                     elif dist[a][b2] == d + 1 and near[i][j][1] > near[a][b2][1]:
                         near[a][b2] = near[i][j]
-    # --- the roof's flat top: 4 over the highest ceiling anywhere (the way down's mouth) ------
-    highest = max(near[i][j][1] for i in range(NX) for j in range(NZ) if near[i][j] is not None)
-    roof_top = int(math.ceil((highest + 3) / 4) * 4)
+    # --- the roof's top (the user, 2026-10-24): the cave's is flat, 4 over its own highest dome;
+    # the way down's slopes down with its floor, 4 over the arch's crown at each spot ---------
+    cave_top = L.FLOOR + max(h[3] for h in L.HALLS) + TOP_EXTRA
     # --- boxes ------------------------------------------------------------------------------
     boxes = []
     def q2(v):
@@ -198,7 +200,7 @@ def main(out_path):
                 # platform outside the cave); the rock islands' hollow insides stay open too
                 # (the user, 2026-10-24: they need no roof)
                 continue
-            nb, nc = near[i][j]
+            nb, nc, crown = near[i][j]
             if d == 0:
                 if B[i][j] == L.FLOOR:
                     # the cave floor in layers like World 2's hills: one slab, then a 1-stud layer
@@ -211,9 +213,20 @@ def main(out_path):
                     floor_key[(i, j)] = ("col", H[i][j])
             if x >= L.CURVE_START[0] and nb != L.FLOOR:
                 nc = q2(nc)  # past the narrowing the arch steps 2 studs (fewer roof blocks)
-            # one flat roof top over everything (the user, 2026-10-24); inside, each column still
-            # comes down to its own ceiling, so the domes and the arch keep their steps
-            top = roof_top
+            # inside, each column still comes down to its own ceiling, so the domes and the arch
+            # keep their steps
+            if nb == L.FLOOR:
+                top = cave_top
+            else:
+                # 4 over the crown, and over any neighbour's ceiling too (where the way down meets
+                # the higher entry hall, a lower roof would leave a slot open to the sky)
+                high = max(crown, nc)
+                for di in (-1, 0, 1):
+                    for dj in (-1, 0, 1):
+                        a, b2 = i + di, j + dj
+                        if 0 <= a < NX and 0 <= b2 < NZ and near[a][b2] is not None:
+                            high = max(high, near[a][b2][1])
+                top = int(math.ceil(high + TOP_EXTRA))
             if d == 0:
                 # the roof over the walkable ground; the walls run up to the same top themselves
                 ceil_key[(i, j)] = (nc, top)
