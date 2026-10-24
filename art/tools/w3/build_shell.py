@@ -9,8 +9,8 @@ cave, as world-aligned boxes for Studio. The plan (halls, lanes, the curve) is l
   cut to 1), only in a band 10-20 studs out from the walls (the middle of every hall is flat), none
   within 8 studs of the mouth; then every pair of neighbouring cells is evened to at most 1 stud apart
   (the higher one comes down), so nothing ever needs a jump.
-* Floor columns from y -30 to their top fill the open cells and the rock round them (walls stand on
-  the floor), greedy-merged by top height; the cave's floor is one slab to y -22 with a 1-stud
+* Floor blocks 4 studs thick under their top fill the open cells and the rock round them (walls stand
+  on the floor; nothing past the walls), greedy-merged by top height; the cave's floor is one slab to y -22 with a 1-stud
   `Floor_1` layer over every raised patch and a `Floor_2` layer over the highest.
 * Walls: rock cells up to 4 cells from open ground. The ring touching the floor is a low `Ledge`
   (to 6 above the base), a recess and an `Overhang` (the last 4 studs under the ceiling); the rings
@@ -37,7 +37,8 @@ GZ0, GZ1 = -1541, -899        # and z range (odd: the cells line up with the cav
 C = 2                         # cell size
 NX, NZ = (GX1 - GX0) // C, (GZ1 - GZ0) // C
 PATH_LEN = 12 + math.pi * L.R / 2   # 128
-BOTTOM = -30                  # every floor column starts here
+FLOOR_THICK = 4               # every floor block is this thick under its top (the user, 2026-10-24:
+                              # the way down's columns reached down to y -30 for nothing)
 RINGS = 3                     # wall thickness in cells (6 studs; nothing sees past it)
 TOP_EXTRA = 4                 # roof thickness over the ceiling
 rng = random.Random(23)
@@ -190,10 +191,8 @@ def main(out_path):
             d = dist[i][j]
             x, z = centre(i, j)
             if d is None:
-                # the cave's base slab runs on under the void past the walls (nothing sees it),
-                # so it merges into a few big blocks
-                if B[i][j] == L.FLOOR and L.CX - 140 <= x <= L.CX + 140 and z >= L.Z0 - 524:
-                    floor_key[(i, j)] = ("base", L.FLOOR)
+                # nothing past the walls (the user, 2026-10-24: the base slab there showed as a
+                # platform outside the cave)
                 continue
             if B[i][j] == L.FLOOR:
                 # the cave floor in layers like World 2's hills: one slab, then a 1-stud layer
@@ -260,7 +259,7 @@ def main(out_path):
             return
         boxes.append([folder, name, (x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2, x1 - x0, y1 - y0, z1 - z0, colour(hexs, shade)])
     for (i0, j0, i1, j1, (kind, h)) in merge(floor_key):
-        add("Floor", "Floor", (i0, j0, i1, j1), BOTTOM, h, "7a7690")
+        add("Floor", "Floor", (i0, j0, i1, j1), h - FLOOR_THICK, h, "7a7690")
     for lvl, cells in sorted(layer_keys.items()):
         for (i0, j0, i1, j1, _) in merge(cells):
             add("Floor", "Floor_%d" % lvl, (i0, j0, i1, j1), L.FLOOR + lvl - 1, L.FLOOR + lvl, "7a7690", 0.03 * lvl)
