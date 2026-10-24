@@ -40,10 +40,11 @@ local WorldTypes = require(script.Parent.Parent.WorldTypes)
 -- is then scaled to its time target with world_sim.py.
 -- World 3 at 0.95x the old Crystal Golem: 49.6 min (a player who fights whatever pays within 25%: 56.1 min,
 -- mostly Pebble Golems).
--- Then x0.9 (2026-10-24, the user): the four Crystal Golems moved into the boss hall round the altar (30-90
--- studs apart, like World 2's bears; they stood 98-160 apart, so a fifth of the run was walking between them),
--- which took the run to 44.3 min, and every World 3 kill reward went x0.9 (rounded to 5s): 47.7 min prepared
--- (World 2 48.6), 75.4 unprepared.
+-- Then x0.9 (2026-10-24, the user, for a grouping of the Crystal Golems that was then replaced): the
+-- spawns now follow the user's layout -- the Crystal Golems in the second loop, one at each end (where it
+-- splits and where it rejoins) and one in the middle of each lane, Pebble Golems between them and in the
+-- middle of the first loop's lanes, the bats spread through the first loop and the middle hall -- and with
+-- the x0.9 rewards that plays 52.1 min prepared (x1 would be 48.5), 83.4 unprepared.
 
 local World: WorldTypes.WorldDef = {
 	id = 3,
