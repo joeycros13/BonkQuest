@@ -171,9 +171,10 @@ function Upgrades.value(player: Player, id: string): number
 end
 
 -- A weapon's stats with this player's upgrades applied (Attack Speed shortens the
--- swing). Returns the def itself when nothing changes, like Infuse.adjust.
+-- swing). Returns the def itself when nothing changes, like Infuse.adjust. Anything without
+-- a swing (a material, potion or armour set on a shared tile) passes through untouched.
 function Upgrades.adjust(player: Player, def: any): any
-	if not def then
+	if not def or type(def.cooldown) ~= "number" then
 		return def
 	end
 	local speed = Upgrades.value(player, "AttackSpeed")

@@ -216,7 +216,8 @@ function WeaponTile.fill(tile: GuiObject, def: any, opts: Options?)
 	if stat and stat:IsA("GuiObject") then
 		stat.Visible = o.stat ~= false and known
 		local value = stat:FindFirstChild("Value", true)
-		if value and value:IsA("TextLabel") then
+		-- the DPS is worked out only for a pill that shows it (items without a swing never do)
+		if value and value:IsA("TextLabel") and (o.statText or stat.Visible) then
 			value.Text = o.statText or WeaponTile.dpsText(def)
 		end
 	end
