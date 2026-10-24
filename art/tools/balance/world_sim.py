@@ -57,9 +57,12 @@ PLAYER = {
     "talkSeconds": 15,       # one Dale visit: hand in, read, take the next step
     "shopSeconds": 8,        # one visit to a stall (open, pick, buy)
     "regen": 0.01,           # Roblox's default Health script: 1% of max HP per second
-    "restBelow": 1.0,        # rest before a fight that would take more than this share of HP
+    "restMargin": 1.5,       # rest before a fight until HP is this times what it should take (fights vary:
+                             # since 2026-10-24 a small enemy takes ~50%, two or three hits, so a real
+                             # player tops up first; 1.1 until then, when deaths were rare anyway)
     "replanEvery": 4,        # kills between rethinking what to farm
-    "tooStrong": 0.9,        # skip a fight that would take this share of max HP: get stronger first
+    "tooStrong": 0.7,        # skip a fight that would take this share of max HP: get stronger first
+                             # (0.9 until 2026-10-24; with ~50% small-enemy fights a player backs off sooner)
 }
 
 
@@ -157,6 +160,9 @@ class World:
         return m
 
     def need(self, level):
+        if self.lv.get("growth"):
+            # Leveling since 2026-10-24: x10 every 25 levels (a world), each level a share more
+            return math.floor(self.lv["first"] * self.lv["growth"] ** (level - self.lv["start"]) + 0.5)
         return (self.lv["first"] + self.lv["step"] * (level - self.lv["start"])) * self.scale_at(level)
 
     def level_of(self, total):
@@ -170,7 +176,10 @@ class World:
         return sum(self.need(l) for l in range(self.lv["start"], level))
 
     def max_hp(self, level, armor):
-        base = (self.lv["baseHealth"] + self.lv["healthPerLevel"] * (level - self.lv["start"])) * self.scale_at(level)
+        if self.lv.get("growth"):
+            base = math.floor(self.lv["baseHealth"] * self.lv["growth"] ** (level - self.lv["start"]) + 0.5)
+        else:
+            base = (self.lv["baseHealth"] + self.lv["healthPerLevel"] * (level - self.lv["start"])) * self.scale_at(level)
         return base + (self.armor[armor]["health"] if armor else 0)
 
 
@@ -374,8 +383,9 @@ class Run:
         weapon = self.best_weapon(enemy)
         # resting first if this fight would kill us
         _, expect = self.fight(enemy, weapon, dry=True)
-        if expect >= self.hp * PLAYER["restBelow"] and expect < self.maxhp():
-            need = (expect * 1.1 - self.hp) / (self.maxhp() * (PLAYER["regen"] + self.worn("regen")))
+        want = min(self.maxhp(), expect * PLAYER["restMargin"])
+        if self.hp < want and expect < self.maxhp():
+            need = (want - self.hp) / (self.maxhp() * (PLAYER["regen"] + self.worn("regen")))
             if need > 0 and not self.use_fountain(markers, need):
                 self.rests += need
                 if self.t < 600:
@@ -850,7 +860,7 @@ def apply_overrides(data, sets):
                     if x["id"] == parts[2]:
                         x["count"] = num(val)
         elif parts[0] == "level":
-            data["leveling"][{"first": "first", "step": "step", "hp": "healthPerLevel"}[parts[1]]] = num(val)
+            data["leveling"][{"first": "first", "step": "step", "hp": "healthPerLevel", "growth": "growth", "basehp": "baseHealth"}[parts[1]]] = float(val)
         elif parts[0] == "quest":
             data["quest"]["steps"][parts[1]][parts[2]] = num(val)
         elif parts[0] == "player":
@@ -860,6 +870,8 @@ def apply_overrides(data, sets):
 
 
 def curve_total(lv, level):
+    if lv.get("growth"):
+        return sum(math.floor(lv["first"] * lv["growth"] ** (l - lv["start"]) + 0.5) for l in range(lv["start"], level))
     return sum(lv["first"] + lv["step"] * (l - lv["start"]) for l in range(lv["start"], level))
 
 

@@ -5,25 +5,25 @@
 -- level and how far into it they are follow from it:
 --   need(level)        EXP to go from `level` to `level + 1`
 --   fromTotal(total)   level, EXP into that level, EXP that level needs
--- Players start at level 1 (the badge on the player card). The curve (2026-10-19,
--- the user: levelling should be much quicker, early HP being scarce): 30 to reach
--- level 2, then 15 more for each level after. It replaced 100 + 50 per level; every
--- level requirement (armour, gates, quest steps) moved to the level that needs the
--- same total EXP, so they still come at the same point in a world.
+-- Players start at level 1 (the badge on the player card).
 --   maxHealth(level)   the player's max HP at that level (ExpService applies it)
---   scaleAt(level)     the world scale a level is at (below)
+--   scaleAt(level)     the world a level is in, as the old split scale (below)
 --
--- World scale (2026-10-23, the user: World 1's numbers near 100, World 2's 1K, World 3's 10K, up to
--- 100M in World 7). The shape of each world is balanced with art/tools/balance/world_sim.py; on top
--- of it every world is multiplied by its scale:
---   SCALE[world]       x1, x4, x16, x64... : enemy damage, armour health, kill and quest EXP, and
---                      here the player's health and the EXP a level needs, from the level of the
---                      gate into that world (Config/Gates) on (scaleAt)
---   2 x SCALE[world]   x2, x8, x32...      : weapon damage, enemy health, tool power, node health
---                      (World 1's too, so its best weapons hit near 100), the Worldheart tiers
--- Both sides of every fight grow alike, so a world plays as before; with the worlds' own growth
--- (about x2.7 a world) that makes about x10 a world. Coins already grew x10 a world (the gates:
--- 2,500, 25,000), so they're unscaled; the coin bundles and the Upgrades stand go x10 a world.
+-- The curve (2026-10-24, the user: every world about x10 the one before, enemy damage keeping
+-- pace with enemy health, and a gate every 25 levels): max HP and the EXP a level needs both
+-- grow by GROWTH a level, x10 every 25 levels, so each world's levels give x10 the health of
+-- the last world's with no jump at the gate. Max HP is 100 at level 1, 912 at 25, 1,000 at 26,
+-- 10,000 at 51; each level up adds a little more than the one before (+10, +10, +12, +13...).
+-- A level needs 40 EXP at level 1 and x10 every 25 levels (3,366 in all to level 25), tuned
+-- with art/tools/balance/world_sim.py so a typical player buys the World 2 gate in about 30
+-- minutes. It replaced 30 + 15 a level with health 100 + 10 a level, both x4 / x16 from each
+-- gate's level (the "world scale" of 2026-10-23), which jumped at the gate (330 -> 1,360 HP).
+--
+-- The old world scale is still how Worlds 2 and 3's configs were sized (until they're re-tuned
+-- on this curve, the rescale of 2026-10-24):
+--   SCALE[world]       x1, x4, x16, x64... : enemy damage, armour health, kill and quest EXP
+--   2 x SCALE[world]   x2, x8, x32...      : weapon damage, enemy health, tool power, node health,
+--                      the Worldheart tiers
 
 local Gates = require(script.Parent.Gates)
 
@@ -44,22 +44,23 @@ function Leveling.scaleAt(level: number): number
 end
 
 Leveling.START = 1
-Leveling.FIRST = 30
-Leveling.STEP = 15
+-- x10 every LEVELS_PER_WORLD levels (one world's gate to the next)
+Leveling.LEVELS_PER_WORLD = 25
+Leveling.GROWTH = 10 ^ (1 / Leveling.LEVELS_PER_WORLD)
+Leveling.FIRST = 40 -- EXP to go from level 1 to 2
+Leveling.BASE_HEALTH = 100 -- max HP at level 1
 
-function Leveling.need(level: number): number
-	return (Leveling.FIRST + Leveling.STEP * (level - Leveling.START)) * Leveling.scaleAt(level)
+-- x GROWTH for every level past the first
+local function grown(base: number, level: number): number
+	return math.floor(base * Leveling.GROWTH ^ (math.max(level, Leveling.START) - Leveling.START) + 0.5)
 end
 
--- Max health: 100 at level 1, and every level up adds 10 (the user, 2026-10-19; it
--- was 15 for a day). With the quicker curve that's still more HP at each point of a
--- world than the old one gave. Times the world scale (scaleAt) since 2026-10-23.
-Leveling.BASE_HEALTH = 100
-Leveling.HEALTH_PER_LEVEL = 10
+function Leveling.need(level: number): number
+	return grown(Leveling.FIRST, level)
+end
 
 function Leveling.maxHealth(level: number): number
-	local l = math.max(level, Leveling.START)
-	return (Leveling.BASE_HEALTH + Leveling.HEALTH_PER_LEVEL * (l - Leveling.START)) * Leveling.scaleAt(l)
+	return grown(Leveling.BASE_HEALTH, level)
 end
 
 function Leveling.fromTotal(total: number): (number, number, number)

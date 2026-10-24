@@ -115,7 +115,9 @@ local function popping(row: Instance): boolean
 	return false
 end
 
-function CenterRow.fit(row: GuiObject)
+-- `fromGroup`: a refit because another row of its group changed; it doesn't pass its own change
+-- back (two rows refitting each other could bounce forever: "Maximum re-entrancy depth", 2026-10-24).
+function CenterRow.fit(row: GuiObject, fromGroup: boolean?)
 	local scale = row:GetAttribute("TextScale")
 	local uiScale = drawnScale(row)
 	if uiScale < 0.05 or popping(row) then
@@ -167,7 +169,7 @@ function CenterRow.fit(row: GuiObject)
 				groupRatios[g][row] = nil
 				for other in groupRatios[g] do
 					if other.Parent then
-						CenterRow.fit(other :: GuiObject)
+						CenterRow.fit(other :: GuiObject, true)
 					end
 				end
 			end
@@ -194,10 +196,12 @@ function CenterRow.fit(row: GuiObject)
 			local before = groupRatios[g][row]
 			if before == nil or math.abs(before - own) > 0.02 then
 				groupRatios[g][row] = own
-				-- the group's size may have changed: refit every row in it
-				for other in groupRatios[g] do
-					if other ~= row and other.Parent then
-						CenterRow.fit(other :: GuiObject)
+				-- the group's size may have changed: refit every row in it (once)
+				if not fromGroup then
+					for other in groupRatios[g] do
+						if other ~= row and other.Parent then
+							CenterRow.fit(other :: GuiObject, true)
+						end
 					end
 				end
 				apply(ratioOf(row))
@@ -237,7 +241,7 @@ local function watch(row: Instance)
 			if g and groupRatios[g] then
 				for other in groupRatios[g] do
 					if other ~= row and other.Parent then
-						CenterRow.fit(other :: GuiObject)
+						CenterRow.fit(other :: GuiObject, true)
 					end
 				end
 			end

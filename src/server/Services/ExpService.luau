@@ -14,8 +14,8 @@
 -- Remotes.ExpDropped first, so it can hold the EXP bar while
 -- Balance.Exp.piecesMin..piecesMax blue stars fling out and fly to it.
 --
--- Max health follows the level (Leveling.maxHealth: 100, +10 per level up;
--- user, 2026-10-11 and 2026-10-19). A new character starts full; a level up heals to the new
+-- Max health follows the level (Leveling.maxHealth: 100 at level 1, x10 every 25 levels since
+-- 2026-10-24; it was +10 a level). A new character starts full; a level up heals to the new
 -- max at once (user, 2026-10-19: early HP is scarce and regen is slow). An admin can override the max for the
 -- session (player attribute MaxHealthOverride, AdminService). Worn armour adds
 -- its bonus HP on top of the level's (player attribute ArmorHealth, ArmorService;

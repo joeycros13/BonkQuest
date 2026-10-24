@@ -87,7 +87,8 @@ local data: any = {
 	tools = pick(Tools.Defs),
 	armor = pick(Armor.Defs),
 	gathering = pick(Gathering.Nodes),
-	leveling = { start = Leveling.START, first = Leveling.FIRST, step = Leveling.STEP, baseHealth = Leveling.BASE_HEALTH, healthPerLevel = Leveling.HEALTH_PER_LEVEL, scale = {} },
+	-- since 2026-10-24 max HP and a level's EXP both grow x GROWTH a level (x10 every 25 levels)
+	leveling = { start = Leveling.START, first = Leveling.FIRST, growth = Leveling.GROWTH, baseHealth = Leveling.BASE_HEALTH, scale = {} },
 	-- no base sprint since 2026-10-19 (the Sprint upgrade unlocks it; upgrades are outside the run)
 	balance = { sprint = 1, leash = Balance.Melee.leashRange, gatherHealAfter = Gathering.healAfter },
 	walkSpeed = game.StarterPlayer.CharacterWalkSpeed,
