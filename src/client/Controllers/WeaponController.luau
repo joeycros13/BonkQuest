@@ -427,12 +427,15 @@ local function landSwing(character: Model, root: BasePart, def: any)
 	if player.Character ~= character or not held or held.id ~= def.id or not alive(character) then
 		return
 	end
-	landedEvent:Fire(root, def)
 	-- a tool's swing is for the trees and rocks (GatherController), never enemies
 	if def.kind then
+		landedEvent:Fire(root, def, false)
 		return
 	end
 	local hits = findHits(root, def)
+	-- listeners hear whether an enemy was struck (a weapon swing at a tree next to an
+	-- enemy shouldn't show the wrong-tool hint)
+	landedEvent:Fire(root, def, #hits > 0)
 	if #hits == 0 or not hitRemote then
 		return
 	end
@@ -508,9 +511,9 @@ function WeaponController.onChanged(callback: () -> ()): RBXScriptConnection
 	return changedEvent.Event:Connect(callback)
 end
 
--- Fires on each of the local player's swings at its "Hit" moment, with (root, def),
--- whether or not an enemy was in reach (for things that react to being struck).
-function WeaponController.onSwingLanded(callback: (BasePart, Weapons.WeaponDef) -> ()): RBXScriptConnection
+-- Fires on each of the local player's swings at its "Hit" moment, with (root, def,
+-- struckEnemy), whether or not an enemy was in reach (for things that react to being struck).
+function WeaponController.onSwingLanded(callback: (BasePart, Weapons.WeaponDef, boolean) -> ()): RBXScriptConnection
 	return landedEvent.Event:Connect(callback)
 end
 

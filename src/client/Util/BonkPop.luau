@@ -39,6 +39,12 @@
 -- "Level %s") -- with the same motion attributes. It rides on the head (an attachment in
 -- it), so it moves with the player, and returns a function that changes the level shown
 -- (a count that passes two levels raises the number in the same pop).
+--
+-- The wrong-tool hint pops the same way where the player struck a tree or rock (issue 23,
+-- 2026-10-25, the user: "go with how the BONK appears", where they hit; it used to be a small
+-- number-style popup at the top of the tree): `BonkPop.need` copies ReplicatedStorage/Assets/
+-- UI/NeedPop -- the tool's `Icon` over pale `Rays`, `Label` / `Shadow` ("Needs an Axe") and a
+-- yellow `Hint` / `HintShadow` line ("Press 2 for your Axe") -- with the same motion attributes.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -52,6 +58,7 @@ local template: BillboardGui? = nil
 local critTemplate: BillboardGui? = nil
 local hitTemplate: BillboardGui? = nil
 local levelTemplate: BillboardGui? = nil
+local needTemplate: BillboardGui? = nil
 local FontDrop: any = nil
 
 function BonkPop.init(injected: any)
@@ -79,6 +86,12 @@ function BonkPop.start()
 	else
 		warn("[BonkPop] missing ReplicatedStorage/Assets/UI/HitPop")
 	end
+	local need = ui and ui:FindFirstChild("NeedPop")
+	if need and need:IsA("BillboardGui") then
+		needTemplate = need
+	else
+		warn("[BonkPop] missing ReplicatedStorage/Assets/UI/NeedPop")
+	end
 	local level = ui and ui:FindFirstChild("LevelPop")
 	if level and level:IsA("BillboardGui") then
 		levelTemplate = level
@@ -105,6 +118,7 @@ type Options = {
 	crit: boolean?,
 	follow: BasePart?, -- ride on this part instead of staying at `position`
 	texts: { [string]: string }?, -- more labels in Content to fill, by name
+	images: { [string]: string }?, -- images in Content to set, by name
 }
 
 -- Pop a copy of `source` showing `word` at `position` (the template's Height is
@@ -171,6 +185,12 @@ local function play(source: BillboardGui, position: Vector3, size: number, word:
 			label.Text = text
 			label.Rotation = tilt
 			table.insert(labels, label)
+		end
+	end
+	for name, id in opts.images or {} do
+		local image = content and content:FindFirstChild(name)
+		if image and image:IsA("ImageLabel") then
+			image.Image = id
 		end
 	end
 	local critTag = content and content:FindFirstChild("CritTag")
@@ -264,6 +284,17 @@ function BonkPop.hit(position: Vector3, size: number, amount: number, isBoss: bo
 		play(hitTemplate, position, size, string.format(if type(format) == "string" then format else "%s", tostring(amount)), {
 			isBoss = isBoss,
 			crit = crit,
+		})
+	end
+end
+
+-- The wrong-tool hint where a tree or rock was struck: `need` on top ("Needs an Axe"),
+-- `hint` under it ("Press 2 for your Axe"), and the tool's picture.
+function BonkPop.need(position: Vector3, need: string, hint: string, icon: string?)
+	if needTemplate then
+		play(needTemplate, position, 1, need, {
+			texts = { Hint = hint, HintShadow = hint },
+			images = if icon then { Icon = icon } else nil,
 		})
 	end
 end
