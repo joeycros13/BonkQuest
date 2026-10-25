@@ -49,8 +49,8 @@ Talkers.Defs = {
 					"Ah, you've got yourself a rod! Let me show you how it's done.",
 					("Press [%d] to take it out. You can fish anywhere along the water, but the end of my pier's the best spot."):format(slot),
 					"Click to cast your line, and keep an eye on the bobber.",
-					"When a fish pulls it under and a [!] pops up, click quick to hook it! Wait too long and it lets go.",
-					"Then a ring closes in. Click while it's inside the [green zone], [3 times in a row]. Miss one and the fish gets away. The rare ones fight harder!",
+					"A fish will nibble first. When it pulls the bobber under and [BITE!] pops up, click quick to hook it! Wait too long and it lets go.",
+					"Then reel it in: a marker slides up and down the bar. Click while it's in the [green zone], [3 times]. You can slip once, but miss twice and the fish gets away. The rare ones fight harder!",
 				},
 			}
 		end,

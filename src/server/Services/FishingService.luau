@@ -5,16 +5,19 @@
 -- The client casts (Remotes.FishAction { action = "cast", at }), naming where its bobber
 -- landed. This service checks a rod the player owns is in hand, the spot is in range and
 -- on water (a part tagged Fishing.Tag), then runs the wait: after a random delay a fish
--- swims in ("Approach") and bites ("Bite"); a "hook" while it is under starts the rings.
--- Missing the bite only brings the bobber back up ("Surface") and the wait starts again.
+-- is picked by weight from the spot's table and swims in ("Approach" { seconds, size,
+-- nibbles }: the client sizes its shadow by the fish's difficulty and plays the nibbles),
+-- then bites ("Bite"); a "hook" while it is under starts the fight. Missing the bite only
+-- brings the bobber back up ("Surface") and the wait starts again with a new fish.
 --
--- The rings: the fish is picked by weight from the spot's table and fights with its
--- Difficulty. For each ring the server tells the client when it starts ("Ring" { n,
--- delay, closeSeconds, zone }); the client judges the click and answers { action =
--- "ring", n, ok }. The server re-checks the timing against its own clock (with
--- Fishing.ringSlack for lag both ways) and gives up on a ring nobody answered. All three
--- in time: the fish goes into the player's materials (MaterialService.drop) and the
--- client hears "Caught" { fish }. A miss: "Escaped".
+-- The fight (the reel bar, issue 26, 2026-10-25): "Fight" { startAt, speed, zone, jerk,
+-- checks, slips } starts the marker at server time `startAt` (workspace:GetServerTimeNow).
+-- Each click arrives as { action = "click", at } (the server time the player clicked at;
+-- taken if it is at most Fishing.clickLag old, else now), and is judged with
+-- Fishing.inZone, the same formula the client draws. In the green: a check; out: a miss.
+-- The answer is "Tally" { checks, misses, ok }. Fishing.checks checks: the fish goes into
+-- the player's materials (MaterialService.drop) and the client hears "Caught" { fish }.
+-- More misses than Fishing.slips, or Fishing.fightSeconds without a finish: "Escaped".
 --
 -- The line comes in ("Reeled") when the player asks ("reel"), puts the rod away, dies,
 -- leaves, or walks more than Fishing.lineBreak from the bobber. Nothing is saved but the
@@ -34,19 +37,19 @@ local FishingService = {}
 
 -- How long the client gets after a bite ends for a hook to still count (lag).
 local HOOK_SLACK = 0.3
--- Seconds a ring may go unanswered past its close before the fish gets away.
-local RING_TIMEOUT = 0.8
 local CAST_COOLDOWN_TOLERANCE = 0.85
 
 type Session = {
 	token: number, -- bumped on every change; delayed steps check it is still theirs
-	phase: string, -- "Waiting" | "Approach" | "Bite" | "Ring"
+	phase: string, -- "Waiting" | "Approach" | "Bite" | "Fight"
 	spot: Fishing.Spot,
 	at: Vector3,
 	biteUntil: number,
 	fish: string?,
-	ring: number,
-	ringAt: number,
+	startAt: number, -- server time the fight's marker starts
+	checks: number,
+	misses: number,
+	lastClick: number,
 }
 
 local deps: any = nil
@@ -107,29 +110,6 @@ local function moveTo(session: Session, phase: string)
 	session.token += 1
 end
 
-scheduleBite = function(player: Player, session: Session, first: boolean)
-	moveTo(session, "Waiting")
-	local wait = random:NextNumber(Fishing.biteDelay[1], Fishing.biteDelay[2])
-	if first then
-		wait += Fishing.flightSeconds
-	end
-	later(player, session, wait, function()
-		moveTo(session, "Approach")
-		send(player, { state = "Approach", seconds = Fishing.approachSeconds })
-		later(player, session, Fishing.approachSeconds, function()
-			moveTo(session, "Bite")
-			local seconds = random:NextNumber(Fishing.biteSeconds[1], Fishing.biteSeconds[2])
-			session.biteUntil = os.clock() + seconds
-			send(player, { state = "Bite", seconds = seconds })
-			later(player, session, seconds + HOOK_SLACK, function()
-				-- not hooked: the bobber comes back up, and the next fish takes its time
-				send(player, { state = "Surface" })
-				scheduleBite(player, session, false)
-			end)
-		end)
-	end)
-end
-
 -- A running Angler's potion (Config/Potions) multiplies the weight of every fish rarer than
 -- Common, so the uncommon and rare ones bite more often.
 local function pickFish(spot: Fishing.Spot, player: Player): string
@@ -152,20 +132,54 @@ local function pickFish(spot: Fishing.Spot, player: Player): string
 	return spot.fish[#spot.fish].id
 end
 
-local function startRing(player: Player, session: Session, n: number)
+scheduleBite = function(player: Player, session: Session, first: boolean)
+	moveTo(session, "Waiting")
+	local wait = random:NextNumber(Fishing.biteDelay[1], Fishing.biteDelay[2])
+	if first then
+		wait += Fishing.flightSeconds
+	end
+	later(player, session, wait, function()
+		moveTo(session, "Approach")
+		local fish = pickFish(session.spot, player)
+		session.fish = fish
+		local nibbles = random:NextInteger(Fishing.nibbles[1], Fishing.nibbles[2])
+		send(player, {
+			state = "Approach",
+			seconds = Fishing.approachSeconds,
+			size = Fishing.ShadowScale[Fishing.Fish[fish] or "Easy"] or 1,
+			nibbles = nibbles,
+			nibbleSeconds = Fishing.nibbleSeconds,
+		})
+		later(player, session, Fishing.approachSeconds + nibbles * Fishing.nibbleSeconds, function()
+			moveTo(session, "Bite")
+			local seconds = random:NextNumber(Fishing.biteSeconds[1], Fishing.biteSeconds[2])
+			session.biteUntil = os.clock() + seconds
+			send(player, { state = "Bite", seconds = seconds })
+			later(player, session, seconds + HOOK_SLACK, function()
+				-- not hooked: the bobber comes back up, and the next fish takes its time
+				send(player, { state = "Surface" })
+				scheduleBite(player, session, false)
+			end)
+		end)
+	end)
+end
+
+local function startFight(player: Player, session: Session)
 	local difficulty = Fishing.difficultyOf(session.fish :: string)
-	moveTo(session, "Ring")
-	session.ring = n
-	session.ringAt = os.clock() + Fishing.ringGap
+	moveTo(session, "Fight")
+	session.startAt = workspace:GetServerTimeNow() + Fishing.barLead
+	session.checks = 0
+	session.misses = 0
 	send(player, {
-		state = "Ring",
-		n = n,
-		of = Fishing.rings,
-		delay = Fishing.ringGap,
-		closeSeconds = difficulty.closeSeconds,
+		state = "Fight",
+		startAt = session.startAt,
+		speed = difficulty.speed,
 		zone = difficulty.zone,
+		jerk = difficulty.jerk,
+		checks = Fishing.checks,
+		slips = Fishing.slips,
 	})
-	later(player, session, Fishing.ringGap + difficulty.closeSeconds + RING_TIMEOUT, function()
+	later(player, session, Fishing.barLead + Fishing.fightSeconds, function()
 		finish(player, "Escaped")
 	end)
 end
@@ -202,8 +216,10 @@ local function onCast(player: Player, at: any)
 		at = at,
 		biteUntil = 0,
 		fish = nil,
-		ring = 0,
-		ringAt = 0,
+		startAt = 0,
+		checks = 0,
+		misses = 0,
+		lastClick = 0,
 	}
 	sessions[player] = session
 	send(player, { state = "Cast", spot = spot.id })
@@ -218,28 +234,39 @@ local function onHook(player: Player)
 	if session.phase ~= "Bite" or os.clock() > session.biteUntil + HOOK_SLACK then
 		return
 	end
-	session.fish = pickFish(session.spot, player)
-	startRing(player, session, 1)
+	startFight(player, session)
 end
 
-local function onRing(player: Player, n: any, ok: any)
+local function onClick(player: Player, at: any)
 	local session = sessions[player]
-	if not (session and session.phase == "Ring" and n == session.ring) then
+	if not (session and session.phase == "Fight" and rodInHand(player)) then
 		return
 	end
-	if ok ~= true or not rodInHand(player) then
-		finish(player, "Escaped")
+	local clock = os.clock()
+	if clock - session.lastClick < Fishing.clickGap then
+		return
+	end
+	session.lastClick = clock
+	-- the moment the player clicked, by the server's clock: theirs if it is believable
+	local now = workspace:GetServerTimeNow()
+	local when = if type(at) == "number" and at <= now + 0.05 and at >= now - Fishing.clickLag then at else now
+	local t = when - session.startAt
+	if t < 0 then
 		return
 	end
 	local difficulty = Fishing.difficultyOf(session.fish :: string)
-	local enter, leave = Fishing.zoneTimes(difficulty)
-	local elapsed = os.clock() - session.ringAt
-	if elapsed < enter - Fishing.ringSlack or elapsed > leave + Fishing.ringSlack * 2 then
-		finish(player, "Escaped")
+	local ok = Fishing.inZone(difficulty, session.checks, t)
+	if ok then
+		session.checks += 1
+	else
+		session.misses += 1
+	end
+	if session.misses > Fishing.slips then
+		finish(player, "Escaped", { checks = session.checks, misses = session.misses })
 		return
 	end
-	if n < Fishing.rings then
-		startRing(player, session, n + 1)
+	if session.checks < Fishing.checks then
+		send(player, { state = "Tally", checks = session.checks, misses = session.misses, ok = ok })
 		return
 	end
 	local fish = session.fish :: string
@@ -256,8 +283,8 @@ local function onAction(player: Player, payload: any)
 		onCast(player, payload.at)
 	elseif action == "hook" then
 		onHook(player)
-	elseif action == "ring" then
-		onRing(player, payload.n, payload.ok)
+	elseif action == "click" then
+		onClick(player, payload.at)
 	elseif action == "reel" then
 		if sessions[player] then
 			finish(player, "Reeled")

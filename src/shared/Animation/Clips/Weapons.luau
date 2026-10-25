@@ -143,6 +143,16 @@ local LIFT_FREE_2H = { u = 0.17, hand = { 1.05, 0.45, -1.15 }, dir = { -0.35, 0.
 -- where the Hook passes in front of the body (see Hook)
 local HOOK_MID = 0.55
 
+-- The fishing fight's base pose (Struggle, Heave, Lurch): the rod held up and back in both
+-- hands, leaning back against the fish.
+local STRUGGLE_POSE = { hand = { 0.3, 0.85, -1.05 }, dir = { 0, 1, -0.4 }, two = 1, off = -0.55, wp = -11, wy = -5 }
+local function struggleAt(u: number): Key
+	local key = table.clone(STRUGGLE_POSE) :: Key
+	key.u = u
+	return key
+end
+local STRUGGLE, STRUGGLE_MID, STRUGGLE_END = struggleAt(0), struggleAt(0.5), struggleAt(1)
+
 Weapons.SWINGS = {
 	-- Dagger: pull it back along the side, then lunge it straight forward.
 	Jab = {
@@ -386,6 +396,28 @@ Weapons.SWINGS = {
 		{ u = 0.5, hand = { 0.25, 1.25, -0.95 }, dir = { 0, 1, 0.2 }, two = 1, off = -0.55, wp = -9, wy = -4, ease = "out" },
 		{ u = 0.78, hand = { 0.3, 1.0, -1.05 }, dir = { 0, 1, 0.1 }, two = 1, off = -0.55, wp = -5 },
 		{ u = 1 },
+	},
+	-- Fighting a hooked fish (issue 26, 2026-10-25, the user: "the player struggling to pull
+	-- it in"): both hands on the rod held up and back, leaning back, yanked right then left.
+	-- Starts and ends on the same pose, so FishingController replays it as a loop.
+	Struggle = {
+		STRUGGLE,
+		{ u = 0.25, hand = { 0.5, 0.75, -1.05 }, dir = { 0.3, 1, -0.45 }, two = 1, off = -0.55, wp = -13, wy = -12 },
+		STRUGGLE_MID,
+		{ u = 0.75, hand = { 0.1, 0.85, -1.05 }, dir = { -0.25, 1, -0.45 }, two = 1, off = -0.55, wp = -12, wy = 3 },
+		STRUGGLE_END,
+	},
+	-- A check in the green: one big heave up and back, then back into the struggle.
+	Heave = {
+		STRUGGLE,
+		{ u = 0.35, hand = { 0.3, 1.35, -0.75 }, dir = { 0, 1, 0.25 }, two = 1, off = -0.55, wp = -18, wy = -4, rz = -0.3, ease = "out" },
+		STRUGGLE_END,
+	},
+	-- A miss: the fish pulls the player forward a step and the rod dips toward the water.
+	Lurch = {
+		STRUGGLE,
+		{ u = 0.3, hand = { 0.3, 0.15, -1.4 }, dir = { 0, 0.25, -1 }, two = 1, off = -0.55, wp = 12, rz = 0.5, ease = "out" },
+		STRUGGLE_END,
 	},
 } :: { [string]: { Key } }
 

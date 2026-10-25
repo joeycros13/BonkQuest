@@ -26,7 +26,7 @@ local EVENT_NAMES: { string } = {
 	"SecretCrystalHit", -- (order: number): a swing reached World 3's secret crystal #order (SecretService)
 	"GatherHit", -- (nodeIds: { string }): a tool swing reached these gathering nodes (GatherService)
 	"HoldTool", -- (kind: string?): take out the best tool of that kind, or put it away (MeleeService, Config/Tools)
-	"FishAction", -- { action = "cast", at = Vector3 } | { action = "hook" | "reel" } | { action = "ring", n = number, ok = boolean }: fishing (FishingService)
+	"FishAction", -- { action = "cast", at = Vector3 } | { action = "hook" | "reel" } | { action = "click", at = number }: fishing (FishingService)
 	"SetSetting", -- (id: string, value: number | boolean): change one of the player's settings (SettingsService, Config/Settings)
 	"LootLanded", -- (id: number): the first piece of a coin / EXP spill reached its HUD bar, so it counts now (SpillService)
 	"LevelShown", -- (level: number): the HUD's level badge reached this level, so the level-up heal happens now (ExpService)
@@ -39,7 +39,7 @@ local EVENT_NAMES: { string } = {
 	"TeleportFade", -- ("out" | "in", seconds): fade the screen to black and back around a teleport (PortalService)
 	"GatherState", -- { id = string, hp = number, max = number, broken = boolean, hit = boolean? }: one of this player's gathering nodes changed (GatherService)
 	"CoreInfused", -- { core = string, awakened = boolean, infuser = Instance }: play the infusion reveal (InfuseService)
-	"FishState", -- { state = "Cast" | "Approach" | "Bite" | "Surface" | "Ring" | "Caught" | "Escaped" | "Reeled", ... }: this player's fishing (FishingService)
+	"FishState", -- { state = "Cast" | "Approach" | "Bite" | "Surface" | "Fight" | "Tally" | "Caught" | "Escaped" | "Reeled", ... }: this player's fishing (FishingService)
 	"LeaderboardReward", -- { text, rank }: a leaderboard reward was granted (LeaderboardService), shown in chat
 	"HealZone", -- { kind = "healed", amount } | { kind = "cooldown", seconds }: the healing fountain (HealZoneService)
 	"PlayerHurt", -- { character = Model, from = Vector3 }: an enemy's hit landed on a player (MeleeService): every client flashes and flinches that body, the hit player stumbles back (HurtController)

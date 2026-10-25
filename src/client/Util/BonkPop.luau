@@ -45,6 +45,12 @@
 -- number-style popup at the top of the tree): `BonkPop.need` copies ReplicatedStorage/Assets/
 -- UI/NeedPop -- the tool's `Icon` over pale `Rays`, `Label` / `Shadow` ("Needs an Axe") and a
 -- yellow `Hint` / `HintShadow` line ("Press 2 for your Axe") -- with the same motion attributes.
+--
+-- Fishing pops the same way (issue 26, 2026-10-25): `BonkPop.bite` copies
+-- ReplicatedStorage/Assets/UI/BitePop (a BonkPop copy, its Words "BITE!") at the bobber when a
+-- fish takes it, and `BonkPop.caught` copies ReplicatedStorage/Assets/UI/CaughtPop (a NeedPop
+-- copy: the fish's `Icon`, `Label` / `Shadow` "CAUGHT!" from its Words, `Hint` / `HintShadow`
+-- the fish's name) over the player's head, riding with it.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -59,6 +65,8 @@ local critTemplate: BillboardGui? = nil
 local hitTemplate: BillboardGui? = nil
 local levelTemplate: BillboardGui? = nil
 local needTemplate: BillboardGui? = nil
+local biteTemplate: BillboardGui? = nil
+local caughtTemplate: BillboardGui? = nil
 local FontDrop: any = nil
 
 function BonkPop.init(injected: any)
@@ -91,6 +99,21 @@ function BonkPop.start()
 		needTemplate = need
 	else
 		warn("[BonkPop] missing ReplicatedStorage/Assets/UI/NeedPop")
+	end
+	for name, set in {
+		BitePop = function(found: BillboardGui)
+			biteTemplate = found
+		end,
+		CaughtPop = function(found: BillboardGui)
+			caughtTemplate = found
+		end,
+	} do
+		local found = ui and ui:FindFirstChild(name)
+		if found and found:IsA("BillboardGui") then
+			set(found)
+		else
+			warn("[BonkPop] missing ReplicatedStorage/Assets/UI/" .. name)
+		end
 	end
 	local level = ui and ui:FindFirstChild("LevelPop")
 	if level and level:IsA("BillboardGui") then
@@ -294,6 +317,24 @@ function BonkPop.need(position: Vector3, need: string, hint: string, icon: strin
 	if needTemplate then
 		play(needTemplate, position, 1, need, {
 			texts = { Hint = hint, HintShadow = hint },
+			images = if icon then { Icon = icon } else nil,
+		})
+	end
+end
+
+-- "BITE!" at the bobber when a fish takes it.
+function BonkPop.bite(position: Vector3)
+	if biteTemplate then
+		play(biteTemplate, position, 1, pickWord(biteTemplate))
+	end
+end
+
+-- "CAUGHT!" over the player's head (`head`), the fish's name under it and its picture.
+function BonkPop.caught(head: BasePart, name: string, icon: string?)
+	if caughtTemplate then
+		play(caughtTemplate, head.Position, 1, pickWord(caughtTemplate), {
+			follow = head,
+			texts = { Hint = name, HintShadow = name },
 			images = if icon then { Icon = icon } else nil,
 		})
 	end

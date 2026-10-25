@@ -65,7 +65,7 @@ local CONTROLLER_ORDER = {
 	"SecretCrystalController",
 	-- trees and rocks you break with your weapon for materials
 	"GatherController",
-	-- casting, the bobber and the line, bites and the reel-in (FishingRingUI draws the rings)
+	-- casting, the bobber and the line, bites and the reel-in (FishingBarUI draws the reel bar)
 	"FishingController",
 	-- the healing fountain's sparkles and "+HP" popup (HealZoneService heals)
 	"HealZoneController",
@@ -116,8 +116,8 @@ local UI_ORDER = {
 	"InfuserUI",
 	-- the Worlds menu: teleport to any unlocked world (HUD globe button)
 	"WorldsUI",
-	-- the fishing minigame's closing rings (FishingController starts them)
-	"FishingRingUI",
+	-- the fishing fight's reel bar (FishingController starts it)
+	"FishingBarUI",
 	-- our own player list, top right (name, level, coins; replaces Roblox's)
 	"PlayerListUI",
 	-- last: loads every asset and draws every panel once behind the join cover
