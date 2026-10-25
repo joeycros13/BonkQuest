@@ -4,8 +4,10 @@
 -- kept for later).
 --
 -- The body no longer falls apart (DeathService keeps its joints and holds it where it
--- stood). When any character dies: it glows white (a Highlight fading in over GLOW_SECONDS),
--- then it's hidden on this client (LocalTransparencyModifier, its name tag and medal off)
+-- stood). When any character dies: its root is anchored here too, at once, and set upright
+-- (the client that owns a body simulates it, and Roblox's Dead state tipped it into a flip
+-- before the server's anchor arrived), then it rises LIFT studs while it glows white (a
+-- Highlight fading in over GLOW_SECONDS), then it's hidden on this client (LocalTransparencyModifier, its name tag and medal off)
 -- and breaks into little white and gold blocks (BLOCK_COLORS), laid on each limb on a
 -- PIECE-stud grid, that fly up and out, tumble, shrink and fade (top first), with the enemies' Poof and
 -- DeathPop stars and a low EnemyPop. For the local player it also starts the BONKED! screen
@@ -21,7 +23,8 @@ local Effects = Animation.Effects
 
 local DeathController = {}
 
-local GLOW_SECONDS = 0.45 -- the white glow before the body breaks up
+local GLOW_SECONDS = 0.6 -- the white glow (and the rise) before the body breaks up
+local LIFT = 1.5 -- studs the body rises while it glows
 local PIECE = 0.5 -- a block's size, and the grid the limbs are sampled on
 local FLY_SECONDS = 1.2 -- how long a block flies and fades
 local STAGGER = 0.3 -- top blocks leave first, the feet this much later
@@ -126,11 +129,30 @@ local function breakUp(character: Model)
 	end
 end
 
+-- Hold the body still and upright (keeping only the way it faced), then float it up.
+local function freezeAndRise(character: Model)
+	local root = character:FindFirstChild("HumanoidRootPart")
+	if not (root and root:IsA("BasePart")) then
+		return
+	end
+	root.Anchored = true
+	root.AssemblyLinearVelocity = Vector3.zero
+	root.AssemblyAngularVelocity = Vector3.zero
+	local look = root.CFrame.LookVector * Vector3.new(1, 0, 1)
+	look = if look.Magnitude > 1e-3 then look.Unit else Vector3.new(0, 0, -1)
+	local upright = CFrame.lookAt(root.Position, root.Position + look)
+	root.CFrame = upright
+	TweenService:Create(root, TweenInfo.new(GLOW_SECONDS, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+		CFrame = upright + Vector3.new(0, LIFT, 0),
+	}):Play()
+end
+
 local function onDied(character: Model)
 	if dying[character] then
 		return
 	end
 	dying[character] = true
+	freezeAndRise(character)
 	if character == player.Character then
 		deps.UI.DeathScreenUI.died()
 	end

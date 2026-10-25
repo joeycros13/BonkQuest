@@ -12,6 +12,10 @@
 -- The pill counts down to the fade, which starts FadeSeconds before Players.RespawnTime
 -- (4 s) is up, so the screen is black when the new body appears; the new body
 -- (respawned) clears it all and fades back in over InSeconds.
+--
+-- The gui's `ShowPopup` attribute switches the BONKED! card (and its countdown pill) on or
+-- off; it's off since 2026-10-25 (the user: take the BONKED out, but keep it to bring back
+-- later), so a death shows only the grey, the red edge and the fades.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -127,7 +131,7 @@ function DeathScreenUI.died()
 	-- BONKED!
 	setCount(math.max(1, math.ceil(fadeAt - os.clock())))
 	task.delay(number(root, "PopDelay", 0.7), function()
-		if token ~= mine then
+		if token ~= mine or root:GetAttribute("ShowPopup") == false then
 			return
 		end
 		local popup = root:FindFirstChild("Popup")

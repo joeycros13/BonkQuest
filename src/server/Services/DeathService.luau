@@ -24,6 +24,11 @@ local function watch(character: Model)
 			root.AssemblyLinearVelocity = Vector3.zero
 			root.AssemblyAngularVelocity = Vector3.zero
 			root.Anchored = true
+			-- upright, facing the way it did (the clients lift it from here)
+			local look = root.CFrame.LookVector * Vector3.new(1, 0, 1)
+			if look.Magnitude > 1e-3 then
+				root.CFrame = CFrame.lookAt(root.Position, root.Position + look.Unit)
+			end
 		end
 	end)
 end
