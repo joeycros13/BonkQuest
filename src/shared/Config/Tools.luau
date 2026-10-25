@@ -30,6 +30,9 @@
 -- and swings by `swing`), so each tool has the same swing fields a weapon has:
 --   handed, cooldown, hitTime, reach, arc, maxTargets, swing
 
+-- World scale (2026-10-23, Config/Leveling): power x2 / x8 for Worlds 1 / 2, like the nodes'
+-- health (Config/Gathering), so a node takes the same number of hits.
+
 local Tools = {}
 
 export type Recipe = { tool: string?, materials: { { id: string, count: number } } }
@@ -53,7 +56,6 @@ export type ToolDef = {
 	arc: number,
 	maxTargets: number,
 	swing: string,
-	knockback: number,
 }
 
 -- Hotbar order: Slot2 is the first kind, Slot3 the second, and so on (keys 2, 3...).
@@ -77,7 +79,7 @@ Tools.Defs = {
 		tier = 1,
 		world = 1,
 		sell = 11,
-		power = 10,
+		power = 20,
 		rarity = "Common",
 		price = 50,
 		icon = "rbxassetid://120793441722751",
@@ -87,7 +89,6 @@ Tools.Defs = {
 		reach = 5,
 		arc = 70,
 		maxTargets = 1,
-		knockback = 0,
 		-- the Machete's diagonal: a chop down and across into the trunk
 		swing = "Diagonal",
 	},
@@ -98,7 +99,7 @@ Tools.Defs = {
 		tier = 1,
 		world = 1,
 		sell = 14,
-		power = 10,
+		power = 20,
 		rarity = "Common",
 		price = 50,
 		icon = "rbxassetid://123876463543492",
@@ -108,7 +109,6 @@ Tools.Defs = {
 		reach = 5,
 		arc = 70,
 		maxTargets = 1,
-		knockback = 0,
 		-- the World 3 pickaxes' swing: up over the shoulder, then down into the rock
 		swing = "Mine",
 	},
@@ -132,7 +132,6 @@ Tools.Defs = {
 		reach = 0,
 		arc = 0,
 		maxTargets = 0,
-		knockback = 0,
 		swing = "Cast",
 	},
 
@@ -148,10 +147,10 @@ Tools.Defs = {
 		kind = "Axe",
 		tier = 2,
 		world = 2,
-		sell = 120,
-		power = 20,
+		sell = 110,
+		power = 200,
 		rarity = "Uncommon",
-		price = 600,
+		price = 500,
 		icon = "rbxassetid://138518954912606",
 		-- the upgrade (2026-10-20): the Wooden Axe, World 1's gathered wood and stone, and World
 		-- 2's enemy drops (the user: "giving the requirements depth and an actual tree"). Not
@@ -171,7 +170,6 @@ Tools.Defs = {
 		reach = 5,
 		arc = 70,
 		maxTargets = 1,
-		knockback = 0,
 		swing = "Diagonal",
 	},
 	StoneRod = {
@@ -183,7 +181,7 @@ Tools.Defs = {
 		sell = 160,
 		power = 0,
 		rarity = "Uncommon",
-		price = 800,
+		price = 750,
 		icon = "rbxassetid://115528900023286",
 		-- the upgrade (2026-10-20, the user: like the axe's): the Wooden Rod, World 1's wood and
 		-- stone, and World 2's Fox Fur and Boar Tusk. Not fish: a Stone Rod catches World 2's.
@@ -202,7 +200,70 @@ Tools.Defs = {
 		reach = 0,
 		arc = 0,
 		maxTargets = 0,
-		knockback = 0,
+		swing = "Cast",
+	},
+
+	-- ==================== World 3 (The Crystal Caverns) ====================
+	-- (2026-10-24, the user: "Crystal" fits the caves) World 3 sells a Crystal Pickaxe (from the
+	-- Wooden Pickaxe: World 2 had none) and a Crystal Rod (from the Stone Rod); the Stone Axe carries
+	-- on. Models: Blender w3_tools_build, art/meshes/w3_tools.fbx, the wooden / stone ones' sizes
+	-- (crystal arms in iron, a purple grip; a jointed cyan / pink / purple rod, a pink reel). The
+	-- recipes follow World 2's: the tool before, the last world's gathered things, this world's
+	-- enemy drops. Prices, power x10 World 2's; all placeholders.
+	CrystalPickaxe = {
+		id = "CrystalPickaxe",
+		name = "Crystal Pickaxe",
+		kind = "Pickaxe",
+		tier = 3,
+		world = 3,
+		sell = 1100,
+		power = 2000,
+		rarity = "Rare",
+		price = 5000,
+		icon = "rbxassetid://126315296261096",
+		recipe = {
+			tool = "WoodenPickaxe",
+			materials = {
+				{ id = "RedwoodLog", count = 8 },
+				{ id = "AmberSap", count = 1 },
+				{ id = "BatWing", count = 6 },
+				{ id = "GolemPebble", count = 2 },
+			},
+		},
+		handed = 1,
+		cooldown = 0.9,
+		hitTime = 0.58,
+		reach = 5,
+		arc = 70,
+		maxTargets = 1,
+		swing = "Mine",
+	},
+	CrystalRod = {
+		id = "CrystalRod",
+		name = "Crystal Rod",
+		kind = "Rod",
+		tier = 3,
+		world = 3,
+		sell = 1600,
+		power = 0,
+		rarity = "Rare",
+		price = 7500,
+		icon = "rbxassetid://103248912912671",
+		recipe = {
+			tool = "StoneRod",
+			materials = {
+				{ id = "RedwoodLog", count = 6 },
+				{ id = "Perch", count = 4 },
+				{ id = "BatWing", count = 4 },
+				{ id = "GolemPebble", count = 3 },
+			},
+		},
+		handed = 2,
+		cooldown = 1.0,
+		hitTime = 0.56,
+		reach = 0,
+		arc = 0,
+		maxTargets = 0,
 		swing = "Cast",
 	},
 } :: { [string]: ToolDef }

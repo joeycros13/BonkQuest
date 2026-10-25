@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quest giver markers</title>
+<!--
+  The marker over a quest giver's head (issue 20, option A "Puffy ! and ?" picked 2026-10-24 on
+  https://claude.ai/artifact/8uGcAD5RK5ZGwK3jeGXnw1): a gold ! while a quest waits to be taken, a green ?
+  while one is ready to hand in, nothing in between. Each symbol is one thick round-capped stroke drawn
+  four times: ink lip (moved down), ink outline, the darker colour's lip (moved down), then the face, so
+  the lip shows as a crescent under it like the HUD buttons'. Render:
+    py art/tools/ui/svg_render.py art/tools/ui/quest_markers.html art/ui/quest 512 8772
+-->
+</head>
+<body style="background:#bfe7f2">
+
+<svg data-export="quest_available" width="256" height="256" viewBox="-14 -8 156 156">
+  <defs>
+    <linearGradient id="gA" gradientUnits="userSpaceOnUse" x1="0" y1="14" x2="0" y2="118">
+      <stop offset="0" stop-color="#fff0a0"/>
+      <stop offset="0.45" stop-color="#ffd23f"/>
+      <stop offset="1" stop-color="#f0a818"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="64" cy="140" rx="18" ry="3.5" fill="#2b1b3d" opacity="0.18"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M64 21 L64 58 M64 108 L64 108.01" transform="translate(0 6)" stroke="#2b1b3d" stroke-width="40"/>
+    <path d="M64 21 L64 58 M64 108 L64 108.01" stroke="#2b1b3d" stroke-width="40"/>
+    <path d="M64 21 L64 58 M64 108 L64 108.01" transform="translate(0 6)" stroke="#c4840e" stroke-width="27"/>
+    <path d="M64 21 L64 58 M64 108 L64 108.01" stroke="url(#gA)" stroke-width="27"/>
+    <path d="M58 20 L58 44" stroke="#ffffff" stroke-width="6" opacity="0.75"/>
+    <path d="M59 104 L60 103" stroke="#ffffff" stroke-width="5" opacity="0.75"/>
+  </g>
+  <path d="M98 22 L101 31 L110 34 L101 37 L98 46 L95 37 L86 34 L95 31 Z" fill="#ffffff" stroke="#2b1b3d" stroke-width="2.5" stroke-linejoin="round"/>
+</svg>
+
+<svg data-export="quest_ready" width="256" height="256" viewBox="-14 -8 156 156">
+  <defs>
+    <linearGradient id="gR" gradientUnits="userSpaceOnUse" x1="0" y1="14" x2="0" y2="118">
+      <stop offset="0" stop-color="#b6f2bb"/>
+      <stop offset="0.45" stop-color="#4fcf5c"/>
+      <stop offset="1" stop-color="#2fa03e"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="64" cy="140" rx="18" ry="3.5" fill="#2b1b3d" opacity="0.18"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M41 42 C41 24 53 16 65 16 C80 16 90 26 90 39 C90 52 80 57 73 61 C67 64 64 66 64 68 M64 114 L64 114.01" transform="translate(0 6)" stroke="#2b1b3d" stroke-width="37"/>
+    <path d="M41 42 C41 24 53 16 65 16 C80 16 90 26 90 39 C90 52 80 57 73 61 C67 64 64 66 64 68 M64 114 L64 114.01" stroke="#2b1b3d" stroke-width="37"/>
+    <path d="M41 42 C41 24 53 16 65 16 C80 16 90 26 90 39 C90 52 80 57 73 61 C67 64 64 66 64 68 M64 114 L64 114.01" transform="translate(0 6)" stroke="#1f7a2e" stroke-width="24"/>
+    <path d="M41 42 C41 24 53 16 65 16 C80 16 90 26 90 39 C90 52 80 57 73 61 C67 64 64 66 64 68 M64 114 L64 114.01" stroke="url(#gR)" stroke-width="24"/>
+    <path d="M44 36 C46 26 54 20 63 19" stroke="#ffffff" stroke-width="5.5" opacity="0.75"/>
+    <path d="M59 110 L60 109" stroke="#ffffff" stroke-width="5" opacity="0.75"/>
+  </g>
+  <path d="M110 76 L113 85 L122 88 L113 91 L110 100 L107 91 L98 88 L107 85 Z" fill="#ffffff" stroke="#2b1b3d" stroke-width="2.5" stroke-linejoin="round"/>
+</svg>
+
+</body>
+</html>
