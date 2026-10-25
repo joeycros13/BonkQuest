@@ -250,13 +250,16 @@ end
 HotbarUI.wireHover = wireHover
 
 -- "Pick me" (issue 23, 2026-10-25): a tree or rock the thing in hand can't break nudges the
--- slot of the player's tool of that kind: it shakes side to side (the Hotbar's NudgeShake
--- degrees over NudgeSeconds) and its Glow flashes in NudgeColor, or NudgeWeakColor (red) when
--- that tool is too weak and needs an upgrade (`weak`). The held glow stays gold, so the two
--- never read alike.
-local nudging: { [GuiButton]: boolean } = {}
+-- slot of the player's tool of that kind for as long as the hint pop shows (`seconds`; the
+-- user: shake for the popup's whole duration). Its Content swings back and forth NudgeShake
+-- degrees (each swing NudgeSwingSeconds) and its Glow lights in NudgeColor (white), or
+-- NudgeWeakColor (orange-red) when that tool is too weak and needs an upgrade (`weak`). The
+-- slot in hand keeps its breathing glow but turns that colour too, then gold again. A nudge
+-- that comes while one runs extends it.
+local nudgeUntil: { [GuiButton]: number } = {}
+local goldOf: { [ImageLabel]: Color3 } = {}
 
-function HotbarUI.nudge(kind: string, weak: boolean)
+function HotbarUI.nudge(kind: string, weak: boolean, seconds: number?)
 	if not hotbar then
 		return
 	end
@@ -267,43 +270,62 @@ function HotbarUI.nudge(kind: string, weak: boolean)
 		end
 	end
 	local content = slot and slot:FindFirstChild("Content")
-	if not (slot and content and content:IsA("GuiObject")) or nudging[slot] then
+	if not (slot and content and content:IsA("GuiObject")) then
 		return
 	end
 	local button = slot :: GuiButton
-	nudging[button] = true
-	local seconds = tuning("NudgeSeconds", 0.5)
-	local degrees = tuning("NudgeShake", 10)
-	local steps = { degrees, -degrees, degrees * 0.6, -degrees * 0.4, 0 }
-	task.spawn(function()
-		for _, angle in steps do
-			local swing = TweenService:Create(content, TweenInfo.new(seconds / #steps, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Rotation = angle })
-			swing:Play()
-			swing.Completed:Wait()
-		end
-		content.Rotation = 0
-		nudging[button] = nil
-	end)
+	local duration = seconds or tuning("NudgeSeconds", 1.9)
+	local running = nudgeUntil[button] ~= nil
+	nudgeUntil[button] = os.clock() + duration
 	local glow = content:FindFirstChild("Glow")
-	local held = grows[button] and grows[button].held
-	if glow and glow:IsA("ImageLabel") and not held then
-		local gold = glow.ImageColor3
-		local colour = hotbar:GetAttribute(if weak then "NudgeWeakColor" else "NudgeColor")
-		glow.ImageColor3 = if typeof(colour) == "Color3" then colour else (if weak then Color3.fromRGB(255, 90, 80) else Color3.new(1, 1, 1))
-		glow.ImageTransparency = tuning("GlowBright", 0.35)
-		glow.Visible = true
-		local fade = TweenService:Create(glow, TweenInfo.new(seconds * 1.6, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { ImageTransparency = 1 })
-		fade.Completed:Once(function()
-			-- unless the slot was taken out meanwhile (its held glow is on)
-			if not (grows[button] and grows[button].held) then
-				glow.Visible = false
+	local colour = hotbar:GetAttribute(if weak then "NudgeWeakColor" else "NudgeColor")
+	local tint = if typeof(colour) == "Color3" then colour else (if weak then Color3.fromRGB(255, 90, 80) else Color3.new(1, 1, 1))
+	if glow and glow:IsA("ImageLabel") then
+		goldOf[glow] = goldOf[glow] or glow.ImageColor3
+		glow.ImageColor3 = tint
+		if not (grows[button] and grows[button].held) then
+			-- an idle slot lights up for the nudge (taking it out cancels this: setGlow)
+			for _, tween in glowTweens[button] or {} do
+				tween:Cancel()
 			end
-			glow.ImageColor3 = gold
-		end)
-		-- taking the slot out mid-flash cancels it (setGlow cancels the slot's glow tweens)
-		glowTweens[button] = { fade }
-		fade:Play()
+			glowTweens[button] = {}
+			glow.ImageTransparency = tuning("GlowBright", 0.35)
+			glow.Visible = true
+		end
 	end
+	if running then
+		return
+	end
+	task.spawn(function()
+		local degrees = tuning("NudgeShake", 10)
+		local swing = tuning("NudgeSwingSeconds", 0.1)
+		local side = 1
+		while os.clock() < (nudgeUntil[button] or 0) do
+			local tween = TweenService:Create(content, TweenInfo.new(swing, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Rotation = degrees * side })
+			tween:Play()
+			tween.Completed:Wait()
+			side = -side
+		end
+		TweenService:Create(content, TweenInfo.new(swing, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), { Rotation = 0 }):Play()
+		nudgeUntil[button] = nil
+		if glow and glow:IsA("ImageLabel") then
+			local gold = goldOf[glow] or glow.ImageColor3
+			if grows[button] and grows[button].held then
+				-- the slot in hand: back to its gold breathing glow
+				glow.ImageColor3 = gold
+			else
+				local fade = TweenService:Create(glow, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { ImageTransparency = 1 })
+				fade.Completed:Once(function()
+					if not (grows[button] and grows[button].held) then
+						glow.Visible = false
+					end
+					glow.ImageColor3 = gold
+				end)
+				glowTweens[button] = { fade }
+				fade:Play()
+			end
+		end
+	end)
 end
 
 function HotbarUI.init(injected: any)

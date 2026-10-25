@@ -347,6 +347,14 @@ local function needWords(name: string, fallback: string): string
 	return if type(value) == "string" then value else fallback
 end
 
+-- How long the hint pop shows (NeedPop's Lifetime): the hotbar nudge lasts as long.
+local function needSeconds(): number
+	local ui = assets:FindFirstChild("UI")
+	local template = ui and ui:FindFirstChild("NeedPop")
+	local value = template and template:GetAttribute("Lifetime")
+	return if type(value) == "number" then value else 1.9
+end
+
 -- The wrong-tool hint (a node the thing in hand can't break), where it was struck.
 local function showNeeds(node: Node, from: Vector3)
 	local now = os.clock()
@@ -369,14 +377,14 @@ local function showNeeds(node: Node, from: Vector3)
 			else needWords("PressFormat", "Press %s for your %s"):format(tostring(Tools.slotOf(kind) or ""), kindName)
 		icon = best.icon
 		if HotbarUI then
-			HotbarUI.nudge(kind, false)
+			HotbarUI.nudge(kind, false, needSeconds())
 		end
 	elseif best then
 		top = needs:format(withArticle(if needed then needed.name else kindName))
 		hint = needWords("UpgradeText", "Upgrade it at the Weaponsmith")
 		icon = if needed then needed.icon else best.icon
 		if HotbarUI then
-			HotbarUI.nudge(kind, true)
+			HotbarUI.nudge(kind, true, needSeconds())
 		end
 	else
 		top = needs:format(withArticle(if needed then needed.name else kindName))
