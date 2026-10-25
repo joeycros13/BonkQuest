@@ -14,8 +14,10 @@
 -- (respawned) clears it all and fades back in over InSeconds.
 --
 -- The gui's `ShowPopup` attribute switches the BONKED! card (and its countdown pill) on or
--- off; it's off since 2026-10-25 (the user: take the BONKED out, but keep it to bring back
--- later), so a death shows only the grey, the red edge and the fades.
+-- off. It was off for part of 2026-10-25 (the user: take the BONKED out, but keep it to
+-- bring back later) and came back the same day with a different word each death: the gui's
+-- `Words` attribute is a comma list ("BONKED!,SQUASHED!,...") and every death picks one at
+-- random, never the same as the last.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -32,6 +34,7 @@ local token = 0 -- bumped by every death and respawn, so a stale countdown stops
 local dead = false
 local grey: ColorCorrectionEffect? = nil
 local raysTweens: { Tween } = {}
+local lastWord: string? = nil
 
 local function number(inst: Instance, name: string, fallback: number): number
 	local value = inst:GetAttribute(name)
@@ -45,6 +48,32 @@ local function setCount(n: number)
 	if pill and label and label:IsA("TextLabel") then
 		local format = pill:GetAttribute("Format")
 		label.Text = string.format(if type(format) == "string" then format else "Respawning in %d", n)
+	end
+end
+
+-- This death's word on the card (Label and its Shadow), from the gui's Words list.
+local function pickWord(popup: Instance)
+	local root = gui :: ScreenGui
+	local list = root:GetAttribute("Words")
+	local words = {}
+	if type(list) == "string" then
+		for word in list:gmatch("[^,]+") do
+			word = word:match("^%s*(.-)%s*$") :: string
+			if word ~= "" and word ~= lastWord then
+				table.insert(words, word)
+			end
+		end
+	end
+	if #words == 0 then
+		return
+	end
+	local word = words[math.random(#words)]
+	lastWord = word
+	for _, name in { "Label", "Shadow" } do
+		local label = popup:FindFirstChild(name)
+		if label and label:IsA("TextLabel") then
+			label.Text = word
+		end
 	end
 end
 
@@ -137,6 +166,7 @@ function DeathScreenUI.died()
 		local popup = root:FindFirstChild("Popup")
 		local scale = popup and popup:FindFirstChild("PopScale")
 		if popup and popup:IsA("GuiObject") and scale and scale:IsA("UIScale") then
+			pickWord(popup)
 			scale.Scale = number(root, "PopFrom", 0.2)
 			popup.Visible = true
 			spinRays(popup, true)
