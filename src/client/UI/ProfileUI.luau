@@ -174,7 +174,7 @@ local function fillBar(bar: Instance?, value: number, max: number)
 	end
 	local amount = bar:FindFirstChild("Amount")
 	if amount and amount:IsA("TextLabel") then
-		amount.Text = Format.ratio(math.floor(value + 0.5), math.floor(max + 0.5))
+		amount.Text = Format.ratio(math.max(math.floor(value + 0.5), 0), math.floor(max + 0.5))
 	end
 end
 

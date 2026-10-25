@@ -2,7 +2,7 @@
 -- Fishing: casting a rod into the water for fish (2026-10-18, the user's design). A
 -- fishing rod is a gathering tool (Config/Tools, kind "Rod"); fish are materials
 -- (Config/Materials, `fished`). FishingService runs it on the server, FishingController
--- and FishingRingUI on the client.
+-- and FishingBarUI on the client.
 --
 --   1. Cast: a click with the rod out swings it back over the head with both hands and
 --      throws the bobber about 5 blocks ahead (`castDistance`). It has to land on water:
@@ -12,10 +12,13 @@
 --      bites: the bobber sinks under for `biteSeconds`. Click while it is under to hook
 --      the fish; miss it and the bobber comes back up and you wait for the next one.
 --      Clicking while nothing bites reels the line in.
---   3. Rings: three rings close in, one after another (`ringGap` between them). Click
---      while the closing ring is inside the target zone, three times in a row. A miss,
---      or letting a ring close, and the fish gets away. Harder fish close faster and
---      have a thinner zone (Difficulty).
+--   3. The reel bar (issue 26, 2026-10-25, the user's design; it replaced three closing
+--      rings): a tall bar on the right of the screen with a green zone in its middle and a
+--      marker that slides up and down it without ever stopping. Each click while the
+--      marker is in the green adds a check; `checks` (3) lands the fish. The first miss is
+--      forgiven (`slips`), the next lets the fish go. Rarer fish have a smaller zone and a
+--      faster marker, and the rarest one jerks in bursts (Difficulty); the zone shrinks a
+--      little with each check (`shrink`). The player leans back and fights the rod.
 --   4. Landed: the line pulls back and the fish pops up out of the water; it goes into
 --      the player's materials (MaterialService.drop, the side toast).
 --
@@ -26,14 +29,16 @@
 -- Every fish is the same model in the water, a dark shadow (ReplicatedStorage/Assets/
 -- Fishing/FishShadow); only the icons differ (user, 2026-10-18).
 --
--- Rings are measured in "closer scale": the closing ring starts at `ringStart` times the
--- target's size and shrinks to `ringEnd` over the fish's `closeSeconds`; the target zone
--- is 1 +- the fish's `zone`. Fishing.zoneTimes gives the seconds it is inside, which the
--- client draws and the server checks.
+-- The marker's path is a formula of time (Fishing.sliderAt), so the client draws it and the
+-- server checks a click against the same clock (workspace:GetServerTimeNow()): the client
+-- sends the server time it clicked at, and the server judges that moment, taking clicks
+-- only up to `clickLag` seconds old.
 
 local Fishing = {}
 
-export type Difficulty = { closeSeconds: number, zone: number }
+-- speed: sweeps (top to bottom, or back) a second; zone: the green's share of the bar;
+-- jerk: 0..0.9, how much the speed surges and slows (in bursts JERK_RATE a second)
+export type Difficulty = { speed: number, zone: number, jerk: number }
 export type FishEntry = { id: string, weight: number }
 export type Spot = { id: string, name: string, world: number, tier: number, fish: { FishEntry } }
 
@@ -50,21 +55,28 @@ Fishing.lineBreak = 36 -- walking this far from the bobber reels the line in
 Fishing.biteDelay = { 3, 8 } -- seconds after landing (and after each missed bite)
 Fishing.approachSeconds = 1.6 -- the shadow swims to the bobber before it bites
 Fishing.biteSeconds = { 1, 2 } -- how long the bobber stays under (user: 1-2 s)
+Fishing.nibbles = { 1, 3 } -- little tugs on the bobber before the real bite (look only)
+Fishing.nibbleSeconds = 0.6 -- each nibble's time; the bite waits for them
 
--- The rings
-Fishing.rings = 3
-Fishing.ringGap = 0.5 -- seconds from one ring's hit (the band turns yellow) to the next ring (user, 2026-10-19)
-Fishing.ringStart = 1.7 -- closer scale at the start of a ring
-Fishing.ringEnd = 0.4 -- closer scale when the ring has closed (a miss)
--- Seconds of slack on the server's ring check, for network lag both ways.
-Fishing.ringSlack = 0.35
+-- The reel bar
+Fishing.checks = 3 -- clicks in the green to land the fish
+Fishing.slips = 1 -- misses forgiven; the one after lets the fish go (user, 2026-10-25)
+Fishing.shrink = 0.12 -- the zone loses this share of itself with each check
+Fishing.barLead = 0.4 -- seconds after the bar pops in before the marker starts
+Fishing.fightSeconds = 30 -- a fight nobody finishes lets the fish go
+Fishing.clickGap = 0.12 -- clicks closer together than this count once
+Fishing.clickLag = 0.6 -- the oldest click time the server takes (network lag)
+local JERK_RATE = 4 -- radians a second of the jerk's surge
 
 -- Generous zones (user: "so the players dont mess up"), harder for harder fish.
 Fishing.Difficulty = {
-	Easy = { closeSeconds = 1.7, zone = 0.32 },
-	Medium = { closeSeconds = 1.35, zone = 0.26 },
-	Hard = { closeSeconds = 1.05, zone = 0.2 },
+	Easy = { speed = 0.55, zone = 0.34, jerk = 0 },
+	Medium = { speed = 0.8, zone = 0.26, jerk = 0 },
+	Hard = { speed = 1.0, zone = 0.2, jerk = 0.6 },
 } :: { [string]: Difficulty }
+
+-- How big each difficulty's shadow is in the water (a rare fish is a bigger shadow).
+Fishing.ShadowScale = { Easy = 0.85, Medium = 1.0, Hard = 1.25 } :: { [string]: number }
 
 -- Which difficulty each fish (a Config/Materials id) fights with.
 Fishing.Fish = {
@@ -141,18 +153,25 @@ function Fishing.difficultyOf(fishId: string): Difficulty
 	return Fishing.Difficulty[Fishing.Fish[fishId] or "Easy"] or Fishing.Difficulty.Easy
 end
 
--- The closer's scale `t` seconds into a ring of this difficulty.
-function Fishing.closerScale(difficulty: Difficulty, t: number): number
-	local u = math.clamp(t / difficulty.closeSeconds, 0, 1)
-	return Fishing.ringStart + (Fishing.ringEnd - Fishing.ringStart) * u
+-- Where the marker is `t` seconds after it starts: 0 at the top of the bar, 1 at the
+-- bottom. It eases at each end and never stops; a jerk speeds it up and slows it down
+-- (its speed stays above zero while jerk < 1).
+function Fishing.sliderAt(difficulty: Difficulty, t: number): number
+	if t <= 0 then
+		return 0
+	end
+	local phase = difficulty.speed * (t + difficulty.jerk / JERK_RATE * math.sin(JERK_RATE * t))
+	return (1 - math.cos(math.pi * phase)) / 2
 end
 
--- Seconds into a ring when the closer enters the zone and when it leaves it.
-function Fishing.zoneTimes(difficulty: Difficulty): (number, number)
-	local span = Fishing.ringStart - Fishing.ringEnd
-	local enter = (Fishing.ringStart - (1 + difficulty.zone)) / span * difficulty.closeSeconds
-	local leave = (Fishing.ringStart - (1 - difficulty.zone)) / span * difficulty.closeSeconds
-	return enter, leave
+-- The green's share of the bar after `checks` checks; it sits in the bar's middle.
+function Fishing.zoneSize(difficulty: Difficulty, checks: number): number
+	return difficulty.zone * (1 - Fishing.shrink * checks)
+end
+
+-- Whether a click `t` seconds into the fight, with `checks` checks so far, is in the green.
+function Fishing.inZone(difficulty: Difficulty, checks: number, t: number): boolean
+	return math.abs(Fishing.sliderAt(difficulty, t) - 0.5) <= Fishing.zoneSize(difficulty, checks) / 2
 end
 
 -- A fish's chance at a spot (0..1), for the Index's drop slip.

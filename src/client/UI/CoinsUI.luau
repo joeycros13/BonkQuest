@@ -9,8 +9,9 @@
 --   * A kill's coins (LootController) fly in from where they lay: each
 --     collect() call sends one FlyingCoin along a curve to the icon
 --     (Util.HudFly, FlySeconds), and the icon bumps (BumpScale) as each lands. While a
---     spill is on its way the counter waits, and starts counting when its
---     first coin lands.
+--     spill is on its way the counter waits; its coins are only added on the server
+--     once the first coin lands (SpillService, 2026-10-25), and the counter counts
+--     up the moment they arrive.
 --   * shown() / onShown() give what the counter shows right now, so other HUD
 --     pieces (the quest tracker) move in step with it instead of jumping
 --     ahead to the balance.
@@ -38,6 +39,7 @@ local displayed = 0
 local countValue: NumberValue? = nil
 local countTween: Tween? = nil
 local pending = 0 -- spills whose coins haven't reached the counter yet
+local arriving = 0 -- spills that landed, whose coins the server is adding now
 local shownEvent = Instance.new("BindableEvent")
 
 local function attribute(name: string, fallback: number): number
@@ -92,9 +94,11 @@ function CoinsUI.beginSpill()
 	pending += 1
 end
 
--- The spill is done (or had nothing to show): count to the balance.
+-- The spill landed (or had nothing to show): its coins arrive from the server in a
+-- moment; count to whatever the balance is meanwhile.
 function CoinsUI.endSpill()
 	pending = math.max(0, pending - 1)
+	arriving += 1
 	countTo(balance())
 end
 
@@ -148,13 +152,14 @@ function CoinsUI.start()
 		icon = if coinIcon and coinIcon:IsA("GuiObject") then coinIcon else nil
 		show(balance())
 		player:GetAttributeChangedSignal("Coins"):Connect(function()
-			-- coins on their way count up when they land; anything else counts
-			-- after a beat (in case its spill is announced a moment later)
-			task.delay(0.2, function()
-				if pending == 0 then
-					countTo(balance())
-				end
-			end)
+			-- a landed spill's coins count up at once; anything else waits while
+			-- another spill is still flying in (its landing counts it all)
+			if arriving > 0 then
+				arriving -= 1
+				countTo(balance())
+			elseif pending == 0 then
+				countTo(balance())
+			end
 		end)
 	end)
 end

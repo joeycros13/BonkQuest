@@ -292,6 +292,28 @@ local function applyVisible(enemy: Enemy, visible: boolean)
 	end
 end
 
+-- Where the local player's weapon struck the enemy: on the side of its body facing them, at
+-- about their chest height, kept within the body's lower 20%..85% (the user, 2026-10-25:
+-- pops go where the sword hits, so a big boss's BONK isn't off the top of the screen).
+local function hitPoint(enemy: Enemy): Vector3
+	local anchor = enemy.anchor
+	local centre = anchor.Position
+	local character = Players.LocalPlayer.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	local bottom = centre.Y - enemy.height / 2
+	if not (root and root:IsA("BasePart")) then
+		return centre + Vector3.new(0, enemy.height * 0.25, 0)
+	end
+	local toward = Vector3.new(root.Position.X - centre.X, 0, root.Position.Z - centre.Z)
+	toward = if toward.Magnitude > 1e-3 then toward.Unit else anchor.CFrame.LookVector
+	-- how far the body reaches toward the player: its root box seen along that direction
+	local localDir = anchor.CFrame:VectorToObjectSpace(toward)
+	local reach = math.abs(localDir.X) * anchor.Size.X / 2 + math.abs(localDir.Z) * anchor.Size.Z / 2
+	local height = math.clamp(root.Position.Y + 0.6, bottom + enemy.height * 0.2, bottom + enemy.height * 0.85)
+	local point = centre + toward * reach
+	return Vector3.new(point.X, height, point.Z)
+end
+
 -- A weapon hit: recoil, the EnemyHit sound, and the damage in a comic burst
 -- bubble that pops like the defeat's BONK (2026-10-21, the user's request). A
 -- critical hit gets the gold bubble and a lower, louder hit (the sound's
@@ -316,7 +338,7 @@ local function showHit(enemy: Enemy, amount: number, crit: boolean, killing: boo
 		Effects.sound(hit, at, { pitch = hit.PlaybackSpeed * pitch * math.random(92, 110) / 100, volume = hit.Volume * volume })
 	end
 	if not killing and mine then
-		BonkPop.hit(enemy.anchor.Position + Vector3.new(0, enemy.height / 2, 0), enemy.height / 4, amount, enemy.isBoss, crit)
+		BonkPop.hit(hitPoint(enemy), enemy.height / 4, amount, enemy.isBoss, crit, true)
 	end
 end
 
@@ -342,11 +364,12 @@ local function showDefeat(enemy: Enemy, mine: boolean, crit: boolean)
 		local volume = if crit then numberAttr(pop, "CritVolume", 1.4) else 1
 		Effects.sound(pop, at, { pitch = math.random(95, 108) / 100 / math.sqrt(scale) * pitch, volume = pop.Volume * volume })
 	end
-	-- and the comic "BONK!" over the top of the body (2026-10-17, Bonk Quest)
+	-- and the comic "BONK!" where the killing blow landed (2026-10-17, Bonk Quest); a boss's
+	-- is the BOSS BONK (issue 27, 2026-10-25)
 	if not mine then
 		return
 	end
-	BonkPop.show(enemy.anchor.Position + Vector3.new(0, enemy.height / 2, 0), enemy.height / 4, enemy.isBoss, crit)
+	BonkPop.show(hitPoint(enemy), enemy.height / 4, enemy.isBoss, crit, true)
 end
 
 -- Mirror the authoritative attributes onto the bar and alive state.
@@ -657,6 +680,31 @@ function WorldEnemyController.targets(): { Target }
 end
 
 -- ==================== lifecycle ====================
+
+-- Have a body stop wandering and turn to face `point` for `seconds`, here only (the world
+-- unlock cinematic turns the boss to its camera, issue 28). A fight still wins.
+-- Puts a wandering enemy back on its spawn point (the middle of its wander circle),
+-- holds it there for `seconds` turned toward `point`, and returns that spot. The
+-- unlock cinematic uses it so its boss shot is framed on the spawn point, not wherever
+-- the boss had roamed to.
+function WorldEnemyController.face(model: Instance, point: Vector3, seconds: number): Vector3?
+	for _, enemy in enemies do
+		if enemy.instance == model then
+			if not (enemy.aiState ~= "Idle" and enemy.fightPos) then
+				enemy.position = enemy.origin.Position
+			end
+			enemy.target = enemy.position
+			enemy.pauseUntil = os.clock() + seconds
+			local look = Vector3.new(point.X - enemy.position.X, 0, point.Z - enemy.position.Z)
+			if look.Magnitude > 1e-3 then
+				local localLook = enemy.origin.Rotation:VectorToObjectSpace(look.Unit)
+				enemy.targetYaw = math.atan2(-localLook.X, -localLook.Z)
+			end
+			return enemy.position
+		end
+	end
+	return nil
+end
 
 function WorldEnemyController.init(injected: any)
 	deps = injected

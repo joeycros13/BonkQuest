@@ -9,6 +9,9 @@
 -- entry (gathered materials, 2026-10-19, user: the gate ties into gathering),
 -- spends the coins and materials and unlocks `world` (PlayerDataService.unlockWorld, saved). A player whose
 -- HighestWorld >= `world` sees the gate open: no curtain, the sign says so.
+-- A gate also needs the world before it unlocked (2026-10-24, the user: with the branching world map,
+-- World 4's gate stands in World 2, so a World 2 player could otherwise skip World 3): `requires`
+-- (default `world` - 1; Gates.requires) must be <= the player's HighestWorld.
 -- Costs are placeholders until the user sets them.
 
 export type Gate = {
@@ -18,6 +21,7 @@ export type Gate = {
 	level: number,
 	coins: number,
 	materials: { { id: string, count: number } }?, -- shown on the sign's MaterialRow1, 2...
+	requires: number?, -- the world that must be unlocked first (default world - 1)
 }
 
 local Gates = {}
@@ -31,7 +35,7 @@ Gates.list = {
 		coins = 2500, -- the 30-minute World 1 (2026-10-19)
 		materials = { { id = "OakLog", count = 20 }, { id = "Stone", count = 20 } },
 	},
-	-- behind World 2's boss ruins, centred on them; a copy of the forest gate for now
+	-- behind World 2's boss ruins, centred on them: the crystal wall in the cave mouth (2026-10-13)
 	{
 		id = "World3",
 		world = 3,
@@ -50,6 +54,11 @@ Gates.list = {
 	-- World 3 (memory world-map-branches).
 } :: { Gate }
 
+-- The world a player must have unlocked before this gate can be bought.
+function Gates.requires(gate: Gate): number
+	return gate.requires or gate.world - 1
+end
+
 -- How close (studs from the sign board) a player must stand to buy.
 Gates.BUY_RANGE = 40
 
@@ -64,6 +73,7 @@ Gates.Text = {
 	youMaterial = "You: %s", -- shown beside an unmet material
 	buy = "Buy",
 	locked = "Locked",
+	needsWorld = "World %d first", -- the Buy button while the world before isn't unlocked
 	unlocked = "Unlocked!",
 }
 

@@ -20,6 +20,8 @@ local UTIL_ORDER = {
 	"FontDrop",
 	-- the comic "BONK!" when an enemy is defeated
 	"BonkPop",
+	-- the wrong-tool hint (a BonkPop) for trees, rocks and fishing water
+	"ToolHint",
 	"Format",
 	-- the shared weapon tile every screen clones
 	"WeaponTile",
@@ -63,7 +65,7 @@ local CONTROLLER_ORDER = {
 	"SecretCrystalController",
 	-- trees and rocks you break with your weapon for materials
 	"GatherController",
-	-- casting, the bobber and the line, bites and the reel-in (FishingRingUI draws the rings)
+	-- casting, the bobber and the line, bites and the reel-in (FishingBarUI draws the reel bar)
 	"FishingController",
 	-- the healing fountain's sparkles and "+HP" popup (HealZoneService heals)
 	"HealZoneController",
@@ -71,10 +73,14 @@ local CONTROLLER_ORDER = {
 	"SettingsController",
 	-- a hit's red glow, recoil and stumble; the low-health edge glow; a healing potion's + signs
 	"HurtController",
+	-- a death: the body glows and breaks into blocks; your own starts the BONKED! screen
+	"DeathController",
 	-- the weekly leaderboard winners' medal over the head and #1 trail
 	"LeaderFlairController",
 	-- every other player's name over their head in the game's font (Roblox's own is hidden)
 	"NameTagController",
+	-- the short flight over a world when it unlocks, ending on its boss (issue 28)
+	"WorldFlybyController",
 }
 
 local UI_ORDER = {
@@ -114,10 +120,12 @@ local UI_ORDER = {
 	"InfuserUI",
 	-- the Worlds menu: teleport to any unlocked world (HUD globe button)
 	"WorldsUI",
-	-- the fishing minigame's closing rings (FishingController starts them)
-	"FishingRingUI",
+	-- the fishing fight's reel bar (FishingController starts it)
+	"FishingBarUI",
 	-- our own player list, top right (name, level, coins; replaces Roblox's)
 	"PlayerListUI",
+	-- the BONKED! screen while you're dead (DeathController starts it)
+	"DeathScreenUI",
 	-- last: loads every asset and draws every panel once behind the join cover
 	"Preloader",
 }

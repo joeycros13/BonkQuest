@@ -26,7 +26,65 @@ Hurt.FLINCH = {
 	armsOut = 10, -- and out from the body
 }
 
+-- The death pose (2026-10-25, the user: "basically just the idle animation but the arms
+-- are out ... so an ascending look", the torso leaning back). A full-body clip at
+-- Override that covers every joint, so nothing under it shows: not the walk, a weapon hold
+-- or swing, nor Roblox's own Animate script, which is the base a character falls back to
+-- once the humanoid is Dead (not a ground state, so Locomotion lets go). It eases in from
+-- whatever the body was doing (the track's fade) and the arms keep rising a little while
+-- the body floats up (DeathController lifts it), then holds.
+Hurt.DEATH_LENGTH = 2 -- held well past the break-up (DeathController hides the body by then)
+Hurt.DEATH_FADE = 0.25
+Hurt.DEATH_RISE = 0.6 -- seconds the arms keep lifting, matching the float up
+Hurt.DEATH = {
+	lean = 16, -- the torso tips back (the user, 2026-10-25: back, not forward)
+	head = 10, -- the head tips back with it, so the face looks up
+	arms = -6, -- the arms a touch behind the body
+	armsOut = 68, -- and spread wide
+	armsOutTop = 76, -- the spread they lift to as the body rises
+	legLeft = -4, -- the legs hang a little behind
+	legRight = -10,
+	legOut = 5,
+}
+
 local cached: any = nil
+local cachedDeath: any = nil
+
+function Hurt.death(): any
+	if cachedDeath then
+		return cachedDeath
+	end
+	local D = Hurt.DEATH
+	local function held(from: { number }, to: { number }): { any }
+		return {
+			{ t = 0, rot = from },
+			{ t = Hurt.DEATH_RISE, rot = to, ease = "Smooth" },
+			{ t = Hurt.DEATH_LENGTH, rot = to },
+		}
+	end
+	-- On R6 shoulders and hips a positive roll swings the LEFT limb in across the body
+	-- (measured on a statue of the pose: +76 put both arms inside the torso), so out is
+	-- negative on the left and positive on the right.
+	local left = { D.arms, 0, -D.armsOut }
+	local right = { D.arms, 0, D.armsOut }
+	cachedDeath = Clip.new({
+		name = "Player_death",
+		priority = "Override",
+		additive = false,
+		length = Hurt.DEATH_LENGTH,
+		fadeIn = Hurt.DEATH_FADE,
+		fadeOut = 0,
+		joints = {
+			Root = held({ D.lean, 0, 0 }, { D.lean, 0, 0 }),
+			Neck = held({ D.head, 0, 0 }, { D.head, 0, 0 }),
+			LeftShoulder = held(left, { D.arms, 0, -D.armsOutTop }),
+			RightShoulder = held(right, { D.arms, 0, D.armsOutTop }),
+			LeftHip = held({ D.legLeft, 0, -D.legOut }, { D.legLeft, 0, -D.legOut }),
+			RightHip = held({ D.legRight, 0, D.legOut }, { D.legRight, 0, D.legOut }),
+		},
+	})
+	return cachedDeath
+end
 
 function Hurt.flinch(): any
 	if cached then

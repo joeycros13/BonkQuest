@@ -104,7 +104,9 @@ end
 
 export type SendOptions = { fade: boolean?, keepFalling: boolean? }
 
-function PortalService.send(player: Player, target: BasePart, opts: SendOptions?)
+-- Move a player's character so its root ends at `at`, behind the black fade unless
+-- opts.fade is false. Yields through the fade.
+function PortalService.sendTo(player: Player, at: CFrame, opts: SendOptions?)
 	local o: SendOptions = opts or {}
 	local character = player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -121,20 +123,29 @@ function PortalService.send(player: Player, target: BasePart, opts: SendOptions?
 		return
 	end
 	local fall = if o.keepFalling then math.min(root.AssemblyLinearVelocity.Y, 0) else 0
-	local look = target.CFrame.LookVector * Vector3.new(1, 0, 1)
-	if look.Magnitude < 1e-3 then
-		look = Vector3.new(0, 0, -1)
-	end
-	-- feet on the target's top face
-	local top = target.Position.Y + target.Size.Y / 2
-	local at = Vector3.new(target.Position.X, top + ROOT_HEIGHT, target.Position.Z)
-	character:PivotTo(CFrame.lookAt(at, at + look.Unit))
+	character:PivotTo(at)
 	root.AssemblyLinearVelocity = Vector3.new(0, fall, 0)
 	root.AssemblyAngularVelocity = Vector3.zero
 	if remote then
 		task.wait(SETTLE_SECONDS)
 		remote:FireClient(player, "in", FADE_SECONDS * 1.6)
 	end
+end
+
+-- Move a player onto a part: feet on its top face, facing along its LookVector.
+function PortalService.send(player: Player, target: BasePart, opts: SendOptions?)
+	local look = target.CFrame.LookVector * Vector3.new(1, 0, 1)
+	if look.Magnitude < 1e-3 then
+		look = Vector3.new(0, 0, -1)
+	end
+	local top = target.Position.Y + target.Size.Y / 2
+	local at = Vector3.new(target.Position.X, top + ROOT_HEIGHT, target.Position.Z)
+	PortalService.sendTo(player, CFrame.lookAt(at, at + look.Unit), opts)
+end
+
+-- True while a player is mid-teleport (or just after one).
+function PortalService.isBusy(player: Player): boolean
+	return (busy[player] or 0) > os.clock()
 end
 
 local function poll()

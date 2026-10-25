@@ -16,6 +16,8 @@ local SERVICE_ORDER = {
 	"AvatarService",
 	"MeleeService",
 	"IndexService",
+	-- holds kill and reward coins / EXP until they reach the HUD; CoinService and ExpService pay through it
+	"SpillService",
 	"CoinService",
 	"ExpService",
 	-- crafting materials: drops on kills, quest items for QuestService
@@ -46,6 +48,12 @@ local SERVICE_ORDER = {
 	"AdminService",
 	-- walk-in teleport zones (the secret rooms' entrances and exits)
 	"PortalService",
+	-- sends a player standing in a world they haven't unlocked back (through PortalService)
+	"WorldGuardService",
+	-- where a player appears: the Settings' "Spawn in" world on join, the world they died in after
+	"SpawnService",
+	-- a dying body keeps its joints and stands still while clients disintegrate it
+	"DeathService",
 	-- the Infusers: cores into the Rusty / Worldheart Blade through MaterialService and MeleeService
 	"InfuseService",
 	-- World 3's secret crystal code: opens the front mineshaft for whoever solves it

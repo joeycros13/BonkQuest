@@ -14,7 +14,9 @@
 -- Config/Worlds. The killer's client is told through Remotes.CoinsDropped so
 -- it can play the spill: Balance.Coins.piecesMin..piecesMax coins fling out of
 -- the body and fly to the counter. The pieces are only the look; `amount` is
--- what is added.
+-- what is added, and only once the first coin reaches the counter (2026-10-25, the
+-- user: coins count when they hit the bar): SpillService holds it until the client
+-- says so (or a timeout), and the coins saved include what is still in the air.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -65,15 +67,19 @@ function CoinService.spill(player: Player, amount: number, position: Vector3, af
 	if amount <= 0 then
 		return
 	end
+	local Spills = deps.Services.SpillService
+	local id = Spills.hold(player, "Coins", amount, if afterTalk then Spills.TALK_SECONDS else Spills.KILL_SECONDS, function()
+		CoinService.add(player, amount, source)
+	end)
 	if dropped then
 		dropped:FireClient(player, {
+			id = id,
 			position = position,
 			amount = amount,
 			pieces = random:NextInteger(Balance.Coins.piecesMin, Balance.Coins.piecesMax),
 			afterTalk = afterTalk == true,
 		})
 	end
-	CoinService.add(player, amount, source)
 end
 
 local function bodyPosition(body: Instance): Vector3?
@@ -100,17 +106,23 @@ local function onKill(enemy: any, killer: Player?)
 	if boost ~= 1 then
 		amount = math.max(1, math.floor(amount * boost + 0.5))
 	end
-	-- Announce the spill before the balance changes: the client holds its
-	-- counter for coins it knows are on their way.
+	-- held until the first coin reaches the counter (SpillService)
+	local Spills = deps.Services.SpillService
+	local id = Spills.hold(killer, "Coins", amount, Spills.KILL_SECONDS, function()
+		CoinService.add(killer, amount)
+	end)
 	if dropped then
 		dropped:FireClient(killer, {
+			id = id,
 			body = enemy.instance,
 			position = bodyPosition(enemy.instance) or enemy.origin,
 			amount = amount,
-			pieces = random:NextInteger(Balance.Coins.piecesMin, Balance.Coins.piecesMax),
+			-- a boss throws a bigger shower of coins for the same amount
+			pieces = if enemy.instance:GetAttribute("IsBoss") == true
+				then Balance.Coins.bossPieces
+				else random:NextInteger(Balance.Coins.piecesMin, Balance.Coins.piecesMax),
 		})
 	end
-	CoinService.add(killer, amount)
 end
 
 function CoinService.init(injected: any)
@@ -123,7 +135,8 @@ function CoinService.init(injected: any)
 			end
 		end,
 		save = function(player: Player): any
-			return CoinService.get(player)
+			-- coins still flying to the counter are the player's too
+			return CoinService.get(player) + deps.Services.SpillService.held(player, "Coins")
 		end,
 	})
 end

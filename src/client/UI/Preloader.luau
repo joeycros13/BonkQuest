@@ -12,7 +12,11 @@
 --      the shared tiles), every "rbxassetid://" in the Shared.Config modules (icons,
 --      portraits, world cards: the pictures code puts in at runtime; only image ids:
 --      a bare content string is fetched as an image) and the armour models (ArmorService
---      copies them to ReplicatedStorage/Assets/ArmorModels for this).
+--      copies them to ReplicatedStorage/Assets/ArmorModels for this). Also every
+--      "rbxassetid://" kept in an attribute of the UI and Assets (2026-10-25, issue 22):
+--      the pictures code swaps in by state, like the NEW popup's Banner_<Rarity>, the
+--      tiles' Skin_<Rarity> or the guide button's IconOn / IconOff, which PreloadAsync on
+--      the instance never sees (the first Rare popup drew its name before its banner).
 --   2. Once the player's save has loaded ("DataLoaded"), every closed ScreenGui is
 --      switched on for a few frames behind the cover with its PopScale at 1, so each
 --      panel is laid out, its text measured and its pictures drawn once.
@@ -51,6 +55,22 @@ local function collectIds(value: any, out: { [string]: boolean }, depth: number)
 		for k, v in value do
 			collectIds(k, out, depth + 1)
 			collectIds(v, out, depth + 1)
+		end
+	end
+end
+
+-- Every asset id kept in an attribute under these instances (state-swapped pictures).
+local function attributeIds(roots: { any }, out: { [string]: boolean })
+	for _, root in roots do
+		if typeof(root) ~= "Instance" then
+			continue
+		end
+		for _, inst in root:GetDescendants() do
+			for _, value in inst:GetAttributes() do
+				if type(value) == "string" and value:find("rbxassetid://", 1, true) == 1 then
+					out[value] = true
+				end
+			end
 		end
 	end
 end
@@ -158,6 +178,11 @@ function Preloader.start()
 				table.insert(items, assets)
 			end
 			for _, id in configIds() do
+				table.insert(items, id)
+			end
+			local swapped: { [string]: boolean } = {}
+			attributeIds(table.clone(items), swapped)
+			for id in swapped do
 				table.insert(items, id)
 			end
 			ContentProvider:PreloadAsync(items)

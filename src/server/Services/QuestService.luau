@@ -22,9 +22,11 @@
 -- Progress: kills come from WorldEnemyService.onDefeated; "earn" counts rises of
 -- the Coins attribute after accepting; "level" and "give" are re-read from Level
 -- / Coins whenever those change, so spending coins can take a "give" step back
--- from Ready to Active. "gather" counts rises of its material in the Materials
--- attribute after accepting, and "bring" re-reads the materials held (2026-10-19),
--- falling back to Active like "give" if they are spent. Every line hears every kill and coin, so two lines can
+-- from Ready to Active. "gather" and "bring" re-read the materials held
+-- (2026-10-19), falling back to Active like "give" if they are spent; a "gather"
+-- step counts what was already held when it was accepted and takes nothing at
+-- hand-in (issue 21, 2026-10-25, the user: logs already held count, so a player
+-- who has them is rewarded straight away; it counted only rises after accepting). Every line hears every kill and coin, so two lines can
 -- move at once.
 --
 -- Studio only: setting a player's "DevQuestStep_<lineId>" attribute (a step
@@ -60,8 +62,6 @@ type State = {
 	progress: number,
 	-- the Coins value last seen, so "earn" counts only rises
 	coinsSeen: number,
-	-- the materials held when last seen, so "gather" counts only rises
-	matSeen: { [string]: number },
 }
 
 local states: { [Player]: { [string]: State } } = {}
@@ -97,6 +97,8 @@ local function refresh(player: Player, s: State)
 		s.progress = math.min(level(player), goal)
 	elseif step.kind == "give" then
 		s.progress = math.min(coins(player), goal)
+	elseif step.kind == "gather" then
+		s.progress = math.min(Materials.counts(player)[step.target or ""] or 0, goal)
 	elseif step.kind == "bring" then
 		-- each item counts up to what it needs, so extra logs never stand in for stone
 		local held = Materials.counts(player)
@@ -108,7 +110,7 @@ local function refresh(player: Player, s: State)
 	end
 	if s.progress >= goal then
 		s.state = "Ready"
-	elseif step.kind == "give" or step.kind == "bring" then
+	elseif step.kind == "give" or step.kind == "bring" or step.kind == "gather" then
 		s.state = "Active"
 	end
 	publish(player, s)
@@ -215,9 +217,8 @@ local function accept(player: Player, s: State)
 	s.state = "Active"
 	s.progress = 0
 	s.coinsSeen = coins(player)
-	s.matSeen = Materials.counts(player)
 	publish(player, s)
-	-- a level or coin goal can already be met
+	-- a level, coin or material goal can already be met
 	refresh(player, s)
 end
 
@@ -272,7 +273,6 @@ end
 local function jumpTo(player: Player, s: State, step: any)
 	if type(step) == "number" and s.line.steps[step] then
 		s.step, s.state, s.progress, s.coinsSeen = step, "Offer", 0, coins(player)
-		s.matSeen = Materials.counts(player)
 		publish(player, s)
 	end
 end
@@ -291,7 +291,6 @@ function QuestService.setStep(player: Player, lineId: any, step: any): (number?,
 	s.step = step
 	s.state = if step > n then "Done" else "Offer"
 	s.progress, s.coinsSeen = 0, coins(player)
-	s.matSeen = Materials.counts(player)
 	publish(player, s)
 	backfillItems(player, s)
 	return step, step > n
@@ -312,7 +311,7 @@ local function onPlayer(player: Player)
 	for _, id in Quests.order do
 		local line = Quests.get(id)
 		if line then
-			local s: State = { line = line, step = 1, state = "Offer", progress = 0, coinsSeen = coins(player), matSeen = Materials.counts(player) }
+			local s: State = { line = line, step = 1, state = "Offer", progress = 0, coinsSeen = coins(player) }
 			lines[id] = s
 			publish(player, s)
 		end
@@ -331,19 +330,8 @@ local function onPlayer(player: Player)
 		end
 	end)
 	player:GetAttributeChangedSignal("Materials"):Connect(function()
-		local held = Materials.counts(player)
 		for _, s in lines do
-			local step = s.line.steps[s.step]
-			if step and step.kind == "gather" and step.target then
-				local gained = (held[step.target] or 0) - (s.matSeen[step.target] or 0)
-				s.matSeen = held
-				if gained > 0 then
-					addProgress(player, s, gained)
-				end
-			else
-				s.matSeen = held
-				refresh(player, s)
-			end
+			refresh(player, s)
 		end
 	end)
 	player:GetAttributeChangedSignal("Level"):Connect(function()
@@ -379,7 +367,6 @@ local function loadLine(player: Player, s: State, value: any)
 	s.state = if finished then "Done" elseif value.state == "Active" or value.state == "Ready" then value.state else "Offer"
 	s.progress = if type(value.progress) == "number" then value.progress else 0
 	s.coinsSeen = coins(player)
-	s.matSeen = Materials.counts(player)
 	publish(player, s)
 	refresh(player, s)
 	backfillItems(player, s)

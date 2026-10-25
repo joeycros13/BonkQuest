@@ -196,9 +196,9 @@ local function displayedProgress(stepIndex: number, step: Quests.Step, state: st
 		shown = deps.UI.PlayerCardUI.Exp.shownLevel()
 	end
 	shown = math.clamp(shown, 0, goal)
-	-- Latch only what the server agrees is done. "give" and "bring" can fall back if
+	-- Latch only what the server agrees is done. "give", "bring" and "gather" can fall back if
 	-- coins or materials are spent, so they never latch.
-	if shown >= goal and state == "Ready" and step.kind ~= "give" and step.kind ~= "bring" then
+	if shown >= goal and state == "Ready" and step.kind ~= "give" and step.kind ~= "bring" and step.kind ~= "gather" then
 		caughtUp[stepIndex] = true
 	end
 	return shown

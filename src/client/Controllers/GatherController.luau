@@ -7,8 +7,10 @@
 --     test enemies get, nearest first, up to the tool's maxTargets. A node the tool can
 --     break (its kind, at least its tier) wobbles away from the player with a puff of
 --     dust and a thud straight away, and the server hears Remotes.GatherHit; the server
---     decides the damage. One it can't gets a "Needs a Pickaxe" / "Needs a Stone Axe"
---     popup (Util.DamagePopup) and a dull clunk. Weapon swings never touch nodes.
+--     decides the damage. One it can't, and a weapon swing that reaches a node without
+--     striking an enemy, gets the wrong-tool hint and a dull clunk (issue 23, 2026-10-25):
+--     a BONK-style pop where it was struck naming the tool and what to do, with the hotbar
+--     slot shaking (Util.ToolHint, shared with fishing).
 --   * Health bar: a clone of the enemies' hand-built ReplicatedStorage/Assets/UI/
 --     EnemyHealthBar over the node (its EnemyName shows the node's name), filled from
 --     Remotes.GatherState. It shows while the node is damaged and hides once nobody has
@@ -32,7 +34,7 @@ local Tween = Animation.Tween
 
 local Util = script.Parent.Parent:WaitForChild("Util")
 local Format = require(Util:WaitForChild("Format"))
-local DamagePopup = require(Util:WaitForChild("DamagePopup"))
+local ToolHint = require(Util:WaitForChild("ToolHint"))
 
 local GatherController = {}
 
@@ -309,39 +311,43 @@ local function wobble(node: Node, from: Vector3)
 	})
 end
 
--- "Needs a Pickaxe", or "Needs a Stone Axe" when the kind is right but the tier too low.
-local function needsText(node: Node, tool: Tools.ToolDef): string
-	local want = node.def
-	if tool.kind == want.tool then
-		for _, def in Tools.Defs do
-			if def.kind == want.tool and def.tier == want.tier then
-				return "Needs a " .. def.name
-			end
-		end
-		return "Needs a better " .. (Tools.KindNames[want.tool] or want.tool)
-	end
-	local name = Tools.KindNames[want.tool] or want.tool
-	local article = if name:match("^[AEIOUaeiou]") then "an " else "a "
-	return "Needs " .. article .. name
+-- Where a swing meets the node: the side facing the player, at chest height.
+local function strikePoint(node: Node, from: Vector3): Vector3
+	local cf, size = node.model:GetBoundingBox()
+	local toward = flat(from - cf.Position)
+	local side = if toward.Magnitude > 1e-3 then toward.Unit else Vector3.zero
+	local radius = math.max(size.X, size.Z) / 2
+	return Vector3.new(cf.X, math.min(from.Y, cf.Y + size.Y / 2), cf.Z) + side * radius * 0.8
 end
 
-local function showNeeds(node: Node, tool: Tools.ToolDef)
+-- The wrong-tool hint (a node the thing in hand can't break), where it was struck (Util.ToolHint).
+local function showNeeds(node: Node, from: Vector3)
 	local now = os.clock()
 	if now - node.needsAt < NEEDS_EVERY then
 		return
 	end
 	node.needsAt = now
-	local anchor = anchorOf(node)
-	if anchor then
-		local cf, size = node.model:GetBoundingBox()
-		DamagePopup.show(anchor, needsText(node, tool), "Player", cf.Y + size.Y / 2 - anchor.Position.Y)
-	end
+	ToolHint.show(strikePoint(node, from), node.def.tool, node.def.tier)
 	playSound("SecretThud", node.model, 0.6)
 end
 
-local function onSwingLanded(root: BasePart, def: any)
-	-- only tools gather (def.kind); a weapon swing never touches a node
-	if player:GetAttribute("InputLocked") or not def.kind then
+local function onSwingLanded(root: BasePart, def: any, struckEnemy: boolean?)
+	if player:GetAttribute("InputLocked") then
+		return
+	end
+	-- a weapon never breaks a node, but one it reaches (with no enemy struck) gets the hint
+	if not def.kind then
+		if not struckEnemy then
+			local reached = struck(root, def)
+			if reached[1] then
+				showNeeds(reached[1].node, root.Position)
+			end
+		end
+		return
+	end
+	-- a rod's swing is a cast (FishingController): it never touches trees or rocks, so a
+	-- cast beside one doesn't pop the tree hint on top of the cast's own
+	if def.kind == "Rod" then
 		return
 	end
 	local tool = def :: Tools.ToolDef
@@ -354,7 +360,7 @@ local function onSwingLanded(root: BasePart, def: any)
 	end
 	if #hits == 0 then
 		if all[1] then
-			showNeeds(all[1].node, tool)
+			showNeeds(all[1].node, root.Position)
 		end
 		return
 	end
@@ -363,13 +369,8 @@ local function onSwingLanded(root: BasePart, def: any)
 		local hit = hits[i]
 		table.insert(ids, hit.id)
 		wobble(hit.node, root.Position)
-		local cf, size = hit.node.model:GetBoundingBox()
 		-- the dust comes off the side facing the player, at chest height
-		local toward = flat(root.Position - cf.Position)
-		local side = if toward.Magnitude > 1e-3 then toward.Unit else Vector3.zero
-		local radius = math.max(size.X, size.Z) / 2
-		local at = Vector3.new(cf.X, math.min(root.Position.Y, cf.Y + size.Y / 2), cf.Z) + side * radius * 0.8
-		Effects.burst(at, "Dust", { count = 6 })
+		Effects.burst(strikePoint(hit.node, root.Position), "Dust", { count = 6 })
 		playSound("SecretThud", hit.node.model, 0.9 + math.random() * 0.2)
 	end
 	if hitRemote then

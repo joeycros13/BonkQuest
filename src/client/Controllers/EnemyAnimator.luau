@@ -31,6 +31,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local MapLayout = require(Shared:WaitForChild("Config"):WaitForChild("MapLayout"))
+local Enemies = require(Shared:WaitForChild("Config"):WaitForChild("Enemies"))
 local Animation = require(Shared:WaitForChild("Animation"))
 local PartRig = Animation.PartRig
 local Animator = Animation.Animator
@@ -237,6 +238,29 @@ function EnemyAnimator.flinch(model: Instance)
 	if entry then
 		entry.animator:Stop("Enemy_flinch", 0)
 		entry.animator:Play(EnemyClips.flinch(entry.rig.meta.hangingArms))
+	end
+end
+
+-- Show the body off (the world unlock cinematic's boss shot, issue 28): its attack move and
+-- its angry face for a moment, here only.
+function EnemyAnimator.showOff(model: Instance)
+	local entry = entries[model :: any]
+	if not entry then
+		return
+	end
+	local def = Enemies.get(model:GetAttribute("Archetype") :: any)
+	local melee = def and (def :: any).melee
+	local move = melee and (melee.move or (melee.moves and melee.moves[1]))
+	if type(move) == "string" then
+		play(entry, move)
+	end
+	if model:IsA("Model") and hasMood(model) then
+		setMood(model, true)
+		task.delay(1.6, function()
+			if model.Parent then
+				setMood(model, isAngry(model))
+			end
+		end)
 	end
 end
 

@@ -49,6 +49,16 @@ Admin.Text = {
 	healthTitle = "Health",
 	damageTitle = "Damage",
 	giveAll = "Give All",
+	-- the Flyby card (2026-10-25): replays a world's unlock cinematic, for testing
+	flybyTitle = "Flyby",
+	flybyPlay = "Play",
+	flybyBadge = "W%d",
+	-- Reset Save (2026-10-25): wipes the save and kicks you, so you rejoin as a new player
+	resetSave = "Reset Save",
+	resetConfirm = "Sure? Click again",
+	resetDone = "Save wiped. Rejoin to start as a new player",
+	resetFailed = "Couldn't wipe the save: %s",
+	resetKick = "Your save was reset from the admin panel. Rejoin to start as a brand new player.",
 	giveAllDone = "Gave %d weapons, %d tools, %d armor sets, %d of every material and %d of every potion",
 	potionsEnded = "Every running potion ended",
 	-- the Upgrades page (2026-10-22)

@@ -39,6 +39,31 @@
 -- "Level %s") -- with the same motion attributes. It rides on the head (an attachment in
 -- it), so it moves with the player, and returns a function that changes the level shown
 -- (a count that passes two levels raises the number in the same pop).
+--
+-- The wrong-tool hint pops the same way where the player struck a tree or rock (issue 23,
+-- 2026-10-25, the user: "go with how the BONK appears", where they hit; it used to be a small
+-- number-style popup at the top of the tree): `BonkPop.need` copies ReplicatedStorage/Assets/
+-- UI/NeedPop -- the tool's `Icon` over pale `Rays`, `Label` / `Shadow` ("Needs an Axe") and a
+-- yellow `Hint` / `HintShadow` line ("Press 2 for your Axe") -- with the same motion attributes.
+--
+-- A boss's defeat pops the BOSS BONK (issue 27, 2026-10-25, option B "comic burst" on
+-- https://claude.ai/artifact/2FqJmzaC8Zbs5h2QiesNnV, the user's pick): `BonkPop.show(..., isBoss)`
+-- copies ReplicatedStorage/Assets/UI/BossBonkPop -- red `Rays`, orange `RaysInner`, an ink
+-- `BurstShadow` under an orange comic `Burst` (HitPop's burst image, tinted), `Boss` / `BossShadow`
+-- "BOSS" over `Label` / `Shadow` "BONK!", and a red `CritTag` tape "CRITICAL!" shown for a
+-- critical killing blow (which also turns the burst and rays gold: CritBurstColor /
+-- CritRaysColor, and any image's own `CritColor` attribute). An image with a `Pulse` attribute
+-- (a fraction) swells and shrinks by that much while the pop is up (the burst's wobble).
+--
+-- Every pop is placed where the weapon struck (the user, 2026-10-25: "make it where the
+-- player/sword actually hits so they don't miss the popup"): WorldEnemyController passes the hit
+-- point and `exact`, so the template's `Height` isn't added on top.
+--
+-- Fishing pops the same way (issue 26, 2026-10-25): `BonkPop.bite` copies
+-- ReplicatedStorage/Assets/UI/BitePop (a BonkPop copy, its Words "BITE!") at the bobber when a
+-- fish takes it, and `BonkPop.caught` copies ReplicatedStorage/Assets/UI/CaughtPop (a NeedPop
+-- copy: the fish's `Icon`, `Label` / `Shadow` "CAUGHT!" from its Words, `Hint` / `HintShadow`
+-- the fish's name) over the player's head, riding with it.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -52,6 +77,10 @@ local template: BillboardGui? = nil
 local critTemplate: BillboardGui? = nil
 local hitTemplate: BillboardGui? = nil
 local levelTemplate: BillboardGui? = nil
+local needTemplate: BillboardGui? = nil
+local biteTemplate: BillboardGui? = nil
+local caughtTemplate: BillboardGui? = nil
+local bossTemplate: BillboardGui? = nil
 local FontDrop: any = nil
 
 function BonkPop.init(injected: any)
@@ -79,6 +108,30 @@ function BonkPop.start()
 	else
 		warn("[BonkPop] missing ReplicatedStorage/Assets/UI/HitPop")
 	end
+	local need = ui and ui:FindFirstChild("NeedPop")
+	if need and need:IsA("BillboardGui") then
+		needTemplate = need
+	else
+		warn("[BonkPop] missing ReplicatedStorage/Assets/UI/NeedPop")
+	end
+	for name, set in {
+		BitePop = function(found: BillboardGui)
+			biteTemplate = found
+		end,
+		CaughtPop = function(found: BillboardGui)
+			caughtTemplate = found
+		end,
+		BossBonkPop = function(found: BillboardGui)
+			bossTemplate = found
+		end,
+	} do
+		local found = ui and ui:FindFirstChild(name)
+		if found and found:IsA("BillboardGui") then
+			set(found)
+		else
+			warn("[BonkPop] missing ReplicatedStorage/Assets/UI/" .. name)
+		end
+	end
 	local level = ui and ui:FindFirstChild("LevelPop")
 	if level and level:IsA("BillboardGui") then
 		levelTemplate = level
@@ -104,7 +157,9 @@ type Options = {
 	isBoss: boolean?,
 	crit: boolean?,
 	follow: BasePart?, -- ride on this part instead of staying at `position`
+	exact: boolean?, -- pop at `position` itself (where a weapon struck), not the template's Height over it
 	texts: { [string]: string }?, -- more labels in Content to fill, by name
+	images: { [string]: string }?, -- images in Content to set, by name
 }
 
 -- Pop a copy of `source` showing `word` at `position` (the template's Height is
@@ -128,7 +183,7 @@ local function play(source: BillboardGui, position: Vector3, size: number, word:
 	-- An attachment in Terrain holds the spot, so the pop stays put while the
 	-- body hides or respawns.
 	local spot = Instance.new("Attachment")
-	local base = position + Vector3.new(0, number(source, "Height", 1.2), 0)
+	local base = if opts.exact then position else position + Vector3.new(0, number(source, "Height", 1.2), 0)
 	local right, toward = Vector3.xAxis, Vector3.zero
 	local camera = workspace.CurrentCamera
 	if camera then
@@ -173,6 +228,12 @@ local function play(source: BillboardGui, position: Vector3, size: number, word:
 			table.insert(labels, label)
 		end
 	end
+	for name, id in opts.images or {} do
+		local image = content and content:FindFirstChild(name)
+		if image and image:IsA("ImageLabel") then
+			image.Image = id
+		end
+	end
 	local critTag = content and content:FindFirstChild("CritTag")
 	if crit and content then
 		for _, look in { { "Burst", "CritBurstColor" }, { "Rays", "CritRaysColor" } } do
@@ -182,9 +243,18 @@ local function play(source: BillboardGui, position: Vector3, size: number, word:
 				image.ImageColor3 = color
 			end
 		end
+		for _, image in images do
+			local color = image:GetAttribute("CritColor")
+			if typeof(color) == "Color3" then
+				image.ImageColor3 = color
+			end
+		end
 		if critTag and critTag:IsA("TextLabel") then
 			critTag.Visible = true
-			critTag.Rotation = tilt
+			if critTag.BackgroundTransparency >= 1 then
+				-- a plain word tilts with the others; a tape keeps its own slant
+				critTag.Rotation = tilt
+			end
 			table.insert(labels, critTag)
 		end
 	end
@@ -199,6 +269,16 @@ local function play(source: BillboardGui, position: Vector3, size: number, word:
 		TweenService:Create(popScale, TweenInfo.new(popSeconds, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
 			Scale = scale,
 		}):Play()
+	end
+	-- images with a Pulse attribute swell and shrink while the pop is up
+	for _, image in images do
+		local pulse = image:GetAttribute("Pulse")
+		if type(pulse) == "number" and pulse > 0 then
+			local size = image.Size
+			TweenService:Create(image, TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
+				Size = UDim2.new(size.X.Scale * (1 + pulse), 0, size.Y.Scale * (1 + pulse), 0),
+			}):Play()
+		end
 	end
 	local spin = number(source, "RaysSpin", 70)
 	for i, image in rays do
@@ -228,9 +308,13 @@ local function play(source: BillboardGui, position: Vector3, size: number, word:
 		end
 		for _, label in labels do
 			TweenService:Create(label, outInfo, { TextTransparency = 1 }):Play()
-			local stroke = label:FindFirstChildOfClass("UIStroke")
-			if stroke then
-				TweenService:Create(stroke, outInfo, { Transparency = 1 }):Play()
+			if label.BackgroundTransparency < 1 then
+				TweenService:Create(label, outInfo, { BackgroundTransparency = 1 }):Play()
+			end
+			for _, stroke in label:GetChildren() do
+				if stroke:IsA("UIStroke") then
+					TweenService:Create(stroke, outInfo, { Transparency = 1 }):Play()
+				end
 			end
 		end
 	end)
@@ -241,9 +325,14 @@ local function play(source: BillboardGui, position: Vector3, size: number, word:
 	return billboard
 end
 
--- The defeat's word (one of the template's Words) over the top of the body; the CRITICAL
--- BONK when the killing blow was a critical hit.
-function BonkPop.show(position: Vector3, size: number, isBoss: boolean?, crit: boolean?)
+-- The defeat's word (one of the template's Words) at `position` (where the killing blow
+-- landed, with `exact`; else over it by the template's Height); the CRITICAL BONK when the
+-- killing blow was a critical hit, and the BOSS BONK (crit or not) for a boss.
+function BonkPop.show(position: Vector3, size: number, isBoss: boolean?, crit: boolean?, exact: boolean?)
+	if isBoss and bossTemplate then
+		play(bossTemplate, position, 1, pickWord(bossTemplate), { crit = crit, exact = exact })
+		return
+	end
 	local source = if crit and critTemplate then critTemplate else template
 	if not source then
 		return
@@ -252,18 +341,49 @@ function BonkPop.show(position: Vector3, size: number, isBoss: boolean?, crit: b
 	local line = if type(critWord) == "string" then critWord else "CRITICAL"
 	play(source, position, size, pickWord(source), {
 		isBoss = isBoss,
+		exact = exact,
 		texts = if source == critTemplate then { Critical = line, CriticalShadow = line } else nil,
 	})
 end
 
 -- A hit's damage in the comic burst bubble (gold and bigger for a crit), unless the
 -- player turned "Hit bubbles" off (Config/Settings).
-function BonkPop.hit(position: Vector3, size: number, amount: number, isBoss: boolean?, crit: boolean?)
+function BonkPop.hit(position: Vector3, size: number, amount: number, isBoss: boolean?, crit: boolean?, exact: boolean?)
 	if hitTemplate and Settings.on(Players.LocalPlayer, "Hits") then
 		local format = hitTemplate:GetAttribute("Format")
 		play(hitTemplate, position, size, string.format(if type(format) == "string" then format else "%s", tostring(amount)), {
 			isBoss = isBoss,
 			crit = crit,
+			exact = exact,
+		})
+	end
+end
+
+-- The wrong-tool hint where a tree or rock was struck: `need` on top ("Needs an Axe"),
+-- `hint` under it ("Press 2 for your Axe"), and the tool's picture.
+function BonkPop.need(position: Vector3, need: string, hint: string, icon: string?)
+	if needTemplate then
+		play(needTemplate, position, 1, need, {
+			texts = { Hint = hint, HintShadow = hint },
+			images = if icon then { Icon = icon } else nil,
+		})
+	end
+end
+
+-- "BITE!" at the bobber when a fish takes it.
+function BonkPop.bite(position: Vector3)
+	if biteTemplate then
+		play(biteTemplate, position, 1, pickWord(biteTemplate))
+	end
+end
+
+-- "CAUGHT!" over the player's head (`head`), the fish's name under it and its picture.
+function BonkPop.caught(head: BasePart, name: string, icon: string?)
+	if caughtTemplate then
+		play(caughtTemplate, head.Position, 1, pickWord(caughtTemplate), {
+			follow = head,
+			texts = { Hint = name, HintShadow = name },
+			images = if icon then { Icon = icon } else nil,
 		})
 	end
 end

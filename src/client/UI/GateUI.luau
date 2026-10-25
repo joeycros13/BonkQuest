@@ -129,6 +129,8 @@ end
 local function stateOf(gate: Gates.Gate): string
 	if number("HighestWorld", 1) >= gate.world then
 		return "Unlocked"
+	elseif number("HighestWorld", 1) < Gates.requires(gate) then
+		return "Locked"
 	elseif number("Level", 1) >= gate.level and number("Coins", 0) >= gate.coins and materialsMet(gate) then
 		return "Met"
 	end
@@ -184,7 +186,12 @@ local function render(gui: SurfaceGui, gate: Gates.Gate)
 		-- the Label is the word's ink layer; its copies (Ink1..4 a pixel off each way, then the
 		-- white Face) fill the B's small counters, which a UIStroke leaves open (2026-10-21)
 		local label = content:FindFirstChild("Label")
-		local word = if unlocked then Text.unlocked elseif state == "Met" then Text.buy else Text.locked
+		-- missing the world before reads "World 3 first" rather than a bare "Locked"
+		local needsWorld = not unlocked and number("HighestWorld", 1) < Gates.requires(gate)
+		local word = if unlocked then Text.unlocked
+			elseif needsWorld then Text.needsWorld:format(Gates.requires(gate))
+			elseif state == "Met" then Text.buy
+			else Text.locked
 		setText(label, word)
 		for _, layer in if label then label:GetChildren() else {} do
 			setText(layer, word)

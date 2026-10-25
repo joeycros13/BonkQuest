@@ -37,6 +37,8 @@
 --              "defeat the boss" step hands over the item its world's second
 --              armour set needs, 2026-10-12)
 --   offer      the giver's lines when giving the quest
+--   offerHasTool  (optional) the offer when the step's tool is already owned: the lines
+--              that send the player shopping are left out (issue 21; Quests.offerLines)
 --   reminder   their line if you talk to them mid-quest
 --   complete   their lines when you hand it in
 -- In dialogue lines, [square brackets] mark the objective: bold and red.
@@ -47,6 +49,9 @@
 -- (Quests.toolNeeded, Quests.ToolText; the guide arrow points at that world's
 -- Weapons stall), then the gathering itself. The server's step doesn't change: the
 -- tool phase is only what the tracker and the arrow show while the tool is missing.
+-- The Weaponsmith opens on that tool's row, glowing, with a "Needed for Dale's quest"
+-- ribbon (Quests.shopNeeds, ShopUI; issue 21, 2026-10-25). A "gather" step counts what
+-- is already held, like "bring", but takes nothing at hand-in.
 --
 -- All the wording and numbers here are free to edit.
 
@@ -78,6 +83,7 @@ export type Step = {
 	track: string,
 	reward: Reward,
 	offer: { string },
+	offerHasTool: { string }?,
 	reminder: { string },
 	complete: { string },
 }
@@ -133,16 +139,21 @@ lines.DaleFarm = {
 			kind = "gather",
 			target = "OakLog",
 			count = 5,
-			objective = "Chop 5 Oak Logs",
-			track = "Chop {Oak Logs}",
+			-- "Collect", not "Chop" (issue 21, 2026-10-25): logs already held count
+			objective = "Collect 5 Oak Logs",
+			track = "Collect {Oak Logs}",
 			reward = { coins = 30, exp = 30 },
 			offer = {
 				"Now, a farmhand's gotta keep the stove burnin', and that means firewood.",
 				"You can't chop a tree with that little dagger, though. The Weaponsmith on the plaza sells all the tools: axes, pickaxes, fishin' rods.",
-				"Pick yourself up a [Wooden Axe] first. Then head to them big oaks by the cliffs and [chop 5 Oak Logs].",
+				"Pick yourself up a [Wooden Axe] first. Then head to them big oaks by the cliffs and [collect 5 Oak Logs].",
 			},
-			reminder = { "Got your axe from the Weaponsmith on the plaza? Then [chop 5 Oak Logs] and come see me." },
-			complete = { "Now that's a fine stack of firewood! Here's a little somethin' for the sweat." },
+			offerHasTool = {
+				"Now, a farmhand's gotta keep the stove burnin', and that means firewood.",
+				"I see you've already got yourself an axe. Head to them big oaks by the cliffs and [collect 5 Oak Logs].",
+			},
+			reminder = { "Them big oaks by the cliffs are full of firewood. [Collect 5 Oak Logs] and come see me." },
+			complete = { "Now that's a fine stack of firewood! Hang on to it, I'll be needin' logs for the barn soon. Here's a little somethin' for the sweat." },
 		},
 		{
 			kind = "kill",
@@ -199,6 +210,10 @@ lines.DaleFarm = {
 			offer = {
 				"I hate to ask, but them bulls flattened my barn door and knocked the wall stones loose.",
 				"Could you [bring me 8 Oak Logs and 8 Stone] for the repairs? A pickaxe'll crack them boulders; the Weaponsmith sells those too.",
+			},
+			offerHasTool = {
+				"I hate to ask, but them bulls flattened my barn door and knocked the wall stones loose.",
+				"Could you [bring me 8 Oak Logs and 8 Stone] for the repairs? That pickaxe of yours'll crack them boulders.",
 			},
 			reminder = { "No rush... but my barn door's still flat. [Bring me 8 Oak Logs and 8 Stone]." },
 			complete = { "Bless ya! That door'll be standin' by sundown. Here, it ain't much, but it's honest." },
@@ -370,6 +385,11 @@ lines.RangerRedwoods = {
 				"Could you [bring me 10 Redwood Logs and 4 Boar Tusks]? Logs for the beams, tusks for pegs.",
 				"Only a Stone Axe will fell a redwood. The Weaponsmith by the gate can turn your wooden axe into one.",
 			},
+			offerHasTool = {
+				"The boars battered the lookout tower. I can't keep watch from up there like this.",
+				"Could you [bring me 10 Redwood Logs and 4 Boar Tusks]? Logs for the beams, tusks for pegs.",
+				"That Stone Axe of yours will fell a redwood nicely.",
+			},
 			reminder = { "The tower still needs fixing. [Bring me 10 Redwood Logs and 4 Boar Tusks]." },
 			complete = { "Thank you. The tower will be standing tall by morning. Take this, it's what I can spare." },
 		},
@@ -480,15 +500,20 @@ lines.ExplorerCaverns = {
 			kind = "gather",
 			target = "IronOre",
 			count = 5,
-			objective = "Mine 5 Iron Ore",
-			track = "Mine {Iron Ore}",
+			-- "Collect", not "Mine" (issue 21, 2026-10-25): ore already held counts
+			objective = "Collect 5 Iron Ore",
+			track = "Collect {Iron Ore}",
 			reward = { coins = 3000, exp = 3000 },
 			offer = {
 				"My crew's pick snapped down here, and mine's a wooden toy next to these rocks.",
 				"The Weaponsmith by the way in can turn your wooden pickaxe into a Crystal Pickaxe.",
-				"Then find the grey rocks streaked with orange and [mine 5 Iron Ore]. I'll forge new pitons from it.",
+				"Then find the grey rocks streaked with orange and [collect 5 Iron Ore]. Hold on to it, we'll want ore for the winch later.",
 			},
-			reminder = { "Grey rocks, orange veins. [Mine 5 Iron Ore] with a Crystal Pickaxe." },
+			offerHasTool = {
+				"My crew's pick snapped down here, but I see you've got a Crystal Pickaxe already.",
+				"Find the grey rocks streaked with orange and [collect 5 Iron Ore]. Hold on to it, we'll want ore for the winch later.",
+			},
+			reminder = { "Grey rocks, orange veins. [Collect 5 Iron Ore] with a Crystal Pickaxe." },
 			complete = { "Good solid ore! A natural! Now let's go find that trail." },
 		},
 		{
@@ -680,6 +705,15 @@ function Quests.material(step: Step): string?
 	return nil
 end
 
+-- The offer lines for a step: its offerHasTool lines when it has them and the player
+-- already owns the tool its material needs (issue 21), else its offer.
+function Quests.offerLines(step: Step, player: Player): { string }
+	if step.offerHasTool and Quests.toolNeeded(step, player) == nil then
+		return step.offerHasTool
+	end
+	return step.offer
+end
+
 -- The tool a gather / bring step still needs before its material can be gathered (see
 -- the header): the lowest tier of the node's tool kind that can break it, or nil once
 -- the player owns one as good (or the material isn't from a node, like Fox Fur). A
@@ -717,6 +751,25 @@ function Quests.toolNeeded(step: Step, player: Player): Tools.ToolDef?
 		end
 	end
 	return nil
+end
+
+-- The tools the player's quests are waiting on (each line on an Active step still
+-- missing its tool, Quests.toolNeeded): tool id -> the giver's short name, for the
+-- Weaponsmith's quest highlight (issue 21).
+function Quests.shopNeeds(player: Player): { [string]: string }
+	local needs: { [string]: string } = {}
+	for _, id in Quests.order do
+		local line = Quests.get(id)
+		local index = player:GetAttribute(Quests.attr("Step", id))
+		local step = if line and type(index) == "number" then line.steps[index] else nil
+		if line and step and player:GetAttribute(Quests.attr("State", id)) == "Active" then
+			local tool = Quests.toolNeeded(step, player)
+			if tool and not needs[tool.id] then
+				needs[tool.id] = line.npc.short
+			end
+		end
+	end
+	return needs
 end
 
 return Quests

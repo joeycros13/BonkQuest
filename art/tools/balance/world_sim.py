@@ -444,9 +444,6 @@ class Run:
             if self.rng.random() < lucky(x["chance"]):
                 n = self.rng.randint(x["min"], max(x["min"], x["max"]))
                 self.mats[x["id"]] = self.mats.get(x["id"], 0) + n
-                c = self.cur()
-                if self.accepted and c and c["kind"] == "gather" and c["target"] == x["id"]:
-                    self.progress += n
         for x in e["drops"]:
             if x["weapon"] not in self.weapons and self.rng.random() < lucky(x["chance"]):
                 self.weapons.add(x["weapon"])
@@ -490,9 +487,6 @@ class Run:
                 if self.rng.random() < UPG_STEP["gathering"] * UPG["gathering"]:
                     n *= 2  # the Gathering upgrade doubles a drop
                 self.mats[x["id"]] = self.mats.get(x["id"], 0) + n
-                c = self.cur()
-                if self.accepted and c and c["kind"] == "gather" and c["target"] == x["id"]:
-                    self.progress += n
         return True
 
     # --- the quest ---------------------------------------------------------
@@ -504,8 +498,11 @@ class Run:
         if not c or not self.accepted:
             return False
         k = c["kind"]
-        if k in ("kill", "gather"):
+        if k == "kill":
             return self.progress >= c["count"]
+        if k == "gather":
+            # what's held counts, and nothing is taken at hand-in (issue 21, 2026-10-25)
+            return self.mats.get(c["target"], 0) >= c["count"]
         if k == "level":
             return self.level() >= c["level"]
         if k == "bring":
