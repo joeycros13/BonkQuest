@@ -341,7 +341,8 @@ local function landed(current: Line)
 			deps.Util.ToolHint.show(current.to + Vector3.new(0, 1.5, 0), "Rod", current.needs)
 		else
 			Effects.burst(current.to, "Dust", { count = 5 })
-			popup(rootPart(), "Cast into the water!")
+			local rod = WeaponController.tool()
+			deps.Util.ToolHint.castHere(current.to + Vector3.new(0, 1.5, 0), rod and rod.icon)
 		end
 		task.delay(0.5, function()
 			if line == current then

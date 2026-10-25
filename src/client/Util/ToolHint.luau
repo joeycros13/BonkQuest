@@ -123,6 +123,13 @@ function ToolHint.show(at: Vector3, kind: string, tier: number)
 	deps.Util.BonkPop.need(at, top, hint, icon)
 end
 
+-- A rod cast that landed on dry ground (2026-10-25, the user: the same pop): NeedPop at the
+-- landing spot with CastText ("Cast into the water!"), CastHint under it and the rod's picture.
+-- No hotbar nudge: the rod in hand is the right tool.
+function ToolHint.castHere(at: Vector3, icon: string?)
+	deps.Util.BonkPop.need(at, words("CastText", "Cast into the water!"), words("CastHint", "Aim your bobber at the water"), icon)
+end
+
 function ToolHint.init(injected: any)
 	deps = injected
 end
