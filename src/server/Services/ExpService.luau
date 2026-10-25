@@ -175,7 +175,10 @@ local function onKill(enemy: any, killer: Player?)
 			body = enemy.instance,
 			position = bodyPosition(enemy.instance) or enemy.origin,
 			amount = amount,
-			pieces = random:NextInteger(Balance.Exp.piecesMin, Balance.Exp.piecesMax),
+			-- a boss throws a bigger shower of stars for the same amount
+			pieces = if enemy.instance:GetAttribute("IsBoss") == true
+				then Balance.Exp.bossPieces
+				else random:NextInteger(Balance.Exp.piecesMin, Balance.Exp.piecesMax),
 		})
 	end
 end

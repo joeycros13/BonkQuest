@@ -52,6 +52,7 @@ Balance.Melee = {
 Balance.Coins = {
 	piecesMin = 3, -- coins that fling out of the enemy...
 	piecesMax = 5, -- ...whatever the amount actually is
+	bossPieces = 7, -- a boss's bigger spill, for the same amount (issue 27, 2026-10-25, the user)
 }
 
 -- EXP from defeated enemies (ExpService): each enemy's `exp` is in Config/Worlds,
@@ -59,6 +60,7 @@ Balance.Coins = {
 Balance.Exp = {
 	piecesMin = 3,
 	piecesMax = 5,
+	bossPieces = 7,
 }
 
 return Balance
