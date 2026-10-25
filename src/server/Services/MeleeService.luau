@@ -550,7 +550,11 @@ local function beginAttack(enemy: any, fight: Fight, melee: any, now: number)
 			local skin = Potions.multiplier(target, "Stoneskin")
 			-- and the Defense upgrade cuts it again (Config/Upgrades)
 			local guard = Upgrades.value(target, "Defense")
-			humanoid:TakeDamage(math.max(1, math.floor(melee.damage * (1 - defense) * skin * guard + 0.5)))
+			-- never more than the health left: TakeDamage subtracts the whole hit, so a
+			-- killing blow left Health below 0 until the death caught up, and the HUD
+			-- showed it for a moment
+			local hit = math.max(1, math.floor(melee.damage * (1 - defense) * skin * guard + 0.5))
+			humanoid:TakeDamage(math.min(hit, math.max(humanoid.Health, 0)))
 			-- every client shows the hit on that body; the hit player stumbles back from here
 			deps.Remotes.getEvent("PlayerHurt"):FireAllClients({ character = target.Character, from = fight.position })
 		end

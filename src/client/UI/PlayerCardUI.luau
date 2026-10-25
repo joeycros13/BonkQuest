@@ -84,13 +84,13 @@ local function drawHealth(humanoid: Humanoid, health: number)
 	end
 	local amount = bar:FindFirstChild("Amount", true)
 	if amount and amount:IsA("TextLabel") then
-		amount.Text = Format.ratio(math.ceil(health), humanoid.MaxHealth)
+		amount.Text = Format.ratio(math.max(math.ceil(health), 0), humanoid.MaxHealth)
 	end
 end
 
 local function showHealth(humanoid: Humanoid, instant: boolean?)
 	local bar = find("Health", "GuiObject")
-	local target = math.min(humanoid.Health, humanoid.MaxHealth)
+	local target = math.clamp(humanoid.Health, 0, humanoid.MaxHealth)
 	local from = math.min(healthShown, humanoid.MaxHealth)
 	local share = bar and bar:GetAttribute("HealCountFrom")
 	local big = (target - from) >= humanoid.MaxHealth * (if type(share) == "number" then share else 0.05)
