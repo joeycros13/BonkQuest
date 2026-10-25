@@ -42,8 +42,8 @@
 -- are there.
 -- Quest tools (issue 21, 2026-10-25, option A on https://claude.ai/artifact/KLEW2GK4kiH8cWgQqhsEdJ):
 -- while a quest step is waiting on a tool this stall sells (Quests.shopNeeds), the panel opens on
--- the Tools tab and that row lights up: its hand-built `QuestGlow` (the hotbar's gold halo,
--- 9-sliced with its PillSlice attribute, behind the row's Skin) breathes between the gui's
+-- the Tools tab and that row lights up: its hand-built `QuestGlow` (a gold halo cut from the row
+-- card's own outline, one image per row height, behind the row's Skin) breathes between the gui's
 -- QuestGlowBright and QuestGlowDim every QuestPulseSeconds, its `QuestRibbon` over the top edge
 -- reads "Needed for Dale's quest" (the ribbon's Format), and the row draws over its neighbours
 -- (ZIndex 2) so the ribbon and halo aren't covered. On the Weapons tab the Tools tab's
