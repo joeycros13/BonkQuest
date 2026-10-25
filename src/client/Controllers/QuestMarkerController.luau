@@ -142,7 +142,7 @@ local function adopt(giver: Instance)
 		gui:Destroy()
 		return
 	end
-	local base = Vector3.new(0, head.Size.Y / 2 + number("Height", 2.6), 0)
+	local base = Vector3.new(0, head.Size.Y / 2 + number("Height", 3.45), 0)
 	gui.StudsOffset = base
 	gui.Adornee = head
 	gui.Enabled = false
