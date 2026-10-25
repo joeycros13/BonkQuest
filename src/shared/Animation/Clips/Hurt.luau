@@ -27,7 +27,7 @@ Hurt.FLINCH = {
 }
 
 -- The death pose (2026-10-25, the user: "basically just the idle animation but the arms
--- are out and the torso is more forward, so an ascending look"). A full-body clip at
+-- are out ... so an ascending look", the torso leaning back). A full-body clip at
 -- Override that covers every joint, so nothing under it shows: not the walk, a weapon hold
 -- or swing, nor Roblox's own Animate script, which is the base a character falls back to
 -- once the humanoid is Dead (not a ground state, so Locomotion lets go). It eases in from
@@ -37,8 +37,8 @@ Hurt.DEATH_LENGTH = 2 -- held well past the break-up (DeathController hides the 
 Hurt.DEATH_FADE = 0.25
 Hurt.DEATH_RISE = 0.6 -- seconds the arms keep lifting, matching the float up
 Hurt.DEATH = {
-	lean = -16, -- the torso tips forward
-	head = 10, -- the head tips back up, so the face looks ahead and up
+	lean = 16, -- the torso tips back (the user, 2026-10-25: back, not forward)
+	head = 10, -- the head tips back with it, so the face looks up
 	arms = -6, -- the arms a touch behind the body
 	armsOut = 68, -- and spread wide
 	armsOutTop = 76, -- the spread they lift to as the body rises
