@@ -8,15 +8,20 @@
 --   1. Unlock (UnlockSeconds): the gate bursts (DeathPop stars, a ring) as GateUI opens it,
 --      the HUD hides, letterbox bars slide in and "WORLD 2 / UNLOCKED!" slams in over spinning
 --      rays; the camera eases up from where it was.
---   2. Flight (FlightSeconds): the camera glides along the world's hand-placed path,
+--   2. Flight: the camera glides along the world's hand-placed path,
 --      Workspace.Worlds.<world>/Cinematic/Flyby/P1, P2... (invisible parts; move them in
---      Studio to change the route; the folder's `Pitch` attribute is how far down it looks, in
---      degrees), turning to face where it is going, then toward the boss;
---      the world's banner (WorldBannerUI) shows its name as the camera crosses in.
---   3. Boss (BossSeconds): from the path's `BossShot` part (its CFrame is the camera's), the
---      camera pushes in (PushIn of the way) while the boss plays its attack with its angry
---      face (EnemyAnimator.showOff) and its name card slams in ("ELDER TREANT" / "WORLD BOSS").
---   4. A quick fade to black, and the player is back at the gate with the HUD.
+--      Studio to change the route), at one speed with a gentle ease at both ends. The Flyby
+--      folder's attributes: `Mode` "Straight" (one heading the whole way, the line from P1 to
+--      the last P: World 2) or "Path" (it turns with the path: World 3's cave lanes), `Pitch`
+--      (degrees it looks down), `Seconds` (the flight's length; else the gui's FlightSeconds).
+--      The view direction is filtered (LOOK_SMOOTH), so it never jitters (2026-10-25, the user:
+--      World 2's first version was "too movey", it needed to be really smooth). The world's
+--      banner (WorldBannerUI) shows its name as the camera crosses in.
+--   3. Boss (BossSeconds): a soft fade through black to the path's `BossShot` (its CFrame is
+--      the camera's: low on the ground, looking up at the boss, the user's pick), which pushes
+--      in PushStuds along its look while the boss plays its attack with its angry face
+--      (EnemyAnimator.showOff) and its name card slams in ("ELDER TREANT" / "WORLD BOSS").
+--   4. A fade to black, and the player is back where they were with the HUD.
 -- A click (the gui's Skip button, after SkipAfter seconds) jumps to the fade. The player is
 -- frozen meanwhile (InputLocked, anchored, controls off).
 --
@@ -24,8 +29,12 @@
 -- BottomBar/SkipHint), Unlocked (PopScale; Rays, RaysInner, World / WorldShadow ("WORLD %d",
 -- the gui's UnlockFormat), Label / Shadow "UNLOCKED!"), BossCard (PopScale; Rays, PlateLip,
 -- Plate, Name, SubPill/Sub (BossSubtitle)) and Skip. Gui attributes: UnlockSeconds,
--- FlightSeconds, BossSeconds, BarSeconds, FadeSeconds, PushIn, BarHeight, TitleAt (share of
--- the flight when the title shows), UnlockFormat, BossSubtitle, SkipAfter.
+-- FlightSeconds, BossSeconds, BarSeconds, FadeSeconds (the end), CutSeconds (each half of the
+-- fade to the boss shot), PushStuds, BarHeight, TitleAt (share of the flight when the title
+-- shows), UnlockFormat, BossSubtitle, SkipAfter.
+--
+-- WorldFlybyController.play(world) is also the admin panel's "Play flyby" (2026-10-25: it
+-- replays any world's flight for testing; players get it only when a gate opens).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -46,15 +55,17 @@ local deps: any = nil
 
 -- guis left alone while the HUD hides
 local KEEP_GUIS = { Cinematic = true, WorldBanner = true, ScreenFade = true }
-local LOOK_AHEAD = 30 -- studs along the path the camera looks ahead to
-local TURN_TO_BOSS = 0.35 -- the last share of the flight turns the camera toward the boss
+local LOOK_AHEAD = 40 -- studs along the path a "Path" flight looks ahead to
+-- seconds the view direction takes to follow a change: two exponential filters in a row, so
+-- a turn starts and stops from rest (one filter started a turn at full rate); the start's view
+-- eases into the flight's, and a path's turns come gently
+local LOOK_SMOOTH = 0.35
 -- the flight looks this far down at the world, whatever the path does (a climb looked at the
 -- sky); a Flyby folder's own `Pitch` attribute (degrees) wins: a cave's is gentler
 local FLIGHT_PITCH = -22
--- the boss shot aims this share of the boss's height below its middle, so the boss sits
--- above the name card
-local SHOT_DROP = 0.25
-local SAMPLES = 240
+local SAMPLES = 400
+-- a camera farther than this from P1 starts behind P1 instead of flying to it
+local FAR_START = 120
 
 local playing = false
 
@@ -104,9 +115,10 @@ local function at(raw: { Vector3 }, lengths: { number }, distance: number): Vect
 	return raw[lo]:Lerp(raw[hi], f)
 end
 
-local function smooth(x: number): number
+-- an ease with zero speed and zero acceleration at both ends, for the flight
+local function smoother(x: number): number
 	x = math.clamp(x, 0, 1)
-	return x * x * (3 - 2 * x)
+	return x * x * x * (x * (x * 6 - 15) + 10)
 end
 
 local function controls(): any
@@ -224,26 +236,20 @@ function WorldFlybyController.play(world: number)
 	end
 	playing = true
 
-	local unlockSeconds = number(gui, "UnlockSeconds", 1.6)
-	local flightSeconds = number(gui, "FlightSeconds", 5)
-	local bossSeconds = number(gui, "BossSeconds", 2)
+	local unlockSeconds = number(gui, "UnlockSeconds", 1.4)
+	local flightSeconds = number(flyby, "Seconds", number(gui, "FlightSeconds", 7))
+	local bossSeconds = number(gui, "BossSeconds", 2.6)
 	local barSeconds = number(gui, "BarSeconds", 0.35)
-	local fadeSeconds = number(gui, "FadeSeconds", 0.25)
-	local pushIn = number(gui, "PushIn", 0.18)
+	local fadeSeconds = number(gui, "FadeSeconds", 0.35)
+	local cutSeconds = number(gui, "CutSeconds", 0.35)
+	local pushStuds = number(gui, "PushStuds", 3)
 	local barHeight = number(gui, "BarHeight", 0.11)
 
-	-- the boss and where the camera looks at it
 	local boss = bossOf(folder)
 	local bossDef = boss and Enemies.get(boss:GetAttribute("Archetype") :: any)
-	local focus = shot.CFrame.Position + shot.CFrame.LookVector * 25
-	local aim = focus
-	if boss then
-		local size = boss:GetExtentsSize()
-		focus = boss:GetPivot().Position + Vector3.new(0, size.Y * 0.1, 0)
-		aim = focus - Vector3.new(0, size.Y * SHOT_DROP, 0)
-	end
 	local pitchDegrees = flyby:GetAttribute("Pitch")
 	local pitch = math.rad(if type(pitchDegrees) == "number" then pitchDegrees else FLIGHT_PITCH)
+	local straight = flyby:GetAttribute("Mode") == "Straight"
 
 	-- the cinematic's pieces
 	local top = gui:FindFirstChild("TopBar") :: GuiObject?
@@ -296,22 +302,51 @@ function WorldFlybyController.play(world: number)
 		popGroup(unlocked, 0.2, unlockSeconds - 0.6)
 	end
 
-	-- the path: from the camera (lifted a little during the unlock) through P1, P2... to the boss shot
-	local startCFrame = camera.CFrame
-	local lifted = startCFrame.Position + Vector3.new(0, 4, 0) - startCFrame.LookVector * 3
-	local points: { Vector3 } = { lifted }
-	local index = 1
+	-- the path: from the camera (lifted a little during the unlock) through P1, P2...
+	local path: { Vector3 } = {}
 	while true do
-		local point = flyby:FindFirstChild("P" .. index)
+		local point = flyby:FindFirstChild("P" .. (#path + 1))
 		if not (point and point:IsA("BasePart")) then
 			break
 		end
-		table.insert(points, point.Position)
-		index += 1
+		table.insert(path, point.Position)
 	end
-	table.insert(points, shot.Position)
+	local startCFrame = camera.CFrame
+	if #path >= 2 and (startCFrame.Position - path[1]).Magnitude > FAR_START then
+		-- far from the path (the admin replay, pressed anywhere): start just behind P1 behind a
+		-- quick fade, instead of flying across the map to it
+		local d = path[2] - path[1]
+		local heading = Vector3.new(d.X, 0, d.Z).Unit
+		local from = path[1] - heading * 30 + Vector3.new(0, 6, 0)
+		startCFrame = CFrame.lookAt(from, from + heading * math.cos(pitch) + Vector3.new(0, math.sin(pitch), 0))
+		deps.Controllers.FadeController.fade("out", 0)
+		deps.Controllers.FadeController.fade("in", fadeSeconds)
+	end
+	local lifted = startCFrame.Position + Vector3.new(0, 4, 0) - startCFrame.LookVector * 3
+	local points: { Vector3 } = { lifted }
+	for _, point in path do
+		table.insert(points, point)
+	end
 	local raw, lengths = samplePath(points)
 	local total = lengths[#lengths]
+	-- a straight flight's one heading: from the first point to the last
+	local lineHeading = Vector3.new(0, 0, -1)
+	if #points >= 3 then
+		local d = points[#points] - points[2]
+		d = Vector3.new(d.X, 0, d.Z)
+		if d.Magnitude > 1e-3 then
+			lineHeading = d.Unit
+		end
+	end
+	local function flightLook(s: number): Vector3
+		local heading = lineHeading
+		if not straight then
+			local here, ahead = at(raw, lengths, s), at(raw, lengths, s + LOOK_AHEAD)
+			local d = Vector3.new(ahead.X - here.X, 0, ahead.Z - here.Z)
+			heading = if d.Magnitude > 1e-3 then d.Unit else lineHeading
+		end
+		return heading * math.cos(pitch) + Vector3.new(0, math.sin(pitch), 0)
+	end
 
 	-- the world's banner shows under the top bar, not behind it
 	local worldBanner = playerGui and playerGui:FindFirstChild("WorldBanner")
@@ -332,7 +367,10 @@ function WorldFlybyController.play(world: number)
 	local finished = false
 	local titleShown = false
 	local bossShown = false
+	local cutting = false
 	local ending = false
+	local look = startCFrame.LookVector
+	local lookLead = startCFrame.LookVector
 
 	local function finish()
 		if ending then
@@ -344,55 +382,55 @@ function WorldFlybyController.play(world: number)
 		finished = true
 	end
 
-	local system = Animation.Scheduler.bind("Camera", "WorldFlyby", 45, function(_dt: number, now: number)
+	local flightEnd = unlockSeconds + flightSeconds
+	local system = Animation.Scheduler.bind("Camera", "WorldFlyby", 45, function(dt: number, now: number)
 		if finished then
 			return
 		end
 		camera.CameraType = Enum.CameraType.Scriptable
 		local t = now - started
-		if t < unlockSeconds then
-			-- the unlock: ease up and back from where the camera was
-			local u = smooth(t / unlockSeconds)
-			local pos = startCFrame.Position:Lerp(lifted, u)
-			camera.CFrame = CFrame.lookAt(pos, pos + startCFrame.LookVector)
-		elseif t < unlockSeconds + flightSeconds then
-			-- the flight: one speed along the path, eased at both ends
-			local u = (t - unlockSeconds) / flightSeconds
-			local s = smooth(u) * total
-			local pos = at(raw, lengths, s)
-			local ahead = at(raw, lengths, s + LOOK_AHEAD)
-			if (ahead - pos).Magnitude < 1 then
-				ahead = pos + shot.CFrame.LookVector
+		if t < flightEnd then
+			-- the unlock eases up and back from where the camera was; then the flight glides on
+			local pos: Vector3
+			local target: Vector3
+			if t < unlockSeconds then
+				pos = startCFrame.Position:Lerp(lifted, smoother(t / unlockSeconds))
+				target = startCFrame.LookVector
+			else
+				local u = (t - unlockSeconds) / flightSeconds
+				local s = smoother(u) * total
+				pos = at(raw, lengths, s)
+				target = flightLook(s)
+				if not titleShown and u >= number(gui, "TitleAt", 0.12) then
+					titleShown = true
+					deps.UI.WorldBannerUI.show(world)
+				end
 			end
-			-- the way the path heads, tipped down to look over the world
-			local heading = Vector3.new(ahead.X - pos.X, 0, ahead.Z - pos.Z)
-			heading = if heading.Magnitude > 1e-3 then heading.Unit else Vector3.new(0, 0, -1)
-			local look = heading * math.cos(pitch) + Vector3.new(0, math.sin(pitch), 0)
-			-- out of the start's view at first, toward the boss at the end
-			look = startCFrame.LookVector:Lerp(look, smooth(u / 0.15))
-			local toBoss = (aim - pos)
-			if toBoss.Magnitude > 1 then
-				look = look:Lerp(toBoss.Unit, smooth((u - (1 - TURN_TO_BOSS)) / TURN_TO_BOSS))
-			end
+			-- the view follows its target through two filters, never in steps
+			local blend = 1 - math.exp(-dt / LOOK_SMOOTH)
+			lookLead = lookLead:Lerp(target, blend).Unit
+			look = look:Lerp(lookLead, blend).Unit
 			camera.CFrame = CFrame.lookAt(pos, pos + look)
-			if not titleShown and u >= number(gui, "TitleAt", 0.12) then
-				titleShown = true
-				deps.UI.WorldBannerUI.show(world)
+			-- the soft cut to the boss: dark just as the flight ends
+			if not cutting and t >= flightEnd - cutSeconds then
+				cutting = true
+				deps.Controllers.FadeController.fade("out", cutSeconds)
 			end
 		else
-			-- the boss: push in, the attack, the name card
-			local u = math.clamp((t - unlockSeconds - flightSeconds) / bossSeconds, 0, 1)
-			local from = shot.Position
-			local pos = from:Lerp(focus, pushIn * (1 - (1 - u) * (1 - u)))
-			camera.CFrame = CFrame.lookAt(pos, aim)
+			-- the boss: low on the ground looking up, a slow push in, the attack, the name card
+			local u = math.clamp((t - flightEnd) / bossSeconds, 0, 1)
+			camera.CFrame = shot.CFrame + shot.CFrame.LookVector * (pushStuds * smoother(u))
 			if not bossShown then
 				bossShown = true
-				if boss then
-					deps.Controllers.EnemyAnimator.showOff(boss)
-				end
-				if card then
-					task.delay(0.15, popGroup, card, 2.2, bossSeconds - 0.7)
-				end
+				deps.Controllers.FadeController.fade("in", cutSeconds)
+				task.delay(cutSeconds * 0.6, function()
+					if boss then
+						deps.Controllers.EnemyAnimator.showOff(boss)
+					end
+					if card then
+						popGroup(card, 2.2, bossSeconds - cutSeconds - 0.6)
+					end
+				end)
 			end
 			if u >= 1 then
 				task.spawn(finish)

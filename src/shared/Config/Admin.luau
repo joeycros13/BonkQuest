@@ -49,6 +49,10 @@ Admin.Text = {
 	healthTitle = "Health",
 	damageTitle = "Damage",
 	giveAll = "Give All",
+	-- the Flyby card (2026-10-25): replays a world's unlock cinematic, for testing
+	flybyTitle = "Flyby",
+	flybyPlay = "Play",
+	flybyBadge = "W%d",
 	-- Reset Save (2026-10-25): wipes the save and kicks you, so you rejoin as a new player
 	resetSave = "Reset Save",
 	resetConfirm = "Sure? Click again",

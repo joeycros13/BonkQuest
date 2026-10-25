@@ -938,6 +938,36 @@ function AdminUI.start()
 				ask({ action = "resetSave" })
 			end)
 		end
+		-- the Flyby card (2026-10-25): replay a world's unlock cinematic (WorldFlybyController)
+		-- for testing; the panel closes first so the flight isn't hidden behind it
+		local flybyCard = find("FlybyCard")
+		if flybyCard then
+			local worldBox = find("Amount", flybyCard)
+			local badge = find("Badge", flybyCard)
+			find("Title", flybyCard).Text = Text.flybyTitle
+			setLabel(find("Play", flybyCard), Text.flybyPlay)
+			local function showWorld()
+				local world = read(worldBox)
+				if badge and world then
+					setLabel(badge, Text.flybyBadge:format(world))
+				end
+			end
+			if worldBox and worldBox:IsA("TextBox") then
+				worldBox:GetPropertyChangedSignal("Text"):Connect(showWorld)
+			end
+			showWorld()
+			wireButton(find("Play", flybyCard), function()
+				local world = read(worldBox)
+				if not world then
+					status(false, Text.badNumber)
+					return
+				end
+				deps.UI.PanelWindow.hidePanel()
+				task.delay(0.3, function()
+					deps.Controllers.WorldFlybyController.play(math.floor(world))
+				end)
+			end)
+		end
 		-- the Damage card: set your own damage multiplier, or put it back to x1
 		local damageCard = find("DamageCard")
 		if damageCard then
