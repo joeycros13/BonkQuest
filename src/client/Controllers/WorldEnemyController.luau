@@ -681,6 +681,23 @@ end
 
 -- ==================== lifecycle ====================
 
+-- Have a body stop wandering and turn to face `point` for `seconds`, here only (the world
+-- unlock cinematic turns the boss to its camera, issue 28). A fight still wins.
+function WorldEnemyController.face(model: Instance, point: Vector3, seconds: number)
+	for _, enemy in enemies do
+		if enemy.instance == model then
+			enemy.target = enemy.position
+			enemy.pauseUntil = os.clock() + seconds
+			local look = Vector3.new(point.X - enemy.position.X, 0, point.Z - enemy.position.Z)
+			if look.Magnitude > 1e-3 then
+				local localLook = enemy.origin.Rotation:VectorToObjectSpace(look.Unit)
+				enemy.targetYaw = math.atan2(-localLook.X, -localLook.Z)
+			end
+			return
+		end
+	end
+end
+
 function WorldEnemyController.init(injected: any)
 	deps = injected
 	BonkPop = deps.Util.BonkPop

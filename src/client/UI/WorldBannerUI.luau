@@ -130,6 +130,11 @@ local function show(id: number)
 	end)
 end
 
+-- Show a world's banner now (the world unlock cinematic, issue 28).
+function WorldBannerUI.show(id: number)
+	show(id)
+end
+
 function WorldBannerUI.init(injected: any)
 	deps = injected
 end

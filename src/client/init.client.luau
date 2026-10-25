@@ -77,6 +77,8 @@ local CONTROLLER_ORDER = {
 	"LeaderFlairController",
 	-- every other player's name over their head in the game's font (Roblox's own is hidden)
 	"NameTagController",
+	-- the short flight over a world when it unlocks, ending on its boss (issue 28)
+	"WorldFlybyController",
 }
 
 local UI_ORDER = {

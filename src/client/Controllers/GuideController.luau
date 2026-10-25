@@ -192,7 +192,8 @@ local function step(_dt: number, now: number)
 	local part = arrow
 	local character = player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart")
-	if not (part and enabled and root and root:IsA("BasePart")) then
+	-- hidden while a cinematic plays (the world unlock flyby sets Cinematic)
+	if not (part and enabled and root and root:IsA("BasePart")) or player:GetAttribute("Cinematic") then
 		setShown(false)
 		return
 	end
