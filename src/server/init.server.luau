@@ -46,6 +46,8 @@ local SERVICE_ORDER = {
 	"AdminService",
 	-- walk-in teleport zones (the secret rooms' entrances and exits)
 	"PortalService",
+	-- sends a player standing in a world they haven't unlocked back (through PortalService)
+	"WorldGuardService",
 	-- the Infusers: cores into the Rusty / Worldheart Blade through MaterialService and MeleeService
 	"InfuseService",
 	-- World 3's secret crystal code: opens the front mineshaft for whoever solves it

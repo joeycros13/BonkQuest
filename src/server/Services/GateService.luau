@@ -2,7 +2,8 @@
 -- GateService: buying a world gate (Shared.Config.Gates).
 --
 -- Remotes.GateBuy { id } from a player standing within Gates.BUY_RANGE of the
--- gate's SignBoard: if they haven't unlocked that world yet, their Level is at
+-- gate's SignBoard: if they haven't unlocked that world yet but have the one it
+-- needs first (Gates.requires), their Level is at
 -- least the gate's `level` and their Coins at least its `coins`, the coins are
 -- spent (CoinService) and the world unlocked (PlayerDataService.unlockWorld,
 -- published as HighestWorld and saved straight away). GateUI on the client
@@ -34,6 +35,9 @@ function GateService.blocker(player: Player, gate: Gates.Gate): string?
 	local PlayerDataService = deps.Services.PlayerDataService
 	if PlayerDataService.highestWorld(player) >= gate.world then
 		return "owned"
+	elseif PlayerDataService.highestWorld(player) < Gates.requires(gate) then
+		-- the world before must be unlocked first (World 4's gate stands in World 2)
+		return "world"
 	elseif number(player, "Level") < gate.level then
 		return "level"
 	elseif deps.Services.CoinService.get(player) < gate.coins then
