@@ -16,6 +16,8 @@ local SERVICE_ORDER = {
 	"AvatarService",
 	"MeleeService",
 	"IndexService",
+	-- holds kill and reward coins / EXP until they reach the HUD; CoinService and ExpService pay through it
+	"SpillService",
 	"CoinService",
 	"ExpService",
 	-- crafting materials: drops on kills, quest items for QuestService

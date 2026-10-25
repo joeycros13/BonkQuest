@@ -11,8 +11,9 @@
 --
 -- When a player defeats an enemy (WorldEnemyService.onDefeated) they get the
 -- enemy's `exp` from Config/Worlds. The killer's client hears
--- Remotes.ExpDropped first, so it can hold the EXP bar while
--- Balance.Exp.piecesMin..piecesMax blue stars fling out and fly to it.
+-- Remotes.ExpDropped while Balance.Exp.piecesMin..piecesMax blue stars fling out
+-- and fly to the EXP bar; the EXP is added only once the first star reaches it
+-- (SpillService holds it until then; 2026-10-25, the user, issue 24).
 --
 -- Max health follows the level (Leveling.maxHealth: 100 at level 1, x10 every 25 levels since
 -- 2026-10-24; it was +10 a level). A new character starts full; a level up heals to the new
@@ -20,6 +21,13 @@
 -- session (player attribute MaxHealthOverride, AdminService). Worn armour adds
 -- its bonus HP on top of the level's (player attribute ArmorHealth, ArmorService;
 -- 2026-10-12).
+--
+-- The level-up heal waits for the HUD (2026-10-25, the user, issue 24: health refilled
+-- before the EXP reached the bar). A level rise leaves health alone until the player's
+-- client says its level badge has reached the new level (Remotes.LevelShown, as the
+-- LEVEL UP! pop shows), then raises the max and fills it; the HUD's health bar counts up
+-- to full over half a second (PlayerCardUI). If the client never says, it heals after
+-- HEAL_WAIT seconds anyway.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -37,6 +45,9 @@ local ExpService = {}
 local deps: any = nil
 local dropped: RemoteEvent? = nil
 local random = Random.new()
+local HEAL_WAIT = 4
+-- level-ups whose heal waits for the player's badge: the level it must reach
+local healAt: { [Player]: number } = {}
 
 -- Level-ups (gained > 0 levels) for listeners: the leaderboards (2026-10-19). Not
 -- fired for the level a save loads with.
@@ -63,15 +74,19 @@ function ExpService.spill(player: Player, amount: number, position: Vector3, aft
 	if amount <= 0 then
 		return
 	end
+	local Spills = deps.Services.SpillService
+	local id = Spills.hold(player, "Exp", amount, if afterTalk then Spills.TALK_SECONDS else Spills.KILL_SECONDS, function()
+		ExpService.add(player, amount)
+	end)
 	if dropped then
 		dropped:FireClient(player, {
+			id = id,
 			position = position,
 			amount = amount,
 			pieces = random:NextInteger(Balance.Exp.piecesMin, Balance.Exp.piecesMax),
 			afterTalk = afterTalk == true,
 		})
 	end
-	ExpService.add(player, amount)
 end
 
 -- ==================== max health ====================
@@ -149,16 +164,20 @@ local function onKill(enemy: any, killer: Player?)
 	if boost ~= 1 then
 		amount = math.max(1, math.floor(amount * boost + 0.5))
 	end
-	-- the spill first, so the client knows to hold its bar
+	-- held until the first star reaches the bar (SpillService)
+	local Spills = deps.Services.SpillService
+	local id = Spills.hold(killer, "Exp", amount, Spills.KILL_SECONDS, function()
+		ExpService.add(killer, amount)
+	end)
 	if dropped then
 		dropped:FireClient(killer, {
+			id = id,
 			body = enemy.instance,
 			position = bodyPosition(enemy.instance) or enemy.origin,
 			amount = amount,
 			pieces = random:NextInteger(Balance.Exp.piecesMin, Balance.Exp.piecesMax),
 		})
 	end
-	ExpService.add(killer, amount)
 end
 
 function ExpService.init(injected: any)
@@ -173,13 +192,24 @@ function ExpService.init(injected: any)
 			end
 		end,
 		save = function(player: Player): any
-			return ExpService.get(player)
+			-- stars still flying to the bar are the player's too
+			return ExpService.get(player) + deps.Services.SpillService.held(player, "Exp")
 		end,
 	})
 end
 
 function ExpService.start()
 	deps.Services.WorldEnemyService.onDefeated(onKill)
+	deps.Remotes.getEvent("LevelShown").OnServerEvent:Connect(function(player: Player, level: any)
+		local want = healAt[player]
+		if want and type(level) == "number" and level >= want then
+			healAt[player] = nil
+			ExpService.applyHealth(player, true)
+		end
+	end)
+	Players.PlayerRemoving:Connect(function(player: Player)
+		healAt[player] = nil
+	end)
 	local function onPlayer(player: Player)
 		if player:GetAttribute("ExpTotal") == nil then
 			ExpService.add(player, 0)
@@ -195,7 +225,20 @@ function ExpService.start()
 				end
 			end
 			shownLevel = level
-			ExpService.applyHealth(player, up)
+			if up then
+				-- the heal waits for the badge to show the new level (LevelShown) or HEAL_WAIT
+				local want = level :: number
+				healAt[player] = want
+				task.delay(HEAL_WAIT, function()
+					if healAt[player] == want then
+						healAt[player] = nil
+						ExpService.applyHealth(player, true)
+					end
+				end)
+			else
+				healAt[player] = nil
+				ExpService.applyHealth(player, false)
+			end
 		end)
 		player.CharacterAdded:Connect(function(character)
 			onCharacter(player, character)

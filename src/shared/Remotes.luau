@@ -28,10 +28,12 @@ local EVENT_NAMES: { string } = {
 	"HoldTool", -- (kind: string?): take out the best tool of that kind, or put it away (MeleeService, Config/Tools)
 	"FishAction", -- { action = "cast", at = Vector3 } | { action = "hook" | "reel" } | { action = "ring", n = number, ok = boolean }: fishing (FishingService)
 	"SetSetting", -- (id: string, value: number | boolean): change one of the player's settings (SettingsService, Config/Settings)
+	"LootLanded", -- (id: number): the first piece of a coin / EXP spill reached its HUD bar, so it counts now (SpillService)
+	"LevelShown", -- (level: number): the HUD's level badge reached this level, so the level-up heal happens now (ExpService)
 
 	-- Replication (server -> client)
 	"IndexDiscovered", -- { kind = "Enemy" | "Weapon", id = string }: show the NEW popup
-	"CoinsDropped", -- { body = Instance?, position = Vector3, amount = number, pieces = number }: the coin spill
+	"CoinsDropped", -- { id = number, body = Instance?, position = Vector3, amount = number, pieces = number, afterTalk = boolean? }: the coin spill, counted once LootLanded(id) comes back
 	"ExpDropped", -- same shape: the blue EXP stars
 	"MaterialsDropped", -- { body = Instance?, position = Vector3, items = { { id, amount } }, afterTalk = boolean? }: crafting materials (MaterialService)
 	"TeleportFade", -- ("out" | "in", seconds): fade the screen to black and back around a teleport (PortalService)

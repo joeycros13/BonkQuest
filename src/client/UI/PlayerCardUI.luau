@@ -8,7 +8,9 @@
 --     until it loads, or if it can't),
 --   * Health: Fill width and the Amount text, from the character's Humanoid.
 --     The fill colour comes from the bar's HealthyColor / LowColor / LowFraction
---     attributes.
+--     attributes. A big heal (at least the bar's HealCountFrom share of max, 0.05: the
+--     level-up refill, the fountain, a potion) counts up over its HealSeconds (0.5)
+--     instead of jumping (2026-10-25, the user, issue 24); damage and regen show at once.
 --   * Stamina: removed (user, 2026-10-11: sprinting is unlimited). The bar was
 --     deleted; Health and XP sit in Panel/Info's UIListLayout, which spaces them.
 --   * Every number reads with commas (Util.Format), like the shop.
@@ -19,7 +21,10 @@
 --   * PlayerCardUI.Exp is the EXP stars' landing spot for LootController
 --     (beginSpill / collect / endSpill, the same shape as CoinsUI): each star
 --     flies to the XP bar (FlyingStar template, FlySeconds) and bumps it
---     (BumpScale); the count starts when the first one lands.
+--     (BumpScale). The EXP is only added on the server once the first star lands
+--     (SpillService, 2026-10-25), and the bar counts up the moment it arrives.
+--   * The level-up heal waits for the badge (issue 24): when the badge reaches a level
+--     the server raised, Remotes.LevelShown tells ExpService, which fills health then.
 --   * PlayerCardUI.Exp.shownLevel() / onShown() give the level the badge shows
 --     right now, for the quest tracker to follow.
 --   * A level up (2026-10-22, the user: like the BONK, not a banner at the top of the
@@ -41,6 +46,7 @@ local PlayerCardUI = {}
 local GUI_TIMEOUT = 15
 local player = Players.LocalPlayer
 
+local deps: any = nil
 local card: Instance? = nil
 local hud: ScreenGui? = nil
 local HudFly: any = nil
@@ -57,12 +63,18 @@ local function find(name: string, className: string): any
 	return if found and found:IsA(className) then found else nil
 end
 
-local function showHealth(humanoid: Humanoid)
+-- The health the bar shows: it follows the Humanoid, but counts up over HealSeconds on a
+-- big heal (healthValue's tween).
+local healthShown = 0
+local healthValue: NumberValue? = nil
+local healthTween: Tween? = nil
+
+local function drawHealth(humanoid: Humanoid, health: number)
 	local bar = find("Health", "GuiObject")
 	if not bar then
 		return
 	end
-	local ratio = if humanoid.MaxHealth > 0 then math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1) else 0
+	local ratio = if humanoid.MaxHealth > 0 then math.clamp(health / humanoid.MaxHealth, 0, 1) else 0
 	local fill = bar:FindFirstChild("Fill", true)
 	if fill and fill:IsA("GuiObject") then
 		fill.Size = UDim2.fromScale(ratio, fill.Size.Y.Scale)
@@ -71,8 +83,41 @@ local function showHealth(humanoid: Humanoid)
 	end
 	local amount = bar:FindFirstChild("Amount", true)
 	if amount and amount:IsA("TextLabel") then
-		amount.Text = Format.ratio(math.ceil(humanoid.Health), humanoid.MaxHealth)
+		amount.Text = Format.ratio(math.ceil(health), humanoid.MaxHealth)
 	end
+end
+
+local function showHealth(humanoid: Humanoid, instant: boolean?)
+	local bar = find("Health", "GuiObject")
+	local target = math.min(humanoid.Health, humanoid.MaxHealth)
+	local from = math.min(healthShown, humanoid.MaxHealth)
+	local share = bar and bar:GetAttribute("HealCountFrom")
+	local big = (target - from) >= humanoid.MaxHealth * (if type(share) == "number" then share else 0.05)
+	if healthTween then
+		healthTween:Cancel()
+		healthTween = nil
+	end
+	if instant or not big then
+		healthShown = target
+		drawHealth(humanoid, target)
+		return
+	end
+	if not healthValue then
+		healthValue = Instance.new("NumberValue")
+	end
+	local value = healthValue :: NumberValue
+	value.Value = from
+	local seconds = bar and bar:GetAttribute("HealSeconds")
+	local tween = TweenService:Create(value, TweenInfo.new(if type(seconds) == "number" then seconds else 0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Value = target })
+	local changed = value.Changed:Connect(function(v: number)
+		healthShown = v
+		drawHealth(humanoid, v)
+	end)
+	tween.Completed:Connect(function()
+		changed:Disconnect()
+	end)
+	healthTween = tween
+	tween:Play()
 end
 
 -- ==================== EXP ====================
@@ -81,6 +126,7 @@ local expShown = 0 -- the total EXP the bar shows right now
 local expValue: NumberValue? = nil
 local expTween: Tween? = nil
 local expPending = 0 -- star spills still on their way
+local expArriving = 0 -- star spills that landed, whose EXP the server is adding now
 local shownLevel = Leveling.START
 local levelEvent = Instance.new("BindableEvent")
 local LEVEL_MERGE = 0.9 -- seconds a level-up pop takes further levels in
@@ -225,6 +271,10 @@ local function showExp(total: number)
 		if rose and level <= earnedLevel and level > poppedLevel then
 			celebrate(level)
 		end
+		-- the level-up heal happens now (ExpService waits for this)
+		if rose and level <= earnedLevel then
+			deps.Remotes.getEvent("LevelShown"):FireServer(level)
+		end
 	end
 end
 
@@ -256,6 +306,7 @@ end
 
 function PlayerCardUI.Exp.endSpill()
 	expPending = math.max(0, expPending - 1)
+	expArriving += 1
 	countExp(expTotal())
 end
 
@@ -297,7 +348,8 @@ local function watchCharacter(character: Model)
 	if not (humanoid and humanoid:IsA("Humanoid")) then
 		return
 	end
-	showHealth(humanoid)
+	-- a new body shows its health at once (a respawn's full bar doesn't count up)
+	showHealth(humanoid, true)
 	humanoid.HealthChanged:Connect(function()
 		showHealth(humanoid)
 	end)
@@ -344,6 +396,7 @@ function PlayerCardUI.watchBadge(badge: TextLabel)
 end
 
 function PlayerCardUI.init(injected: any)
+	deps = injected
 	HudFly = injected.Util.HudFly
 	Format = injected.Util.Format
 	BonkPop = injected.Util.BonkPop
@@ -376,13 +429,14 @@ function PlayerCardUI.start()
 			end
 		end)
 		player:GetAttributeChangedSignal("ExpTotal"):Connect(function()
-			-- stars on their way count up when they land; anything else counts
-			-- after a beat (in case its spill is announced a moment later)
-			task.delay(0.2, function()
-				if expPending == 0 then
-					countExp(expTotal())
-				end
-			end)
+			-- a landed spill's EXP counts up at once; anything else waits while another
+			-- spill is still flying in (its landing counts it all)
+			if expArriving > 0 then
+				expArriving -= 1
+				countExp(expTotal())
+			elseif expPending == 0 then
+				countExp(expTotal())
+			end
 		end)
 		player.CharacterAdded:Connect(watchCharacter)
 		if player.Character then

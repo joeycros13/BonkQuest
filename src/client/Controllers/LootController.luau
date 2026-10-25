@@ -8,8 +8,10 @@
 -- Each remote sends { body, position, amount, pieces }. `pieces` copies (local
 -- only) jump out of the enemy on arcs, land around it with a little hop, spin
 -- on the spot for SIT_SECONDS, then each turns into a 2D icon that flies to
--- its sink (sink.collect). The sink counts up when the first one lands. The
--- pieces are only the look; the amount is already added on the server.
+-- its sink (sink.collect). The pieces are only the look, but the amount counts
+-- only once they arrive (2026-10-25, the user, issue 24): when the first one lands
+-- the client sends Remotes.LootLanded(id) and the server (SpillService) adds the
+-- held amount then, so the counter counts up as the loot reaches it.
 --
 -- Quest rewards use the same remotes with no body, a `position` in front of
 -- the giver and `afterTalk = true`: the sink is told at once (so its counter
@@ -109,6 +111,9 @@ local function spill(kind: Kind, info: any, begun: boolean?)
 		sink.beginSpill()
 	end
 	if not pieceTemplate or typeof(start) ~= "Vector3" then
+		if type(info.id) == "number" then
+			deps.Remotes.getEvent("LootLanded"):FireServer(info.id)
+		end
 		sink.endSpill()
 		return
 	end
@@ -117,6 +122,9 @@ local function spill(kind: Kind, info: any, begun: boolean?)
 	local function landedOnHud()
 		if not counted then
 			counted = true
+			if type(info.id) == "number" then
+				deps.Remotes.getEvent("LootLanded"):FireServer(info.id)
+			end
 			sink.endSpill()
 		end
 	end
