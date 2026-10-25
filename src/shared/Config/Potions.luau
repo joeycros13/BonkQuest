@@ -142,7 +142,9 @@ local RARITY = { "Uncommon", "Epic", "Legendary" }
 -- Tier II from World 3's enemy drops plus the Tier I potion.
 local RECIPES: { [string]: { recipe: { Ingredient }, coins: number } } = {
 	Health1 = { recipe = { { id = "Minnow", count = 2 }, { id = "ChickenFeather", count = 3 } }, coins = 25 },
-	Strength1 = { recipe = { { id = "Sunfish", count = 1 }, { id = "BullHide", count = 2 }, { id = "OakLog", count = 2 } }, coins = 50 },
+	-- the Golden Carp (the pond's rare fish) goes in the strength one, as World 3's rare Crystal Eel goes in
+	-- Strength II (2026-10-25: it was the only fish nothing used)
+	Strength1 = { recipe = { { id = "GoldenCarp", count = 1 }, { id = "BullHide", count = 2 }, { id = "OakLog", count = 2 } }, coins = 50 },
 	Stoneskin1 = { recipe = { { id = "Stone", count = 4 }, { id = "BullHide", count = 2 }, { id = "Sunfish", count = 1 } }, coins = 50 },
 	Swiftness1 = { recipe = { { id = "Horsehair", count = 2 }, { id = "Minnow", count = 2 }, { id = "OakLog", count = 2 } }, coins = 40 },
 	-- World 2's, for testing (2026-10-20): only World 2's fish, gathered wood and enemy drops
