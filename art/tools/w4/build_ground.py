@@ -12,11 +12,12 @@ Workspace.Worlds.W04_ScorchingSands/Ground and /Borders.
 
 The pieces:
   * the walkable sand: a square with one end of every wall pushed out (POLY);
-  * the rim: sand dunes in 11-stud terraces (measured in a playtest: a player jumps onto a
-    9-stud ledge but not a 10), each wall in straight stretches of 24-48 studs with their
-    own crest (41 / 52 / 63), ledge width (2 or 4) and
-    foot (0-4 out); the east rim stops at x -176, where World 2's hedges begin, and opens
-    for the corridor at z -912..-878;
+  * the rim: sand dunes in four 11-stud terraces all the way round (measured in a playtest:
+    a player jumps onto a 9-stud ledge but not a 10), every terrace the same 8 studs deep,
+    so the walls are one height (top y 52) and built of thick blocks (the user: an earlier
+    rim varied its height, ledge and foot every 24-48 studs, which left 2-stud slivers
+    where stretches met); the east rim stops at x -176, where World 2's hedges begin, and
+    opens for the corridor at z -912..-878;
   * the road: a curvy loop round the pyramid, forking at the entry and meeting again by the
     boss in the west arm, rasterised like World 2's (Catmull-Rom curves, a 12-stud square
     brush on 4-stud blocks, so every bend steps sideways by 4), flush with the sand;
@@ -26,7 +27,8 @@ The pieces:
     stepped mounds, lowered near the road so each one slopes down to its edge instead of
     walling it in;
   * the oasis in the north arm (a shallow and a deep bed under one water part, a green
-    ring), and a dormant volcano in the south arm (World 6's way in, later).
+    ring), and a dormant volcano in the south arm (World 6's way in, later), as wide as it can
+    be with `VOLCANO_GAP` studs left before the road, in 4-stud steps.
 
 Usage: python build_ground.py   (prints the counts; writes the Luau module)
 """
@@ -45,6 +47,9 @@ BASE = 2           # every column's bottom
 EAST_LIMIT = -176  # World 2's hedges start at x -175
 CORRIDOR = (-912, -878)
 TERRACE = 11       # rim step height: measured, a player gets onto 9 but not 10
+RIM_LEVELS = 4     # terraces in every wall (top y 8 + 4 x 11 = 52)
+RIM_LEDGE = 8      # how deep each terrace is
+RIM_BACK = 12      # how far the top terrace runs on behind its edge
 
 # the walkable outline, clockwise from the north arm's north-west corner
 POLY = [(-526, -700), (-386, -700), (-386, -740), (-216, -740), (-216, -1050), (-246, -1050),
@@ -69,7 +74,10 @@ PATH_HALF = 6
 PYRAMID = (-375, -900, 60)      # centre x, z, half base
 PYR_RISE = 2.5                  # up a step (each step is 2 in)
 OASIS = (-454, -734, 48, 22)
-VOLCANO = (-300, -1066, 22)
+VOLCANO = (-300, -1066)         # centre; its radius is set by the road (VOLCANO_GAP)
+VOLCANO_GAP = 10                # studs of sand between the volcano's foot and the road
+VOLCANO_MAX = 56
+VOLCANO_STEP = 4                # each ring is 4 studs wide and 4 up
 BOSS = (-534, -988, 22)
 # mounds: centre x, z, radius x, z, height (they slope down to the road by themselves)
 DUNES = [
@@ -150,30 +158,8 @@ def mound_r(x, z, cx, cz, rx, rz, seed):
     return (u ** 3 + w ** 3) ** (1 / 3) / k
 
 
-def edge_runs():
-    """Each wall split into straight stretches of 24-48 studs, each with its own crest,
-    ledge width and foot, so the rim varies along its length while every terrace stays a
-    straight block (few parts)."""
-    rnd = random.Random(41)
-    runs = []
-    n = len(POLY)
-    for e in range(n):
-        a, b = POLY[e], POLY[(e + 1) % n]
-        length = abs(b[0] - a[0]) + abs(b[1] - a[1])
-        cuts, t = [], 0
-        while t < length:
-            step = rnd.choice((24, 28, 32, 36, 40, 44, 48))
-            cuts.append((t, min(length, t + step), rnd.choice((41, 52, 52, 63)), rnd.choice((2, 4, 4)), rnd.choice((0, 2, 4))))
-            t += step
-        runs.append(cuts)
-    return runs
-
-
-RUNS = None
-
-
-def rim_at(x, z):
-    """(rectilinear distance to the walkable edge, crest, ledge, foot) for a cell outside it."""
+def rim_dist(x, z):
+    """Rectilinear distance from a cell outside the walkable outline to its nearest edge."""
     best = None
     n = len(POLY)
     for e in range(n):
@@ -181,23 +167,15 @@ def rim_at(x, z):
         if az == bz:
             lo, hi = min(ax, bx), max(ax, bx)
             d = max(lo - x, 0, x - hi, abs(z - az))
-            t = min(max(x, lo), hi) - lo if ax < bx else hi - min(max(x, lo), hi)
         else:
             lo, hi = min(az, bz), max(az, bz)
             d = max(lo - z, 0, z - hi, abs(x - ax))
-            t = min(max(z, lo), hi) - lo if az < bz else hi - min(max(z, lo), hi)
-        if best is None or d < best[0]:
-            best = (d, e, t)
-    d, e, t = best
-    for run in RUNS[e]:
-        if run[0] <= t <= run[1]:
-            return (d,) + run[2:]
-    return (d,) + RUNS[e][-1][2:]
+        if best is None or d < best:
+            best = d
+    return best
 
 
 def build():
-    global RUNS
-    RUNS = edge_runs()
     x0, x1 = -646, -176
     z1, z0 = -620, -1170   # north, south
     nx = (x1 - x0) // CELL
@@ -221,6 +199,27 @@ def build():
         for a in (0, 1):
             for b in (0, 1):
                 path_cells.add((2 * bx + a, 2 * bz + b))
+
+    # the volcano: as wide as it can be with VOLCANO_GAP studs of sand before the road
+    vx, vz = VOLCANO
+    vr = VOLCANO_MAX
+    for (ci, cj) in path_cells:
+        qx = min(max(vx, x0 + CELL * ci), x0 + CELL * ci + CELL)
+        qz = min(max(vz, z1 - CELL * cj - CELL), z1 - CELL * cj)
+        vr = min(vr, math.hypot(qx - vx, qz - vz) - VOLCANO_GAP)
+    vr = VOLCANO_STEP * math.floor(vr / VOLCANO_STEP)
+    crater = 0.3 * vr
+    rings = int((vr - crater) // VOLCANO_STEP)
+
+    def volcano_top(x, z):
+        """(top, colour) of the volcano at a cell, or None off it."""
+        r = math.hypot(x - vx, z - vz)
+        if r >= vr:
+            return None
+        if r < crater:
+            return FLOOR + VOLCANO_STEP * (rings - 2), CRATER
+        k = min(rings - 1, int((vr - r) // VOLCANO_STEP))
+        return FLOOR + VOLCANO_STEP * (k + 1), BASALT[min(2, 3 * k // rings)]
 
     # distance (studs) from every cell to the road, so mounds slope down to it
     dist = {c: 0 for c in path_cells}
@@ -253,8 +252,7 @@ def build():
                     v = None  # under the pyramid (its own slabs)
                 else:
                     orr = wob(x, z, *OASIS, seed=1.2)
-                    vx, vz, vr = VOLCANO
-                    vd = math.hypot(x - vx, z - vz) / vr
+                    vt = volcano_top(x, z)
                     if orr < 0.55:
                         v = (4, BED_DEEP, "Oasis", "Bed")
                         water_cells.append((x, z))
@@ -263,11 +261,8 @@ def build():
                         water_cells.append((x, z))
                     elif orr < 1.25:
                         v = (FLOOR, OASIS_GRASS, "Oasis", "Grass")
-                    elif vd < 1:
-                        if vd < 0.3:
-                            v = (FLOOR + 24, CRATER, "Volcano", "Basalt")
-                        else:
-                            v = (FLOOR + 2 * math.floor((1 - vd) / 0.7 * 15), BASALT[min(2, int((1 - vd) * 3))], "Volcano", "Basalt")
+                    elif vt:
+                        v = (vt[0], vt[1], "Volcano", "Basalt")
                     else:
                         h = 0
                         for n_, (cx, cz, rx, rz, H) in enumerate(DUNES):
@@ -287,17 +282,41 @@ def build():
             else:
                 if x > EAST_LIMIT:
                     continue
-                d, crest, ledge, foot = rim_at(x, z)
-                levels = (crest - FLOOR) // TERRACE
-                reach = foot + levels * ledge + 8
-                if d > reach:
+                d = rim_dist(x, z)
+                if d > RIM_LEVELS * RIM_LEDGE + RIM_BACK:
                     continue
-                if d < foot:
-                    cells[(i, j)] = (FLOOR, SAND, "Sand", "Sand")
-                else:
-                    lv = min(levels, 1 + int((d - foot) // ledge))
-                    top = FLOOR + TERRACE * lv
-                    cells[(i, j)] = (top, dune_colour(top), "Rim", "Dune")
+                lv = min(RIM_LEVELS, 1 + int(d // RIM_LEDGE))
+                top = FLOOR + TERRACE * lv
+                cells[(i, j)] = (top, dune_colour(top), "Rim", "Dune")
+                # the volcano's back runs up into the rim where it reaches it, taking the
+                # whole first terrace there (a strip of it left between the volcano's rings
+                # and the second terrace was a 2-stud sliver)
+                vt = volcano_top(x, z)
+                if vt and (vt[0] > top or lv == 1):
+                    cells[(i, j)] = (vt[0], vt[1], "Volcano", "Basalt")
+
+    # where the volcano's round foot meets the rim's straight first terrace, little wedges
+    # of terrace are left between them: give those to the volcano, so no part of the rim is
+    # narrower than an 8-stud square (the user: thick blocks only)
+    def thin(c):
+        t = cells[c][0]
+        for a in range(-3, 1):
+            for b in range(-3, 1):
+                if all(cells.get((c[0] + a + u, c[1] + b + w), (None,))[0] == t for u in range(4) for w in range(4)):
+                    return False
+        return True
+    for _ in range(12):
+        changed = False
+        for c, v in list(cells.items()):
+            if v[2] != "Rim" or not thin(c):
+                continue
+            near = [cells[n] for n in ((c[0] + 1, c[1]), (c[0] - 1, c[1]), (c[0], c[1] + 1), (c[0], c[1] - 1))
+                    if n in cells and cells[n][2] == "Volcano"]
+            if near:
+                cells[c] = min(near, key=lambda n: abs(n[0] - v[0]))
+                changed = True
+        if not changed:
+            break
 
     # greedy merge per (top, colour, folder, name)
     boxes = []
@@ -423,7 +442,7 @@ def build():
             borders.append((start, prev + CELL, wz0, wz0 + 1, FLOOR, 600))
             if x is not None:
                 start = prev = x
-    return boxes, water, cells, borders, samples
+    return boxes, water, cells, borders, samples, vr
 
 
 def write(boxes, water, borders):
@@ -450,7 +469,7 @@ def route_length(points):
 
 
 if __name__ == "__main__":
-    boxes, water, cells, borders, samples = build()
+    boxes, water, cells, borders, samples, vr = build()
     write(boxes, water, borders)
     by = {}
     for b in boxes:
@@ -460,4 +479,4 @@ if __name__ == "__main__":
     print("road lengths (entry, north way, south way, boss spur)", lens,
           "entry to boss: north", lens[0] + lens[1] + lens[3], "south", lens[0] + lens[2] + lens[3])
     tall = max(b[5] for b in boxes if b[7] == "Dunes")
-    print("tallest mound top", tall, "pyramid top", max(b[5] for b in boxes if b[7] == "Pyramid"))
+    print("volcano radius", vr, "top", max(b[5] for b in boxes if b[7] == "Volcano"), "tallest mound top", tall, "pyramid top", max(b[5] for b in boxes if b[7] == "Pyramid"))
