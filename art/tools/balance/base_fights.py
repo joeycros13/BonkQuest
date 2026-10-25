@@ -12,10 +12,8 @@ target: about 100 / 1k / 10k): the world's secret weapon with that world's upgra
 applied (level 3 a world unlocked), hits only, no crits, no Worldheart Blade.
 
 The fight is world_sim.py's, hit by hit: an 85% hit rate, crits from the Crit upgrades,
-the enemy attacking from the player's first hit (0.5 s delay, then windup / cooldown),
-knockback pushing it out of reach -- except that the base fights leave the base weapon's
-knockback out (2026-10-24: the simulation's knockback timing swung a Fox fight between 21% and
-50% on a 0.1 s windup change; knockback stays a bonus for good play). Every number comes from
+the enemy attacking from the player's first hit (0.5 s delay, then windup / cooldown); there
+is no knockback in the game since 2026-10-24 (the user), so every attack lands. Every number comes from
 world<N>.json (dump_world.luau).
 
   py base_fights.py               # the three base fights, the ladders and maxed DPS
@@ -73,27 +71,19 @@ def fight(rng, weapon, enemy, up, taken_mult):
     chance, mult = CRIT_CHANCE + UP["CritChance"] * up, CRIT_MULT + UP["CritDamage"] * up
     hp = enemy["hp"]
     t = ENGAGE + weapon["hitTime"] * (1 + UP["AttackSpeed"] * up)
-    first, knocks = None, []
+    first = None
     while True:
         if rng.random() < HIT_RATE:
             hp -= per * (mult if rng.random() < chance else 1)
             first = t if first is None else first
-            knocks.append(t)
             if hp <= 1e-6:
                 break
         t += cooldown
     end, taken = t, 0
     na = first + FIRST_ATTACK
-    back = weapon.get("knockback", 0) / max(1, enemy["chaseSpeed"])
+    # no knockback since 2026-10-24 (the user): every attack in the fight lands
     while na + enemy["windup"] < end:
-        pushed = [k for k in knocks if k <= na and k + back > na]
-        if pushed:
-            na = pushed[-1] + back
-            continue
-        lands = na + enemy["windup"]
-        missed = weapon.get("knockback", 0) >= 3 and any(na < k < lands for k in knocks)
-        if not missed:
-            taken += max(1, math.floor(enemy["damage"] * taken_mult + 0.5))
+        taken += max(1, math.floor(enemy["damage"] * taken_mult + 0.5))
         na += enemy["cooldown"]
     return end - ENGAGE, taken
 
@@ -121,7 +111,7 @@ def main():
     ]
     print("BASE FIGHTS (target: about 50% of max HP taken)")
     for world, small, level, wid, aid, up in bases:
-        wpn = dict(weapons[wid], knockback=0)
+        wpn = weapons[wid]
         arm = armor[aid] if aid else {"health": 0, "defense": 0}
         hp = max_hp(lv, level, arm["health"], up)
         taken_mult = (1 - arm["defense"]) * (1 + UP["Defense"] * up)

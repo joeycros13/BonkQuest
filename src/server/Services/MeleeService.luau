@@ -724,14 +724,9 @@ function MeleeService.WeaponHit(player: Player, targets: any)
 		if died then
 			fights[enemy.id] = nil
 		else
+			-- no knockback (the user, 2026-10-24: it threw off every damage test): a hit only
+			-- starts or carries on the fight; the enemy's flinch on the client is the recoil
 			startFight(enemy, player, claimed)
-			local current = fights[enemy.id]
-			if current and def.knockback > 0 then
-				local away = flat(current.position - root.Position)
-				if away.Magnitude > 1e-3 then
-					current.position += away.Unit * def.knockback
-				end
-			end
 		end
 	end
 end

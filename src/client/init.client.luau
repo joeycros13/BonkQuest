@@ -44,6 +44,8 @@ local CONTROLLER_ORDER = {
 	"SpinnerController",
 	"FlowController",
 	"QuestController",
+	-- the gold ! / green ? over a quest giver's head (issue 20)
+	"QuestMarkerController",
 	"GuideController",
 	"ChatTagController",
 	"PromptController",

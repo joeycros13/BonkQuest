@@ -340,14 +340,12 @@ class Run:
         rng = self.rng if not dry else random.Random(1)
         t = PLAYER["engageSeconds"] + v["hitTime"] * upg("speed")
         first_hit = None
-        knocks = []           # times the enemy was knocked back
         chance, mult = crit()
         while True:
             if rng.random() < PLAYER["hitRate"]:
                 hp -= per * (mult if rng.random() < chance else 1)
                 if first_hit is None:
                     first_hit = t
-                knocks.append(t)
                 if hp <= 1e-6:
                     break
             t += cooldown
@@ -356,18 +354,9 @@ class Run:
         taken = 0
         if first_hit is not None:
             na = first_hit + 0.5   # FIRST_ATTACK_DELAY
-            back = v.get("knockback", 0) / max(1, m["chaseSpeed"])
+            # no knockback since 2026-10-24 (the user): every attack in the fight lands
             while na + m["windup"] < end:
-                # a knockback puts it out of reach for a moment
-                pushed = [k for k in knocks if k <= na and k + back > na]
-                if pushed:
-                    na = pushed[-1] + back
-                    continue
-                lands = na + m["windup"]
-                # knocked out of reach during the windup: the attack misses
-                missed = v.get("knockback", 0) >= 3 and any(na < k < lands for k in knocks)
-                if not missed:
-                    taken += max(1, math.floor(m["damage"] * (1 - self.defense()) * upg("defense") + 0.5))
+                taken += max(1, math.floor(m["damage"] * (1 - self.defense()) * upg("defense") + 0.5))
                 na += m["cooldown"]
         return end, taken
 

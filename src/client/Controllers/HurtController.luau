@@ -5,11 +5,9 @@
 --   * A hit (Remotes.PlayerHurt from MeleeService, sent to every client): the body glows
 --     red (Effects.flash "PlayerHurt", as long as WeaponHud/HitFlash's red screen flash
 --     fades, 0.45 s) and recoils (Animation.Clips.Hurt.flinch, additive, like an enemy's
---     flinch). The player who was hit also stumbles back, away from the enemy: a
---     LinearVelocity on the root pushes it along the ground (PUSH_SPEED, easing to 0 over
---     PUSH_SECONDS, about 3.5 studs) with a little hop (HOP_SPEED), because Roblox's own
---     walking cancels a plain velocity at once (0.4 studs, measured). Never while talking
---     to an NPC (InputLocked). InventoryUI still flashes the screen and pops the damage.
+--     flinch). That recoil is all: the stumble back that pushed the hit player's body
+--     away from the enemy was removed with every other knockback (the user, 2026-10-24:
+--     it threw off damage tests). InventoryUI still flashes the screen and pops the damage.
 --   * Low health: ScreenGlow/LowHealth, a red glow round the screen's edge, shows below
 --     the gui's StartBelow share of max health (0.5) and gets stronger (MinStrength ->
 --     MaxStrength) and darker (ColorLight -> ColorDark) the lower health goes, with a
@@ -32,9 +30,6 @@ local Hurt = Animation.Clips.Hurt
 
 local HurtController = {}
 
-local PUSH_SPEED = 36 -- studs/s along the ground, away from the enemy, at the start
-local PUSH_SECONDS = 0.3 -- the push eases to 0 over this
-local HOP_SPEED = 8 -- studs/s up: a small hop as the body is knocked back
 local GUI_TIMEOUT = 15
 local player = Players.LocalPlayer
 
@@ -54,47 +49,6 @@ local function color(inst: Instance, name: string, fallback: Color3): Color3
 	return if typeof(value) == "Color3" then value else fallback
 end
 
-local function flat(v: Vector3): Vector3
-	return Vector3.new(v.X, 0, v.Z)
-end
-
-local function stumble(character: Model, from: Vector3)
-	local root = character:FindFirstChild("HumanoidRootPart")
-	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	if not (root and root:IsA("BasePart") and humanoid and humanoid.Health > 0) or player:GetAttribute("InputLocked") then
-		return
-	end
-	local away = flat(root.Position - from)
-	away = if away.Magnitude > 1e-3 then away.Unit else -flat(root.CFrame.LookVector).Unit
-	-- a newer hit replaces the push still running
-	local old = root:FindFirstChild("HurtPush")
-	if old then
-		old:Destroy()
-	end
-	local attachment = root:FindFirstChild("RootAttachment")
-	if not (attachment and attachment:IsA("Attachment")) then
-		return
-	end
-	local push = Instance.new("LinearVelocity")
-	push.Name = "HurtPush"
-	push.Attachment0 = attachment
-	push.RelativeTo = Enum.ActuatorRelativeTo.World
-	push.VelocityConstraintMode = Enum.VelocityConstraintMode.Vector
-	-- only along the ground: gravity and the hop keep the body's height
-	push.ForceLimitMode = Enum.ForceLimitMode.PerAxis
-	push.MaxAxesForce = Vector3.new(1e6, 0, 1e6)
-	push.VectorVelocity = away * PUSH_SPEED
-	push.Parent = root
-	root.AssemblyLinearVelocity = Vector3.new(root.AssemblyLinearVelocity.X, HOP_SPEED, root.AssemblyLinearVelocity.Z)
-	local ease = TweenService:Create(push, TweenInfo.new(PUSH_SECONDS, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-		VectorVelocity = Vector3.zero,
-	})
-	ease.Completed:Once(function()
-		push:Destroy()
-	end)
-	ease:Play()
-end
-
 local function onHurt(data: any)
 	local character = type(data) == "table" and data.character
 	if not (typeof(character) == "Instance" and character:IsA("Model") and character.Parent) then
@@ -105,9 +59,6 @@ local function onHurt(data: any)
 	if entry then
 		entry.animator:Stop("Player_flinch", 0)
 		entry.animator:Play(Hurt.flinch())
-	end
-	if character == player.Character and typeof(data.from) == "Vector3" then
-		stumble(character, data.from)
 	end
 end
 

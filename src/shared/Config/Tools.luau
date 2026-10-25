@@ -56,7 +56,6 @@ export type ToolDef = {
 	arc: number,
 	maxTargets: number,
 	swing: string,
-	knockback: number,
 }
 
 -- Hotbar order: Slot2 is the first kind, Slot3 the second, and so on (keys 2, 3...).
@@ -90,7 +89,6 @@ Tools.Defs = {
 		reach = 5,
 		arc = 70,
 		maxTargets = 1,
-		knockback = 0,
 		-- the Machete's diagonal: a chop down and across into the trunk
 		swing = "Diagonal",
 	},
@@ -111,7 +109,6 @@ Tools.Defs = {
 		reach = 5,
 		arc = 70,
 		maxTargets = 1,
-		knockback = 0,
 		-- the World 3 pickaxes' swing: up over the shoulder, then down into the rock
 		swing = "Mine",
 	},
@@ -135,7 +132,6 @@ Tools.Defs = {
 		reach = 0,
 		arc = 0,
 		maxTargets = 0,
-		knockback = 0,
 		swing = "Cast",
 	},
 
@@ -174,7 +170,6 @@ Tools.Defs = {
 		reach = 5,
 		arc = 70,
 		maxTargets = 1,
-		knockback = 0,
 		swing = "Diagonal",
 	},
 	StoneRod = {
@@ -205,7 +200,6 @@ Tools.Defs = {
 		reach = 0,
 		arc = 0,
 		maxTargets = 0,
-		knockback = 0,
 		swing = "Cast",
 	},
 
@@ -242,7 +236,6 @@ Tools.Defs = {
 		reach = 5,
 		arc = 70,
 		maxTargets = 1,
-		knockback = 0,
 		swing = "Mine",
 	},
 	CrystalRod = {
@@ -271,7 +264,6 @@ Tools.Defs = {
 		reach = 0,
 		arc = 0,
 		maxTargets = 0,
-		knockback = 0,
 		swing = "Cast",
 	},
 } :: { [string]: ToolDef }

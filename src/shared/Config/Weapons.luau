@@ -13,7 +13,6 @@
 --   arc         width of the hit cone in degrees (360 = all around)
 --   maxTargets  enemies one swing can hit
 --   hitTime     fraction of the swing at which the hit is checked
---   knockback   studs an enemy is shoved away on hit
 --   swing       which swing animation WeaponController plays (Animation.Clips.Weapons.SWINGS)
 --   rarity      Common / Uncommon / Rare / Epic / Legendary / Secret / Relic: the item's tile
 --               colour in the Inventory (Weapons.Rarities lists them in order)
@@ -60,7 +59,6 @@ export type WeaponDef = {
 	arc: number,
 	maxTargets: number,
 	hitTime: number,
-	knockback: number,
 	swing: string,
 	rarity: string?,
 	handed: number?,
@@ -122,7 +120,6 @@ Weapons.Defs = {
 		arc = 50,
 		maxTargets = 1,
 		hitTime = 0.5,
-		knockback = 0,
 		swing = "Jab",
 	},
 	Sickle = {
@@ -143,7 +140,6 @@ Weapons.Defs = {
 		arc = 140,
 		maxTargets = 2,
 		hitTime = 0.55, -- where the Hook passes in front of the body
-		knockback = 0,
 		swing = "Hook",
 	},
 	Machete = {
@@ -164,7 +160,6 @@ Weapons.Defs = {
 		arc = 110,
 		maxTargets = 2,
 		hitTime = 0.5,
-		knockback = 0,
 		swing = "Diagonal",
 	},
 	Shovel = {
@@ -185,7 +180,6 @@ Weapons.Defs = {
 		arc = 60,
 		maxTargets = 2,
 		hitTime = 0.6,
-		knockback = 6,
 		swing = "Bonk",
 	},
 	Pitchfork = {
@@ -206,7 +200,6 @@ Weapons.Defs = {
 		arc = 40,
 		maxTargets = 3,
 		hitTime = 0.55,
-		knockback = 1,
 		swing = "Thrust",
 	},
 	Scythe = {
@@ -227,13 +220,12 @@ Weapons.Defs = {
 		arc = 200,
 		maxTargets = 6,
 		hitTime = 0.46, -- the sweep's fastest point
-		knockback = 2,
 		swing = "Sweep",
 	},
 	-- Secret (2026-10-09, the user's idea): a giant corn cob, 8.7 studs long, held
 	-- one-handed by its stubby stalk. A rare drop from the Scarecrow King that
 	-- the Index hides until it's found. Hits hard (50, the user's call), with
-	-- big knockback and a ground-slam impact (impact = "Slam").
+	-- a ground-slam impact (impact = "Slam").
 	CornCob = {
 		id = "CornCob",
 		world = 1,
@@ -252,7 +244,6 @@ Weapons.Defs = {
 		arc = 90,
 		maxTargets = 3,
 		hitTime = 0.6,
-		knockback = 10,
 		swing = "CornBonk",
 		impact = "Slam",
 	},
@@ -278,7 +269,6 @@ Weapons.Defs = {
 		arc = 120,
 		maxTargets = 4,
 		hitTime = 0.46,
-		knockback = 8,
 		swing = "Gust",
 		impact = "Gust",
 	},
@@ -304,7 +294,6 @@ Weapons.Defs = {
 		arc = 100,
 		maxTargets = 3,
 		hitTime = 0.58,
-		knockback = 10,
 		swing = "PumpkinSmash",
 		impact = "Pumpkin",
 	},
@@ -330,7 +319,6 @@ Weapons.Defs = {
 		arc = 90,
 		maxTargets = 1,
 		hitTime = 0.5,
-		knockback = 1,
 		swing = "Chop1H",
 	},
 	Cleaver = {
@@ -351,7 +339,6 @@ Weapons.Defs = {
 		arc = 150,
 		maxTargets = 3,
 		hitTime = 0.56,
-		knockback = 1,
 		-- an overhead chop down (user, 2026-10-11)
 		swing = "Cleave",
 	},
@@ -374,7 +361,6 @@ Weapons.Defs = {
 		maxTargets = 3,
 		-- the head passes straight ahead about here in the right-to-left sweep
 		hitTime = 0.54,
-		knockback = 7,
 		swing = "StaffSweep",
 	},
 	-- ignores the enemy's armour (MeleeService)
@@ -396,7 +382,6 @@ Weapons.Defs = {
 		arc = 80,
 		maxTargets = 2,
 		hitTime = 0.6,
-		knockback = 4,
 		swing = "CornBonk",
 		ignoreArmor = true,
 	},
@@ -418,7 +403,6 @@ Weapons.Defs = {
 		arc = 70,
 		maxTargets = 2,
 		hitTime = 0.6,
-		knockback = 6,
 		swing = "Chop2H",
 	},
 	Greatclub = {
@@ -439,7 +423,6 @@ Weapons.Defs = {
 		arc = 360,
 		maxTargets = 6,
 		hitTime = 0.6,
-		knockback = 9,
 		swing = "Slam2H",
 		impact = "Slam",
 	},
@@ -461,7 +444,6 @@ Weapons.Defs = {
 		arc = 60,
 		maxTargets = 5,
 		hitTime = 0.55,
-		knockback = 8,
 		swing = "Thrust",
 	},
 	-- Legendary: the park ranger's final quest reward (the ranger isn't built yet).
@@ -483,7 +465,6 @@ Weapons.Defs = {
 		arc = 160,
 		maxTargets = 4,
 		hitTime = 0.55, -- where the Hook passes in front of the body
-		knockback = 6,
 		swing = "Hook",
 	},
 	-- Secret: the Elder Treant's 2% drop, a forked roasting stick with two
@@ -506,7 +487,6 @@ Weapons.Defs = {
 		arc = 60,
 		maxTargets = 3,
 		hitTime = 0.5,
-		knockback = 12,
 		swing = "Jab",
 	},
 	-- ==================== World 3 (The Crystal Caverns), 2026-10-13 ====================
@@ -531,7 +511,6 @@ Weapons.Defs = {
 		arc = 130,
 		maxTargets = 2,
 		hitTime = 0.55,
-		knockback = 1,
 		swing = "HookEdge",
 	},
 	IronPickaxe = {
@@ -552,7 +531,6 @@ Weapons.Defs = {
 		arc = 70,
 		maxTargets = 1,
 		hitTime = 0.58,
-		knockback = 2,
 		swing = "Mine",
 	},
 	PebbleMallet = {
@@ -563,7 +541,7 @@ Weapons.Defs = {
 		price = 65000,
 		rarity = "Uncommon",
 		name = "Pebble Mallet",
-		blurb = "A golem's stones on a stick. Big knockback.",
+		blurb = "A golem's stones on a stick. Bonks two at once.",
 		order = 24,
 		color = Color3.fromRGB(163, 152, 130),
 		handed = 1,
@@ -573,7 +551,6 @@ Weapons.Defs = {
 		arc = 90,
 		maxTargets = 2,
 		hitTime = 0.6,
-		knockback = 9,
 		swing = "CornBonk",
 	},
 	-- worn on both fists: the right glove is the model, the left glove its LeftGauntlet
@@ -596,7 +573,6 @@ Weapons.Defs = {
 		arc = 70,
 		maxTargets = 1,
 		hitTime = 0.36,
-		knockback = 2,
 		swing = "Punch",
 	},
 	GeodeGlaive = {
@@ -617,7 +593,6 @@ Weapons.Defs = {
 		arc = 200,
 		maxTargets = 5,
 		hitTime = 0.54,
-		knockback = 5,
 		swing = "GlaiveSweep",
 	},
 	EmberCoalMaul = {
@@ -638,7 +613,6 @@ Weapons.Defs = {
 		arc = 360,
 		maxTargets = 6,
 		hitTime = 0.6,
-		knockback = 9,
 		swing = "Slam2H",
 		impact = "Slam",
 	},
@@ -660,7 +634,6 @@ Weapons.Defs = {
 		arc = 140,
 		maxTargets = 4,
 		hitTime = 0.5,
-		knockback = 5,
 		swing = "Diagonal",
 	},
 	-- Legendary: the World 3 quest's final reward (Explorer Pip, ExplorerCaverns step 10, 2026-10-17).
@@ -682,7 +655,6 @@ Weapons.Defs = {
 		arc = 100,
 		maxTargets = 3,
 		hitTime = 0.58,
-		knockback = 8,
 		swing = "MineLong",
 		ignoreArmor = true,
 	},
@@ -705,7 +677,6 @@ Weapons.Defs = {
 		arc = 90,
 		maxTargets = 3,
 		hitTime = 0.5,
-		knockback = 14,
 		swing = "DiagonalLong",
 	},
 	-- ==================== the secret super weapon (memory secret-weapon-plan) ====================
@@ -730,7 +701,6 @@ Weapons.Defs = {
 		arc = 90,
 		maxTargets = 1,
 		hitTime = 0.5,
-		knockback = 0,
 		swing = "Diagonal",
 		keep = true, -- never sold: the only way to get the Worldheart Blade
 	},
@@ -754,7 +724,6 @@ Weapons.Defs = {
 		arc = 110,
 		maxTargets = 3,
 		hitTime = 0.5,
-		knockback = 4,
 		swing = "DiagonalHuge",
 		keep = true,
 		worldheartTier = 1,
@@ -779,7 +748,6 @@ Weapons.Defs = {
 		arc = 110,
 		maxTargets = 3,
 		hitTime = 0.5,
-		knockback = 4,
 		swing = "DiagonalHuge",
 		keep = true,
 		worldheartTier = 2,
@@ -802,7 +770,6 @@ Weapons.Defs = {
 		arc = 110,
 		maxTargets = 3,
 		hitTime = 0.5,
-		knockback = 4,
 		swing = "DiagonalHuge",
 		keep = true,
 		worldheartTier = 3,
