@@ -173,6 +173,28 @@ function PlayerDataService.saveNow(player: Player): boolean
 end
 
 -- Whether saves reach a DataStore at all in this server.
+-- Wipe the player's saved record, so their next join is a brand-new player (the admin
+-- panel's Reset Save, 2026-10-25). They stop being saved for the rest of this session
+-- (they are taken off the profile list, after any write under way), so neither the
+-- autosave nor leaving can write the old progress back. Returns (ok, error).
+function PlayerDataService.wipe(player: Player): (boolean, string?)
+	local profile = profiles[player]
+	profiles[player] = nil
+	if profile then
+		while profile.writing do
+			task.wait()
+		end
+	end
+	local ds = store
+	if not ds then
+		return false, "DataStores are unavailable"
+	end
+	local ok, err = retry(function()
+		return ds:RemoveAsync(keyOf(player))
+	end)
+	return ok, if ok then nil else tostring(err)
+end
+
 function PlayerDataService.canSave(): boolean
 	return store ~= nil
 end

@@ -507,6 +507,20 @@ function IndexService.init(injected: any)
 	deps.Remotes.getEvent("EquipTitle").OnServerEvent:Connect(equipTitle)
 end
 
+-- Wipe the player's saved Index (kills, discoveries, items, titles) along with their save
+-- (the admin panel's Reset Save, 2026-10-25); nothing more is saved for them this session.
+function IndexService.wipe(player: Player): (boolean, string?)
+	profiles[player] = nil
+	local ds = store
+	if not ds then
+		return false, "DataStores are unavailable"
+	end
+	local ok, err = retry(function()
+		return ds:RemoveAsync(keyOf(player))
+	end)
+	return ok, if ok then nil else tostring(err)
+end
+
 function IndexService.start()
 	local ok, result = pcall(function()
 		return DataStoreService:GetDataStore(STORE_NAME)

@@ -31,6 +31,10 @@
 --                        yesterday (the next claim climbs), else it's forgotten (testing)
 --   lbReset { period }   pay the Weekly boards' leaderboard rewards now from this
 --                        server's boards (testing; real resets need DataStores)
+--   resetSave {}         wipe the asker's save and Index (PlayerDataService.wipe /
+--                        IndexService.wipe) and kick them, so they rejoin as a brand-new
+--                        player at World 1's spawn (2026-10-25, the user: testing the gates
+--                        with everything unlocked). The leaderboards' stored scores stay.
 -- material and armor have no panel buttons yet; call them through the remote (tool is on the
 -- panel's Tools page since 2026-10-19)
 -- (testing the crafting, 2026-10-12).
@@ -301,6 +305,23 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 	-- Give All (user, 2026-10-12): every weapon (the Rusty Blade and every Worldheart tier at once:
 	-- only possible from here), every gathering tool (2026-10-19), every armour set, and
 	-- Admin.giveAllMaterials of each material (one of each core). Admins only, like every action.
+	resetSave = function(player, _request)
+		local ok, err = deps.Services.PlayerDataService.wipe(player)
+		if not ok then
+			return false, Text.resetFailed:format(tostring(err))
+		end
+		local indexOk, indexErr = deps.Services.IndexService.wipe(player)
+		if not indexOk then
+			warn("[AdminService] the Index wasn't wiped: " .. tostring(indexErr))
+		end
+		-- the reply first, then off the server: the next join loads as a new player
+		task.delay(1.5, function()
+			if player.Parent then
+				player:Kick(Text.resetKick)
+			end
+		end)
+		return true, Text.resetDone
+	end,
 	giveAll = function(player, _request)
 		local MeleeService = deps.Services.MeleeService
 		local IndexService = deps.Services.IndexService
