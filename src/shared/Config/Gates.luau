@@ -35,7 +35,7 @@ Gates.list = {
 		coins = 2500, -- the 30-minute World 1 (2026-10-19)
 		materials = { { id = "OakLog", count = 20 }, { id = "Stone", count = 20 } },
 	},
-	-- behind World 2's boss ruins, centred on them; a copy of the forest gate for now
+	-- behind World 2's boss ruins, centred on them: the crystal wall in the cave mouth (2026-10-13)
 	{
 		id = "World3",
 		world = 3,
