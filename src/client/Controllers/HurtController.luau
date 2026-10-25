@@ -87,7 +87,8 @@ local function stepLowHealth(dt: number)
 	glow.ImageColor3 = color(glow, "ColorLight", Color3.fromRGB(255, 59, 48)):Lerp(color(glow, "ColorDark", Color3.fromRGB(138, 0, 0)), shown)
 end
 
--- A healing potion was drunk: + signs off the body and a brief green edge glow.
+-- A heal (a Health potion, the Fountain of Life, a level up's refill; not regen): + signs off
+-- the body and a brief green edge glow.
 function HurtController.healed()
 	local character = player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart")

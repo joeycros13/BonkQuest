@@ -167,8 +167,9 @@ end
 
 -- The glow behind the slot that holds what's in hand (issue 19, 2026-10-24, the user's pick:
 -- "a strong glow effect that comes from the edges"): each slot's hand-built Content/Glow (a gold
--- halo the tile's shape, 2.2 x the slot, behind the Skin) fades in over the Hotbar's
--- GlowFadeSeconds, then breathes down to GlowDim and back every GlowPulseSeconds; it fades out
+-- halo the tile's shape, 2.2 x the slot, behind the Skin) fades in to the Hotbar's GlowBright
+-- transparency over GlowFadeSeconds, then breathes down to GlowDim and back every GlowPulseSeconds
+-- (toned down 2026-10-25, the user: "way too strong": 0.35 / 0.6, it was 0 / 0.22); it fades out
 -- when the slot is put away. The glowing slot drops to ZIndex 0 so its halo passes under the
 -- neighbouring tiles instead of over them.
 local glowTweens: { [GuiButton]: { Tween } } = {}
@@ -186,9 +187,9 @@ local function setGlow(button: GuiButton, on: boolean)
 	if on then
 		button.ZIndex = 0
 		glow.Visible = true
-		local fadeIn = TweenService:Create(glow, fade, { ImageTransparency = 0 })
+		local fadeIn = TweenService:Create(glow, fade, { ImageTransparency = tuning("GlowBright", 0.35) })
 		local pulse = TweenService:Create(glow, TweenInfo.new(tuning("GlowPulseSeconds", 0.9), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
-			ImageTransparency = tuning("GlowDim", 0.3),
+			ImageTransparency = tuning("GlowDim", 0.6),
 		})
 		glowTweens[button] = { fadeIn, pulse }
 		fadeIn.Completed:Once(function(state)

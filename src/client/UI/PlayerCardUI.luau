@@ -24,7 +24,8 @@
 --     (BumpScale). The EXP is only added on the server once the first star lands
 --     (SpillService, 2026-10-25), and the bar counts up the moment it arrives.
 --   * The level-up heal waits for the badge (issue 24): when the badge reaches a level
---     the server raised, Remotes.LevelShown tells ExpService, which fills health then.
+--     the server raised, Remotes.LevelShown tells ExpService, which fills health then, and
+--     a hurt player gets the heal's + signs and green glow (HurtController.healed).
 --   * PlayerCardUI.Exp.shownLevel() / onShown() give the level the badge shows
 --     right now, for the quest tracker to follow.
 --   * A level up (2026-10-22, the user: like the BONK, not a banner at the top of the
@@ -271,9 +272,14 @@ local function showExp(total: number)
 		if rose and level <= earnedLevel and level > poppedLevel then
 			celebrate(level)
 		end
-		-- the level-up heal happens now (ExpService waits for this)
+		-- the level-up heal happens now (ExpService waits for this), with the heal's + signs
+		-- and green glow once the badge reaches the top level, if there's health to refill
 		if rose and level <= earnedLevel then
 			deps.Remotes.getEvent("LevelShown"):FireServer(level)
+			local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+			if level == earnedLevel and humanoid and humanoid.Health > 0 and humanoid.Health < humanoid.MaxHealth - 0.5 and deps.Controllers.HurtController then
+				deps.Controllers.HurtController.healed()
+			end
 		end
 	end
 end
