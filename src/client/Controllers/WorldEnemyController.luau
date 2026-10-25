@@ -683,9 +683,16 @@ end
 
 -- Have a body stop wandering and turn to face `point` for `seconds`, here only (the world
 -- unlock cinematic turns the boss to its camera, issue 28). A fight still wins.
-function WorldEnemyController.face(model: Instance, point: Vector3, seconds: number)
+-- Puts a wandering enemy back on its spawn point (the middle of its wander circle),
+-- holds it there for `seconds` turned toward `point`, and returns that spot. The
+-- unlock cinematic uses it so its boss shot is framed on the spawn point, not wherever
+-- the boss had roamed to.
+function WorldEnemyController.face(model: Instance, point: Vector3, seconds: number): Vector3?
 	for _, enemy in enemies do
 		if enemy.instance == model then
+			if not (enemy.aiState ~= "Idle" and enemy.fightPos) then
+				enemy.position = enemy.origin.Position
+			end
 			enemy.target = enemy.position
 			enemy.pauseUntil = os.clock() + seconds
 			local look = Vector3.new(point.X - enemy.position.X, 0, point.Z - enemy.position.Z)
@@ -693,9 +700,10 @@ function WorldEnemyController.face(model: Instance, point: Vector3, seconds: num
 				local localLook = enemy.origin.Rotation:VectorToObjectSpace(look.Unit)
 				enemy.targetYaw = math.atan2(-localLook.X, -localLook.Z)
 			end
-			return
+			return enemy.position
 		end
 	end
+	return nil
 end
 
 function WorldEnemyController.init(injected: any)

@@ -13,12 +13,13 @@
 --      Studio to change the route), at one speed with a gentle ease at both ends. The Flyby
 --      folder's attributes: `Mode` "Straight" (one heading the whole way, the line from P1 to
 --      the last P: World 2) or "Path" (it turns with the path: World 3's cave lanes), `Pitch`
---      (degrees it looks down), `Seconds` (the flight's length; else the gui's FlightSeconds).
+--      (degrees it looks down), `Seconds` (the flight's length; else the gui's FlightSeconds),
+--      `BossTurn` (the last share of the flight over which the view turns onto the boss).
 --      The view direction is filtered (LOOK_SMOOTH), so it never jitters (2026-10-25, the user:
 --      World 2's first version was "too movey", it needed to be really smooth). The world's
 --      banner (WorldBannerUI) shows its name as the camera crosses in.
 --   3. Boss (BossSeconds): a soft fade through black to the path's `BossShot` (its CFrame is
---      the camera's: low on the ground, looking up at the boss, the user's pick), which pushes
+--      the camera's: level with the boss's middle, aimed at its spawn point, the user's pick), which pushes
 --      in PushStuds along its look while the boss plays its attack with its angry face
 --      (EnemyAnimator.showOff) and its name card slams in ("ELDER TREANT" / "WORLD BOSS").
 --   4. A fade to black, and the player is back where they were with the HUD.
@@ -250,6 +251,16 @@ function WorldFlybyController.play(world: number)
 	local pitchDegrees = flyby:GetAttribute("Pitch")
 	local pitch = math.rad(if type(pitchDegrees) == "number" then pitchDegrees else FLIGHT_PITCH)
 	local straight = flyby:GetAttribute("Mode") == "Straight"
+	-- the last share of the flight that turns the view onto the boss (World 3's ends in the
+	-- boss hall looking past her otherwise)
+	local bossTurn = math.clamp(number(flyby, "BossTurn", 0), 0, 1)
+
+	-- the boss goes back to its spawn point (the middle of its wander circle), where the
+	-- boss shot is aimed, stops wandering and turns to the shot
+	local bossAt: Vector3? = nil
+	if boss then
+		bossAt = deps.Controllers.WorldEnemyController.face(boss, shot.Position, unlockSeconds + flightSeconds + bossSeconds + 1)
+	end
 
 	-- the cinematic's pieces
 	local top = gui:FindFirstChild("TopBar") :: GuiObject?
@@ -345,7 +356,15 @@ function WorldFlybyController.play(world: number)
 			local d = Vector3.new(ahead.X - here.X, 0, ahead.Z - here.Z)
 			heading = if d.Magnitude > 1e-3 then d.Unit else lineHeading
 		end
-		return heading * math.cos(pitch) + Vector3.new(0, math.sin(pitch), 0)
+		local look = heading * math.cos(pitch) + Vector3.new(0, math.sin(pitch), 0)
+		local turnFrom = total * (1 - bossTurn)
+		if bossAt and bossTurn > 0 and s > turnFrom then
+			local toBoss = bossAt - at(raw, lengths, s)
+			if toBoss.Magnitude > 1e-3 then
+				look = look:Lerp(toBoss.Unit, smoother((s - turnFrom) / (total - turnFrom))).Unit
+			end
+		end
+		return look
 	end
 
 	-- the world's banner shows under the top bar, not behind it
@@ -354,11 +373,6 @@ function WorldFlybyController.play(world: number)
 	local bannerPosition = if banner and banner:IsA("GuiObject") then banner.Position else nil
 	if banner and banner:IsA("GuiObject") and bannerPosition then
 		banner.Position = bannerPosition + UDim2.fromScale(0, barHeight)
-	end
-
-	-- the boss stops wandering and turns to where the camera will be
-	if boss then
-		deps.Controllers.WorldEnemyController.face(boss, shot.Position, unlockSeconds + flightSeconds + bossSeconds + 1)
 	end
 
 	local savedType = camera.CameraType
@@ -417,7 +431,7 @@ function WorldFlybyController.play(world: number)
 				deps.Controllers.FadeController.fade("out", cutSeconds)
 			end
 		else
-			-- the boss: low on the ground looking up, a slow push in, the attack, the name card
+			-- the boss: a level shot, a slow push in, the attack, the name card
 			local u = math.clamp((t - flightEnd) / bossSeconds, 0, 1)
 			camera.CFrame = shot.CFrame + shot.CFrame.LookVector * (pushStuds * smoother(u))
 			if not bossShown then
