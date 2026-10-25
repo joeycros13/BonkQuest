@@ -73,6 +73,8 @@ local CONTROLLER_ORDER = {
 	"SettingsController",
 	-- a hit's red glow, recoil and stumble; the low-health edge glow; a healing potion's + signs
 	"HurtController",
+	-- a death: the body glows and breaks into blocks; your own starts the BONKED! screen
+	"DeathController",
 	-- the weekly leaderboard winners' medal over the head and #1 trail
 	"LeaderFlairController",
 	-- every other player's name over their head in the game's font (Roblox's own is hidden)
@@ -122,6 +124,8 @@ local UI_ORDER = {
 	"FishingBarUI",
 	-- our own player list, top right (name, level, coins; replaces Roblox's)
 	"PlayerListUI",
+	-- the BONKED! screen while you're dead (DeathController starts it)
+	"DeathScreenUI",
 	-- last: loads every asset and draws every panel once behind the join cover
 	"Preloader",
 }
