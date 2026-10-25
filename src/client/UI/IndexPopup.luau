@@ -37,6 +37,12 @@
 --   * Title (2026-10-20): an Index title earned. The Popup's TitleIcon / TitleSecretIcon trophy,
 --     a Collector title in the Legendary look and a Completionist title in the Secret look,
 --     TitleNewText for the tag ("NEW TITLE!") and the TitleSubtitle line.
+--
+-- Everything shows at once (2026-10-25, issue 22: the name drew a split second before its
+-- coloured banner): after filling, the popup waits until every picture it will show (banner,
+-- picture or portrait, rays, sparkles, glow) has loaded, at most LOAD_WAIT seconds, before it
+-- pops in. The Preloader also loads the per-rarity pictures on join, and the queue waits
+-- for it to finish (a discovery during the join cover plays once the cover lifts).
 
 local Players = game:GetService("Players")
 local UiSound = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("UiSound"))
@@ -55,6 +61,8 @@ local IndexPopup = {}
 
 local GUI_TIMEOUT = 15
 local MAX_CHIPS = 3
+local LOAD_WAIT = 1.5
+local ContentProvider = game:GetService("ContentProvider")
 local player = Players.LocalPlayer
 
 local deps: any = nil
@@ -63,6 +71,7 @@ local IndexUI: any = nil
 type Discovery = { kind: string, id: string, again: boolean? }
 local queue: { Discovery } = {}
 local playing = false
+local waitingForLoad = false
 local gui: ScreenGui? = nil
 
 local function attribute(inst: Instance, name: string, fallback: any): any
@@ -261,6 +270,41 @@ local function spin(image: Instance?, seconds: number): Tween?
 	return tween
 end
 
+-- Wait until every picture the filled popup will show has loaded (at most LOAD_WAIT).
+local function waitForImages(pop: Frame)
+	local ids: { string } = {}
+	for _, d in pop:GetDescendants() do
+		if (d:IsA("ImageLabel") or d:IsA("ImageButton")) and d.Image ~= "" then
+			-- only what will be on screen: it and everything above it visible
+			local shown = d.Visible
+			local up = d.Parent
+			while shown and up and up ~= pop do
+				if up:IsA("GuiObject") and not up.Visible then
+					shown = false
+				end
+				up = up.Parent
+			end
+			if shown then
+				table.insert(ids, d.Image)
+			end
+		end
+	end
+	if #ids == 0 then
+		return
+	end
+	local finished = false
+	task.spawn(function()
+		pcall(function()
+			ContentProvider:PreloadAsync(ids)
+		end)
+		finished = true
+	end)
+	local deadline = os.clock() + LOAD_WAIT
+	while not finished and os.clock() < deadline do
+		task.wait()
+	end
+end
+
 local function screenFrame(name: string): Frame?
 	local found = gui and gui:FindFirstChild(name)
 	return if found and found:IsA("Frame") then found else nil
@@ -269,6 +313,18 @@ end
 local function playNext()
 	local pop = gui and gui:FindFirstChild("Popup")
 	if playing or not (pop and pop:IsA("Frame")) then
+		return
+	end
+	-- nothing plays behind the join cover; the queue starts once everything has loaded
+	local Preloader = deps.UI.Preloader
+	if Preloader and not Preloader.isDone() then
+		if not waitingForLoad then
+			waitingForLoad = true
+			Preloader.whenDone(function()
+				waitingForLoad = false
+				playNext()
+			end)
+		end
 		return
 	end
 	local item = table.remove(queue, 1)
@@ -283,6 +339,8 @@ local function playNext()
 		playNext()
 		return
 	end
+	-- banner, picture and rays all ready before anything shows
+	waitForImages(pop)
 	UiSound.play("NewItem")
 	local p = pop :: any
 	local tweens: { Tween } = {}
