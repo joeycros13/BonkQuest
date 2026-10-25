@@ -20,6 +20,8 @@ local UTIL_ORDER = {
 	"FontDrop",
 	-- the comic "BONK!" when an enemy is defeated
 	"BonkPop",
+	-- the wrong-tool hint (a BonkPop) for trees, rocks and fishing water
+	"ToolHint",
 	"Format",
 	-- the shared weapon tile every screen clones
 	"WeaponTile",

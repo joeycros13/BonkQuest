@@ -8,7 +8,9 @@
 --     Fishing.castDistance ahead in an arc. Over water (a part tagged Fishing.Tag) it
 --     splashes down and floats, and the server hears where; over land it thuds down,
 --     "Cast into the water!" pops up and the line comes back in. Water whose spot needs a
---     better rod (Config/Fishing `tier`) is treated like land, with "Needs a Stone Rod".
+--     better rod (Config/Fishing `tier`) is treated like land: it splashes and comes back, with
+--     the wrong-tool hint at the splash (Util.ToolHint, 2026-10-25: "Needs a Stone Rod /
+--     Upgrade it at the Weaponsmith", the rod's hotbar slot shaking in orange-red).
 --   * The line is a Beam from the rod tip (the rod Grip's "Tip" attachment) to the
 --     bobber's "Line" attachment, sagging while slack and pulled straight while a fish
 --     fights. Both ends are attachments in Terrain, moved every frame, so the sag always
@@ -75,7 +77,7 @@ type Line = {
 	to: Vector3,
 	surface: number, -- the water's top under the bobber
 	wet: boolean, -- landed on fishing water the rod can fish
-	needs: string?, -- landed on water that needs a better rod: the popup's words
+	needs: number?, -- landed on water that needs a better rod: the rod tier it needs
 	flyStart: number,
 	mode: string, -- "fly" | "float" | "reel"
 	depth: number, -- current depth under the float line (eased toward `sink`)
@@ -270,11 +272,11 @@ local function launch()
 	clearShadow()
 	local to, wet, spot = landingSpot(root)
 	-- a rod only fishes its own world's water or older
-	local needs: string? = nil
+	local needs: number? = nil -- the rod tier this water needs, when the one in hand is too weak
 	local rod = WeaponController.tool()
 	if wet and spot and rod and (rod.tier or 1) < (spot.tier or 1) then
 		wet = false
-		needs = "Needs a " .. Fishing.rodFor(spot)
+		needs = spot.tier or 1
 	end
 	local bobber = template:Clone()
 	noCollide(bobber)
@@ -334,9 +336,9 @@ local function landed(current: Line)
 		end
 	else
 		if current.needs then
-			-- water this rod can't fish: it splashes, then the line comes back in
+			-- water this rod can't fish: it splashes, the hint pops there, the line comes back in
 			Effects.burst(current.to, "Splash")
-			popup(rootPart(), current.needs)
+			deps.Util.ToolHint.show(current.to + Vector3.new(0, 1.5, 0), "Rod", current.needs)
 		else
 			Effects.burst(current.to, "Dust", { count = 5 })
 			popup(rootPart(), "Cast into the water!")
