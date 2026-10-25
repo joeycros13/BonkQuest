@@ -13,6 +13,10 @@
 --       Slider           Track (Fill, Knob), Hit (the drag area), Value (ValueFormat "%d%%")
 --       Switch           a pill button: Skin, Label, Knob; attributes SkinOn / SkinOff,
 --                        TextOn / TextOff, KnobOnX / KnobOffX, LabelOnX / LabelOffX
+--       Picker           a "world" setting (Spawn in; issue 25, 2026-10-25): Prev and Next
+--                        (the Worlds panel's gold arrow buttons) either side of Value, a
+--                        pill reading "Newest world" / "World 2"; the arrows go round
+--                        Newest world and every world unlocked (HighestWorld)
 --     Note               "Saved to your account automatically"
 
 local Players = game:GetService("Players")
@@ -90,6 +94,33 @@ local function wireSwitch(def: Settings.SettingDef, switch: any)
 	end)
 end
 
+local function wirePicker(def: Settings.SettingDef, picker: any)
+	-- Newest world, then every world the player has unlocked
+	local function choices(): { number }
+		local list = { 0 }
+		local highest = player:GetAttribute("HighestWorld")
+		local top = math.clamp(if type(highest) == "number" then highest else 1, 1, Settings.MAX_WORLD)
+		for world = 1, top do
+			table.insert(list, world)
+		end
+		return list
+	end
+	local function step(by: number)
+		local list = choices()
+		local at = table.find(list, Settings.value(player, def.id) :: number) or 1
+		controller().set(def.id, list[(at - 1 + by) % #list + 1], true)
+	end
+	renders[def.id] = function()
+		picker.Value.Text = Settings.worldText(Settings.value(player, def.id) :: number)
+	end
+	picker.Prev.Activated:Connect(function()
+		step(-1)
+	end)
+	picker.Next.Activated:Connect(function()
+		step(1)
+	end)
+end
+
 local function fitCanvas()
 	local list = window.List
 	local ratio = attribute(list, "CanvasRatio", 1)
@@ -121,6 +152,8 @@ function SettingsUI.start()
 			local row = window.List:FindFirstChild("Row_" .. def.id)
 			if row and def.kind == "volume" and row:FindFirstChild("Slider") then
 				wireSlider(def, row.Slider)
+			elseif row and def.kind == "world" and row:FindFirstChild("Picker") then
+				wirePicker(def, row.Picker)
 			elseif row and row:FindFirstChild("Switch") then
 				wireSwitch(def, row.Switch)
 			end

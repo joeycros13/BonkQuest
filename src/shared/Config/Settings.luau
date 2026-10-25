@@ -9,19 +9,32 @@
 --   volume   0..1, a share of the SoundGroup's own mix (its BaseVolume attribute):
 --            1 is the game as mixed, lower is quieter
 --   toggle   true / false
--- Every word the panel shows is here: each def's `name` and `note`, the sections' names.
+--   world    a whole number: 0 = the newest world unlocked, else that world (issue 25,
+--            2026-10-25, the user's pick: "Spawn in", where you appear when you join;
+--            SpawnService clamps it to the worlds unlocked)
+-- Every word the panel shows is here: each def's `name` and `note`, the sections' names,
+-- and Settings.Text.
 
 local Settings = {}
 
 export type SettingDef = {
 	id: string,
 	section: string,
-	kind: "volume" | "toggle",
+	kind: "volume" | "toggle" | "world",
 	default: number | boolean,
 	name: string,
 	note: string,
 	group: string?, -- volume: the SoundService SoundGroup it scales
 }
+
+-- the world picker's words
+Settings.Text = {
+	newestWorld = "Newest world",
+	worldFormat = "World %d",
+}
+
+-- the most worlds the picker can name
+Settings.MAX_WORLD = 8
 
 Settings.Sections = {
 	{ id = "Sound", name = "Sound" },
@@ -44,6 +57,8 @@ local LIST: { SettingDef } = {
 		name = "Hit bubbles", note = "Damage numbers on enemies" },
 	{ id = "SprintZoom", section = "Gameplay", kind = "toggle", default = true,
 		name = "Sprint zoom", note = "The camera widens while you sprint" },
+	{ id = "SpawnWorld", section = "Gameplay", kind = "world", default = 0,
+		name = "Spawn in", note = "Where you appear when you join" },
 	{ id = "Particles", section = "Graphics", kind = "toggle", default = true,
 		name = "Particles", note = "Petals, butterflies, fireflies" },
 	{ id = "Shadows", section = "Graphics", kind = "toggle", default = true,
@@ -75,6 +90,11 @@ function Settings.clean(def: SettingDef, value: any): (number | boolean)?
 			return nil
 		end
 		return math.floor(math.clamp(value, 0, 1) * 100 + 0.5) / 100
+	elseif def.kind == "world" then
+		if type(value) ~= "number" or value ~= value then
+			return nil
+		end
+		return math.clamp(math.floor(value + 0.5), 0, Settings.MAX_WORLD)
 	end
 	return if type(value) == "boolean" then value else nil
 end
@@ -87,6 +107,20 @@ function Settings.value(player: Player, id: string): any
 		return value
 	end
 	return def and def.default
+end
+
+-- The world picker's words for a choice: "Newest world" or "World 2".
+function Settings.worldText(choice: number): string
+	return if choice == 0 then Settings.Text.newestWorld else Settings.Text.worldFormat:format(choice)
+end
+
+-- The world a "world" setting sends the player to, given the highest world they've unlocked.
+function Settings.spawnWorld(player: Player, highest: number): number
+	local choice = Settings.value(player, "SpawnWorld")
+	if type(choice) ~= "number" or choice <= 0 then
+		return highest
+	end
+	return math.clamp(choice, 1, highest)
 end
 
 -- A toggle's state, true by default.

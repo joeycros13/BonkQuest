@@ -13,6 +13,9 @@
 --
 -- Not before the player's data has loaded (HighestWorld is 1 until then), and not while a
 -- teleport is under way.
+--
+-- WorldGuardService.worldOf(player): the unlocked world whose ground the player last stood
+-- on (SpawnService respawns a player in the world they died in; issue 25, 2026-10-25).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -26,6 +29,7 @@ local RAY_DOWN = 80 -- studs below the root the ground is looked for (hedge tops
 
 local deps: any = nil
 local lastSafe: { [Player]: CFrame } = {}
+local lastWorld: { [Player]: number } = {}
 local grounds: { { folder: Instance, world: number } } = {}
 local params = RaycastParams.new()
 params.FilterType = Enum.RaycastFilterType.Include
@@ -87,6 +91,7 @@ local function check(player: Player)
 		-- remember only spots they actually stood on, not a jump's arc
 		if humanoid.FloorMaterial ~= Enum.Material.Air then
 			lastSafe[player] = root.CFrame
+			lastWorld[player] = world
 		end
 		return
 	end
@@ -101,6 +106,21 @@ local function check(player: Player)
 	end
 end
 
+-- The unlocked world the player last stood in, or nil before they've stood anywhere.
+function WorldGuardService.worldOf(player: Player): number?
+	return lastWorld[player]
+end
+
+-- The world under a position (any world, unlocked or not), or nil.
+function WorldGuardService.worldAt(position: Vector3): number?
+	return worldUnder(position)
+end
+
+-- A world's Spawns/PlayerSpawn, or nil.
+function WorldGuardService.spawnOf(world: number): BasePart?
+	return spawnOf(world)
+end
+
 function WorldGuardService.init(injected: any)
 	deps = injected
 end
@@ -109,6 +129,7 @@ function WorldGuardService.start()
 	collectGrounds()
 	Players.PlayerRemoving:Connect(function(player)
 		lastSafe[player] = nil
+		lastWorld[player] = nil
 	end)
 	task.spawn(function()
 		while true do

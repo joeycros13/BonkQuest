@@ -50,6 +50,8 @@ local SERVICE_ORDER = {
 	"PortalService",
 	-- sends a player standing in a world they haven't unlocked back (through PortalService)
 	"WorldGuardService",
+	-- where a player appears: the Settings' "Spawn in" world on join, the world they died in after
+	"SpawnService",
 	-- the Infusers: cores into the Rusty / Worldheart Blade through MaterialService and MeleeService
 	"InfuseService",
 	-- World 3's secret crystal code: opens the front mineshaft for whoever solves it
