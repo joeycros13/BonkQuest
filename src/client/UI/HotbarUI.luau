@@ -13,8 +13,9 @@
 --     (WeaponController.toggleHolster).
 --   * The slot holding what's in hand (the weapon taken out, or a tool) stays grown
 --     like a hovered one (user, 2026-10-19), so it shows what's in your hand. The
---     Hotbar's HeldScale attribute sets how big (default: HoverScale). No other
---     highlight (the user's call).
+--     Hotbar's HeldScale attribute sets how big (default: HoverScale). Since 2026-10-24
+--     (issue 19) it also glows: a gold halo from the tile's edges that breathes gently
+--     (setGlow below).
 --   * Tool slots (2026-10-18): Slot2.. are copies of Slot1, one per gathering tool kind
 --     (their "ToolKind" attribute, Config/Tools.Kinds order: Axe, Pickaxe, Shovel, Rod
 --     on keys 2-5). A slot shows only once the player owns a tool of its kind, and
@@ -164,6 +165,51 @@ local function wireHover(button: GuiButton)
 	end)
 end
 
+-- The glow behind the slot that holds what's in hand (issue 19, 2026-10-24, the user's pick:
+-- "a strong glow effect that comes from the edges"): each slot's hand-built Content/Glow (a gold
+-- halo the tile's shape, 2.2 x the slot, behind the Skin) fades in over the Hotbar's
+-- GlowFadeSeconds, then breathes down to GlowDim and back every GlowPulseSeconds; it fades out
+-- when the slot is put away. The glowing slot drops to ZIndex 0 so its halo passes under the
+-- neighbouring tiles instead of over them.
+local glowTweens: { [GuiButton]: { Tween } } = {}
+
+local function setGlow(button: GuiButton, on: boolean)
+	local content = button:FindFirstChild("Content")
+	local glow = content and content:FindFirstChild("Glow")
+	if not (glow and glow:IsA("ImageLabel")) then
+		return
+	end
+	for _, tween in glowTweens[button] or {} do
+		tween:Cancel()
+	end
+	local fade = TweenInfo.new(tuning("GlowFadeSeconds", 0.15), Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	if on then
+		button.ZIndex = 0
+		glow.Visible = true
+		local fadeIn = TweenService:Create(glow, fade, { ImageTransparency = 0 })
+		local pulse = TweenService:Create(glow, TweenInfo.new(tuning("GlowPulseSeconds", 0.9), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
+			ImageTransparency = tuning("GlowDim", 0.3),
+		})
+		glowTweens[button] = { fadeIn, pulse }
+		fadeIn.Completed:Once(function(state)
+			if state == Enum.PlaybackState.Completed then
+				pulse:Play()
+			end
+		end)
+		fadeIn:Play()
+	else
+		button.ZIndex = 1
+		local fadeOut = TweenService:Create(glow, fade, { ImageTransparency = 1 })
+		glowTweens[button] = { fadeOut }
+		fadeOut.Completed:Once(function(state)
+			if state == Enum.PlaybackState.Completed then
+				glow.Visible = false
+			end
+		end)
+		fadeOut:Play()
+	end
+end
+
 -- Mark the hotbar slot that holds what's in hand: Slot1 while the weapon is out, a
 -- tool slot while its kind is out.
 local function refreshHeld()
@@ -182,6 +228,7 @@ local function refreshHeld()
 		if held ~= state.held then
 			state.held = held
 			state.set()
+			setGlow(child :: GuiButton, held)
 		end
 	end
 end
