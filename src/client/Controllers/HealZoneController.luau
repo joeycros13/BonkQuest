@@ -7,10 +7,10 @@
 -- plays the potions' + signs and green screen glow (HurtController.healed, 2026-10-25).
 --
 -- The Fountain of Life's label (2026-10-25, the user): each zone's hand-built BillboardGui
--- `Label` (Plate with Label / LabelShadow "Fountain of Life"; Status with Bar and Text) shows
--- this player's own cooldown: while their HealZoneReady (server time) is ahead, Text reads the
--- gui's CooldownFormat ("Ready in %ds") and Bar fills back up over the zone's Cooldown in its
--- CooldownFill colour; otherwise Text is ReadyText ("Step in to heal") on a full ReadyFill bar.
+-- `Label` (Plate with Label / LabelShadow "Fountain of Life"; Status with Text, all plain
+-- outlined text with no backgrounds or bar, the user's call) shows this player's own cooldown:
+-- while their HealZoneReady (server time) is ahead, Text counts down in the gui's
+-- CooldownFormat ("%ds": 30s, 29s...); otherwise it reads ReadyText ("Step in to heal").
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -65,23 +65,13 @@ local function refreshLabels()
 	for _, zone in CollectionService:GetTagged("HealZone") do
 		local gui = zone:IsDescendantOf(Workspace) and zone:FindFirstChild("Label")
 		local status = gui and gui:FindFirstChild("Status")
-		local bar = status and status:FindFirstChild("Bar")
 		local text = status and status:FindFirstChild("Text")
-		if not (gui and bar and bar:IsA("GuiObject") and text and text:IsA("TextLabel")) then
+		if not (gui and text and text:IsA("TextLabel")) then
 			continue
 		end
-		local cooldown = zone:GetAttribute("Cooldown")
-		local total = if type(cooldown) == "number" and cooldown > 0 then cooldown else 30
-		local cooling = left > 0
-		local fill = if cooling then math.clamp(1 - left / total, 0, 1) else 1
-		local colour = gui:GetAttribute(if cooling then "CooldownFill" else "ReadyFill")
-		local words = if cooling
-			then (gui:GetAttribute("CooldownFormat") or "Ready in %ds"):format(math.ceil(left))
+		local words = if left > 0
+			then (gui:GetAttribute("CooldownFormat") or "%ds"):format(math.ceil(left))
 			else gui:GetAttribute("ReadyText") or "Step in to heal"
-		bar.Size = UDim2.fromScale(fill, 1)
-		if typeof(colour) == "Color3" then
-			bar.BackgroundColor3 = colour
-		end
 		if text.Text ~= words then
 			text.Text = words
 		end
