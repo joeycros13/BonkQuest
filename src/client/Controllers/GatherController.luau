@@ -345,6 +345,11 @@ local function onSwingLanded(root: BasePart, def: any, struckEnemy: boolean?)
 		end
 		return
 	end
+	-- a rod's swing is a cast (FishingController): it never touches trees or rocks, so a
+	-- cast beside one doesn't pop the tree hint on top of the cast's own
+	if def.kind == "Rod" then
+		return
+	end
 	local tool = def :: Tools.ToolDef
 	local all = struck(root, tool)
 	local hits = {}
