@@ -6,7 +6,10 @@
 -- The body no longer falls apart (DeathService keeps its joints and holds it where it
 -- stood). When any character dies: its root is anchored here too, at once, and set upright
 -- (the client that owns a body simulates it, and Roblox's Dead state tipped it into a flip
--- before the server's anchor arrived), then it rises LIFT studs while it glows white (a
+-- before the server's anchor arrived) and every animation on it gives way to the death
+-- pose (Clips.Hurt.death: the idle with the arms out and the torso forward; Roblox's
+-- Animate script, which shows through once the humanoid is Dead, is stopped too), then it
+-- rises LIFT studs while it glows white (a
 -- Highlight fading in over GLOW_SECONDS), then it's hidden on this client (LocalTransparencyModifier, its name tag and medal off)
 -- and breaks into little white and gold blocks (BLOCK_COLORS), laid on each limb on a
 -- PIECE-stud grid, that fly up and out, tumble, shrink and fade (top first), with the enemies' Poof and
@@ -20,6 +23,8 @@ local TweenService = game:GetService("TweenService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Animation = require(Shared:WaitForChild("Animation"))
 local Effects = Animation.Effects
+local Character = Animation.Character
+local Hurt = Animation.Clips.Hurt
 
 local DeathController = {}
 
@@ -147,12 +152,35 @@ local function freezeAndRise(character: Model)
 	}):Play()
 end
 
+-- The death pose (Clips.Hurt.death) and nothing else: Roblox's Animate script and its
+-- tracks are stopped, and so is every one of our tracks (the walk, a hold or swing, the
+-- hurt flinch), so no two animations ever mix on a dying body.
+local function deathPose(character: Model)
+	local animate = character:FindFirstChild("Animate")
+	if animate and animate:IsA("LocalScript") then
+		animate.Enabled = false
+	end
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	local robloxAnimator = humanoid and humanoid:FindFirstChildOfClass("Animator")
+	if robloxAnimator then
+		for _, track in robloxAnimator:GetPlayingAnimationTracks() do
+			track:Stop(0.15)
+		end
+	end
+	local entry = Character.peek(character)
+	if entry then
+		entry.animator:StopAll(Hurt.DEATH_FADE)
+		entry.animator:Play(Hurt.death())
+	end
+end
+
 local function onDied(character: Model)
 	if dying[character] then
 		return
 	end
 	dying[character] = true
 	freezeAndRise(character)
+	deathPose(character)
 	if character == player.Character then
 		deps.UI.DeathScreenUI.died()
 	end
