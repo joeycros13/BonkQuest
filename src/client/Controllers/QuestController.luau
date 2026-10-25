@@ -14,7 +14,9 @@
 --   2. eases the camera in on the giver's face, framed so the face sits right
 --      of the dialogue card,
 --   3. plays the conversation for the player's quest state through DialogueUI:
---      Offer -> the offer lines + Objective, Reward, Accept / Not now
+--      Offer -> the offer lines + Objective, Reward, Accept / Not now (the
+--               step's offerHasTool lines when its tool is already owned, and
+--               straight on to the hand-in if accepting met the goal: issue 21)
 --      Active -> the reminder line, Okay
 --      Ready -> the hand-in lines, Claim reward, then straight on to the next
 --               step's offer
@@ -226,7 +228,7 @@ local function converse(line: Quests.Line)
 		local tag = if step then lineTag(line) else nil
 		if step and state == "Offer" then
 			local choice = DialogueUI.say({
-				lines = step.offer,
+				lines = Quests.offerLines(step, player),
 				tag = tag,
 				objective = { text = step.objective, icon = iconFor(step) },
 				reward = step.reward,
@@ -235,6 +237,12 @@ local function converse(line: Quests.Line)
 			})
 			if choice == "accept" and send(line, "accept") then
 				UiSound.play("QuestAccept")
+				-- a goal already met on accepting (the logs already held, issue 21): the
+				-- server sets Active and Ready in the same frame, so hand it in right away
+				task.wait()
+				if player:GetAttribute(Quests.attr("State", line.id)) == "Ready" then
+					continue
+				end
 			end
 			return
 		elseif step and state == "Active" then

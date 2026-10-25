@@ -40,6 +40,15 @@
 -- once per row; a refresh only re-reads the counts. Once the tool is owned the grid hides. Buy
 -- stays locked (SkinLocked, not clickable) until the previous tool, every material and the coins
 -- are there.
+-- Quest tools (issue 21, 2026-10-25, option A on https://claude.ai/artifact/KLEW2GK4kiH8cWgQqhsEdJ):
+-- while a quest step is waiting on a tool this stall sells (Quests.shopNeeds), the panel opens on
+-- the Tools tab and that row lights up: its hand-built `QuestGlow` (the hotbar's gold halo,
+-- 9-sliced with its PillSlice attribute, behind the row's Skin) breathes between the gui's
+-- QuestGlowBright and QuestGlowDim every QuestPulseSeconds, its `QuestRibbon` over the top edge
+-- reads "Needed for Dale's quest" (the ribbon's Format), and the row draws over its neighbours
+-- (ZIndex 2) so the ribbon and halo aren't covered. On the Weapons tab the Tools tab's
+-- `QuestBadge` ("!") bounces (its `Bounce` UIScale to the gui's QuestBadgeBounce). All of it goes
+-- the moment the tool is owned.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -53,6 +62,9 @@ local Weapons = require(Shared:WaitForChild("Config"):WaitForChild("Weapons"))
 local Worlds = require(Shared:WaitForChild("Config"):WaitForChild("Worlds"))
 local Format = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("Format"))
 local Bonuses = require(Shared:WaitForChild("Config"):WaitForChild("Bonuses"))
+local Quests = require(Shared:WaitForChild("Config"):WaitForChild("Quests"))
+local FontDrop = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("FontDrop"))
+local TweenService = game:GetService("TweenService")
 
 local ShopUI = {}
 
@@ -65,6 +77,8 @@ local shop: ScreenGui? = nil
 local buying = false
 -- the open tab: "Weapons" or "Tools"
 local tab = "Weapons"
+-- the running quest-highlight tweens, by the glow or badge they move
+local pulses: { [Instance]: Tween } = {}
 
 local function attribute(inst: Instance, name: string, fallback: any): any
 	local value = inst:GetAttribute(name)
@@ -270,6 +284,55 @@ local function fillStats(row: Instance, def: any)
 	stat("Reach", (("%.1f"):format(swing.reach or 0):gsub("%.0$", "")))
 end
 
+-- Start (or stop) a looping back-and-forth tween on `inst` (the quest glow and badge).
+local function pulse(inst: Instance, on: boolean, goal: { [string]: any }, seconds: number)
+	local running = pulses[inst]
+	if on and not running then
+		local tween = TweenService:Create(inst, TweenInfo.new(seconds, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), goal)
+		pulses[inst] = tween
+		tween:Play()
+	elseif not on and running then
+		running:Cancel()
+		pulses[inst] = nil
+	end
+end
+
+-- The quest tools sold at this world's stall: tool id -> the giver's short name.
+local function questTools(world: number): { [string]: string }
+	local here: { [string]: string } = {}
+	for id, who in Quests.shopNeeds(player) do
+		local def = Tools.get(id)
+		if def and (def.world or 1) == world then
+			here[id] = who
+		end
+	end
+	return here
+end
+
+-- A tool row's quest look (see the header).
+local function styleQuest(row: Instance, who: string?)
+	local glow = row:FindFirstChild("QuestGlow")
+	local ribbon = row:FindFirstChild("QuestRibbon")
+	local on = who ~= nil and shop ~= nil and shop.Enabled
+	if row:IsA("GuiObject") then
+		row.ZIndex = if on then 2 else 1
+	end
+	if glow and glow:IsA("ImageLabel") then
+		glow.Visible = on
+		if not on then
+			glow.ImageTransparency = attribute(shop :: any, "QuestGlowBright", 0)
+		end
+		pulse(glow, on, { ImageTransparency = attribute(shop :: any, "QuestGlowDim", 0.45) }, attribute(shop :: any, "QuestPulseSeconds", 0.6))
+	end
+	if ribbon and ribbon:IsA("GuiObject") then
+		ribbon.Visible = on
+		local label = ribbon:FindFirstChild("Label")
+		if on and label and label:IsA("TextLabel") then
+			label.Text = (attribute(ribbon, "Format", "Needed for %s's quest") :: string):format(who :: string)
+		end
+	end
+end
+
 local function refresh()
 	if not shop then
 		return
@@ -281,6 +344,7 @@ local function refresh()
 		amount.Text = Format.coins(balance)
 	end
 	local world = currentWorld()
+	local needs = questTools(world)
 	-- the header pill names the world whose stall this is (as the Crafter's does)
 	local info = Worlds.get(world)
 	local pill = shop:FindFirstChild("World", true)
@@ -300,6 +364,21 @@ local function refresh()
 		end
 		if row:IsA("GuiObject") then
 			row.Visible = def ~= nil and (def.world or 1) == world and isTool(row) == (tab == "Tools")
+		end
+		if isTool(row) then
+			styleQuest(row, if row:IsA("GuiObject") and row.Visible then needs[row:GetAttribute("ItemId") :: string] else nil)
+		end
+	end
+	-- the Tools tab's "!" while a quest tool waits there and another tab is open
+	local badge = shop:FindFirstChild("QuestBadge", true)
+	if badge and badge:IsA("GuiObject") then
+		badge.Visible = next(needs) ~= nil and tab ~= "Tools" and shop.Enabled
+		local bounce = badge:FindFirstChild("Bounce")
+		if bounce and bounce:IsA("UIScale") then
+			if not badge.Visible then
+				bounce.Scale = 1
+			end
+			pulse(bounce, badge.Visible, { Scale = attribute(shop, "QuestBadgeBounce", 1.2) }, 0.45)
 		end
 	end
 	-- the tabs: the open one in the selected colours
@@ -397,7 +476,29 @@ local function wire(gui: ScreenGui)
 	for _, name in Bonuses.Watch do
 		player:GetAttributeChangedSignal(name):Connect(refresh)
 	end
-	gui:GetPropertyChangedSignal("Enabled"):Connect(refresh)
+	-- a quest step moving on can start or end a quest tool's highlight
+	for _, id in Quests.order do
+		for _, field in { "Step", "State" } do
+			player:GetAttributeChangedSignal(Quests.attr(field, id)):Connect(refresh)
+		end
+	end
+	for _, row in rows() do
+		local ribbon = row:FindFirstChild("QuestRibbon")
+		if ribbon then
+			FontDrop.watch(ribbon)
+		end
+	end
+	local badge = gui:FindFirstChild("QuestBadge", true)
+	if badge then
+		FontDrop.track(badge)
+	end
+	gui:GetPropertyChangedSignal("Enabled"):Connect(function()
+		-- opening with a quest tool for sale here goes straight to its tab
+		if gui.Enabled and next(questTools(currentWorld())) ~= nil then
+			tab = "Tools"
+		end
+		refresh()
+	end)
 	refresh()
 end
 
