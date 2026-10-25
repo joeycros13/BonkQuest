@@ -50,9 +50,10 @@ local World: WorldTypes.WorldDef = {
 	id = 3,
 	name = "The Crystal Caverns",
 	folder = "W03_CrystalCaverns",
-	-- the Index world card and Worlds-menu banner (2026-10-17, no enemies, past the stalls
-	-- looking at the boarded-up mine entrance; art/portraits/worlds/world_W03_2026-10-17.png)
-	profile = "rbxassetid://106928307558031",
+	-- the Index world card and Worlds-menu banner (re-shot 2026-10-24 for the rebuilt cave, in its
+	-- "Deep sapphire" light with no enemies or HUD: the middle hall's glowing lake and stepping stones,
+	-- the middle mine entrance behind it; art/portraits/worlds/world_W03_2026-10-24.png)
+	profile = "rbxassetid://99281382499866",
 	-- "Deep sapphire" (the user's pick, 2026-10-24): a blue cave light and haze with more
 	-- contrast and colour, so the glowing crystals and the lake stand out. No sky shows
 	-- underground, so the sun settings only keep the look steady.
