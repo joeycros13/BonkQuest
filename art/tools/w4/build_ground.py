@@ -24,7 +24,9 @@ The pieces:
     boss in the west arm, rasterised like World 2's (Catmull-Rom curves, a 12-stud square
     brush on 4-stud blocks, so every bend steps sideways by 4), flush with the sand;
   * the pyramid: a stepped pyramid (2 in, 2.5 up a step, about Giza's 51 degrees) with a
-    gold capstone;
+    gold capstone, hollow (the user, 2026-10-26): a hall in the middle and a doorway in the
+    middle of every side, flush with the sand, with flat sand kept in front of each; and a
+    sandstone tower (decoration) just off each of its corners;
   * mounds: big dunes in 2-stud steps (10-20 tall), rounded squares like World 1's
     stepped mounds, lowered near the road so each one slopes down to its edge instead of
     walling it in;
@@ -95,6 +97,13 @@ PATH_HALF = 6
 
 PYRAMID = (-375, -1098, 60)      # centre x, z, half base
 PYR_RISE = 2.5                  # up a step (each step is 2 in)
+PYR_HALL = 22                   # the hall inside: 44 x 44
+PYR_HALL_TOP = 40               # its ceiling (32 over the floor; the roof over it is 14+ thick)
+PYR_DOOR = 6                    # each doorway is 12 wide
+PYR_DOOR_TOP = 22               # and 14 tall
+PYR_APPROACH = 16               # flat sand kept this far out in front of each doorway
+TOWER_OUT = 68                  # each corner tower's centre, this far out from the pyramid's centre in x and z
+TOWER_CLEAR = 8                 # flat sand kept round a tower's middle
 OASIS = (-454, -932, 48, 22)
 VOLCANO = (-300, -1264)         # centre; its radius is set by the road (VOLCANO_GAP)
 VOLCANO_GAP = 10                # studs of sand between the volcano's foot and the road
@@ -198,6 +207,74 @@ def rim_dist(x, z):
     return best
 
 
+def subtract(box, hole):
+    """The parts of box (x0, x1, z0, z1, y0, y1) outside hole: at most six boxes."""
+    x0, x1, z0, z1, y0, y1 = box
+    hx0, hx1, hz0, hz1, hy0, hy1 = hole
+    if hx0 >= x1 or hx1 <= x0 or hz0 >= z1 or hz1 <= z0 or hy0 >= y1 or hy1 <= y0:
+        return [box]
+    out = []
+    if hx0 > x0:
+        out.append((x0, hx0, z0, z1, y0, y1))
+    if hx1 < x1:
+        out.append((hx1, x1, z0, z1, y0, y1))
+    mx0, mx1 = max(x0, hx0), min(x1, hx1)
+    if hz0 > z0:
+        out.append((mx0, mx1, z0, hz0, y0, y1))
+    if hz1 < z1:
+        out.append((mx0, mx1, hz1, z1, y0, y1))
+    mz0, mz1 = max(z0, hz0), min(z1, hz1)
+    if hy0 > y0:
+        out.append((mx0, mx1, mz0, mz1, y0, hy0))
+    if hy1 < y1:
+        out.append((mx0, mx1, mz0, mz1, hy1, y1))
+    return out
+
+
+TOWER_SLIT = "6B4A2B"
+
+
+def tower_boxes(cx, cz):
+    """One sandstone tower (a decoration): a stepped plinth, a square shaft with two bands
+    and a window slit on every face, a cap, eight merlons round the top and a small gold
+    stepped point in the middle (the pyramid's capstone, small). (x0, x1, z0, z1, y0, y1,
+    colour, part name) in world terms."""
+    out = []
+
+    def sq(half, y0, y1, colour, name, dx=0.0, dz=0.0, hz=None):
+        hz = half if hz is None else hz
+        out.append((cx + dx - half, cx + dx + half, cz + dz - hz, cz + dz + hz, y0, y1, colour, name))
+
+    sq(6, FLOOR, FLOOR + 2, SANDSTONE_BAND, "Plinth")
+    sq(5.25, FLOOR + 2, FLOOR + 3.5, SANDSTONE, "Step")
+    sq(4.5, FLOOR + 3.5, FLOOR + 30, SANDSTONE, "Shaft")
+    sq(4.9, FLOOR + 12, FLOOR + 13.2, SANDSTONE_BAND, "Band")
+    sq(4.9, FLOOR + 22, FLOOR + 23.2, SANDSTONE_BAND, "Band")
+    # a slit on each face, 0.1 proud of the shaft
+    sq(0.6, FLOOR + 16, FLOOR + 19.5, TOWER_SLIT, "Slit", dz=-4.55, hz=0.05)
+    sq(0.6, FLOOR + 16, FLOOR + 19.5, TOWER_SLIT, "Slit", dz=4.55, hz=0.05)
+    sq(0.05, FLOOR + 16, FLOOR + 19.5, TOWER_SLIT, "Slit", dx=-4.55, hz=0.6)
+    sq(0.05, FLOOR + 16, FLOOR + 19.5, TOWER_SLIT, "Slit", dx=4.55, hz=0.6)
+    sq(5.5, FLOOR + 30, FLOOR + 32, SANDSTONE_BAND, "Cap")
+    for mx in (-4.5, 0, 4.5):
+        for mz in (-4.5, 0, 4.5):
+            if mx == 0 and mz == 0:
+                continue
+            sq(1, FLOOR + 32, FLOOR + 34.5, SANDSTONE, "Merlon", dx=mx, dz=mz)
+    sq(2, FLOOR + 32, FLOOR + 33.5, GOLD, "Gold")
+    sq(1, FLOOR + 33.5, FLOOR + 35.5, GOLD, "Gold")
+    return out
+
+
+def towers():
+    px_, pz_, _ = PYRAMID
+    out = []
+    for name, sx, sz in (("Tower_NE", 1, 1), ("Tower_NW", -1, 1), ("Tower_SE", 1, -1), ("Tower_SW", -1, -1)):
+        for b in tower_boxes(px_ + sx * TOWER_OUT, pz_ + sz * TOWER_OUT):
+            out.append((name, *b))
+    return out
+
+
 def build():
     x0, x1 = -646, -176
     z1, z0 = -818, -1368   # north, south
@@ -260,6 +337,17 @@ def build():
                     q.append(nb)
 
     px_, pz_, ph = PYRAMID
+    d0, d1 = ph - 1, ph + PYR_APPROACH
+    keep_flat = [
+        (px_ + d0, px_ + d1, pz_ - PYR_DOOR - 2, pz_ + PYR_DOOR + 2),
+        (px_ - d1, px_ - d0, pz_ - PYR_DOOR - 2, pz_ + PYR_DOOR + 2),
+        (px_ - PYR_DOOR - 2, px_ + PYR_DOOR + 2, pz_ + d0, pz_ + d1),
+        (px_ - PYR_DOOR - 2, px_ + PYR_DOOR + 2, pz_ - d1, pz_ - d0),
+    ]
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            tx, tz = px_ + sx * TOWER_OUT, pz_ + sz * TOWER_OUT
+            keep_flat.append((tx - TOWER_CLEAR, tx + TOWER_CLEAR, tz - TOWER_CLEAR, tz + TOWER_CLEAR))
     cells = {}
     water_cells = []
     for i in range(nx):
@@ -294,9 +382,12 @@ def build():
                                 h = max(h, 2 * math.floor(H * (1 - dr ** 2.2) ** 0.8 / 2 + 0.5))
                         # slope down to the road (and keep 2 studs of flat sand beside it)
                         h = min(h, max(0, int(dist.get((i, j), 99) - 2)))
-                        # and down to the pyramid's foot
+                        # and down to the pyramid's foot, its doorways' approaches and its towers
                         gap = max(abs(x - px_), abs(z - pz_)) - ph
                         h = min(h, max(0, int(gap - 2)))
+                        for (kx0, kx1, kz0, kz1) in keep_flat:
+                            kd = math.hypot(max(kx0 - x, x - kx1, 0), max(kz0 - z, z - kz1, 0))
+                            h = min(h, max(0, int(kd - 2)))
                         h -= h % 2  # 2-stud steps
                         if h > 0:
                             v = (FLOOR + h, dune_colour(FLOOR + h), "Dunes", "Dune")
@@ -383,13 +474,23 @@ def build():
         bz_north = z1 - CELL * j
         boxes.append((bx0, bx0 + CELL * w, bz_north - CELL * h, bz_north, BASE, top, colour, folder, name))
 
-    # the pyramid: one square slab a step, from the sand up
+    # the pyramid: one square slab a step, from the sand up, with the hall and the four
+    # doorways taken out of them (each slab split round the holes into world-aligned boxes)
+    holes = [
+        (px_ - PYR_HALL, px_ + PYR_HALL, pz_ - PYR_HALL, pz_ + PYR_HALL, FLOOR, PYR_HALL_TOP),
+        (px_ - ph - 1, px_ + ph + 1, pz_ - PYR_DOOR, pz_ + PYR_DOOR, FLOOR, PYR_DOOR_TOP),  # east-west
+        (px_ - PYR_DOOR, px_ + PYR_DOOR, pz_ - ph - 1, pz_ + ph + 1, FLOOR, PYR_DOOR_TOP),  # north-south
+    ]
     half, y, k = ph, BASE, 0
     while half >= 2:
         top = FLOOR + PYR_RISE * (k + 1) if k > 0 else FLOOR + PYR_RISE
         bottom = BASE if k == 0 else FLOOR + PYR_RISE * k
         colour = GOLD if half <= 4 else (SANDSTONE_BAND if k % 4 == 3 else SANDSTONE)
-        boxes.append((px_ - half, px_ + half, pz_ - half, pz_ + half, bottom, top, colour, "Pyramid", "Gold" if colour == GOLD else "Sandstone"))
+        pieces = [(px_ - half, px_ + half, pz_ - half, pz_ + half, bottom, top)]
+        for hole in holes:
+            pieces = [q for pc in pieces for q in subtract(pc, hole)]
+        for pc in pieces:
+            boxes.append((*pc, colour, "Pyramid", "Gold" if colour == GOLD else "Sandstone"))
         half -= 2
         k += 1
 
@@ -498,6 +599,11 @@ def write(boxes, water, borders):
         lines.append("\t\t{" + ", ".join(str(v) for v in b) + "},")
     lines.append("\t},")
     lines.append(f"\twater = {{{', '.join(str(v) for v in water)}}},")
+    lines.append("\ttowers = {")
+    for t in towers():
+        name, x0, x1, z0, z1, y0, y1, col, part = t
+        lines.append(f'\t\t{{"{name}", {x0}, {x1}, {z0}, {z1}, {y0}, {y1}, "{col}", "{part}"}},')
+    lines.append("\t},")
     lines.append(f"\tboss = {{{', '.join(str(v) for v in BOSS)}}},")
     lines.append(f"\tplace = {{ from = {{ {EAST_LIMIT}, {CORRIDOR_Z} }}, to = {{ {WORLD_END[0]}, {WORLD_END[1]} }}, turn = {WORLD_TURN}, drop = {WORLD_DROP} }},")
     lines.append("}")
