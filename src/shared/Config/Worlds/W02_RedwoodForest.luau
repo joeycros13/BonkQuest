@@ -107,7 +107,7 @@ local World: WorldTypes.WorldDef = {
 				{ weapon = "Cleaver", chance = 0.0125 },
 			},
 			-- crafting materials (Config/Materials): the first armour set
-			materials = { { id = "FoxFur", chance = 0.5, min = 1, max = 2 } },
+			materials = { { id = "FoxFur", chance = 0.5, min = 1, max = 1 } },
 		},
 		-- Tough minion: armoured hide and a tusk charge
 		-- (ServerStorage/Assets/Enemies/Boar).
@@ -125,7 +125,7 @@ local World: WorldTypes.WorldDef = {
 				{ weapon = "Quarterstaff", chance = 0.0375 },
 				{ weapon = "Mace", chance = 0.02 },
 			},
-			materials = { { id = "BoarTusk", chance = 0.5, min = 1, max = 2 } },
+			materials = { { id = "BoarTusk", chance = 0.5, min = 1, max = 1 } },
 		},
 		-- Elite: one at the far end of each lane; rears up for a two-paw slam
 		-- (ServerStorage/Assets/Enemies/Bear).
@@ -144,7 +144,7 @@ local World: WorldTypes.WorldDef = {
 				{ weapon = "Greatclub", chance = 0.02 },
 			},
 			-- the second armour set
-			materials = { { id = "BearClaw", chance = 0.4, min = 1, max = 1 } },
+			materials = { { id = "BearClaw", chance = 0.5, min = 1, max = 1 } },
 		},
 		-- SECRET (2026-10-12): the Fairy of the hollow stump. Found by looking through the
 		-- lookout telescope at the fairy ring, then standing in the ring for 5 s. A small

@@ -117,6 +117,7 @@ def main():
             span = block(text, aid, "\t")
             text, span = sub_in(text, span, r"\bhealth = \d+,", f"health = {ar['health']},", changes, f"armour {aid} health {ar['health']}")
             text, span = sub_in(text, span, r"\bcoins = \d+,", f"coins = {ar['coins']},", changes, f"armour {aid} coins {ar['coins']}")
+            text, span = sub_in(text, span, r"\blevel = \d+,", f"level = {ar['level']},", changes, f"armour {aid} level {ar['level']}")
             lines = "".join(f"\t\t\t{{ id = \"{x['id']}\", count = {x['count']} }},\n" for x in items(ar["recipe"]))
             text, span = sub_in(text, span, r"recipe = \{\n(?:\t\t\t[^\n]*\n)*?\t\t\},", "recipe = {\n" + lines + "\t\t},",
                                 changes, f"armour {aid} recipe")

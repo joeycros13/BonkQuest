@@ -56,7 +56,9 @@ Gathering.reachSlack = 3
 
 Gathering.Nodes = {
 	-- ==================== World 1 (The Sunny Meadows) ====================
-	-- The Wooden Axe / Pickaxe (power 20) fell an oak in 5 hits and break a boulder in 6.
+	-- The Wooden Axe / Pickaxe (power 10) fell an oak or break a boulder in 5 hits (2026-10-26, the user:
+	-- both 50 HP, the tools 10 a hit; the x2 world scale had made them 100 / 120 and 20). One drop a break,
+	-- always.
 	OakTree = {
 		id = "OakTree",
 		name = "Oak Tree",
@@ -64,7 +66,7 @@ Gathering.Nodes = {
 		verb = "Chop",
 		tool = "Axe",
 		tier = 1,
-		hp = 100,
+		hp = 50,
 		respawn = 45,
 		drops = {
 			{ id = "OakLog", min = 1, max = 1, chance = 1 },
@@ -77,7 +79,7 @@ Gathering.Nodes = {
 		verb = "Mine",
 		tool = "Pickaxe",
 		tier = 1,
-		hp = 120,
+		hp = 50,
 		respawn = 45,
 		drops = {
 			{ id = "Stone", min = 1, max = 1, chance = 1 },

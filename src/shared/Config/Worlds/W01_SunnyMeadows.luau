@@ -69,7 +69,7 @@ local World: WorldTypes.WorldDef = {
 				{ weapon = "Machete", chance = 0.0125 },
 			},
 			-- crafting materials (Config/Materials): the first armour set
-			materials = { { id = "ChickenFeather", chance = 0.5, min = 1, max = 2 } },
+			materials = { { id = "ChickenFeather", chance = 0.5, min = 1, max = 1 } },
 		},
 		-- Elite: guards the far end of each path before the boss platform. Hits
 		-- harder, so it is a real check before the boss
@@ -89,7 +89,7 @@ local World: WorldTypes.WorldDef = {
 				{ weapon = "Pitchfork", chance = 0.0375 },
 				{ weapon = "Shovel", chance = 0.0375 },
 			},
-			materials = { { id = "BullHide", chance = 0.5, min = 1, max = 2 } },
+			materials = { { id = "BullHide", chance = 0.5, min = 1, max = 1 } },
 		},
 		-- Elite: the third enemy (user, 2026-10-12), a dappled grey wild horse guarding the
 		-- path up to the King's platform. Rears up and slams both front hooves down (the

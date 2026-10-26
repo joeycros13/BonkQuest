@@ -404,6 +404,10 @@ local function findHits(root: BasePart, def: Weapons.WeaponDef): { Hit }
 	return hits
 end
 
+-- a tool swung at an enemy: the "use your weapon" hint, at most this often
+local TOOL_HINT_GAP = 1.5
+local lastToolHint = -math.huge
+
 -- Turn to face the nearest enemy close enough to be worth swinging at.
 local function aimAssist(root: BasePart, def: Weapons.WeaponDef)
 	local best: Vector3? = nil
@@ -427,9 +431,20 @@ local function landSwing(character: Model, root: BasePart, def: any)
 	if player.Character ~= character or not held or held.id ~= def.id or not alive(character) then
 		return
 	end
-	-- a tool's swing is for the trees and rocks (GatherController), never enemies
+	-- a tool's swing is for the trees and rocks (GatherController), never enemies; one that
+	-- reaches an enemy tells the player to take their weapon out (ToolHint.weapon, at most every
+	-- TOOL_HINT_GAP seconds)
 	if def.kind then
 		landedEvent:Fire(root, def, false)
+		local hits = findHits(root, def)
+		if #hits > 0 and os.clock() - lastToolHint >= TOOL_HINT_GAP and deps.Util.ToolHint then
+			lastToolHint = os.clock()
+			-- on the enemy's side facing the player, at chest height
+			local pos = hits[1].pos
+			local toward = flat(root.Position - pos)
+			local side = if toward.Magnitude > 0.1 then toward.Unit * 1.5 else Vector3.zero
+			deps.Util.ToolHint.weapon(Vector3.new(pos.X, root.Position.Y + 1, pos.Z) + side)
+		end
 		return
 	end
 	local hits = findHits(root, def)

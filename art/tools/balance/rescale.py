@@ -73,8 +73,7 @@ GATHER_YIELD = 1            # every node gives one of its material a break (2-3 
 # its level 5)
 ARMOR_CHANGES = {
     # no Stone (2026-10-26): the pickaxe only comes at Dale's step 5, after the bulls the set is for
-    "FarmhandsGear": {"coins": 75, "ChickenFeather": 8, "OakLog": 8},
-    "HarvestKnight": {"OakLog": 10, "Stone": 12},
+    "FarmhandsGear": {"coins": 75},
     "WoodlandHide": {"RedwoodLog": 15},
     "HeartwoodBark": {"RedwoodLog": 20},
     "CaveRunner": {"IronOre": 18},
@@ -155,11 +154,29 @@ def main(knobs=KNOBS, quiet=False):
     # player in plain clothes), so it's Chicken Feathers, Oak Logs and Stone; the hide moves to
     # Harvest Knight
     a1 = data[1]["armor"]
-    a1["FarmhandsGear"]["recipe"] = {"1": {"id": "ChickenFeather", "count": 8}, "2": {"id": "OakLog", "count": 8}}
-    hk = a1["HarvestKnight"]["recipe"]
-    if not any(x["id"] == "BullHide" for x in items(hk)):
-        hk[str(len(hk) + 1)] = {"id": "BullHide", "count": 8}
-    log.append("recipe FarmhandsGear: Chicken Feather 8 + Oak Log 8 (no Bull Hide); HarvestKnight + Bull Hide 8")
+    # (2026-10-26, the user's second round: the hide back in the first set, it fits the leather
+    # theme; both sets harder to make, so their levels go up with them: knobs 1.farmLevel / 1.hkLevel)
+    a1["FarmhandsGear"]["recipe"] = {"1": {"id": "ChickenFeather", "count": 10}, "2": {"id": "BullHide", "count": 3},
+                                     "3": {"id": "OakLog", "count": 8}}
+    a1["HarvestKnight"]["recipe"] = {"1": {"id": "Horsehair", "count": 6}, "2": {"id": "LuckyHorseshoe", "count": 1},
+                                     "3": {"id": "GoldenStraw", "count": 3}, "4": {"id": "OakLog", "count": 5},
+                                     "5": {"id": "Stone", "count": 15}, "6": {"id": "BullHide", "count": 10}}
+    a1["FarmhandsGear"]["level"] = int(knobs[1].get("farmLevel", 7))
+    a1["HarvestKnight"]["level"] = int(knobs[1].get("hkLevel", 16))
+    log.append("recipe FarmhandsGear: Chicken Feather 10 + Bull Hide 3 + Oak Log 8; HarvestKnight: Horsehair 6, "
+               "Lucky Horseshoe, Golden Straw 3, Oak Log 5, Stone 15, Bull Hide 10")
+    # World 1's trees and rocks: 50 HP, the wooden tools 10 a hit (the user; 5 hits a node)
+    for nid in ("OakTree", "Boulder"):
+        data[1]["gathering"][nid]["hp"] = 50
+    for tid in ("WoodenAxe", "WoodenPickaxe"):
+        data[1]["tools"][tid]["power"] = 10
+    # every enemy material a flat 50% for 1, luck never applied (cores keep their 1%)
+    for d in data.values():
+        for group in ("enemies", "bosses"):
+            for e in d["config"][group].values():
+                for dr in items(e.get("materials", {})):
+                    if dr["chance"] > 0.02:
+                        dr["chance"], dr["min"], dr["max"] = 0.5, 1, 1
     # World 2 the same way: its first set and the Stone Axe (the Redwood Logs) come from the Fox
     # alone, and the Boar Tusks go to Heartwood Bark
     a2 = data[2]["armor"]

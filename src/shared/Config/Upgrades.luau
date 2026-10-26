@@ -13,7 +13,7 @@
 -- client because UpgradeService publishes each level as the player's
 -- "Upgrade_<id>" attribute:
 --   Sprint       sprint speed x (0 = no sprinting at all; level 1 unlocks it)
---   Luck         x drop chances (weapons and materials, never cores; stacks with passes)
+--   Luck         x weapon drop chances (never materials or cores since 2026-10-26; stacks with passes)
 --   Health       x max HP (the level's HP plus armour)
 --   Defense      x damage taken
 --   Attack       x weapon damage

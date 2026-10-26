@@ -9,9 +9,9 @@
 -- top) and Templates/Toast (a CanvasGroup: Body/Card/Content, a centred row
 -- (Util.CenterRow) of Slot/Icon, Amount and ItemName). The Toast's attributes set the motion: SlideFrom (how far right
 -- it starts, a fraction of its width), InSeconds, HoldSeconds, OutSeconds and
--- MaxShown. The same material again while its toast is up adds to it and
--- restarts its timer. A quest item (afterTalk) waits for the conversation to
--- close, like the reward coins.
+-- MaxShown. Every pickup gets its own card, even the same material twice in a row (the user,
+-- 2026-10-26: back-to-back drops stacked on one card, so it wasn't clear where each came from).
+-- A quest item (afterTalk) waits for the conversation to close, like the reward coins.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -77,14 +77,6 @@ local function show(id: string, amount: number)
 	if not (def and stack and template) then
 		return
 	end
-	local entry = live[id]
-	if entry then
-		entry.amount += amount
-		entry.toast.Body.Card.Content.Amount.Text = "+" .. Format.commas(entry.amount)
-		hold(id, entry)
-		return
-	end
-
 	-- make room: the oldest goes first
 	local shown = {}
 	for otherId, other in live do
@@ -115,9 +107,11 @@ local function show(id: string, amount: number)
 	TweenService:Create(toast, info, { GroupTransparency = 0 }):Play()
 	TweenService:Create(toast.Body, info, { Position = UDim2.fromScale(0, 0) }):Play()
 
-	entry = { toast = toast, amount = amount, token = 0 }
-	live[id] = entry
-	hold(id, entry :: Live)
+	-- each card is its own entry, keyed by its order, never merged with another
+	local key = tostring(order)
+	local entry: Live = { toast = toast, amount = amount, token = 0 }
+	live[key] = entry
+	hold(key, entry)
 end
 
 local function onDropped(info: any)

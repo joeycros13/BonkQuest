@@ -23,8 +23,9 @@
 --               QuestTracker/Templates/MaterialChip per item (Icon, Count "5/8" in
 --               its Format), coloured from its ShortFill / ShortText / DoneFill /
 --               DoneText attributes; the badge shows the first item still short
---   Reward      the gold tab under the card: Caption, Coins / Exp (Icon, Amount) and
---               Item (Icon: the quest item or weapon), what this step pays
+--   Reward      the gold tab under the card: Coins / Exp chips (Icon, Amount; centred rows) and
+--               Item (Icon: the quest item or weapon), what this step pays. No "Reward"
+--               caption since 2026-10-26 (the user: it spilled out of the tab)
 --   Guide       turns the guide arrow on / off (GuideController); shown only
 --               when there is somewhere to point. While held down it sits
 --               pressed into its lip (GuideLip) and darkens by PressDarken,

@@ -5,8 +5,9 @@
 -- Gathering: trees and rocks broken by GatherService give theirs through `drop`.
 --
 -- Kills: every kill rolls the enemy's `materials` table (Config/Worlds); each
--- entry rolls on its own and drops min..max of its material, its chance times the
--- killer's "LuckBoost" (capped at 100%, like weapon drops). Quest items come
+-- entry rolls on its own and drops min..max of its material at its chance. Since 2026-10-26 (the
+-- user) every material is a flat 50% for 1, and luck never changes it (it used to multiply the
+-- chance by the killer's "LuckBoost"; luck is for weapon drops). Quest items come
 -- from QuestService (give), once per player. Secret-weapon cores (`core`) drop
 -- like materials but at most once per player ever (remembered in `received`, so
 -- infusing one later never lets it drop again), luck never changes their chance
@@ -32,7 +33,6 @@ local Config = Shared:WaitForChild("Config")
 local Enemies = require(Config:WaitForChild("Enemies"))
 local Materials = require(Config:WaitForChild("Materials"))
 local Upgrades = require(Config:WaitForChild("Upgrades"))
-local Bonuses = require(Config:WaitForChild("Bonuses"))
 
 local MaterialService = {}
 
@@ -137,8 +137,6 @@ local function onKill(enemy: any, killer: Player?)
 		return
 	end
 	local profile = profileOf(killer)
-	-- passes, boosts and the Luck upgrade, added (Config/Bonuses); never cores
-	local luck = Bonuses.luck(killer)
 	local items = {}
 	for _, drop in table_ do
 		local material = Materials.get(drop.id)
@@ -154,7 +152,7 @@ local function onKill(enemy: any, killer: Player?)
 					discovered:FireClient(killer, { kind = "Core", id = drop.id })
 				end
 			end
-		elseif random:NextNumber() < math.min(1, drop.chance * luck) then
+		elseif random:NextNumber() < drop.chance then
 			local amount = random:NextInteger(drop.min, math.max(drop.min, drop.max))
 			if amount > 0 then
 				table.insert(items, { id = drop.id, amount = amount })

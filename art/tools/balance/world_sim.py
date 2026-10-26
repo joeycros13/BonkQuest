@@ -455,7 +455,7 @@ class Run:
             self.progress += got
         self.add_exp(round(e.get("exp", 0) * upg("exp")))
         for x in e["materials"]:
-            if self.rng.random() < lucky(x["chance"]):
+            if self.rng.random() < x["chance"]:  # luck never touches materials (2026-10-26)
                 n = self.rng.randint(x["min"], max(x["min"], x["max"]))
                 self.mats[x["id"]] = self.mats.get(x["id"], 0) + n
         for x in e["drops"]:

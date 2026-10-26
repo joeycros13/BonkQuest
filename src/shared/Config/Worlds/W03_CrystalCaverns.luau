@@ -89,7 +89,7 @@ local World: WorldTypes.WorldDef = {
 				{ weapon = "BatwingBlade", chance = 0.05 },
 				{ weapon = "IronPickaxe", chance = 0.0125 },
 			},
-			materials = { { id = "BatWing", chance = 0.5, min = 1, max = 2 } },
+			materials = { { id = "BatWing", chance = 0.5, min = 1, max = 1 } },
 		},
 		-- Tough minion: stacked stones round a glowing core, mid-lane; a wind-up
 		-- punch (ServerStorage/Assets/Enemies/PebbleGolem).
@@ -107,7 +107,7 @@ local World: WorldTypes.WorldDef = {
 				{ weapon = "PebbleMallet", chance = 0.0375 },
 				{ weapon = "GoldGauntlets", chance = 0.02 },
 			},
-			materials = { { id = "GolemPebble", chance = 0.5, min = 1, max = 2 } },
+			materials = { { id = "GolemPebble", chance = 0.5, min = 1, max = 1 } },
 		},
 		-- Elite: dark slate with crystal clusters, guarding the two lanes into the boss
 		-- hall; an overhead double-fist slam (ServerStorage/Assets/Enemies/CrystalGolem).
@@ -125,7 +125,7 @@ local World: WorldTypes.WorldDef = {
 				{ weapon = "GeodeGlaive", chance = 0.025 },
 				{ weapon = "EmberCoalMaul", chance = 0.02 },
 			},
-			materials = { { id = "GolemCrystal", chance = 0.4, min = 1, max = 1 } },
+			materials = { { id = "GolemCrystal", chance = 0.5, min = 1, max = 1 } },
 		},
 		-- SECRET (2026-10-13): the Gem Mole of the hidden mine. Found by striking the
 		-- three pulsing crystals in the order the tunnel's hint shows (blue, pink,
