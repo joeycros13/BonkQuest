@@ -23,7 +23,12 @@
 --               Quest Tracker Materials canvas): instead of Count, one clone of
 --               QuestTracker/Templates/MaterialChip per item (Icon, Count "5/8" in
 --               its Format), coloured from its ShortFill / ShortText / DoneFill /
---               DoneText attributes; the badge shows the first item still short
+--               DoneText attributes; the badge shows the first item still short.
+--               Hardest first, left to right (Quests.ranked: the boss, then the elite...;
+--               Stone before Oak Logs), on a UIGridLayout: chips that don't fit one row
+--               wrap onto the next, and the card grows to hold them (fitCard: Pill and
+--               PillLip get taller and Reward moves down by the extra rows; 2026-10-26,
+--               the user: the Clean Up's four enemies ran off the card)
 --   Reward      the gold tab under the card: Coins / Exp chips (Icon, Amount; centred rows) and
 --               Item (Icon: the quest item or weapon), what this step pays. No "Reward"
 --               caption since 2026-10-26 (the user: it spilled out of the tab)
@@ -256,13 +261,13 @@ local function chipsFor(line: Quests.Line, step: Quests.Step): { Chip }
 	local out: { Chip } = {}
 	if step.kind == "bring" then
 		local held = Materials.counts(player)
-		for _, item in step.items or {} do
+		for _, item in Quests.ranked(step) do
 			local def = Materials.get(item.id)
 			table.insert(out, { id = item.id, icon = def and def.icon or "", have = held[item.id] or 0, need = item.count })
 		end
 	elseif step.kind == "hunt" then
 		local kills = Quests.huntKills(player, line.id)
-		for _, target in step.targets or {} do
+		for _, target in Quests.ranked(step) do
 			local def = Enemies.get(target.id)
 			table.insert(out, { id = target.id, icon = def and def.portrait or "", have = kills[target.id] or 0, need = target.count })
 		end
@@ -305,6 +310,30 @@ local function renderChips(chips: Instance, items: { Chip })
 		chip.BackgroundColor3 = template:GetAttribute(if met then "DoneFill" else "ShortFill") or chip.BackgroundColor3
 		chip.Count.TextColor3 = template:GetAttribute(if met then "DoneText" else "ShortText") or chip.Count.TextColor3
 		chip.Count.Text = (template:GetAttribute("Format") or "%s/%s"):format(Format.commas(have), Format.commas(item.need))
+	end
+end
+
+-- The card as authored (one row of chips); fitCard grows it by the rows past the first.
+local cardBase: { [GuiObject]: UDim2 } = {}
+
+local function fitCard()
+	local frame = tracker
+	local chips = frame and frame:FindFirstChild("Chips")
+	if not (frame and chips and chips:IsA("GuiObject")) then
+		return
+	end
+	local grid = chips:FindFirstChildWhichIsA("UIGridLayout")
+	local extra = 0
+	if chips.Visible and grid and frame.AbsoluteSize.Y > 0 then
+		local oneRow = grid.CellSize.Y.Scale * chips.AbsoluteSize.Y + grid.CellSize.Y.Offset
+		extra = math.max(0, grid.AbsoluteContentSize.Y - oneRow) / frame.AbsoluteSize.Y
+	end
+	for piece, base in cardBase do
+		if piece.Name == "Reward" then
+			piece.Position = base + UDim2.fromScale(0, extra)
+		else
+			piece.Size = base + UDim2.fromScale(0, extra)
+		end
 	end
 end
 
@@ -414,6 +443,7 @@ local function render()
 		chips.Visible = byItem
 		renderChips(chips, if byItem then list else {})
 	end
+	fitCard()
 	if ready then
 		countLabel.Text = line.returnNote
 	elseif tool then
@@ -449,6 +479,22 @@ function QuestTrackerUI.start()
 		return
 	end
 	tracker = frame
+	for _, name in { "Pill", "PillLip" } do
+		local piece = frame:FindFirstChild(name)
+		if piece and piece:IsA("GuiObject") then
+			cardBase[piece] = piece.Size
+		end
+	end
+	local rewardTab = frame:FindFirstChild("Reward")
+	if rewardTab and rewardTab:IsA("GuiObject") then
+		cardBase[rewardTab] = rewardTab.Position
+	end
+	local chipsFrame = frame:FindFirstChild("Chips")
+	local chipGrid = chipsFrame and chipsFrame:FindFirstChildWhichIsA("UIGridLayout")
+	if chipGrid then
+		chipGrid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(fitCard)
+	end
+	frame:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitCard)
 	ringValue.Changed:Connect(function(value: number)
 		shownProgress = value
 		setRing(value)

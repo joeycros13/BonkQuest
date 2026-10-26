@@ -221,7 +221,7 @@ lines.DaleFarm = {
 		{
 			-- 2026-10-19 (user): was "give 200 coins"; the logs and stone are taken at hand-in
 			kind = "bring",
-			items = { { id = "OakLog", count = 15 }, { id = "Stone", count = 15 } },
+			items = { { id = "Stone", count = 15 }, { id = "OakLog", count = 15 } },
 			objective = "Bring Dale 15 Oak Logs and 15 Stone",
 			track = "Bring Dale {Logs and Stone}",
 			reward = { coins = 80, exp = 100 },
@@ -286,8 +286,8 @@ lines.DaleFarm = {
 			-- 2026-10-26 (the user): the Clean Up, a long hunt through the whole world
 			kind = "hunt",
 			targets = { { id = "Chicken", count = 10 }, { id = "Bull", count = 8 }, { id = "Stallion", count = 5 }, { id = "BossScarecrow", count = 3 } },
-			objective = "Clean up the farm: defeat 10 Angry Chickens, 8 Raging Bulls, 5 Wild Stallions and the Scarecrow King 3 times",
-			track = "Clean up {the farm}",
+			objective = "Clean up The Farm: defeat 10 Angry Chickens, 8 Raging Bulls, 5 Wild Stallions and the Scarecrow King 3 times",
+			track = "Clean up {The Farm}",
 			-- The quest-only Weathervane Spear (Legendary, 2026-10-11).
 			reward = { coins = 300, exp = 300, weapon = "WeathervaneSpear" },
 			offer = {
@@ -471,8 +471,8 @@ lines.RangerRedwoods = {
 			-- 2026-10-26 (the user): the Clean Up, a long hunt through the whole world
 			kind = "hunt",
 			targets = { { id = "Fox", count = 10 }, { id = "Boar", count = 8 }, { id = "Bear", count = 5 }, { id = "ElderTreant", count = 3 } },
-			objective = "Clean up the forest: defeat 10 Snarling Foxes, 8 Wild Boars, 5 Grizzly Bears and the Elder Treant 3 times",
-			track = "Clean up {the forest}",
+			objective = "Clean up The Forest: defeat 10 Snarling Foxes, 8 Wild Boars, 5 Grizzly Bears and the Elder Treant 3 times",
+			track = "Clean up {The Forest}",
 			-- The quest-only Firefly Lantern (Legendary, 2026-10-11).
 			reward = { coins = 3000, exp = 3000, weapon = "LanternFlail" },
 			offer = {
@@ -592,7 +592,7 @@ lines.ExplorerCaverns = {
 		{
 			-- (2026-10-24) the mined bring step, like Rowan's step 6 (x10 its reward)
 			kind = "bring",
-			items = { { id = "IronOre", count = 15 }, { id = "CrystalShard", count = 15 } },
+			items = { { id = "CrystalShard", count = 15 }, { id = "IronOre", count = 15 } },
 			objective = "Bring Pip 15 Iron Ore and 15 Crystal Shards",
 			track = "Bring Pip {Ore and Shards}",
 			reward = { coins = 8000, exp = 10000 },
@@ -652,8 +652,8 @@ lines.ExplorerCaverns = {
 			-- 2026-10-26 (the user): the Clean Up, a long hunt through the whole world
 			kind = "hunt",
 			targets = { { id = "CaveBat", count = 10 }, { id = "PebbleGolem", count = 8 }, { id = "CrystalGolem", count = 5 }, { id = "SpiderQueen", count = 3 } },
-			objective = "Clean up the caverns: defeat 10 Cave Bats, 8 Pebble Golems, 5 Crystal Golems and the Spider Queen 3 times",
-			track = "Clean up {the caverns}",
+			objective = "Clean up The Caverns: defeat 10 Cave Bats, 8 Pebble Golems, 5 Crystal Golems and the Spider Queen 3 times",
+			track = "Clean up {The Caverns}",
 			-- The quest-only Diamond Pickaxe (Legendary).
 			reward = { coins = 30000, exp = 30000, weapon = "DiamondPickaxe" },
 			offer = {
@@ -732,31 +732,48 @@ end
 -- the toughest / rarest of all. `held` is the player's material counts (Materials.counts),
 -- `kills` the hunt's kills (Quests.huntKills). Returns the Config/Worlds or Config/Materials id.
 function Quests.focus(step: Step, kills: { [string]: number }?, held: { [string]: number }?): string?
-	local list = if step.kind == "hunt" then step.targets elseif step.kind == "bring" then step.items else nil
-	if not list or #list == 0 then
+	local list = Quests.ranked(step)
+	if #list == 0 then
 		return nil
 	end
-	local function weight(id: string): number
-		if step.kind == "hunt" then
-			local def = Enemies.get(id)
-			return def and def.hp or 0
-		end
-		local def = Materials.get(id)
-		return if def then (table.find(Weapons.Rarities, def.rarity) or 0) else 0
-	end
 	local have = if step.kind == "hunt" then kills or {} else held or {}
-	local best, bestWeight = nil, -math.huge
-	local top, topWeight = nil, -math.huge
 	for _, item in list do
-		local w = weight(item.id)
-		if w > topWeight then
-			top, topWeight = item.id, w
-		end
-		if (have[item.id] or 0) < item.count and w > bestWeight then
-			best, bestWeight = item.id, w
+		if (have[item.id] or 0) < item.count then
+			return item.id
 		end
 	end
-	return best or top
+	return list[1].id
+end
+
+-- A hunt step's targets or a bring step's items, hardest first (the user, 2026-10-26: the
+-- tracker's chips read left to right from the toughest enemy, or the rarest material, down):
+-- enemies by `hp`, materials by rarity, ties in the step's own order (Dale's Stone before his
+-- Oak Logs).
+function Quests.ranked(step: Step): { { id: string, count: number } }
+	local list = if step.kind == "hunt" then step.targets elseif step.kind == "bring" then step.items else nil
+	local out = {}
+	for index, item in list or {} do
+		local weight = 0
+		if step.kind == "hunt" then
+			local def = Enemies.get(item.id)
+			weight = def and def.hp or 0
+		else
+			local def = Materials.get(item.id)
+			weight = if def then (table.find(Weapons.Rarities, def.rarity) or 0) else 0
+		end
+		table.insert(out, { item = item, weight = weight, index = index })
+	end
+	table.sort(out, function(a, b)
+		if a.weight ~= b.weight then
+			return a.weight > b.weight
+		end
+		return a.index < b.index
+	end)
+	local items = {}
+	for _, entry in out do
+		table.insert(items, entry.item)
+	end
+	return items
 end
 
 -- A hunt step's kills so far, per enemy (from the "QuestKills_<line>" attribute).

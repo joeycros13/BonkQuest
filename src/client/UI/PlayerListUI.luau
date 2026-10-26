@@ -146,7 +146,18 @@ local function fit()
 				target.Position = UDim2.new(target.Position.X, UDim.new(entry.baseY + shift / h, 0))
 				local shown = target.Visible and (not holder:IsA("ScreenGui") or holder.Enabled)
 				if shown then
-					bottom = math.max(bottom, baseTop + shift + target.AbsoluteSize.Y + gap)
+					-- its own box, or lower where a child hangs out of it (the quest card's
+					-- Reward tab sits under the Tracker frame; 2026-10-26, the material
+					-- toasts drew over it)
+					local low = baseTop + shift + target.AbsoluteSize.Y
+					local frameTop = target.AbsolutePosition.Y
+					for _, child in target:GetChildren() do
+						if child:IsA("GuiObject") and child.Visible then
+							local childBottom = child.AbsolutePosition.Y + child.AbsoluteSize.Y - frameTop
+							low = math.max(low, baseTop + shift + childBottom)
+						end
+					end
+					bottom = math.max(bottom, low + gap)
 				end
 			end
 		end
@@ -326,6 +337,14 @@ function PlayerListUI.start()
 					-- a piece showing or hiding moves the ones under it
 					target:GetPropertyChangedSignal("Visible"):Connect(fit)
 					target:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
+					-- and its children (a tab under it moving, showing or hiding)
+					for _, child in target:GetChildren() do
+						if child:IsA("GuiObject") then
+							child:GetPropertyChangedSignal("Visible"):Connect(fit)
+							child:GetPropertyChangedSignal("Size"):Connect(fit)
+							child:GetPropertyChangedSignal("Position"):Connect(fit)
+						end
+					end
 				end
 			end
 		end
