@@ -379,6 +379,13 @@ for name, n in (("PalmTall", 16), ("PalmTwin", 9), ("DatePalm", 4)):
     report[name] = report.get(name, 0) + spread(name, n, against=PALMS)
 report["BarrelCactus"] = spread("BarrelCactus", 24, against={"BarrelCactus", "Saguaro"})
 
+# --- more round the oasis (2026-10-26, the user: more palms and papyrus by it); placed last, so
+# everything above keeps its spot
+OASIS_MORE = {"DatePalm": 6, "PalmTall": 4, "PalmTwin": 3}
+for name, n in OASIS_MORE.items():
+    report[name + " (oasis)"] = spread(name, n, near=(ox, oz, orz + 4, orx + 26), against=PALMS)
+report["Papyrus (more)"] = spread("Papyrus", 12, near=(ox, oz, orz * 0.9, orx * 1.4))
+
 counts = {}
 plan = []
 for (name, x, z, yaw, _, _, _, _, top) in placed:

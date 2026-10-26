@@ -1100,6 +1100,206 @@
    "z": -1241.05,
    "y": 8,
    "yaw": 210.3
+  },
+  {
+   "template": "DatePalm",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/DatePalm",
+   "name": "DatePalm_11",
+   "x": -400.45,
+   "z": -922.9,
+   "y": 8,
+   "yaw": 10.6
+  },
+  {
+   "template": "DatePalm",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/DatePalm",
+   "name": "DatePalm_12",
+   "x": -413.49,
+   "z": -955.29,
+   "y": 8,
+   "yaw": 351.1
+  },
+  {
+   "template": "DatePalm",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/DatePalm",
+   "name": "DatePalm_13",
+   "x": -462.72,
+   "z": -907.3,
+   "y": 8,
+   "yaw": 57.6
+  },
+  {
+   "template": "DatePalm",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/DatePalm",
+   "name": "DatePalm_14",
+   "x": -512.29,
+   "z": -960.25,
+   "y": 24,
+   "yaw": 89.9
+  },
+  {
+   "template": "DatePalm",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/DatePalm",
+   "name": "DatePalm_15",
+   "x": -469.83,
+   "z": -957.05,
+   "y": 8,
+   "yaw": 46.4
+  },
+  {
+   "template": "DatePalm",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/DatePalm",
+   "name": "DatePalm_16",
+   "x": -498.03,
+   "z": -947.9,
+   "y": 8,
+   "yaw": 183.1
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_17",
+   "x": -413.68,
+   "z": -911.44,
+   "y": 8,
+   "yaw": 320.5
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_18",
+   "x": -502.0,
+   "z": -983.57,
+   "y": 8,
+   "yaw": 297.3
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_11",
+   "x": -408.02,
+   "z": -963.27,
+   "y": 8,
+   "yaw": 73.3
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_12",
+   "x": -422.23,
+   "z": -988.87,
+   "y": 8,
+   "yaw": 65.4
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_13",
+   "x": -443.13,
+   "z": -964.21,
+   "y": 8,
+   "yaw": 79.4
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_14",
+   "x": -495.23,
+   "z": -983.23,
+   "y": 8,
+   "yaw": 301.7
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_15",
+   "x": -418.37,
+   "z": -903.53,
+   "y": 8,
+   "yaw": 94.2
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_16",
+   "x": -410.5,
+   "z": -946.94,
+   "y": 8,
+   "yaw": 130.0
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_17",
+   "x": -396.71,
+   "z": -931.19,
+   "y": 8,
+   "yaw": 269.3
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_18",
+   "x": -490.61,
+   "z": -903.7,
+   "y": 8,
+   "yaw": 310.1
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_19",
+   "x": -470.92,
+   "z": -970.31,
+   "y": 8,
+   "yaw": 154.4
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_20",
+   "x": -431.31,
+   "z": -993.18,
+   "y": 8,
+   "yaw": 290.2
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_21",
+   "x": -400.99,
+   "z": -953.39,
+   "y": 8,
+   "yaw": 179.9
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_22",
+   "x": -518.81,
+   "z": -931.05,
+   "y": 8,
+   "yaw": 40.2
   }
  ]
 }

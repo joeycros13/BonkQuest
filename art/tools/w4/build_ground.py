@@ -16,7 +16,8 @@ The pieces:
     a player jumps onto a 9-stud ledge but not a 10), every terrace the same 8 studs deep,
     so the walls are one height (top y 52) and built of thick blocks (the user: an earlier
     rim varied its height, ledge and foot every 24-48 studs, which left 2-stud slivers
-    where stretches met); the east rim stops at x -176, where World 2's hedges begin, and
+    where stretches met), with a fifth step 5 tall on top along four long stretches
+    (RIM_CAP_STRETCHES, 2026-10-26); the east rim stops at x -176, where World 2's hedges begin, and
     opens for the corridor (the user's pick for the gate, 2026-10-25: World 2's stepped
     south-west corner); the whole world is turned 45 degrees and moved so the corridor
     runs on from a diagonal cut through that corner (WORLD_END, WORLD_TURN);
@@ -75,6 +76,17 @@ TERRACE = 11       # rim step height: measured, a player gets onto 9 but not 10
 RIM_LEVELS = 4     # terraces in every wall (top y 8 + 4 x 11 = 52)
 RIM_LEDGE = 8      # how deep each terrace is
 RIM_BACK = 12      # how far the top terrace runs on behind its edge
+# a fifth, lower step on top of the wall along some stretches (the user, 2026-10-26: "one more step
+# on top of some of the outer parts"), 8 studs back from the fourth terrace's edge, so the fourth
+# keeps an 8-deep ledge and the step is 12 deep: thick blocks with straight ends. Boxes (x0, x1,
+# z0, z1) of the stretches, each ending well short of a corner
+RIM_CAP = 5
+RIM_CAP_STRETCHES = [
+    (-560, -396, -866, -800),     # the north arm's north wall
+    (-372, -236, -906, -800),     # the north wall's east part
+    (-660, -598, -1236, -1124),   # the west arm's west wall
+    (-560, -372, -1340, -1280),   # the south wall west of the south arm
+]
 
 # the walkable outline, clockwise from the north arm's north-west corner
 POLY = [(-526, -898), (-386, -898), (-386, -938), (-216, -938), (-216, -1248), (-246, -1248),
@@ -494,6 +506,9 @@ def build():
                 if x > -216 and corridor_d(x, z) <= CORRIDOR_HALF + CORRIDOR_WALL:
                     lv = RIM_LEVELS  # the corridor's walls are the rim's full height
                 top = FLOOR + TERRACE * lv
+                if lv == RIM_LEVELS and d >= RIM_LEVELS * RIM_LEDGE and x < -216 and any(
+                        a < x < b and c < z < e for (a, b, c, e) in RIM_CAP_STRETCHES):
+                    top += RIM_CAP
                 cells[(i, j)] = (top, dune_colour(top), "Rim", "Dune")
                 # the volcano's back runs up into the rim where it reaches it, taking the
                 # whole first terrace there (a strip of it left between the volcano's rings
