@@ -86,6 +86,10 @@ Gates.Text = {
 	locked = "Locked",
 	needsWorld = "World %d first", -- the Buy button while the world before isn't unlocked
 	unlocked = "Unlocked!",
+	-- the warning board on the way to a gate (World 4's, where its path leaves World 2's last one;
+	-- 2026-10-26): its banner, and the line under the world's name
+	warnBanner = "Warning!",
+	warnLine = "Complete World %d first!",
 }
 
 function Gates.byId(id: string): Gate?
