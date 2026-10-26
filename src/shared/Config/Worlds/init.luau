@@ -19,6 +19,7 @@ local FILES: { WorldDef } = {
 	require(script.W01_SunnyMeadows),
 	require(script.W02_RedwoodForest),
 	require(script.W03_CrystalCaverns),
+	require(script.W04_ScorchingSands),
 }
 
 local Worlds = {}
