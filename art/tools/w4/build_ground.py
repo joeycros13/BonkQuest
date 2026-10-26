@@ -17,9 +17,9 @@ The pieces:
     so the walls are one height (top y 52) and built of thick blocks (the user: an earlier
     rim varied its height, ledge and foot every 24-48 studs, which left 2-stud slivers
     where stretches met); the east rim stops at x -176, where World 2's hedges begin, and
-    opens for the corridor at z -993..-959 (World 2's south-west corner, the user's pick
-    for the gate, 2026-10-25: the whole world was moved 82 studs south from where it was
-    first drawn, so its entry road lines up with that corner);
+    opens for the corridor (the user's pick for the gate, 2026-10-25: World 2's stepped
+    south-west corner); the whole world is turned 45 degrees and moved so the corridor
+    runs on from a diagonal cut through that corner (WORLD_END, WORLD_TURN);
   * the road: a curvy loop round the pyramid, forking at the entry and meeting again by the
     boss in the west arm, rasterised like World 2's (Catmull-Rom curves, a 12-stud square
     brush on 4-stud blocks, so every bend steps sideways by 4), flush with the sand;
@@ -47,47 +47,67 @@ CELL = 2
 FLOOR = 8          # walkable top
 BASE = 2           # every column's bottom
 EAST_LIMIT = -176  # World 2's hedges start at x -175
-CORRIDOR = (-993, -959)   # World 2's corridor through its south-west corner
+# the way in: the corridor, straight in from the east at the entry road's height, 34 wide,
+# with walls the rim's full height either side
+CORRIDOR_Z = -988
+CORRIDOR_HALF = 17
+CORRIDOR_WALL = 16
+# World 4 is laid out in these coordinates, then turned 45 degrees and moved so its
+# corridor runs on, south-west, from the diagonal cut through World 2's stepped
+# south-west corner (the user, 2026-10-25): the corridor's east end (EAST_LIMIT,
+# CORRIDOR_Z) lands on WORLD_END, and the world's east (+X) points north-east.
+# Everything sits 0.02 below World 2's ground, so where the two corridors overlap at the
+# seam, World 2's grass and path show on top instead of fighting.
+WORLD_END = (-140, -1016)
+WORLD_TURN = -45   # degrees about Y (Roblox's CFrame.Angles)
+WORLD_DROP = 0.02
+
+
+def corridor_d(x, z):
+    """Distance across the corridor from its centre line."""
+    return abs(z - CORRIDOR_Z)
 TERRACE = 11       # rim step height: measured, a player gets onto 9 but not 10
 RIM_LEVELS = 4     # terraces in every wall (top y 8 + 4 x 11 = 52)
 RIM_LEDGE = 8      # how deep each terrace is
 RIM_BACK = 12      # how far the top terrace runs on behind its edge
 
 # the walkable outline, clockwise from the north arm's north-west corner
-POLY = [(-526, -782), (-386, -782), (-386, -822), (-216, -822), (-216, -1132), (-246, -1132),
-        (-246, -1172), (-354, -1172), (-354, -1132), (-566, -1132), (-566, -992), (-526, -992)]
+POLY = [(-526, -898), (-386, -898), (-386, -938), (-216, -938), (-216, -1248), (-246, -1248),
+        (-246, -1288), (-354, -1288), (-354, -1248), (-566, -1248), (-566, -1108), (-526, -1108)]
 
 # the road's centre lines (control points of Catmull-Rom curves)
-FORK = (-258, -976)
-JOIN = (-500, -1086)
+FORK = (-262, -990)
+JOIN = (-500, -1202)
 ROUTES = [
-    # in from the corridor to the fork
-    [(-176, -976), (-196, -976), (-222, -972), (-240, -978), FORK],
-    # the north way round: up the east side, along the north past the oasis, down the west
-    [FORK, (-270, -934), (-262, -888), (-306, -866), (-366, -876), (-426, -860), (-482, -876),
-     (-498, -930), (-480, -988), (-496, -1044), JOIN],
+    # in from the corridor at the east wall's left end (as you walk in from World 2; the
+    # user, 2026-10-25) to the fork
+    [(-176, -988), (-200, -988), (-226, -990), (-246, -988), FORK],
+    # the north way round: along the north past the oasis, down the west
+    [FORK, (-306, -982), (-366, -992), (-426, -976), (-482, -992), (-498, -1046), (-480, -1104),
+     (-496, -1160), JOIN],
     # the south way round: down the east side, along the south
-    [FORK, (-270, -1020), (-262, -1070), (-312, -1092), (-372, -1078), (-432, -1096), JOIN],
+    [FORK, (-266, -1032), (-258, -1092), (-270, -1140), (-262, -1186), (-312, -1208), (-372, -1194),
+     (-432, -1212), JOIN],
     # on to the boss in the west arm
-    [JOIN, (-516, -1078), (-530, -1070)],
+    [JOIN, (-516, -1194), (-530, -1186)],
 ]
 PATH_HALF = 6
 
-PYRAMID = (-375, -982, 60)      # centre x, z, half base
+PYRAMID = (-375, -1098, 60)      # centre x, z, half base
 PYR_RISE = 2.5                  # up a step (each step is 2 in)
-OASIS = (-454, -816, 48, 22)
-VOLCANO = (-300, -1148)         # centre; its radius is set by the road (VOLCANO_GAP)
+OASIS = (-454, -932, 48, 22)
+VOLCANO = (-300, -1264)         # centre; its radius is set by the road (VOLCANO_GAP)
 VOLCANO_GAP = 10                # studs of sand between the volcano's foot and the road
 VOLCANO_MAX = 56
 VOLCANO_STEP = 4                # each ring is 4 studs wide and 4 up
-BOSS = (-534, -1070, 22)
+BOSS = (-534, -1186, 22)
 # mounds: centre x, z, radius x, z, height (they slope down to the road by themselves)
 DUNES = [
-    (-300, -834, 44, 16, 16), (-232, -886, 18, 30, 18), (-232, -1082, 18, 38, 20),
-    (-405, -1118, 46, 14, 16), (-292, -928, 14, 30, 14), (-292, -1038, 14, 30, 14),
-    (-458, -952, 14, 34, 16), (-458, -1032, 12, 26, 12), (-375, -898, 46, 12, 12),
-    (-375, -1066, 46, 11, 12), (-512, -842, 14, 22, 16), (-470, -1118, 20, 12, 10),
-    (-546, -1114, 16, 12, 10), (-396, -798, 10, 14, 10),
+    (-300, -950, 44, 16, 16), (-232, -1086, 18, 40, 18), (-232, -1194, 18, 40, 20),
+    (-405, -1234, 46, 14, 16), (-292, -1044, 14, 30, 14), (-292, -1154, 14, 30, 14),
+    (-458, -1068, 14, 34, 16), (-458, -1148, 12, 26, 12), (-375, -1014, 46, 12, 12),
+    (-375, -1182, 46, 11, 12), (-512, -958, 14, 22, 16), (-470, -1234, 20, 12, 10),
+    (-546, -1230, 16, 12, 10), (-396, -914, 10, 14, 10),
 ]
 
 SAND = "E8C98E"
@@ -179,7 +199,7 @@ def rim_dist(x, z):
 
 def build():
     x0, x1 = -646, -176
-    z1, z0 = -702, -1252   # north, south
+    z1, z0 = -818, -1368   # north, south
     nx = (x1 - x0) // CELL
     nz = (z1 - z0) // CELL
 
@@ -245,7 +265,7 @@ def build():
         x = x0 + CELL * i + CELL / 2
         for j in range(nz):
             z = z1 - CELL * j - CELL / 2
-            corridor = x > -216 and CORRIDOR[0] <= z <= CORRIDOR[1]
+            corridor = -216 < x < EAST_LIMIT and corridor_d(x, z) <= CORRIDOR_HALF
             if inside(x, z) or corridor:
                 v = (FLOOR, SAND, "Sand", "Sand")
                 if (i, j) in path_cells:
@@ -288,6 +308,8 @@ def build():
                 if d > RIM_LEVELS * RIM_LEDGE + RIM_BACK:
                     continue
                 lv = min(RIM_LEVELS, 1 + int(d // RIM_LEDGE))
+                if x > -216 and corridor_d(x, z) <= CORRIDOR_HALF + CORRIDOR_WALL:
+                    lv = RIM_LEVELS  # the corridor's walls are the rim's full height
                 top = FLOOR + TERRACE * lv
                 cells[(i, j)] = (top, dune_colour(top), "Rim", "Dune")
                 # the volcano's back runs up into the rim where it reaches it, taking the
@@ -316,6 +338,21 @@ def build():
                     if n in cells and cells[n][2] == "Volcano"]
             if near:
                 cells[c] = min(near, key=lambda n: abs(n[0] - v[0]))
+                changed = True
+        if not changed:
+            break
+
+    # where the corridor's diagonal walls meet the straight terraces, little wedges of
+    # terrace are left: raise them to the wall beside them
+    for _ in range(12):
+        changed = False
+        for c, v in list(cells.items()):
+            if v[2] != "Rim" or not thin(c):
+                continue
+            near = [cells[n] for n in ((c[0] + 1, c[1]), (c[0] - 1, c[1]), (c[0], c[1] + 1), (c[0], c[1] - 1))
+                    if n in cells and cells[n][2] == "Rim" and cells[n][0] > v[0]]
+            if near:
+                cells[c] = max(near, key=lambda n: n[0])
                 changed = True
         if not changed:
             break
@@ -372,7 +409,7 @@ def build():
         if (i - 1, j) not in footprint:
             edges["x"].setdefault((cx0, -1), []).append(cz_n)
         if (i + 1, j) not in footprint:
-            if not (cx0 + CELL == EAST_LIMIT and CORRIDOR[0] <= cz_n - 1 <= CORRIDOR[1]):
+            if not (cx0 + CELL == EAST_LIMIT and corridor_d(cx0 + 1, cz_n - 1) <= CORRIDOR_HALF):
                 edges["x"].setdefault((cx0 + CELL, 1), []).append(cz_n)
         if (i, j - 1) not in footprint:
             edges["z"].setdefault((cz_n, 1), []).append(cx0)
@@ -461,6 +498,7 @@ def write(boxes, water, borders):
     lines.append("\t},")
     lines.append(f"\twater = {{{', '.join(str(v) for v in water)}}},")
     lines.append(f"\tboss = {{{', '.join(str(v) for v in BOSS)}}},")
+    lines.append(f"\tplace = {{ from = {{ {EAST_LIMIT}, {CORRIDOR_Z} }}, to = {{ {WORLD_END[0]}, {WORLD_END[1]} }}, turn = {WORLD_TURN}, drop = {WORLD_DROP} }},")
     lines.append("}")
     open(OUT, "w", encoding="utf-8", newline="\n").write("\n".join(lines) + "\n")
 
