@@ -28,8 +28,8 @@ The pieces:
     sheer walls to y 20.5, then a stepped vault following the pyramid's own steps up to a
     peak about 60 over the floor (the shell 12 thick all the way), and a doorway in the
     middle of every side, flush with the sand, framed by pillars and a lintel, with flat
-    sand kept in front of each; and a sandstone tower (decoration) on each of its corners,
-    a quarter of it inside the pyramid;
+    sand kept in front of each; and a sandstone tower (decoration) set into each of its corners,
+    most of its foot inside the pyramid;
   * mounds: big dunes in 2-stud steps (10-20 tall), rounded squares like World 1's
     stepped mounds, lowered near the road so each one slopes down to its edge instead of
     walling it in;
@@ -82,19 +82,23 @@ POLY = [(-526, -898), (-386, -898), (-386, -938), (-216, -938), (-216, -1248), (
 
 # the road's centre lines (control points of Catmull-Rom curves)
 FORK = (-262, -990)
-JOIN = (-500, -1202)
+# the two ways round each end at a doorway of the pyramid, the boss hall (the user, 2026-10-26:
+# the road leads to it; it used to meet again by the boss in the west arm): the north way at the
+# west doorway, the south way at the south one, 464 / 440 studs from the corridor
+WEST_DOOR = (-482, -1098)
+SOUTH_DOOR = (-375, -1200)
 ROUTES = [
     # in from the corridor at the east wall's left end (as you walk in from World 2; the
     # user, 2026-10-25) to the fork
     [(-176, -988), (-200, -988), (-226, -990), (-246, -988), FORK],
     # the north way round: along the north past the oasis, down the west
-    [FORK, (-306, -982), (-366, -992), (-426, -976), (-482, -992), (-498, -1046), (-480, -1104),
-     (-496, -1160), JOIN],
+    [FORK, (-306, -982), (-366, -992), (-426, -976), (-482, -992), (-498, -1046), WEST_DOOR],
     # the south way round: down the east side, along the south
-    [FORK, (-266, -1032), (-258, -1092), (-270, -1140), (-262, -1186), (-312, -1208), (-372, -1194),
-     (-432, -1212), JOIN],
+    [FORK, (-266, -1032), (-258, -1092), (-270, -1140), (-262, -1186), (-312, -1208), SOUTH_DOOR],
     # on to the boss in the west arm
-    [JOIN, (-516, -1194), (-530, -1186)],
+    # on into the doorways (each stops a few studs short of the pyramid's foot)
+    [WEST_DOOR, (-462, -1098), (-444, -1098)],
+    [SOUTH_DOOR, (-375, -1182), (-375, -1166)],
 ]
 PATH_HALF = 6
 
@@ -108,15 +112,17 @@ PYR_DOOR = 6                    # each doorway is 12 wide
 PYR_DOOR_TOP = 20.5             # and 12.5 tall, to the bottom of the slab over it
 PYR_APPROACH = 16               # flat sand kept this far out in front of each doorway
 PYR_APPROACH_HALF = 12          # and this far either side of its middle (the pillars stand out to 9.8)
-TOWER_OUT = 60                  # each corner tower's centre: on the pyramid's base corner, so a quarter of it is inside
-TOWER_CLEAR = 14                # flat sand kept round a tower's middle
+TOWER_OUT = 54                  # each corner tower's centre, 6 in from the base's corner on each axis, so
+                                # about 60% of its shaft's footprint is inside the pyramid at the foot; its
+                                # inner corner stays 0.5 clear of the hall's walls (x, z 40)
+TOWER_CLEAR = 20                # flat sand kept round a tower's middle
 OASIS = (-454, -932, 48, 22)
 VOLCANO = (-300, -1264)         # centre; its radius is set by the road (VOLCANO_GAP)
 VOLCANO_GAP = 10                # studs of sand between the volcano's foot and the road
 VOLCANO_MAX = 56
 VOLCANO_STEP = 4                # each ring is 4 studs wide
 VOLCANO_RISE = 6                # and 6 up (the user, 2026-10-25: 50% taller; it was 4)
-BOSS = (-534, -1186, 22)
+BOSS = (-375, -1098, 30)         # the pyramid's hall (it was the west arm's end until 2026-10-26)
 # mounds: centre x, z, radius x, z, height (they slope down to the road by themselves)
 DUNES = [
     (-300, -950, 44, 16, 16), (-232, -1086, 18, 40, 18), (-232, -1194, 18, 40, 20),
@@ -253,25 +259,26 @@ def tower_boxes(cx, cz):
 
     # heights kept off the pyramid's slab tops (8 + 2.5k) and sides off its slab edges
     # (even halves), so no face of a tower lies in a face of the pyramid where they meet
-    sq(10.3, FLOOR, 11.2, SANDSTONE_BAND, "Plinth")
-    sq(9, 11.2, 12.4, SANDSTONE, "Step")
-    sq(7.5, 12.4, 60, SANDSTONE, "Shaft")
-    sq(8.1, 26.2, 27.8, SANDSTONE_BAND, "Band")
-    sq(8.1, 44.2, 45.8, SANDSTONE_BAND, "Band")
+    # 50% thicker (the user, 2026-10-26): a 22.5-wide shaft
+    sq(13.5, FLOOR, 11.2, SANDSTONE_BAND, "Plinth")
+    sq(12.6, 11.2, 12.4, SANDSTONE, "Step")
+    sq(11.25, 12.4, 60, SANDSTONE, "Shaft")
+    sq(11.9, 26.2, 27.8, SANDSTONE_BAND, "Band")
+    sq(11.9, 44.2, 45.8, SANDSTONE_BAND, "Band")
     # two slits on each face, 0.1 proud of the shaft
     for (y0, y1) in ((32, 38.4), (49.2, 54.4)):
-        sq(0.8, y0, y1, TOWER_SLIT, "Slit", dz=-7.55, hz=0.05)
-        sq(0.8, y0, y1, TOWER_SLIT, "Slit", dz=7.55, hz=0.05)
-        sq(0.05, y0, y1, TOWER_SLIT, "Slit", dx=-7.55, hz=0.8)
-        sq(0.05, y0, y1, TOWER_SLIT, "Slit", dx=7.55, hz=0.8)
-    sq(8.7, 60, 62.6, SANDSTONE_BAND, "Cap")
-    for mx in (-7.5, 0, 7.5):
-        for mz in (-7.5, 0, 7.5):
+        sq(1.2, y0, y1, TOWER_SLIT, "Slit", dz=-11.3, hz=0.05)
+        sq(1.2, y0, y1, TOWER_SLIT, "Slit", dz=11.3, hz=0.05)
+        sq(0.05, y0, y1, TOWER_SLIT, "Slit", dx=-11.3, hz=1.2)
+        sq(0.05, y0, y1, TOWER_SLIT, "Slit", dx=11.3, hz=1.2)
+    sq(12.9, 60, 62.6, SANDSTONE_BAND, "Cap")
+    for mx in (-11.15, 0, 11.15):
+        for mz in (-11.15, 0, 11.15):
             if mx == 0 and mz == 0:
                 continue
-            sq(1.1, 62.6, 66.2, SANDSTONE, "Merlon", dx=mx, dz=mz)
-    sq(3, 62.6, 64.4, GOLD, "Gold")
-    sq(1.6, 64.4, 67.2, GOLD, "Gold")
+            sq(1.6, 62.6, 66.2, SANDSTONE, "Merlon", dx=mx, dz=mz)
+    sq(4.5, 62.6, 64.4, GOLD, "Gold")
+    sq(2.4, 64.4, 67.2, GOLD, "Gold")
     return out
 
 
@@ -684,7 +691,7 @@ if __name__ == "__main__":
         by[b[7]] = by.get(b[7], 0) + 1
     print("boxes", len(boxes), by, "borders", len(borders))
     lens = [round(route_length(r)) for r in ROUTES]
-    print("road lengths (entry, north way, south way, boss spur)", lens,
-          "entry to boss: north", lens[0] + lens[1] + lens[3], "south", lens[0] + lens[2] + lens[3])
+    print("road lengths (entry, north way, south way, west spur, south spur)", lens,
+          "entry to the pyramid: north way", lens[0] + lens[1] + lens[3], "south way", lens[0] + lens[2] + lens[4])
     tall = max(b[5] for b in boxes if b[7] == "Dunes")
     print("volcano radius", vr, "top", max(b[5] for b in boxes if b[7] == "Volcano"), "tallest mound top", tall, "pyramid top", max(b[5] for b in boxes if b[7] == "Pyramid"))
