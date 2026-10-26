@@ -56,11 +56,11 @@ CORRIDOR_WALL = 16
 # corridor runs on, south-west, from the diagonal cut through World 2's stepped
 # south-west corner (the user, 2026-10-25): the corridor's east end (EAST_LIMIT,
 # CORRIDOR_Z) lands on WORLD_END, and the world's east (+X) points north-east.
-# Everything sits 0.02 below World 2's ground, so where the two corridors overlap at the
-# seam, World 2's grass and path show on top instead of fighting.
-WORLD_END = (-140, -1016)
+# The seam is the line x + z = -1160; World 2's floor blocks that it cuts are wedges, so the
+# two worlds meet edge to edge at the same height (WORLD_DROP 0).
+WORLD_END = (-142, -1018)   # on World 2's 4-stud grid, so its blocks meet the seam in whole wedges
 WORLD_TURN = -45   # degrees about Y (Roblox's CFrame.Angles)
-WORLD_DROP = 0.02
+WORLD_DROP = 0
 
 
 def corridor_d(x, z):
