@@ -24,9 +24,12 @@ The pieces:
     boss in the west arm, rasterised like World 2's (Catmull-Rom curves, a 12-stud square
     brush on 4-stud blocks, so every bend steps sideways by 4), flush with the sand;
   * the pyramid: a stepped pyramid (2 in, 2.5 up a step, about Giza's 51 degrees) with a
-    gold capstone, hollow (the user, 2026-10-26): a hall in the middle and a doorway in the
-    middle of every side, flush with the sand, with flat sand kept in front of each; and a
-    sandstone tower (decoration) just off each of its corners;
+    gold capstone, hollow (the user, 2026-10-26; World 4's boss hall): an 80 x 80 hall with
+    sheer walls to y 20.5, then a stepped vault following the pyramid's own steps up to a
+    peak about 60 over the floor (the shell 12 thick all the way), and a doorway in the
+    middle of every side, flush with the sand, framed by pillars and a lintel, with flat
+    sand kept in front of each; and a sandstone tower (decoration) on each of its corners,
+    a quarter of it inside the pyramid;
   * mounds: big dunes in 2-stud steps (10-20 tall), rounded squares like World 1's
     stepped mounds, lowered near the road so each one slopes down to its edge instead of
     walling it in;
@@ -97,13 +100,16 @@ PATH_HALF = 6
 
 PYRAMID = (-375, -1098, 60)      # centre x, z, half base
 PYR_RISE = 2.5                  # up a step (each step is 2 in)
-PYR_HALL = 22                   # the hall inside: 44 x 44
-PYR_HALL_TOP = 40               # its ceiling (32 over the floor; the roof over it is 14+ thick)
+PYR_HALL = 40                   # the hall's floor: 80 x 80 (the boss's room)
+PYR_SHELL = 12                  # the shell's thickness: each slab keeps a 12-wide ring, so above the
+                                # sheer walls (to y 20.5, out of jumping reach) the ceiling steps in
+                                # 2 every 2.5 up, the pyramid's own steps, to a peak at y 68
 PYR_DOOR = 6                    # each doorway is 12 wide
-PYR_DOOR_TOP = 22               # and 14 tall
+PYR_DOOR_TOP = 20.5             # and 12.5 tall, to the bottom of the slab over it
 PYR_APPROACH = 16               # flat sand kept this far out in front of each doorway
-TOWER_OUT = 68                  # each corner tower's centre, this far out from the pyramid's centre in x and z
-TOWER_CLEAR = 8                 # flat sand kept round a tower's middle
+PYR_APPROACH_HALF = 12          # and this far either side of its middle (the pillars stand out to 9.8)
+TOWER_OUT = 60                  # each corner tower's centre: on the pyramid's base corner, so a quarter of it is inside
+TOWER_CLEAR = 14                # flat sand kept round a tower's middle
 OASIS = (-454, -932, 48, 22)
 VOLCANO = (-300, -1264)         # centre; its radius is set by the road (VOLCANO_GAP)
 VOLCANO_GAP = 10                # studs of sand between the volcano's foot and the road
@@ -245,24 +251,69 @@ def tower_boxes(cx, cz):
         hz = half if hz is None else hz
         out.append((cx + dx - half, cx + dx + half, cz + dz - hz, cz + dz + hz, y0, y1, colour, name))
 
-    sq(6, FLOOR, FLOOR + 2, SANDSTONE_BAND, "Plinth")
-    sq(5.25, FLOOR + 2, FLOOR + 3.5, SANDSTONE, "Step")
-    sq(4.5, FLOOR + 3.5, FLOOR + 30, SANDSTONE, "Shaft")
-    sq(4.9, FLOOR + 12, FLOOR + 13.2, SANDSTONE_BAND, "Band")
-    sq(4.9, FLOOR + 22, FLOOR + 23.2, SANDSTONE_BAND, "Band")
-    # a slit on each face, 0.1 proud of the shaft
-    sq(0.6, FLOOR + 16, FLOOR + 19.5, TOWER_SLIT, "Slit", dz=-4.55, hz=0.05)
-    sq(0.6, FLOOR + 16, FLOOR + 19.5, TOWER_SLIT, "Slit", dz=4.55, hz=0.05)
-    sq(0.05, FLOOR + 16, FLOOR + 19.5, TOWER_SLIT, "Slit", dx=-4.55, hz=0.6)
-    sq(0.05, FLOOR + 16, FLOOR + 19.5, TOWER_SLIT, "Slit", dx=4.55, hz=0.6)
-    sq(5.5, FLOOR + 30, FLOOR + 32, SANDSTONE_BAND, "Cap")
-    for mx in (-4.5, 0, 4.5):
-        for mz in (-4.5, 0, 4.5):
+    # heights kept off the pyramid's slab tops (8 + 2.5k) and sides off its slab edges
+    # (even halves), so no face of a tower lies in a face of the pyramid where they meet
+    sq(10.3, FLOOR, 11.2, SANDSTONE_BAND, "Plinth")
+    sq(9, 11.2, 12.4, SANDSTONE, "Step")
+    sq(7.5, 12.4, 60, SANDSTONE, "Shaft")
+    sq(8.1, 26.2, 27.8, SANDSTONE_BAND, "Band")
+    sq(8.1, 44.2, 45.8, SANDSTONE_BAND, "Band")
+    # two slits on each face, 0.1 proud of the shaft
+    for (y0, y1) in ((32, 38.4), (49.2, 54.4)):
+        sq(0.8, y0, y1, TOWER_SLIT, "Slit", dz=-7.55, hz=0.05)
+        sq(0.8, y0, y1, TOWER_SLIT, "Slit", dz=7.55, hz=0.05)
+        sq(0.05, y0, y1, TOWER_SLIT, "Slit", dx=-7.55, hz=0.8)
+        sq(0.05, y0, y1, TOWER_SLIT, "Slit", dx=7.55, hz=0.8)
+    sq(8.7, 60, 62.6, SANDSTONE_BAND, "Cap")
+    for mx in (-7.5, 0, 7.5):
+        for mz in (-7.5, 0, 7.5):
             if mx == 0 and mz == 0:
                 continue
-            sq(1, FLOOR + 32, FLOOR + 34.5, SANDSTONE, "Merlon", dx=mx, dz=mz)
-    sq(2, FLOOR + 32, FLOOR + 33.5, GOLD, "Gold")
-    sq(1, FLOOR + 33.5, FLOOR + 35.5, GOLD, "Gold")
+            sq(1.1, 62.6, 66.2, SANDSTONE, "Merlon", dx=mx, dz=mz)
+    sq(3, 62.6, 64.4, GOLD, "Gold")
+    sq(1.6, 64.4, 67.2, GOLD, "Gold")
+    return out
+
+
+PORTAL_LIGHT = "EAD3A0"
+
+
+def portal_boxes(side):
+    """The frame round one doorway, in the pyramid's terms: d out from its centre along
+    `side` (E, W, N or S), t across. Two pillars (a pale base, a band-coloured shaft, a gold
+    capital) set into the pyramid's face and standing 1.6 proud of its foot, a lintel across
+    them hanging 0.4 under the doorway's top, a gold strip and a pale cap. Heights and sides
+    keep off the pyramid's slab faces. (x0, x1, z0, z1, y0, y1, colour, part name)."""
+    px_, pz_, _ = PYRAMID
+    out = []
+
+    def box(d0, d1, t0, t1, y0, y1, colour, name):
+        if side in ("E", "W"):
+            sx = 1 if side == "E" else -1
+            xa, xb = sorted((px_ + sx * d0, px_ + sx * d1))
+            out.append((xa, xb, pz_ + t0, pz_ + t1, y0, y1, colour, name))
+        else:
+            sz = 1 if side == "N" else -1
+            za, zb = sorted((pz_ + sz * d0, pz_ + sz * d1))
+            out.append((px_ + t0, px_ + t1, za, zb, y0, y1, colour, name))
+
+    for s_ in (-1, 1):
+        t0, t1 = sorted((s_ * 5.8, s_ * 9.4))
+        b0, b1 = sorted((s_ * 5.6, s_ * 9.8))
+        box(47, 62, b0, b1, FLOOR, 9.6, PORTAL_LIGHT, "PillarBase")
+        box(47.2, 61.6, t0, t1, 9.6, 18.7, SANDSTONE_BAND, "Pillar")
+        box(47, 62, b0, b1, 18.7, 20.1, GOLD, "Capital")
+    box(45.8, 62.2, -10.4, 10.4, 20.1, 23.2, SANDSTONE_BAND, "Lintel")
+    box(45.6, 62.6, -10.8, 10.8, 23.2, 23.9, GOLD, "Trim")
+    box(45.6, 61.8, -9, 9, 23.9, 25.2, PORTAL_LIGHT, "Cap")
+    return out
+
+
+def portals():
+    out = []
+    for side in ("E", "W", "N", "S"):
+        for b in portal_boxes(side):
+            out.append(("Entrance_" + side, *b))
     return out
 
 
@@ -338,11 +389,12 @@ def build():
 
     px_, pz_, ph = PYRAMID
     d0, d1 = ph - 1, ph + PYR_APPROACH
+    aw = PYR_APPROACH_HALF
     keep_flat = [
-        (px_ + d0, px_ + d1, pz_ - PYR_DOOR - 2, pz_ + PYR_DOOR + 2),
-        (px_ - d1, px_ - d0, pz_ - PYR_DOOR - 2, pz_ + PYR_DOOR + 2),
-        (px_ - PYR_DOOR - 2, px_ + PYR_DOOR + 2, pz_ + d0, pz_ + d1),
-        (px_ - PYR_DOOR - 2, px_ + PYR_DOOR + 2, pz_ - d1, pz_ - d0),
+        (px_ + d0, px_ + d1, pz_ - aw, pz_ + aw),
+        (px_ - d1, px_ - d0, pz_ - aw, pz_ + aw),
+        (px_ - aw, px_ + aw, pz_ + d0, pz_ + d1),
+        (px_ - aw, px_ + aw, pz_ - d1, pz_ - d0),
     ]
     for sx in (-1, 1):
         for sz in (-1, 1):
@@ -476,8 +528,7 @@ def build():
 
     # the pyramid: one square slab a step, from the sand up, with the hall and the four
     # doorways taken out of them (each slab split round the holes into world-aligned boxes)
-    holes = [
-        (px_ - PYR_HALL, px_ + PYR_HALL, pz_ - PYR_HALL, pz_ + PYR_HALL, FLOOR, PYR_HALL_TOP),
+    doors = [
         (px_ - ph - 1, px_ + ph + 1, pz_ - PYR_DOOR, pz_ + PYR_DOOR, FLOOR, PYR_DOOR_TOP),  # east-west
         (px_ - PYR_DOOR, px_ + PYR_DOOR, pz_ - ph - 1, pz_ + ph + 1, FLOOR, PYR_DOOR_TOP),  # north-south
     ]
@@ -487,6 +538,11 @@ def build():
         bottom = BASE if k == 0 else FLOOR + PYR_RISE * k
         colour = GOLD if half <= 4 else (SANDSTONE_BAND if k % 4 == 3 else SANDSTONE)
         pieces = [(px_ - half, px_ + half, pz_ - half, pz_ + half, bottom, top)]
+        # the hall: this slab's ring keeps the shell's thickness, capped at the hall's width
+        hall = min(PYR_HALL, half - PYR_SHELL)
+        holes = list(doors)
+        if hall >= 2:
+            holes.append((px_ - hall, px_ + hall, pz_ - hall, pz_ + hall, max(bottom, FLOOR), top))
         for hole in holes:
             pieces = [q for pc in pieces for q in subtract(pc, hole)]
         for pc in pieces:
@@ -601,6 +657,11 @@ def write(boxes, water, borders):
     lines.append(f"\twater = {{{', '.join(str(v) for v in water)}}},")
     lines.append("\ttowers = {")
     for t in towers():
+        name, x0, x1, z0, z1, y0, y1, col, part = t
+        lines.append(f'\t\t{{"{name}", {x0}, {x1}, {z0}, {z1}, {y0}, {y1}, "{col}", "{part}"}},')
+    lines.append("\t},")
+    lines.append("\tportals = {")
+    for t in portals():
         name, x0, x1, z0, z1, y0, y1, col, part = t
         lines.append(f'\t\t{{"{name}", {x0}, {x1}, {z0}, {z1}, {y0}, {y1}, "{col}", "{part}"}},')
     lines.append("\t},")
