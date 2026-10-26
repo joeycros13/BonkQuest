@@ -30,7 +30,7 @@ The pieces:
     walling it in;
   * the oasis in the north arm (a shallow and a deep bed under one water part, a green
     ring), and a dormant volcano in the south arm (World 6's way in, later), as wide as it can
-    be with `VOLCANO_GAP` studs left before the road, in 4-stud steps.
+    be with `VOLCANO_GAP` studs left before the road, in rings 4 studs wide and 6 up.
 
 Usage: python build_ground.py   (prints the counts; writes the Luau module)
 """
@@ -99,7 +99,8 @@ OASIS = (-454, -932, 48, 22)
 VOLCANO = (-300, -1264)         # centre; its radius is set by the road (VOLCANO_GAP)
 VOLCANO_GAP = 10                # studs of sand between the volcano's foot and the road
 VOLCANO_MAX = 56
-VOLCANO_STEP = 4                # each ring is 4 studs wide and 4 up
+VOLCANO_STEP = 4                # each ring is 4 studs wide
+VOLCANO_RISE = 6                # and 6 up (the user, 2026-10-25: 50% taller; it was 4)
 BOSS = (-534, -1186, 22)
 # mounds: centre x, z, radius x, z, height (they slope down to the road by themselves)
 DUNES = [
@@ -239,9 +240,9 @@ def build():
         if r >= vr:
             return None
         if r < crater:
-            return FLOOR + VOLCANO_STEP * (rings - 2), CRATER
+            return FLOOR + VOLCANO_RISE * (rings - 2), CRATER
         k = min(rings - 1, int((vr - r) // VOLCANO_STEP))
-        return FLOOR + VOLCANO_STEP * (k + 1), BASALT[min(2, 3 * k // rings)]
+        return FLOOR + VOLCANO_RISE * (k + 1), BASALT[min(2, 3 * k // rings)]
 
     # distance (studs) from every cell to the road, so mounds slope down to it
     dist = {c: 0 for c in path_cells}
