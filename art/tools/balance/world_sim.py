@@ -347,14 +347,25 @@ class Run:
         return best[0]
 
     def fight(self, enemy, weapon, dry=False):
-        """One fight, hit by hit. Returns (seconds, damage taken)."""
+        """One fight, hit by hit. Returns (seconds, damage taken). A dry run is the average of 16
+        seeded fights (2026-10-26: one seeded fight could come out lucky, and the player took on
+        Bulls that kill nine times in ten)."""
+        if dry:
+            key = (enemy, weapon, self.defense())
+            cache = self.__dict__.setdefault("_dry", {})
+            if key not in cache:
+                runs = [self._fight(enemy, weapon, random.Random(k)) for k in range(16)]
+                cache[key] = (sum(r[0] for r in runs) / 16, sum(r[1] for r in runs) / 16)
+            return cache[key]
+        return self._fight(enemy, weapon, self.rng)
+
+    def _fight(self, enemy, weapon, rng):
         e = self.w.enemies[enemy]
         m = e["melee"]
         v = self.w.weapons[weapon]
         per = v["damage"] * upg("attack") * (1 - (0 if v.get("ignoreArmor") else m.get("armor", 0)))
         cooldown = v["cooldown"] * upg("speed")
         hp = e["hp"]
-        rng = self.rng if not dry else random.Random(1)
         t = PLAYER["engageSeconds"] + v["hitTime"] * upg("speed")
         first_hit = None
         chance, mult = crit()
@@ -657,7 +668,8 @@ class Run:
                     self.mats[x["id"]] -= x["count"]
                 self.coins -= v["coins"]
                 self.armor.add(a)
-                self.wearing = a
+                # wear the best set owned (a coin set bought late never replaces a crafted one)
+                self.wearing = max(self.armor, key=lambda k: w.armor[k]["health"])
                 self.say("crafted", a)
                 did = True
         if did:
@@ -985,10 +997,11 @@ def main():
     ap.add_argument("--trace", action="store_true")
     ap.add_argument("--remap", action="store_true", help="after level.* changes, move level requirements to the same EXP")
     a = ap.parse_args()
-    # World 1's new players back off sooner; from World 2 the base small-enemy fight takes ~75%
-    # (the 2026-10-26 rescale), so a player fights at that after resting
+    # World 1: a player takes on a fight up to 90% of their health after resting (2026-10-26, the
+    # user's ladder: the Bull costs 80-90% with the Machete and the coin set, and Farmhand's Gear
+    # needs its hide); from World 2 the base small-enemy fight takes ~75% (the 2026-10-26 rescale)
     if a.world == 1:
-        PLAYER["tooStrong"] = 0.7
+        PLAYER["tooStrong"] = 0.92
     data = load(a.world)
     if a.prev is None and a.world > 1:
         a.prev = a.world - 1

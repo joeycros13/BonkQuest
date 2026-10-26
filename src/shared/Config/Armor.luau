@@ -3,7 +3,8 @@
 -- one at a time (ArmorService). Decided with the user on 2026-10-12; the numbers
 -- are starting values.
 --
--- A set is ONE item (the Inventory has a single Armour slot). Two sets per world:
+-- A set is ONE item (the Inventory has a single Armour slot). Three sets per world:
+--   * the coin set (2026-10-26): coins alone and a low level, the weakest (World 1's Patchwork Vest);
 --   * set 1: materials from the world's first two enemies, coins and a level;
 --   * set 2: materials from enemy 3 and the boss, the world's quest item, coins
 --     and a level.
@@ -66,6 +67,24 @@ Armor.MAX_SPEED = 0.5
 
 Armor.Defs = {
 	-- ==================== World 1 (The Sunny Meadows) ====================
+	-- The coin set (2026-10-26, the user: a worse set bought with coins alone, from a decent number
+	-- of chicken kills, so a player with the Machete can take on the Bulls at 80-90% of their
+	-- health; no model or icon yet, so it only changes the stats)
+	PatchworkVest = {
+		id = "PatchworkVest",
+		name = "Patchwork Vest",
+		blurb = "Scraps of sacking sewn into a vest. Bought, not crafted.",
+		world = 1,
+		sell = 40,
+		order = 0,
+		rarity = "Common",
+		level = 3,
+		coins = 500,
+		recipe = {
+		},
+		defense = 0.05,
+		health = 60,
+	},
 	FarmhandsGear = {
 		id = "FarmhandsGear",
 		icon = "rbxassetid://71932067359739",
@@ -82,8 +101,8 @@ Armor.Defs = {
 			{ id = "BullHide", count = 3 },
 			{ id = "OakLog", count = 8 },
 		},
-		defense = 0.10,
-		health = 150,
+		defense = 0.12,
+		health = 220,
 	},
 	HarvestKnight = {
 		id = "HarvestKnight",

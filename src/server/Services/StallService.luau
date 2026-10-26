@@ -105,7 +105,11 @@ function StallService.craft(player: Player, id: any): (boolean, string?)
 	end
 	deps.Services.CoinService.add(player, -def.coins)
 	deps.Services.ArmorService.grant(player, def.id)
-	deps.Services.ArmorService.equip(player, def.id)
+	-- put it on, unless the set worn is better (a coin set bought after a crafted one, 2026-10-26)
+	local worn = Armor.get(player:GetAttribute("EquippedArmor") or "")
+	if not worn or worn.health < def.health then
+		deps.Services.ArmorService.equip(player, def.id)
+	end
 	task.spawn(deps.Services.PlayerDataService.saveNow, player)
 	return true, nil
 end

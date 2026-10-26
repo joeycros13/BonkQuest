@@ -57,16 +57,16 @@ local World: WorldTypes.WorldDef = {
 			id = "Chicken",
 			tier = "small",
 			name = "Angry Chicken",
-			hp = 80,
+			hp = 35,
 			portrait = "rbxassetid://119866244895251", -- calm face (2026-10-11)
 			-- Quick, weak pecks.
-			melee = { damage = 15, cooldown = 0.75, windup = 0.2, range = 1.5, chaseSpeed = 15, armor = 0, move = "peck" },
+			melee = { damage = 12, cooldown = 0.75, windup = 0.2, range = 1.5, chaseSpeed = 15, armor = 0, move = "peck" },
 			-- Coins and rates are tuned for a ~30-minute World 1 (2026-10-19; see Balance).
 			coins = { min = 14, max = 29 },
 			exp = 14,
 			drops = {
-				{ weapon = "Sickle", chance = 0.05 },
-				{ weapon = "Machete", chance = 0.0125 },
+				{ weapon = "Sickle", chance = 0.2 },
+				{ weapon = "Machete", chance = 0.05 },
 			},
 			-- crafting materials (Config/Materials): the first armour set
 			materials = { { id = "ChickenFeather", chance = 0.5, min = 1, max = 1 } },
@@ -78,10 +78,10 @@ local World: WorldTypes.WorldDef = {
 			id = "Bull",
 			tier = "medium",
 			name = "Raging Bull",
-			hp = 190, -- 140 until 2026-10-20 (the health ladder: Chicken < Bull < Stallion < King)
+			hp = 240, -- 140 until 2026-10-20 (the health ladder: Chicken < Bull < Stallion < King)
 			portrait = "rbxassetid://105217136953827", -- calm face (2026-10-11)
 			-- Slow, heavy horn charges with a long reach.
-			melee = { damage = 30, cooldown = 1.2, windup = 0.3, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "gore" },
+			melee = { damage = 17, cooldown = 1.2, windup = 0.3, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "gore" },
 			coins = { min = 29, max = 56 },
 			exp = 26,
 			drops = {
@@ -99,9 +99,9 @@ local World: WorldTypes.WorldDef = {
 			id = "Stallion",
 			tier = "elite",
 			name = "Wild Stallion",
-			hp = 260, -- 220 until 2026-10-20 (the health ladder)
+			hp = 450, -- 220 until 2026-10-20 (the health ladder)
 			portrait = "rbxassetid://73569429526048", -- calm face (2026-10-12)
-			melee = { damage = 34, cooldown = 1.4, windup = 0.35, range = 1.6, chaseSpeed = 16, armor = 0.15, move = "slam" },
+			melee = { damage = 30, cooldown = 1.4, windup = 0.35, range = 1.6, chaseSpeed = 16, armor = 0.15, move = "slam" },
 			coins = { min = 40, max = 80 },
 			exp = 38,
 			drops = {
@@ -119,10 +119,10 @@ local World: WorldTypes.WorldDef = {
 		CornWraith = {
 			id = "CornWraith",
 			name = "Corn Wraith",
-			hp = 360,
+			hp = 500,
 			secret = true,
 			adminPortrait = "rbxassetid://85851674951625", -- admin panel only, never the Index (2026-10-17)
-			melee = { damage = 38, cooldown = 1, windup = 0.3, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
+			melee = { damage = 22, cooldown = 1, windup = 0.3, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
 			coins = { min = 56, max = 112 },
 			exp = 54,
 			-- the Farm Core: 1%, once per player; luck never changes a core's chance
@@ -137,11 +137,11 @@ local World: WorldTypes.WorldDef = {
 			id = "BossScarecrow",
 			name = "Scarecrow King",
 			-- 32 x the old boss multiplier of 4, so the fight is unchanged.
-			hp = 320, -- 128 with 50% armour until 2026-10-20: the boss now has the most health
+			hp = 700, -- 128 with 50% armour until 2026-10-20: the boss now has the most health
 			portrait = "rbxassetid://80515484828150", -- calm black face, with the elbow and knee ties (2026-10-11; was 122472392610626)
 			-- Pitchfork jabs with the longest reach; armour halves weapon damage so the
 			-- fight outlasts the Bull's.
-			melee = { damage = 36, cooldown = 1.3, windup = 0.3, range = 1.2, chaseSpeed = 11, armor = 0.2, move = "stab" },
+			melee = { damage = 30, cooldown = 1.3, windup = 0.3, range = 1.2, chaseSpeed = 11, armor = 0.2, move = "stab" },
 			coins = { min = 176, max = 344 },
 			exp = 162,
 			drops = {
