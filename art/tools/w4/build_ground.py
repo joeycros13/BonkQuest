@@ -82,27 +82,27 @@ POLY = [(-526, -898), (-386, -898), (-386, -938), (-216, -938), (-216, -1248), (
 
 # the road's centre lines (control points of Catmull-Rom curves)
 FORK = (-262, -990)
-# the two ways round each end at a doorway of the pyramid, the boss hall (the user, 2026-10-26:
-# the road leads to it; it used to meet again by the boss in the west arm): the north way at the
-# west doorway, the south way at the south one, 464 / 440 studs from the corridor
-WEST_DOOR = (-482, -1098)
-SOUTH_DOOR = (-375, -1200)
+JOIN = (-500, -1202)
 ROUTES = [
     # in from the corridor at the east wall's left end (as you walk in from World 2; the
     # user, 2026-10-25) to the fork
     [(-176, -988), (-200, -988), (-226, -990), (-246, -988), FORK],
     # the north way round: along the north past the oasis, down the west
-    [FORK, (-306, -982), (-366, -992), (-426, -976), (-482, -992), (-498, -1046), WEST_DOOR],
+    [FORK, (-306, -982), (-366, -992), (-426, -976), (-482, -992), (-498, -1046), (-480, -1104),
+     (-496, -1160), JOIN],
     # the south way round: down the east side, along the south
-    [FORK, (-266, -1032), (-258, -1092), (-270, -1140), (-262, -1186), (-312, -1208), SOUTH_DOOR],
-    # on to the boss in the west arm
-    # on into the doorways (each stops a few studs short of the pyramid's foot)
-    [WEST_DOOR, (-462, -1098), (-444, -1098)],
-    [SOUTH_DOOR, (-375, -1182), (-375, -1166)],
+    [FORK, (-266, -1032), (-258, -1092), (-270, -1140), (-262, -1186), (-312, -1208), (-372, -1194),
+     (-432, -1212), JOIN],
+    # on to the west arm's end (the old boss spot, where the World 5 gate is to go)
+    [JOIN, (-516, -1194), (-530, -1186)],
 ]
+# and a straight path from the loop into each of the pyramid's four doorways (the boss hall;
+# the user, 2026-10-26): a lane exactly the doorway's width (12) on its axis, from where the loop
+# crosses that axis, through the doorway's tunnel as its floor, to the hall's edge (door_lanes)
 PATH_HALF = 6
 
-PYRAMID = (-375, -1098, 60)      # centre x, z, half base
+PYRAMID = (-376, -1098, 60)      # centre x, z, half base (x -376 since 2026-10-26, so every edge is on
+                                # the 2-stud ground grid and the doorway paths meet it without seams)
 PYR_RISE = 2.5                  # up a step (each step is 2 in)
 PYR_HALL = 40                   # the hall's floor: 80 x 80 (the boss's room)
 PYR_SHELL = 12                  # the shell's thickness: each slab keeps a 12-wide ring, so above the
@@ -127,8 +127,10 @@ BOSS = (-375, -1098, 30)         # the pyramid's hall (it was the west arm's end
 DUNES = [
     (-300, -950, 44, 16, 16), (-232, -1086, 18, 40, 18), (-232, -1194, 18, 40, 20),
     (-405, -1234, 46, 14, 16), (-292, -1044, 14, 30, 14), (-292, -1154, 14, 30, 14),
-    (-458, -1068, 14, 34, 16), (-458, -1148, 12, 26, 12), (-375, -1014, 46, 12, 12),
-    (-375, -1182, 46, 11, 12), (-512, -958, 14, 22, 16), (-470, -1234, 20, 12, 10),
+    # the north and south mounds were one long dune each across the doorway's path: split in two
+    # (2026-10-26), and the west one cut back clear of the west path
+    (-458, -1060, 14, 24, 16), (-458, -1148, 12, 26, 12), (-412, -1014, 20, 12, 12),
+    (-338, -1014, 20, 12, 12), (-412, -1182, 20, 11, 12), (-338, -1182, 20, 11, 12), (-512, -958, 14, 22, 16), (-470, -1234, 20, 12, 10),
     (-546, -1230, 16, 12, 10), (-396, -914, 10, 14, 10),
 ]
 
@@ -167,6 +169,29 @@ def inside(x, z):
             if x < xc:
                 hit = not hit
     return hit
+
+
+def door_lanes():
+    """One straight lane per doorway, as a box (x0, x1, z0, z1): the doorway's width, from
+    the loop's centre line where it crosses the doorway's axis to the hall's edge."""
+    px_, pz_, ph = PYRAMID
+    north, south = catmull(ROUTES[1]), catmull(ROUTES[2])
+    lanes = []
+    for (dx, dz, curve) in ((1, 0, south), (-1, 0, north), (0, 1, north), (0, -1, south)):
+        if dx:
+            # the curve point nearest the axis z = pz_, on this side of the pyramid
+            q = min((c for c in curve if (c[0] - px_) * dx > ph), key=lambda c: abs(c[1] - pz_))
+            a, b = sorted((q[0], px_ + dx * PYR_HALL))
+            lanes.append((a, b, pz_ - PYR_DOOR, pz_ + PYR_DOOR))
+        else:
+            q = min((c for c in curve if (c[1] - pz_) * dz > ph), key=lambda c: abs(c[0] - px_))
+            a, b = sorted((q[1], pz_ + dz * PYR_HALL))
+            lanes.append((px_ - PYR_DOOR, px_ + PYR_DOOR, a, b))
+    return lanes
+
+
+def all_routes():
+    return ROUTES
 
 
 def catmull(points, step=1.0):
@@ -343,7 +368,7 @@ def build():
         return int((x - x0) // CELL), int((z1 - z) // CELL)
 
     # the road: 4-stud blocks within a 12-stud square brush of the curves
-    samples = [p for r in ROUTES for p in catmull(r)]
+    samples = [p for r in all_routes() for p in catmull(r)]
     path_blocks = set()
     for (px, pz) in samples:
         for bx in range(int((px - PATH_HALF - x0) // 4), int((px + PATH_HALF - x0) // 4) + 1):
@@ -357,6 +382,13 @@ def build():
         for a in (0, 1):
             for b in (0, 1):
                 path_cells.add((2 * bx + a, 2 * bz + b))
+    # the doorway lanes, cell by cell (exactly their width, so each fills its tunnel)
+    for (lx0, lx1, lz0, lz1) in door_lanes():
+        for i in range(int((lx0 - x0) // CELL), int((lx1 - x0) // CELL) + 1):
+            for j in range(int((z1 - lz1) // CELL), int((z1 - lz0) // CELL) + 1):
+                cx, cz = x0 + CELL * i + CELL / 2, z1 - CELL * j - CELL / 2
+                if lx0 < cx < lx1 and lz0 < cz < lz1:
+                    path_cells.add((i, j))
 
     # the volcano: as wide as it can be with VOLCANO_GAP studs of sand before the road
     vx, vz = VOLCANO
@@ -535,9 +567,14 @@ def build():
 
     # the pyramid: one square slab a step, from the sand up, with the hall and the four
     # doorways taken out of them (each slab split round the holes into world-aligned boxes)
+    # each doorway's tunnel, from the hall's edge out past the foot, down to the columns' base:
+    # its floor is the doorway lane's path
+    hd, out_ = PYR_HALL, ph + 1
     doors = [
-        (px_ - ph - 1, px_ + ph + 1, pz_ - PYR_DOOR, pz_ + PYR_DOOR, FLOOR, PYR_DOOR_TOP),  # east-west
-        (px_ - PYR_DOOR, px_ + PYR_DOOR, pz_ - ph - 1, pz_ + ph + 1, FLOOR, PYR_DOOR_TOP),  # north-south
+        (px_ + hd, px_ + out_, pz_ - PYR_DOOR, pz_ + PYR_DOOR, BASE, PYR_DOOR_TOP),
+        (px_ - out_, px_ - hd, pz_ - PYR_DOOR, pz_ + PYR_DOOR, BASE, PYR_DOOR_TOP),
+        (px_ - PYR_DOOR, px_ + PYR_DOOR, pz_ + hd, pz_ + out_, BASE, PYR_DOOR_TOP),
+        (px_ - PYR_DOOR, px_ + PYR_DOOR, pz_ - out_, pz_ - hd, BASE, PYR_DOOR_TOP),
     ]
     half, y, k = ph, BASE, 0
     while half >= 2:
@@ -690,8 +727,9 @@ if __name__ == "__main__":
     for b in boxes:
         by[b[7]] = by.get(b[7], 0) + 1
     print("boxes", len(boxes), by, "borders", len(borders))
-    lens = [round(route_length(r)) for r in ROUTES]
-    print("road lengths (entry, north way, south way, west spur, south spur)", lens,
-          "entry to the pyramid: north way", lens[0] + lens[1] + lens[3], "south way", lens[0] + lens[2] + lens[4])
+    lens = [round(route_length(r)) for r in all_routes()]
+    print("road lengths (entry, north way, south way, west arm, doorways E W N S)", lens,
+          "entry to the west arm: north", lens[0] + lens[1] + lens[3], "south", lens[0] + lens[2] + lens[3])
+    print("doorway lanes (x0, x1, z0, z1)", [tuple(round(v) for v in l) for l in door_lanes()])
     tall = max(b[5] for b in boxes if b[7] == "Dunes")
     print("volcano radius", vr, "top", max(b[5] for b in boxes if b[7] == "Volcano"), "tallest mound top", tall, "pyramid top", max(b[5] for b in boxes if b[7] == "Pyramid"))
