@@ -62,9 +62,21 @@ PLAYER = {
                              # player tops up first; 1.1 until then, when deaths were rare anyway)
     "replanEvery": 4,        # kills between rethinking what to farm
     "closeEnough": 0.10,     # activities paying within this share of the best are equal: the nearest wins
-    "tooStrong": 0.7,        # skip a fight that would take this share of max HP: get stronger first
+    "tooStrong": 0.85,       # skip a fight that would take this share of max HP: get stronger first (0.7 until
+                             # 2026-10-26: a maxed arrival's first small-enemy fight takes ~75% since the rescale)
                              # (0.9 until 2026-10-24; with ~50% small-enemy fights a player backs off sooner)
 }
+
+
+def level_health(lv, level):
+    """Leveling.maxHealth since 2026-10-26 (the user: armour must be needed, about 2/3 of a
+    player's health with their world's best set): BASE_HEALTH at level 1 up to KNEE_HEALTH at the
+    knee (World 2's gate level) and x GROWTH a level after it, x10 a world."""
+    start, knee = lv["start"], lv["healthKnee"]
+    if level <= knee:
+        g = (lv["kneeHealth"] / lv["baseHealth"]) ** (1 / (knee - start))
+        return math.floor(lv["baseHealth"] * g ** (level - start) + 0.5)
+    return math.floor(lv["kneeHealth"] * lv["growth"] ** (level - knee) + 0.5)
 
 
 def load(world):
@@ -177,7 +189,9 @@ class World:
         return sum(self.need(l) for l in range(self.lv["start"], level))
 
     def max_hp(self, level, armor):
-        if self.lv.get("growth"):
+        if self.lv.get("healthKnee"):
+            base = level_health(self.lv, level)
+        elif self.lv.get("growth"):
             base = math.floor(self.lv["baseHealth"] * self.lv["growth"] ** (level - self.lv["start"]) + 0.5)
         else:
             base = (self.lv["baseHealth"] + self.lv["healthPerLevel"] * (level - self.lv["start"])) * self.scale_at(level)
@@ -955,6 +969,10 @@ def main():
     ap.add_argument("--trace", action="store_true")
     ap.add_argument("--remap", action="store_true", help="after level.* changes, move level requirements to the same EXP")
     a = ap.parse_args()
+    # World 1's new players back off sooner; from World 2 the base small-enemy fight takes ~75%
+    # (the 2026-10-26 rescale), so a player fights at that after resting
+    if a.world == 1:
+        PLAYER["tooStrong"] = 0.7
     data = load(a.world)
     if a.prev is None and a.world > 1:
         a.prev = a.world - 1

@@ -159,9 +159,8 @@ Tools.Defs = {
 			tool = "WoodenAxe",
 			materials = {
 				{ id = "OakLog", count = 8 },
+				{ id = "FoxFur", count = 8 },
 				{ id = "Stone", count = 8 },
-				{ id = "FoxFur", count = 6 },
-				{ id = "BoarTusk", count = 2 },
 			},
 		},
 		handed = 1,
@@ -189,9 +188,8 @@ Tools.Defs = {
 			tool = "WoodenRod",
 			materials = {
 				{ id = "OakLog", count = 6 },
+				{ id = "FoxFur", count = 7 },
 				{ id = "Stone", count = 6 },
-				{ id = "FoxFur", count = 4 },
-				{ id = "BoarTusk", count = 3 },
 			},
 		},
 		handed = 2,
@@ -225,9 +223,8 @@ Tools.Defs = {
 			tool = "WoodenPickaxe",
 			materials = {
 				{ id = "RedwoodLog", count = 8 },
+				{ id = "BatWing", count = 8 },
 				{ id = "AmberSap", count = 1 },
-				{ id = "BatWing", count = 6 },
-				{ id = "GolemPebble", count = 2 },
 			},
 		},
 		handed = 1,
@@ -253,9 +250,8 @@ Tools.Defs = {
 			tool = "StoneRod",
 			materials = {
 				{ id = "RedwoodLog", count = 6 },
+				{ id = "BatWing", count = 7 },
 				{ id = "Perch", count = 4 },
-				{ id = "BatWing", count = 4 },
-				{ id = "GolemPebble", count = 3 },
 			},
 		},
 		handed = 2,

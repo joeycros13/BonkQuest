@@ -45,7 +45,8 @@ Gates.list = {
 		-- world_sim.py); 75 / 50,000 would make it 103. Was 36 (20 before 2026-10-19).
 		level = 50,
 		coins = 25000,
-		materials = { { id = "RedwoodLog", count = 25 }, { id = "AmberSap", count = 3 } }, -- 3 sap: the user, 2026-10-21
+		-- 35 logs since 2026-10-26 (25 before; a node gives one log a break now)
+		materials = { { id = "RedwoodLog", count = 35 }, { id = "AmberSap", count = 3 } }, -- 3 sap: the user, 2026-10-21
 	},
 	-- World 4's gate is a mock until World 4 exists (2026-10-24, the user: continue the gates' pattern and tune
 	-- World 3 to it): level 75 (a gate every 25 levels), 225,000 coins, 20 Crystal Shards and 3 Raw Gems (World 3's
@@ -60,7 +61,8 @@ Gates.list = {
 		model = "World4Gate",
 		level = 75,
 		coins = 225000,
-		materials = { { id = "CrystalShard", count = 20 }, { id = "RawGem", count = 3 } },
+		-- 30 shards since 2026-10-26 (20 before)
+		materials = { { id = "CrystalShard", count = 30 }, { id = "RawGem", count = 3 } },
 		requires = 3,
 	},
 } :: { Gate }

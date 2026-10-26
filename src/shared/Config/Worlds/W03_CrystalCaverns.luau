@@ -81,13 +81,13 @@ local World: WorldTypes.WorldDef = {
 			tier = "small",
 			name = "Cave Bat",
 			portrait = "rbxassetid://72271902069536", -- calm face (2026-10-13)
-			hp = 8000, -- x10 the Fox (2026-10-24); 10,048 before
-			melee = { damage = 1220, cooldown = 1.2, windup = 0.47, range = 1.6, chaseSpeed = 18, armor = 0, move = "swoop" },
-			coins = { min = 195, max = 385 },
-			exp = 320,
+			hp = 1490, -- x10 the Fox (2026-10-24); 10,048 before
+			melee = { damage = 1136, cooldown = 0.7, windup = 0.25, range = 1.6, chaseSpeed = 18, armor = 0, move = "swoop" },
+			coins = { min = 215, max = 424 },
+			exp = 480,
 			drops = {
-				{ weapon = "BatwingBlade", chance = 0.20 },
-				{ weapon = "IronPickaxe", chance = 0.05 },
+				{ weapon = "BatwingBlade", chance = 0.05 },
+				{ weapon = "IronPickaxe", chance = 0.0125 },
 			},
 			materials = { { id = "BatWing", chance = 0.5, min = 1, max = 2 } },
 		},
@@ -98,14 +98,14 @@ local World: WorldTypes.WorldDef = {
 			tier = "medium",
 			name = "Pebble Golem",
 			portrait = "rbxassetid://92185614445143", -- calm face (2026-10-13)
-			hp = 19000, -- x10 the Boar (2026-10-24); 23,904 before
-			melee = { damage = 2460, cooldown = 1.8, windup = 0.48, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "punch" },
-			coins = { min = 370, max = 730 },
-			exp = 610,
+			hp = 4470, -- x10 the Boar (2026-10-24); 23,904 before
+			melee = { damage = 1260, cooldown = 1.1, windup = 0.3, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "punch" },
+			coins = { min = 407, max = 803 },
+			exp = 915,
 			drops = {
-				{ weapon = "IronPickaxe", chance = 0.20 },
-				{ weapon = "PebbleMallet", chance = 0.15 },
-				{ weapon = "GoldGauntlets", chance = 0.08 },
+				{ weapon = "IronPickaxe", chance = 0.05 },
+				{ weapon = "PebbleMallet", chance = 0.0375 },
+				{ weapon = "GoldGauntlets", chance = 0.02 },
 			},
 			materials = { { id = "GolemPebble", chance = 0.5, min = 1, max = 2 } },
 		},
@@ -116,14 +116,14 @@ local World: WorldTypes.WorldDef = {
 			tier = "elite",
 			name = "Crystal Golem",
 			portrait = "rbxassetid://84986641261720", -- calm face (2026-10-13)
-			hp = 26000, -- x10 the Bear (2026-10-24); 32,704 before
-			melee = { damage = 4090, cooldown = 2.4, windup = 0.74, range = 1.6, chaseSpeed = 12, armor = 0.15, move = "smash" },
-			coins = { min = 525, max = 1045 },
-			exp = 875,
+			hp = 6700, -- x10 the Bear (2026-10-24); 32,704 before
+			melee = { damage = 1904, cooldown = 1.4, windup = 0.35, range = 1.6, chaseSpeed = 12, armor = 0.15, move = "smash" },
+			coins = { min = 578, max = 1150 },
+			exp = 1312,
 			drops = {
-				{ weapon = "GoldGauntlets", chance = 0.15 },
-				{ weapon = "GeodeGlaive", chance = 0.10 },
-				{ weapon = "EmberCoalMaul", chance = 0.08 },
+				{ weapon = "GoldGauntlets", chance = 0.0375 },
+				{ weapon = "GeodeGlaive", chance = 0.025 },
+				{ weapon = "EmberCoalMaul", chance = 0.02 },
 			},
 			materials = { { id = "GolemCrystal", chance = 0.4, min = 1, max = 1 } },
 		},
@@ -138,12 +138,12 @@ local World: WorldTypes.WorldDef = {
 		GemMole = {
 			id = "GemMole",
 			name = "Gem Mole",
-			hp = 36000, -- x10 the Fairy (2026-10-24); 45,280 before
+			hp = 7450, -- x10 the Fairy (2026-10-24); 45,280 before
 			secret = true,
 			adminPortrait = "rbxassetid://95259297161320", -- admin panel only, never the Index (2026-10-17)
-			melee = { damage = 3070, cooldown = 1.8, windup = 0.48, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
-			coins = { min = 735, max = 1460 },
-			exp = 1225,
+			melee = { damage = 2859, cooldown = 1, windup = 0.3, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
+			coins = { min = 809, max = 1606 },
+			exp = 1838,
 			-- the Cave Core: about 1%, once per player (trial numbers)
 			materials = { { id = "CaveCore", chance = 0.01, min = 1, max = 1 } },
 		},
@@ -157,15 +157,15 @@ local World: WorldTypes.WorldDef = {
 			id = "SpiderQueen",
 			name = "Spider Queen",
 			portrait = "rbxassetid://80870479752276", -- calm face (2026-10-13)
-			hp = 40000, -- x10 the Elder Treant (2026-10-24); 50,304 before
-			melee = { damage = 4500, cooldown = 2.4, windup = 0.74, range = 1.5, chaseSpeed = 11, armor = 0.2, move = "legstab", moves = { "legstab", "rearslam" } },
-			coins = { min = 2260, max = 4480 },
-			exp = 3760,
+			hp = 8940, -- x10 the Elder Treant (2026-10-24); 50,304 before
+			melee = { damage = 2095, cooldown = 1.4, windup = 0.35, range = 1.5, chaseSpeed = 11, armor = 0.2, move = "legstab", moves = { "legstab", "rearslam" } },
+			coins = { min = 2486, max = 4928 },
+			exp = 5640,
 			drops = {
-				{ weapon = "GeodeGlaive", chance = 0.20 },
-				{ weapon = "EmberCoalMaul", chance = 0.20 },
+				{ weapon = "GeodeGlaive", chance = 0.05 },
+				{ weapon = "EmberCoalMaul", chance = 0.05 },
 				-- Legendary: the Queen's own fang
-				{ weapon = "QueensFang", chance = 0.05 },
+				{ weapon = "QueensFang", chance = 0.02 },
 				-- the secret Rock Candy Club (hidden in the Index until found)
 				{ weapon = "RockCandyClub", chance = 0.001 }, -- secrets drop at 0.1% (the user's rule); 2% until 2026-10-24
 			},

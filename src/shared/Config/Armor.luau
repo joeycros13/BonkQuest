@@ -70,20 +70,19 @@ Armor.Defs = {
 		id = "FarmhandsGear",
 		icon = "rbxassetid://71932067359739",
 		name = "Farmhand's Gear",
-		blurb = "Stitched from feathers and hide. Better than nothing!",
+		blurb = "Stitched from feathers and oak. Better than nothing!",
 		world = 1,
 		sell = 62,
 		order = 1,
 		rarity = "Uncommon",
 		level = 5,
-		coins = 150,
+		coins = 75,
 		recipe = {
-			{ id = "ChickenFeather", count = 15 },
-			{ id = "BullHide", count = 10 },
-			{ id = "OakLog", count = 8 }, -- gathered (2026-10-19, user)
+			{ id = "ChickenFeather", count = 8 },
+			{ id = "OakLog", count = 8 },
 		},
 		defense = 0.10,
-		health = 35,
+		health = 150,
 	},
 	HarvestKnight = {
 		id = "HarvestKnight",
@@ -98,13 +97,14 @@ Armor.Defs = {
 		coins = 750,
 		recipe = {
 			{ id = "Horsehair", count = 8 },
-			{ id = "GoldenStraw", count = 3 },
 			{ id = "LuckyHorseshoe", count = 1 },
-			{ id = "Stone", count = 12 }, -- gathered (2026-10-19, user)
-			{ id = "OakLog", count = 6 },
+			{ id = "GoldenStraw", count = 3 },
+			{ id = "OakLog", count = 10 },
+			{ id = "Stone", count = 12 },
+			{ id = "BullHide", count = 8 },
 		},
 		defense = 0.18,
-		health = 75,
+		health = 700,
 	},
 	-- ==================== World 2 (The Redwood Forest) ====================
 	WoodlandHide = {
@@ -119,12 +119,11 @@ Armor.Defs = {
 		level = 28, -- 20 until 2026-10-21: players arrive at 25, so it unlocked on arrival
 		coins = 1500,
 		recipe = {
-			{ id = "FoxFur", count = 15 },
-			{ id = "BoarTusk", count = 10 },
-			{ id = "RedwoodLog", count = 10 }, -- gathered (2026-10-21, user: like World 1's sets)
+			{ id = "FoxFur", count = 20 },
+			{ id = "RedwoodLog", count = 15 },
 		},
 		defense = 0.25,
-		health = 350,
+		health = 2200,
 		speed = 0.05,
 	},
 	HeartwoodBark = {
@@ -140,13 +139,14 @@ Armor.Defs = {
 		coins = 7500,
 		recipe = {
 			{ id = "BearClaw", count = 10 },
-			{ id = "HeartwoodSap", count = 3 },
 			{ id = "RangerBadge", count = 1 },
-			{ id = "RedwoodLog", count = 12 }, -- gathered (2026-10-21)
+			{ id = "HeartwoodSap", count = 3 },
+			{ id = "RedwoodLog", count = 20 },
 			{ id = "AmberSap", count = 1 },
+			{ id = "BoarTusk", count = 10 },
 		},
 		defense = 0.32,
-		health = 750,
+		health = 7000,
 		regen = 0.0025,
 	},
 	-- ==================== World 3 (The Crystal Caverns), 2026-10-13 ====================
@@ -162,12 +162,11 @@ Armor.Defs = {
 		level = 58, -- 53 until 2026-10-24: Pip's EXP rewards got players there in under 4 minutes
 		coins = 15000,
 		recipe = {
-			{ id = "BatWing", count = 15 },
-			{ id = "GolemPebble", count = 10 },
-			{ id = "IronOre", count = 12 }, -- mined (2026-10-24), like Woodland Hide's Redwood Logs
+			{ id = "BatWing", count = 22 },
+			{ id = "IronOre", count = 18 },
 		},
 		defense = 0.38,
-		health = 5500,
+		health = 22000,
 		speed = 0.10,
 	},
 	CrystalQueen = {
@@ -183,13 +182,14 @@ Armor.Defs = {
 		coins = 75000,
 		recipe = {
 			{ id = "GolemCrystal", count = 10 },
-			{ id = "QueensSilk", count = 3 },
 			{ id = "MinersLantern", count = 1 },
-			{ id = "CrystalShard", count = 12 }, -- mined (2026-10-24), like Heartwood Bark's logs and sap
+			{ id = "QueensSilk", count = 3 },
 			{ id = "RawGem", count = 1 },
+			{ id = "CrystalShard", count = 20 },
+			{ id = "GolemPebble", count = 10 },
 		},
 		defense = 0.44,
-		health = 13000,
+		health = 70000,
 		regen = 0.005,
 		speed = 0.08,
 	},

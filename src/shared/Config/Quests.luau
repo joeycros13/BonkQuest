@@ -8,9 +8,10 @@
 --                   the final reward is the Firefly Lantern (LanternFlail)
 --   ExplorerCaverns Explorer Pip, "Into the Crystal Caverns" (World 3, 2026-10-17,
 --                   picked on the design canvas); the final reward is the Diamond
---                   Pickaxe. Level steps follow the other lines: the first comes at the
---                   same EXP as before the 2026-10-19 curve (36), the second at the
---                   second set's level (42).
+--                   Pickaxe.
+-- No line has a "level" step since 2026-10-26 (the user): each became a gathering step (step 5)
+-- or an elite step (step 9), every line sends the player after its world's elite, and kill and
+-- gather counts went up about half (art/tools/balance/rescale.py QUESTS mirrors the numbers).
 -- Lines run side by side: each player has a step in every line, published as
 -- per-line attributes (Quests.attr). A giver model (tagged QuestGiver) names its
 -- line in its "QuestLine" attribute. Add a line to `lines` and `order` and give it
@@ -58,8 +59,8 @@
 local Gathering = require(script.Parent:WaitForChild("Gathering"))
 local Tools = require(script.Parent:WaitForChild("Tools"))
 
--- World scale (2026-10-23, Config/Leveling): every step's EXP x1 / x4 / x16 for Worlds 1 / 2 / 3, like
--- the EXP a level needs there. Coins are unscaled (they already grew x10 a world).
+-- Each line's rewards are written for its world (about x10 the last world's, coins and EXP alike); nothing
+-- scales them in code.
 
 local Quests = {}
 
@@ -122,101 +123,52 @@ lines.DaleFarm = {
 		{
 			kind = "kill",
 			target = "Chicken",
-			count = 5,
-			objective = "Defeat 5 Angry Chickens",
+			count = 8,
+			objective = "Defeat 8 Angry Chickens",
 			track = "Defeat {Angry Chickens}",
 			reward = { coins = 25, exp = 20 },
 			offer = {
 				"Well howdy there, partner! Name's Dale. I've been farmin' this here meadow for forty years.",
 				"Lately my chickens have gone plumb mad. Peckin' my crops, peckin' my boots, peckin' ME!",
-				"Reckon you could [defeat 5 Angry Chickens] for me? I'll make it worth your while.",
+				"Reckon you could [defeat 8 Angry Chickens] for me? I'll make it worth your while.",
 			},
-			reminder = { "Them chickens are still runnin' wild! [Defeat 5 Angry Chickens], would ya?" },
-			complete = { "Well I'll be! Five fewer feathered menaces. Here, take this for your trouble." },
+			reminder = { "Them chickens are still runnin' wild! [Defeat 8 Angry Chickens], would ya?" },
+			complete = { "Well I'll be! Eight fewer feathered menaces. Here, take this for your trouble." },
 		},
 		{
 			-- 2026-10-19 (user): was "earn 75 coins"; teaches the axe early
 			kind = "gather",
 			target = "OakLog",
-			count = 5,
+			count = 8,
 			-- "Collect", not "Chop" (issue 21, 2026-10-25): logs already held count
-			objective = "Collect 5 Oak Logs",
+			objective = "Collect 8 Oak Logs",
 			track = "Collect {Oak Logs}",
 			reward = { coins = 30, exp = 30 },
 			offer = {
 				"Now, a farmhand's gotta keep the stove burnin', and that means firewood.",
 				"You can't chop a tree with that little dagger, though. The Weaponsmith on the plaza sells all the tools: axes, pickaxes, fishin' rods.",
-				"Pick yourself up a [Wooden Axe] first. Then head to them big oaks by the cliffs and [collect 5 Oak Logs].",
+				"Pick yourself up a [Wooden Axe] first. Then head to them big oaks by the cliffs and [collect 8 Oak Logs].",
 			},
 			offerHasTool = {
 				"Now, a farmhand's gotta keep the stove burnin', and that means firewood.",
-				"I see you've already got yourself an axe. Head to them big oaks by the cliffs and [collect 5 Oak Logs].",
+				"I see you've already got yourself an axe. Head to them big oaks by the cliffs and [collect 8 Oak Logs].",
 			},
-			reminder = { "Them big oaks by the cliffs are full of firewood. [Collect 5 Oak Logs] and come see me." },
+			reminder = { "Them big oaks by the cliffs are full of firewood. [Collect 8 Oak Logs] and come see me." },
 			complete = { "Now that's a fine stack of firewood! Hang on to it, I'll be needin' logs for the barn soon. Here's a little somethin' for the sweat." },
 		},
 		{
 			kind = "kill",
 			target = "Chicken",
-			count = 10,
-			objective = "Defeat 10 Angry Chickens",
+			count = 15,
+			objective = "Defeat 15 Angry Chickens",
 			track = "Defeat {Angry Chickens}",
 			reward = { coins = 40, exp = 40 },
 			offer = {
 				"Bad news, partner. Them chickens multiplied overnight.",
-				"I need you to [defeat 10 Angry Chickens] before they eat my whole carrot patch!",
+				"I need you to [defeat 15 Angry Chickens] before they eat my whole carrot patch!",
 			},
-			reminder = { "Still a whole lotta cluckin' out there! [Defeat 10 Angry Chickens]." },
-			complete = { "Ten more down! My carrots thank ya. So do I." },
-		},
-		{
-			kind = "kill",
-			target = "Bull",
-			count = 3,
-			objective = "Defeat 3 Raging Bulls",
-			track = "Defeat {Raging Bulls}",
-			reward = { coins = 60, exp = 60 },
-			offer = {
-				"Somethin' bigger's stirrin' now. Them bulls up the paths are seein' red.",
-				"They knocked my fence clean over! [Defeat 3 Raging Bulls] and teach 'em some manners.",
-			},
-			reminder = { "Watch them horns! [Defeat 3 Raging Bulls]." },
-			complete = { "Three bulls! You're tougher than you look, friend." },
-		},
-		{
-			kind = "level",
-			level = 9,
-			objective = "Reach level 9",
-			track = "Reach {Level 9}",
-			-- + the Rusty Blade (Relic), the start of the secret super weapon (2026-10-12)
-			reward = { coins = 50, weapon = "RustyBlade" },
-			offer = {
-				"Them bulls'll only get meaner from here. You gotta toughen up.",
-				"Go get some practice in and [reach level 9]. Come back when you're ready.",
-			},
-			reminder = { "Keep at it! [Reach level 9] first." },
-			complete = {
-				"Now that's a seasoned fighter if I ever saw one!",
-				"Here, I dug this old blade up behind the barn. Rusty as anything... but that empty socket's always made me wonder.",
-			},
-		},
-		{
-			-- 2026-10-19 (user): was "give 200 coins"; the logs and stone are taken at hand-in
-			kind = "bring",
-			items = { { id = "OakLog", count = 8 }, { id = "Stone", count = 8 } },
-			objective = "Bring Dale 8 Oak Logs and 8 Stone",
-			track = "Bring Dale {Logs and Stone}",
-			reward = { coins = 80, exp = 100 },
-			offer = {
-				"I hate to ask, but them bulls flattened my barn door and knocked the wall stones loose.",
-				"Could you [bring me 8 Oak Logs and 8 Stone] for the repairs? A pickaxe'll crack them boulders; the Weaponsmith sells those too.",
-			},
-			offerHasTool = {
-				"I hate to ask, but them bulls flattened my barn door and knocked the wall stones loose.",
-				"Could you [bring me 8 Oak Logs and 8 Stone] for the repairs? That pickaxe of yours'll crack them boulders.",
-			},
-			reminder = { "No rush... but my barn door's still flat. [Bring me 8 Oak Logs and 8 Stone]." },
-			complete = { "Bless ya! That door'll be standin' by sundown. Here, it ain't much, but it's honest." },
+			reminder = { "Still a whole lotta cluckin' out there! [Defeat 15 Angry Chickens]." },
+			complete = { "Fifteen more down! My carrots thank ya. So do I." },
 		},
 		{
 			kind = "kill",
@@ -224,13 +176,70 @@ lines.DaleFarm = {
 			count = 5,
 			objective = "Defeat 5 Raging Bulls",
 			track = "Defeat {Raging Bulls}",
+			reward = { coins = 60, exp = 60 },
+			offer = {
+				"Somethin' bigger's stirrin' now. Them bulls up the paths are seein' red.",
+				"They knocked my fence clean over! [Defeat 5 Raging Bulls] and teach 'em some manners.",
+				"Mind you, they hit hard. Some proper armor from the crafter wouldn't go amiss.",
+			},
+			reminder = { "Watch them horns! [Defeat 5 Raging Bulls]." },
+			complete = { "Five bulls! You're tougher than you look, friend." },
+		},
+		{
+			-- 2026-10-26 (the user): the level step went; mining in its place
+			kind = "gather",
+			target = "Stone",
+			count = 10,
+			objective = "Collect 10 Stone",
+			track = "Collect {Stone}",
+			-- + the Rusty Blade (Relic), the start of the secret super weapon (2026-10-12)
+			reward = { coins = 50, exp = 60, weapon = "RustyBlade" },
+			offer = {
+				"Them bulls kicked my old well clean in half. I need stone to build it back up.",
+				"A pickaxe'll crack them grey boulders; the Weaponsmith on the plaza sells those.",
+				"Grab yourself a [Wooden Pickaxe] and [collect 10 Stone].",
+			},
+			offerHasTool = {
+				"Them bulls kicked my old well clean in half. I need stone to build it back up.",
+				"That pickaxe of yours'll crack them grey boulders. [Collect 10 Stone] for me.",
+			},
+			reminder = { "Them grey boulders are full of good stone. [Collect 10 Stone]." },
+			complete = {
+				"Now that's good honest stone! Hang on to it, the barn's gonna need some too.",
+				"Oh, and diggin' out the old well I found this. Rusty as anything... but that empty socket's always made me wonder.",
+			},
+		},
+		{
+			kind = "kill",
+			target = "Bull",
+			count = 8,
+			objective = "Defeat 8 Raging Bulls",
+			track = "Defeat {Raging Bulls}",
 			reward = { coins = 100, exp = 100 },
 			offer = {
 				"Word is the bulls are gatherin' near the boss platform.",
-				"Head up there and [defeat 5 Raging Bulls] before they stampede the whole valley.",
+				"Head up there and [defeat 8 Raging Bulls] before they stampede the whole valley.",
 			},
-			reminder = { "Them bulls ain't gonna fight themselves! [Defeat 5 Raging Bulls]." },
+			reminder = { "Them bulls ain't gonna fight themselves! [Defeat 8 Raging Bulls]." },
 			complete = { "The valley's quiet for the first time in weeks. Thank ya kindly." },
+		},
+		{
+			-- 2026-10-19 (user): was "give 200 coins"; the logs and stone are taken at hand-in
+			kind = "bring",
+			items = { { id = "OakLog", count = 15 }, { id = "Stone", count = 15 } },
+			objective = "Bring Dale 15 Oak Logs and 15 Stone",
+			track = "Bring Dale {Logs and Stone}",
+			reward = { coins = 80, exp = 100 },
+			offer = {
+				"I hate to ask, but them bulls flattened my barn door and knocked the wall stones loose.",
+				"Could you [bring me 15 Oak Logs and 15 Stone] for the repairs? A pickaxe'll crack them boulders; the Weaponsmith sells those too.",
+			},
+			offerHasTool = {
+				"I hate to ask, but them bulls flattened my barn door and knocked the wall stones loose.",
+				"Could you [bring me 15 Oak Logs and 15 Stone] for the repairs? That pickaxe of yours'll crack them boulders.",
+			},
+			reminder = { "No rush... but my barn door's still flat. [Bring me 15 Oak Logs and 15 Stone]." },
+			complete = { "Bless ya! That door'll be standin' by sundown. Here, it ain't much, but it's honest." },
 		},
 		{
 			kind = "kill",
@@ -250,17 +259,20 @@ lines.DaleFarm = {
 			},
 		},
 		{
-			kind = "level",
-			level = 14,
-			objective = "Reach level 14",
-			track = "Reach {Level 14}",
-			reward = { coins = 100 },
+			-- 2026-10-26 (the user): the level step went; the elites in its place
+			kind = "kill",
+			target = "Stallion",
+			count = 6,
+			objective = "Defeat 6 Wild Stallions",
+			track = "Defeat {Wild Stallions}",
+			reward = { coins = 120, exp = 150 },
 			offer = {
 				"Bad news. That old scarecrow's stitched himself back together.",
-				"He comes back stronger every time. Go [reach level 14] so you can stand up to him.",
+				"And now he's got the wild stallions guardin' his platform. They kick like thunder.",
+				"[Defeat 6 Wild Stallions] so we can get at him. That Harvest Knight armor'd help, if you've a mind to craft it.",
 			},
-			reminder = { "Keep trainin'! [Reach level 14]." },
-			complete = { "Look at ya! The strongest farmhand this meadow's ever seen." },
+			reminder = { "Them stallions are still guardin' the platform! [Defeat 6 Wild Stallions]." },
+			complete = { "Six stallions! The strongest farmhand this meadow's ever seen." },
 		},
 		{
 			kind = "kill",
@@ -305,106 +317,113 @@ lines.RangerRedwoods = {
 		{
 			kind = "kill",
 			target = "Fox",
-			count = 5,
-			objective = "Defeat 5 Snarling Foxes",
+			count = 8,
+			objective = "Defeat 8 Snarling Foxes",
 			track = "Defeat {Snarling Foxes}",
 			reward = { coins = 250, exp = 200 },
 			offer = {
 				"Evening, traveller. I'm Ranger Rowan. I look after these redwoods.",
 				"Something has the wildlife riled up. The foxes snap at anything that moves.",
-				"Could you [defeat 5 Snarling Foxes] for me? They won't make it easy.",
+				"Could you [defeat 8 Snarling Foxes] for me? They won't make it easy.",
 			},
-			reminder = { "Those foxes are still prowling the trails. [Defeat 5 Snarling Foxes]." },
+			reminder = { "Those foxes are still prowling the trails. [Defeat 8 Snarling Foxes]." },
 			complete = { "That's a relief. The trail's safer already. Here, for your trouble." },
 		},
 		{
 			-- 2026-10-21 (user): was "earn 300 coins"; the fur goes toward the Stone Axe
 			kind = "gather",
 			target = "FoxFur",
-			count = 6,
-			objective = "Collect 6 Fox Fur",
+			count = 10,
+			objective = "Collect 10 Fox Fur",
 			track = "Collect {Fox Fur}",
 			reward = { coins = 300, exp = 300 },
 			offer = {
 				"Your old wooden axe won't bite into a redwood. You'll want a Stone Axe.",
-				"The weaponsmith wraps their grips in fox fur. Go and [collect 6 Fox Fur] from the foxes on the trail.",
+				"The weaponsmith wraps their grips in fox fur. Go and [collect 10 Fox Fur] from the foxes on the trail.",
 			},
-			reminder = { "Those foxes still have their coats. [Collect 6 Fox Fur]." },
-			complete = { "Thick and warm. That'll make a fine grip. Now all you need is a boar tusk or two." },
+			reminder = { "Those foxes still have their coats. [Collect 10 Fox Fur]." },
+			complete = { "Thick and warm. That'll make a fine grip, and the crafter can stitch the rest into a hide coat." },
 		},
 		{
 			kind = "kill",
 			target = "Fox",
-			count = 10,
-			objective = "Defeat 10 Snarling Foxes",
+			count = 15,
+			objective = "Defeat 15 Snarling Foxes",
 			track = "Defeat {Snarling Foxes}",
 			reward = { coins = 400, exp = 400 },
 			offer = {
 				"I counted tracks this morning. Far more foxes than there should be.",
-				"Please [defeat 10 Snarling Foxes] before they overrun the camp.",
+				"Please [defeat 15 Snarling Foxes] before they overrun the camp.",
 			},
-			reminder = { "I can still hear them yipping. [Defeat 10 Snarling Foxes]." },
+			reminder = { "I can still hear them yipping. [Defeat 15 Snarling Foxes]." },
 			complete = { "Quiet at last. You move through these woods like you were born here." },
 		},
 		{
 			kind = "kill",
 			target = "Boar",
-			count = 3,
-			objective = "Defeat 3 Wild Boars",
+			count = 5,
+			objective = "Defeat 5 Wild Boars",
 			track = "Defeat {Wild Boars}",
 			reward = { coins = 600, exp = 600 },
 			offer = {
 				"Now the boars are charging hikers right off the trail.",
-				"Their hides are thick, so hit hard. [Defeat 3 Wild Boars].",
+				"Their hides are thick, so hit hard, and wear something tougher than you came in. [Defeat 5 Wild Boars].",
 			},
-			reminder = { "Mind those tusks! [Defeat 3 Wild Boars]." },
-			complete = { "Three boars! I'll mark those trails open again." },
+			reminder = { "Mind those tusks! [Defeat 5 Wild Boars]." },
+			complete = { "Five boars! I'll mark those trails open again." },
 		},
 		{
-			kind = "level",
-			level = 30, -- 22 until 2026-10-20: players arrive at 25 since the World 2 gate moved to level 25
-			objective = "Reach level 30",
-			track = "Reach {Level 30}",
-			reward = { coins = 500 },
+			-- 2026-10-26 (the user): the level step went; chopping in its place
+			kind = "gather",
+			target = "RedwoodLog",
+			count = 12,
+			objective = "Collect 12 Redwood Logs",
+			track = "Collect {Redwood Logs}",
+			reward = { coins = 500, exp = 600 },
 			offer = {
-				"Deeper in, the bears are waking up angry. You're not ready for them yet.",
-				"Train up and [reach level 30]. I'll be right here by the fire.",
+				"The boars trampled my woodpile flat. Winter comes early under these trees.",
+				"Only a Stone Axe will fell a redwood. The Weaponsmith by the gate can turn your wooden axe into one.",
+				"Then [collect 12 Redwood Logs] for me.",
 			},
-			reminder = { "Keep training. [Reach level 30] first." },
-			complete = { "Look at you. Strong enough to stare down a grizzly." },
+			offerHasTool = {
+				"The boars trampled my woodpile flat. Winter comes early under these trees.",
+				"That Stone Axe of yours will fell a redwood nicely. [Collect 12 Redwood Logs] for me.",
+			},
+			reminder = { "The camp's fire won't last the night. [Collect 12 Redwood Logs]." },
+			complete = { "Now that's a woodpile. Keep hold of it, the tower's going to need beams too." },
 		},
 		{
 			-- 2026-10-21 (user): was "give 600 coins"; the logs and tusks are taken at hand-in
 			kind = "bring",
-			items = { { id = "RedwoodLog", count = 10 }, { id = "BoarTusk", count = 4 } },
-			objective = "Bring Rowan 10 Redwood Logs and 4 Boar Tusks",
+			items = { { id = "RedwoodLog", count = 15 }, { id = "BoarTusk", count = 6 } },
+			objective = "Bring Rowan 15 Redwood Logs and 6 Boar Tusks",
 			track = "Bring Rowan {Logs and Tusks}",
 			reward = { coins = 800, exp = 1000 },
 			offer = {
 				"The boars battered the lookout tower. I can't keep watch from up there like this.",
-				"Could you [bring me 10 Redwood Logs and 4 Boar Tusks]? Logs for the beams, tusks for pegs.",
+				"Could you [bring me 15 Redwood Logs and 6 Boar Tusks]? Logs for the beams, tusks for pegs.",
 				"Only a Stone Axe will fell a redwood. The Weaponsmith by the gate can turn your wooden axe into one.",
 			},
 			offerHasTool = {
 				"The boars battered the lookout tower. I can't keep watch from up there like this.",
-				"Could you [bring me 10 Redwood Logs and 4 Boar Tusks]? Logs for the beams, tusks for pegs.",
+				"Could you [bring me 15 Redwood Logs and 6 Boar Tusks]? Logs for the beams, tusks for pegs.",
 				"That Stone Axe of yours will fell a redwood nicely.",
 			},
-			reminder = { "The tower still needs fixing. [Bring me 10 Redwood Logs and 4 Boar Tusks]." },
+			reminder = { "The tower still needs fixing. [Bring me 15 Redwood Logs and 6 Boar Tusks]." },
 			complete = { "Thank you. The tower will be standing tall by morning. Take this, it's what I can spare." },
 		},
 		{
 			kind = "kill",
 			target = "Bear",
-			count = 2,
-			objective = "Defeat 2 Grizzly Bears",
+			count = 3,
+			objective = "Defeat 3 Grizzly Bears",
 			track = "Defeat {Grizzly Bears}",
 			reward = { coins = 1000, exp = 1000 },
 			offer = {
-				"From the tower I spotted two grizzlies guarding the path to the old ruins.",
-				"[Defeat 2 Grizzly Bears] so we can find out what's stirring in there.",
+				"From the tower I spotted grizzlies guarding the path to the old ruins.",
+				"[Defeat 3 Grizzly Bears] so we can find out what's stirring in there.",
 			},
-			reminder = { "The bears still block the ruins. [Defeat 2 Grizzly Bears]." },
+			reminder = { "The bears still block the ruins. [Defeat 3 Grizzly Bears]." },
 			complete = { "The path's clear. And now I know what's behind all this..." },
 		},
 		{
@@ -425,17 +444,20 @@ lines.RangerRedwoods = {
 			},
 		},
 		{
-			kind = "level",
-			level = 34, -- 27 until 2026-10-20 (World 2 balance)
-			objective = "Reach level 34",
-			track = "Reach {Level 34}",
-			reward = { coins = 1000 },
+			-- 2026-10-26 (the user): the level step went; the elites in its place
+			kind = "kill",
+			target = "Bear",
+			count = 6,
+			objective = "Defeat 6 Grizzly Bears",
+			track = "Defeat {Grizzly Bears}",
+			reward = { coins = 1200, exp = 1500 },
 			offer = {
 				"Bad news. Roots don't die easily. The treant is growing back, stronger than before.",
-				"You'll need to be stronger too. [Reach level 34].",
+				"Every bear in the forest has gathered round its ruins to guard it.",
+				"[Defeat 6 Grizzly Bears] and we'll have a clear shot at it.",
 			},
-			reminder = { "Keep at it. [Reach level 34]." },
-			complete = { "The strongest warden these woods have ever had." },
+			reminder = { "The grizzlies are still circling the ruins. [Defeat 6 Grizzly Bears]." },
+			complete = { "Six grizzlies! The strongest warden these woods have ever had." },
 		},
 		{
 			kind = "kill",
@@ -462,9 +484,8 @@ lines.RangerRedwoods = {
 -- Explorer Pip beside the boarded-up mine entrance at the end of the World 3 entry
 -- hall (2026-10-17). His mapping crew went missing deeper in; they turn up past the
 -- Spider Queen's hall. Numbers are starting values, about twice Rowan's.
--- Rewards x10 Rowan's step for step and the coin steps 2,000 / 10,000 (2026-10-24, the rescale). Level steps 60 / 65
--- (players arrive at 50; were 55 / 59, but Pip's EXP rewards got a player there in 5 and 8 minutes): with
--- world_sim.py they come about a third and two fifths of the way through World 3, as Rowan's 30 / 34 do in World 2.
+-- Rewards about x10 Rowan's step for step (2026-10-24, the rescale). Steps 5 and 9 were levels 60 / 65 until
+-- 2026-10-26 (the user: no level steps); now Crystal Shards and the Crystal Golems.
 lines.ExplorerCaverns = {
 	id = "ExplorerCaverns",
 	name = "Into the Crystal Caverns",
@@ -483,107 +504,109 @@ lines.ExplorerCaverns = {
 		{
 			kind = "kill",
 			target = "CaveBat",
-			count = 5,
-			objective = "Defeat 5 Cave Bats",
+			count = 8,
+			objective = "Defeat 8 Cave Bats",
 			track = "Defeat {Cave Bats}",
 			reward = { coins = 2500, exp = 2000 },
 			offer = {
 				"Oh! A real person, down here! I'm Pip, explorer and map-maker.",
 				"My crew went deeper into these caverns to map them, and they never came back.",
-				"The bats keep flapping my lantern out. Could you [defeat 5 Cave Bats] so I can see where I'm going?",
+				"The bats keep flapping my lantern out. Could you [defeat 8 Cave Bats] so I can see where I'm going?",
 			},
-			reminder = { "Still too many wings in the dark. [Defeat 5 Cave Bats], please!" },
+			reminder = { "Still too many wings in the dark. [Defeat 8 Cave Bats], please!" },
 			complete = { "Light! Lovely, steady light. You're handy to have around." },
 		},
 		{
 			-- (2026-10-24) World 3's gathering, like Dale's and Rowan's step 2: the Ore Rocks
 			kind = "gather",
 			target = "IronOre",
-			count = 5,
+			count = 8,
 			-- "Collect", not "Mine" (issue 21, 2026-10-25): ore already held counts
-			objective = "Collect 5 Iron Ore",
+			objective = "Collect 8 Iron Ore",
 			track = "Collect {Iron Ore}",
 			reward = { coins = 3000, exp = 3000 },
 			offer = {
 				"My crew's pick snapped down here, and mine's a wooden toy next to these rocks.",
 				"The Weaponsmith by the way in can turn your wooden pickaxe into a Crystal Pickaxe.",
-				"Then find the grey rocks streaked with orange and [collect 5 Iron Ore]. Hold on to it, we'll want ore for the winch later.",
+				"Then find the grey rocks streaked with orange and [collect 8 Iron Ore]. Hold on to it, we'll want ore for the winch later.",
 			},
 			offerHasTool = {
 				"My crew's pick snapped down here, but I see you've got a Crystal Pickaxe already.",
-				"Find the grey rocks streaked with orange and [collect 5 Iron Ore]. Hold on to it, we'll want ore for the winch later.",
+				"Find the grey rocks streaked with orange and [collect 8 Iron Ore]. Hold on to it, we'll want ore for the winch later.",
 			},
-			reminder = { "Grey rocks, orange veins. [Collect 5 Iron Ore] with a Crystal Pickaxe." },
+			reminder = { "Grey rocks, orange veins. [Collect 8 Iron Ore] with a Crystal Pickaxe." },
 			complete = { "Good solid ore! A natural! Now let's go find that trail." },
 		},
 		{
 			kind = "kill",
 			target = "CaveBat",
-			count = 10,
-			objective = "Defeat 10 Cave Bats",
+			count = 15,
+			objective = "Defeat 15 Cave Bats",
 			track = "Defeat {Cave Bats}",
 			reward = { coins = 4000, exp = 4000 },
 			offer = {
 				"My crew marked their path on the walls, but the bats nested right over it.",
-				"[Defeat 10 Cave Bats] and clear the way.",
+				"[Defeat 15 Cave Bats] and clear the way.",
 			},
-			reminder = { "The marks are under all those bats. [Defeat 10 Cave Bats]." },
+			reminder = { "The marks are under all those bats. [Defeat 15 Cave Bats]." },
 			complete = { "There! Chalk arrows, and a boot print. They came this way!" },
 		},
 		{
 			kind = "kill",
 			target = "PebbleGolem",
-			count = 3,
-			objective = "Defeat 3 Pebble Golems",
+			count = 5,
+			objective = "Defeat 5 Pebble Golems",
 			track = "Defeat {Pebble Golems}",
 			reward = { coins = 6000, exp = 6000 },
 			offer = {
 				"The arrows point down the tunnels, but the rocks there walk.",
-				"[Defeat 3 Pebble Golems] so I can chart it.",
+				"[Defeat 5 Pebble Golems] so I can chart it.",
 			},
-			reminder = { "Can't draw a map with the map walking around. [Defeat 3 Pebble Golems]." },
+			reminder = { "Can't draw a map with the map walking around. [Defeat 5 Pebble Golems]." },
 			complete = { "Charted! Well, it's mostly pebbles now." },
 		},
 		{
-			kind = "level",
-			level = 60,
-			objective = "Reach level 60",
-			track = "Reach {Level 60}",
-			reward = { coins = 5000 },
+			-- 2026-10-26 (the user): the level step went; mining in its place
+			kind = "gather",
+			target = "CrystalShard",
+			count = 10,
+			objective = "Collect 10 Crystal Shards",
+			track = "Collect {Crystal Shards}",
+			reward = { coins = 5000, exp = 6000 },
 			offer = {
-				"The tunnel ends at a sheer drop. Whatever's down there isn't for beginners.",
-				"Come back when you [reach level 60].",
+				"The tunnel ends at a sheer drop, and it's pitch black down there.",
+				"The crystal clusters glow pink and purple and blue. Your Crystal Pickaxe will crack them.",
+				"[Collect 10 Crystal Shards] and I'll make us some lamps.",
 			},
-			reminder = { "Toughen up a bit first. [Reach level 60]." },
-			complete = { "Look at you! Tougher than a stalagmite." },
+			reminder = { "No light, no way down. [Collect 10 Crystal Shards]." },
+			complete = { "Look at them glow! Keep them safe, the winch at the drop will want some too." },
 		},
 		{
 			-- (2026-10-24) the mined bring step, like Rowan's step 6 (x10 its reward)
 			kind = "bring",
-			items = { { id = "IronOre", count = 10 }, { id = "CrystalShard", count = 10 } },
-			objective = "Bring Pip 10 Iron Ore and 10 Crystal Shards",
+			items = { { id = "IronOre", count = 15 }, { id = "CrystalShard", count = 15 } },
+			objective = "Bring Pip 15 Iron Ore and 15 Crystal Shards",
 			track = "Bring Pip {Ore and Shards}",
 			reward = { coins = 8000, exp = 10000 },
 			offer = {
 				"The old winch at the drop is busted. It needs new gears and a new lamp.",
-				"Could you [bring me 10 Iron Ore and 10 Crystal Shards]? Ore for the gears, shards for the light.",
-				"The crystal clusters glow pink and purple and blue. Your Crystal Pickaxe will crack them.",
+				"Could you [bring me 15 Iron Ore and 15 Crystal Shards]? Ore for the gears, shards for the light.",
 			},
-			reminder = { "No gears, no light, no way down. [Bring me 10 Iron Ore and 10 Crystal Shards]." },
+			reminder = { "No gears, no light, no way down. [Bring me 15 Iron Ore and 15 Crystal Shards]." },
 			complete = { "Clank, whirr, glow, perfect! Hold on tight, we're going down." },
 		},
 		{
 			kind = "kill",
 			target = "CrystalGolem",
-			count = 2,
-			objective = "Defeat 2 Crystal Golems",
+			count = 3,
+			objective = "Defeat 3 Crystal Golems",
 			track = "Defeat {Crystal Golems}",
 			reward = { coins = 10000, exp = 10000 },
 			offer = {
 				"Bad news: the lower hall is guarded by Crystal Golems. Big shiny ones.",
-				"[Defeat 2 Crystal Golems] and we're through.",
+				"[Defeat 3 Crystal Golems] and we're through.",
 			},
-			reminder = { "They're pretty, but they're in the way. [Defeat 2 Crystal Golems]." },
+			reminder = { "They're pretty, but they're in the way. [Defeat 3 Crystal Golems]." },
 			complete = { "We're through! And there's webbing everywhere. I don't like webbing." },
 		},
 		{
@@ -604,31 +627,33 @@ lines.ExplorerCaverns = {
 			},
 		},
 		{
-			kind = "level",
-			level = 65,
-			objective = "Reach level 65",
-			track = "Reach {Level 65}",
-			reward = { coins = 10000 },
+			-- 2026-10-26 (the user): the level step went; the elites in its place
+			kind = "kill",
+			target = "CrystalGolem",
+			count = 6,
+			objective = "Defeat 6 Crystal Golems",
+			track = "Defeat {Crystal Golems}",
+			reward = { coins = 12000, exp = 15000 },
 			offer = {
-				"Fresh tracks lead past her hall, deeper than any map. We'll need you at your best.",
-				"[Reach level 65] first.",
+				"Fresh tracks lead past her hall, deeper than any map. But the golems have closed ranks behind us.",
+				"[Defeat 6 Crystal Golems] and we can follow the tracks.",
 			},
-			reminder = { "Not yet, not yet. [Reach level 65]." },
+			reminder = { "They keep reforming! [Defeat 6 Crystal Golems]." },
 			complete = { "Ready? Me too. Let's finish this." },
 		},
 		{
 			kind = "kill",
 			target = "SpiderQueen",
-			count = 3,
-			objective = "Defeat the Spider Queen 3 times",
+			count = 5,
+			objective = "Defeat the Spider Queen 5 times",
 			track = "Defeat the {Spider Queen}",
 			-- The quest-only Diamond Pickaxe (Legendary).
 			reward = { coins = 30000, exp = 30000, weapon = "DiamondPickaxe" },
 			offer = {
 				"She keeps coming back, and every time she seals the tunnel behind her with web.",
-				"[Defeat the Spider Queen 3 times] and we'll break through for good.",
+				"[Defeat the Spider Queen 5 times] and we'll break through for good.",
 			},
-			reminder = { "The web's thinning! [Defeat the Spider Queen 3 times]." },
+			reminder = { "The web's thinning! [Defeat the Spider Queen 5 times]." },
 			complete = {
 				"We're through, and my crew's safe on the other side!",
 				"They dug this up down there. A diamond pickaxe. It's yours, partner.",

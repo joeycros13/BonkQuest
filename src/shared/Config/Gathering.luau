@@ -27,6 +27,9 @@
 
 -- World scale (2026-10-23, Config/Leveling): node health x2 / x8 for Worlds 1 / 2, like the tools'
 -- power (Config/Tools).
+-- One of a node's main material a break since 2026-10-26 (was 2-3; the user: wood and stone came too
+-- easily and in big bunches; gathering should matter as much as fighting). The rare extras (Amber Sap,
+-- Raw Gem) keep their chance. The quests, armour and gates ask for more of them (art/tools/balance/rescale.py).
 
 local Gathering = {}
 
@@ -53,7 +56,7 @@ Gathering.reachSlack = 3
 
 Gathering.Nodes = {
 	-- ==================== World 1 (The Sunny Meadows) ====================
-	-- The Wooden Axe / Pickaxe (power 10) fell an oak in 5 hits and break a boulder in 6.
+	-- The Wooden Axe / Pickaxe (power 20) fell an oak in 5 hits and break a boulder in 6.
 	OakTree = {
 		id = "OakTree",
 		name = "Oak Tree",
@@ -64,7 +67,7 @@ Gathering.Nodes = {
 		hp = 100,
 		respawn = 45,
 		drops = {
-			{ id = "OakLog", min = 2, max = 3, chance = 1 },
+			{ id = "OakLog", min = 1, max = 1, chance = 1 },
 		},
 	},
 	Boulder = {
@@ -77,7 +80,7 @@ Gathering.Nodes = {
 		hp = 120,
 		respawn = 45,
 		drops = {
-			{ id = "Stone", min = 2, max = 3, chance = 1 },
+			{ id = "Stone", min = 1, max = 1, chance = 1 },
 		},
 	},
 	-- ==================== World 2 (The Redwood Forest) ====================
@@ -93,7 +96,7 @@ Gathering.Nodes = {
 		hp = 1000,
 		respawn = 45,
 		drops = {
-			{ id = "RedwoodLog", min = 2, max = 3, chance = 1 },
+			{ id = "RedwoodLog", min = 1, max = 1, chance = 1 },
 			{ id = "AmberSap", min = 1, max = 1, chance = 0.1 },
 		},
 	},
@@ -113,7 +116,7 @@ Gathering.Nodes = {
 		hp = 12000,
 		respawn = 45,
 		drops = {
-			{ id = "IronOre", min = 2, max = 3, chance = 1 },
+			{ id = "IronOre", min = 1, max = 1, chance = 1 },
 		},
 	},
 	CrystalCluster = {
@@ -126,7 +129,7 @@ Gathering.Nodes = {
 		hp = 10000,
 		respawn = 45,
 		drops = {
-			{ id = "CrystalShard", min = 2, max = 3, chance = 1 },
+			{ id = "CrystalShard", min = 1, max = 1, chance = 1 },
 			{ id = "RawGem", min = 1, max = 1, chance = 0.1 },
 		},
 	},

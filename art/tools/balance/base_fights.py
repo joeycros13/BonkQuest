@@ -52,6 +52,9 @@ def enemies_of(data):
 
 
 def max_hp(lv, level, armor_health, up):
+    if lv.get("healthKnee"):
+        from world_sim import level_health
+        return (level_health(lv, level) + armor_health) * (1 + UP["Health"] * up)
     if lv.get("growth"):
         # Leveling since 2026-10-24: x10 every 25 levels
         base = math.floor(lv["baseHealth"] * lv["growth"] ** (level - lv["start"]) + 0.5)
