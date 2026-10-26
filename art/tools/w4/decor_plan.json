@@ -1,0 +1,1105 @@
+{
+ "place": {
+  "frm": [
+   -176,
+   -988
+  ],
+  "to": [
+   -142,
+   -1018
+  ],
+  "turn": -45
+ },
+ "items": [
+  {
+   "template": "Sphinx",
+   "source": "Decorations",
+   "folder": "Decorations/Ruins/Sphinxes",
+   "name": "Sphinx_1",
+   "x": -285.5,
+   "z": -1083.8,
+   "y": 8,
+   "yaw": 270
+  },
+  {
+   "template": "Sphinx",
+   "source": "Decorations",
+   "folder": "Decorations/Ruins/Sphinxes",
+   "name": "Sphinx_2",
+   "x": -285.5,
+   "z": -1112.2,
+   "y": 8,
+   "yaw": 270
+  },
+  {
+   "template": "Obelisk",
+   "source": "Decorations",
+   "folder": "Decorations/Ruins/Obelisks",
+   "name": "Obelisk_1",
+   "x": -389.5,
+   "z": -967.5,
+   "y": 8,
+   "yaw": 0
+  },
+  {
+   "template": "Obelisk",
+   "source": "Decorations",
+   "folder": "Decorations/Ruins/Obelisks",
+   "name": "Obelisk_2",
+   "x": -362.5,
+   "z": -967.5,
+   "y": 8,
+   "yaw": 0
+  },
+  {
+   "template": "Obelisk",
+   "source": "Decorations",
+   "folder": "Decorations/Ruins/Obelisks",
+   "name": "Obelisk_3",
+   "x": -502.0,
+   "z": -1111.5,
+   "y": 8,
+   "yaw": 0
+  },
+  {
+   "template": "Obelisk",
+   "source": "Decorations",
+   "folder": "Decorations/Ruins/Obelisks",
+   "name": "Obelisk_4",
+   "x": -502.0,
+   "z": -1084.5,
+   "y": 8,
+   "yaw": 0
+  },
+  {
+   "template": "Tomb",
+   "source": "Decorations",
+   "folder": "Structures/Tombs",
+   "name": "Tomb_1",
+   "x": -520.82,
+   "z": -1136.83,
+   "y": 8,
+   "yaw": 297.2
+  },
+  {
+   "template": "Tomb",
+   "source": "Decorations",
+   "folder": "Structures/Tombs",
+   "name": "Tomb_2",
+   "x": -234.12,
+   "z": -1031.56,
+   "y": 8,
+   "yaw": 91.3
+  },
+  {
+   "template": "Saguaro",
+   "source": "Gathering",
+   "folder": "Gathering",
+   "name": "Saguaro_1",
+   "x": -399.93,
+   "z": -964.41,
+   "y": 8,
+   "yaw": 47.0
+  },
+  {
+   "template": "Saguaro",
+   "source": "Gathering",
+   "folder": "Gathering",
+   "name": "Saguaro_2",
+   "x": -481.83,
+   "z": -1169.64,
+   "y": 8,
+   "yaw": 94.0
+  },
+  {
+   "template": "Saguaro",
+   "source": "Gathering",
+   "folder": "Gathering",
+   "name": "Saguaro_3",
+   "x": -310.95,
+   "z": -1192.17,
+   "y": 8,
+   "yaw": 318.9
+  },
+  {
+   "template": "Saguaro",
+   "source": "Gathering",
+   "folder": "Gathering",
+   "name": "Saguaro_4",
+   "x": -249.27,
+   "z": -1124.57,
+   "y": 8,
+   "yaw": 142.9
+  },
+  {
+   "template": "Saguaro",
+   "source": "Gathering",
+   "folder": "Gathering",
+   "name": "Saguaro_5",
+   "x": -250.76,
+   "z": -1039.17,
+   "y": 8,
+   "yaw": 91.2
+  },
+  {
+   "template": "Saguaro",
+   "source": "Gathering",
+   "folder": "Gathering",
+   "name": "Saguaro_6",
+   "x": -458.06,
+   "z": -998.22,
+   "y": 8,
+   "yaw": 174.2
+  },
+  {
+   "template": "Saguaro",
+   "source": "Gathering",
+   "folder": "Gathering",
+   "name": "Saguaro_7",
+   "x": -283.57,
+   "z": -969.79,
+   "y": 8,
+   "yaw": 356.5
+  },
+  {
+   "template": "Saguaro",
+   "source": "Gathering",
+   "folder": "Gathering",
+   "name": "Saguaro_8",
+   "x": -511.49,
+   "z": -1060.37,
+   "y": 8,
+   "yaw": 221.4
+  },
+  {
+   "template": "DigPile",
+   "source": "Gathering",
+   "folder": "Gathering",
+   "name": "DigPile_1",
+   "x": -484.98,
+   "z": -1219.47,
+   "y": 8,
+   "yaw": 179.8
+  },
+  {
+   "template": "DigPile",
+   "source": "Gathering",
+   "folder": "Gathering",
+   "name": "DigPile_2",
+   "x": -275.64,
+   "z": -1178.24,
+   "y": 8,
+   "yaw": 276.6
+  },
+  {
+   "template": "DigPile",
+   "source": "Gathering",
+   "folder": "Gathering",
+   "name": "DigPile_3",
+   "x": -440.99,
+   "z": -1200.75,
+   "y": 8,
+   "yaw": 0.1
+  },
+  {
+   "template": "DigPile",
+   "source": "Gathering",
+   "folder": "Gathering",
+   "name": "DigPile_4",
+   "x": -499.21,
+   "z": -1125.61,
+   "y": 8,
+   "yaw": 282.6
+  },
+  {
+   "template": "DigPile",
+   "source": "Gathering",
+   "folder": "Gathering",
+   "name": "DigPile_5",
+   "x": -317.13,
+   "z": -995.16,
+   "y": 8,
+   "yaw": 181.2
+  },
+  {
+   "template": "DigPile",
+   "source": "Gathering",
+   "folder": "Gathering",
+   "name": "DigPile_6",
+   "x": -393.3,
+   "z": -998.76,
+   "y": 8,
+   "yaw": 183.0
+  },
+  {
+   "template": "DigPile",
+   "source": "Gathering",
+   "folder": "Gathering",
+   "name": "DigPile_7",
+   "x": -382.77,
+   "z": -1210.49,
+   "y": 8,
+   "yaw": 142.4
+  },
+  {
+   "template": "DigPile",
+   "source": "Gathering",
+   "folder": "Gathering",
+   "name": "DigPile_8",
+   "x": -248.09,
+   "z": -999.43,
+   "y": 8,
+   "yaw": 171.9
+  },
+  {
+   "template": "LotusPads",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/LotusPads",
+   "name": "LotusPads_1",
+   "x": -456.05,
+   "z": -929.52,
+   "y": 7.2,
+   "yaw": 217.3
+  },
+  {
+   "template": "LotusPads",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/LotusPads",
+   "name": "LotusPads_2",
+   "x": -419.18,
+   "z": -927.05,
+   "y": 7.2,
+   "yaw": 198.3
+  },
+  {
+   "template": "LotusPads",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/LotusPads",
+   "name": "LotusPads_3",
+   "x": -489.95,
+   "z": -943.29,
+   "y": 7.2,
+   "yaw": 255.9
+  },
+  {
+   "template": "LotusPads",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/LotusPads",
+   "name": "LotusPads_4",
+   "x": -486.19,
+   "z": -918.61,
+   "y": 7.2,
+   "yaw": 272.5
+  },
+  {
+   "template": "LotusPads",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/LotusPads",
+   "name": "LotusPads_5",
+   "x": -436.0,
+   "z": -944.29,
+   "y": 7.2,
+   "yaw": 76.7
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_1",
+   "x": -506.4,
+   "z": -911.74,
+   "y": 8,
+   "yaw": 301.0
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_2",
+   "x": -391.82,
+   "z": -946.46,
+   "y": 8,
+   "yaw": 343.3
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_3",
+   "x": -446.31,
+   "z": -997.47,
+   "y": 8,
+   "yaw": 327.3
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_4",
+   "x": -439.46,
+   "z": -903.04,
+   "y": 8,
+   "yaw": 141.7
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_5",
+   "x": -484.18,
+   "z": -959.85,
+   "y": 8,
+   "yaw": 15.0
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_6",
+   "x": -429.53,
+   "z": -958.64,
+   "y": 8,
+   "yaw": 144.3
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_7",
+   "x": -409.85,
+   "z": -917.17,
+   "y": 8,
+   "yaw": 211.6
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_8",
+   "x": -473.55,
+   "z": -902.9,
+   "y": 8,
+   "yaw": 32.8
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_9",
+   "x": -456.94,
+   "z": -962.72,
+   "y": 8,
+   "yaw": 163.9
+  },
+  {
+   "template": "Papyrus",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/Papyrus",
+   "name": "Papyrus_10",
+   "x": -504.95,
+   "z": -939.46,
+   "y": 8,
+   "yaw": 102.8
+  },
+  {
+   "template": "DatePalm",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/DatePalm",
+   "name": "DatePalm_1",
+   "x": -510.52,
+   "z": -927.21,
+   "y": 8,
+   "yaw": 249.8
+  },
+  {
+   "template": "DatePalm",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/DatePalm",
+   "name": "DatePalm_2",
+   "x": -388.51,
+   "z": -955.11,
+   "y": 8,
+   "yaw": 226.5
+  },
+  {
+   "template": "DatePalm",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/DatePalm",
+   "name": "DatePalm_3",
+   "x": -439.56,
+   "z": -1000.27,
+   "y": 8,
+   "yaw": 148.7
+  },
+  {
+   "template": "DatePalm",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/DatePalm",
+   "name": "DatePalm_4",
+   "x": -429.01,
+   "z": -908.98,
+   "y": 8,
+   "yaw": 245.0
+  },
+  {
+   "template": "DatePalm",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/DatePalm",
+   "name": "DatePalm_5",
+   "x": -483.78,
+   "z": -970.9,
+   "y": 8,
+   "yaw": 178.4
+  },
+  {
+   "template": "DatePalm",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/DatePalm",
+   "name": "DatePalm_6",
+   "x": -439.46,
+   "z": -956.0,
+   "y": 8,
+   "yaw": 109.4
+  },
+  {
+   "template": "WaterJars",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/WaterJars",
+   "name": "WaterJars_1",
+   "x": -424.97,
+   "z": -905.49,
+   "y": 8,
+   "yaw": 56.7
+  },
+  {
+   "template": "WaterJars",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/WaterJars",
+   "name": "WaterJars_2",
+   "x": -505.81,
+   "z": -918.9,
+   "y": 8,
+   "yaw": 174.1
+  },
+  {
+   "template": "WaterJars",
+   "source": "Decorations",
+   "folder": "Decorations/Oasis/WaterJars",
+   "name": "WaterJars_3",
+   "x": -450.89,
+   "z": -964.17,
+   "y": 8,
+   "yaw": 125.4
+  },
+  {
+   "template": "PillarDrums",
+   "source": "Decorations",
+   "folder": "Decorations/Ruins/Pillars",
+   "name": "PillarDrums_1",
+   "x": -346.79,
+   "z": -1220.89,
+   "y": 8,
+   "yaw": 208.3
+  },
+  {
+   "template": "PillarDrums",
+   "source": "Decorations",
+   "folder": "Decorations/Ruins/Pillars",
+   "name": "PillarDrums_2",
+   "x": -447.2,
+   "z": -1186.14,
+   "y": 8,
+   "yaw": 113.9
+  },
+  {
+   "template": "PillarStump",
+   "source": "Decorations",
+   "folder": "Decorations/Ruins/Pillars",
+   "name": "PillarStump_1",
+   "x": -457.86,
+   "z": -1011.8,
+   "y": 8,
+   "yaw": 30.6
+  },
+  {
+   "template": "PillarStump",
+   "source": "Decorations",
+   "folder": "Decorations/Ruins/Pillars",
+   "name": "PillarStump_2",
+   "x": -304.9,
+   "z": -1003.51,
+   "y": 8,
+   "yaw": 246.6
+  },
+  {
+   "template": "PillarLeaning",
+   "source": "Decorations",
+   "folder": "Decorations/Ruins/Pillars",
+   "name": "PillarLeaning_1",
+   "x": -478.48,
+   "z": -1038.31,
+   "y": 8,
+   "yaw": 333.2
+  },
+  {
+   "template": "PillarLeaning",
+   "source": "Decorations",
+   "folder": "Decorations/Ruins/Pillars",
+   "name": "PillarLeaning_2",
+   "x": -428.72,
+   "z": -1000.42,
+   "y": 8,
+   "yaw": 151.6
+  },
+  {
+   "template": "PillarRubble",
+   "source": "Decorations",
+   "folder": "Decorations/Ruins/Pillars",
+   "name": "PillarRubble_1",
+   "x": -452.1,
+   "z": -1116.77,
+   "y": 8,
+   "yaw": 334.3
+  },
+  {
+   "template": "PillarRubble",
+   "source": "Decorations",
+   "folder": "Decorations/Ruins/Pillars",
+   "name": "PillarRubble_2",
+   "x": -475.23,
+   "z": -1178.06,
+   "y": 8,
+   "yaw": 13.8
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_1",
+   "x": -239.02,
+   "z": -1240.35,
+   "y": 8,
+   "yaw": 227.9
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_2",
+   "x": -505.67,
+   "z": -1231.8,
+   "y": 8,
+   "yaw": 83.8
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_3",
+   "x": -238.76,
+   "z": -948.37,
+   "y": 8,
+   "yaw": 135.7
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_4",
+   "x": -307.8,
+   "z": -1120.31,
+   "y": 8,
+   "yaw": 46.6
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_5",
+   "x": -510.81,
+   "z": -1100.42,
+   "y": 8,
+   "yaw": 278.2
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_6",
+   "x": -383.73,
+   "z": -1231.53,
+   "y": 22,
+   "yaw": 192.7
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_7",
+   "x": -244.1,
+   "z": -1046.6,
+   "y": 8,
+   "yaw": 232.1
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_8",
+   "x": -227.03,
+   "z": -1131.44,
+   "y": 8,
+   "yaw": 68.0
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_9",
+   "x": -462.73,
+   "z": -1179.68,
+   "y": 8,
+   "yaw": 163.2
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_10",
+   "x": -315.55,
+   "z": -1187.83,
+   "y": 8,
+   "yaw": 141.5
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_11",
+   "x": -542.05,
+   "z": -1140.98,
+   "y": 8,
+   "yaw": 55.8
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_12",
+   "x": -291.69,
+   "z": -950.21,
+   "y": 24,
+   "yaw": 17.4
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_13",
+   "x": -291.04,
+   "z": -1011.31,
+   "y": 8,
+   "yaw": 292.4
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_14",
+   "x": -391.04,
+   "z": -1168.66,
+   "y": 8,
+   "yaw": 197.8
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_15",
+   "x": -446.34,
+   "z": -1122.57,
+   "y": 8,
+   "yaw": 210.7
+  },
+  {
+   "template": "PalmTall",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTall",
+   "name": "PalmTall_16",
+   "x": -478.14,
+   "z": -1028.33,
+   "y": 8,
+   "yaw": 104.8
+  },
+  {
+   "template": "PalmTwin",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTwin",
+   "name": "PalmTwin_1",
+   "x": -458.17,
+   "z": -1029.7,
+   "y": 8,
+   "yaw": 122.3
+  },
+  {
+   "template": "PalmTwin",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTwin",
+   "name": "PalmTwin_2",
+   "x": -342.3,
+   "z": -966.81,
+   "y": 8,
+   "yaw": 244.6
+  },
+  {
+   "template": "PalmTwin",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTwin",
+   "name": "PalmTwin_3",
+   "x": -347.22,
+   "z": -1240.51,
+   "y": 8,
+   "yaw": 81.3
+  },
+  {
+   "template": "PalmTwin",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTwin",
+   "name": "PalmTwin_4",
+   "x": -276.88,
+   "z": -1075.11,
+   "y": 8,
+   "yaw": 56.5
+  },
+  {
+   "template": "PalmTwin",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTwin",
+   "name": "PalmTwin_5",
+   "x": -229.04,
+   "z": -1086.69,
+   "y": 26,
+   "yaw": 122.9
+  },
+  {
+   "template": "PalmTwin",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTwin",
+   "name": "PalmTwin_6",
+   "x": -509.71,
+   "z": -1002.89,
+   "y": 8,
+   "yaw": 105.6
+  },
+  {
+   "template": "PalmTwin",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTwin",
+   "name": "PalmTwin_7",
+   "x": -266.08,
+   "z": -1220.61,
+   "y": 8,
+   "yaw": 116.5
+  },
+  {
+   "template": "PalmTwin",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTwin",
+   "name": "PalmTwin_8",
+   "x": -263.11,
+   "z": -970.56,
+   "y": 8,
+   "yaw": 46.6
+  },
+  {
+   "template": "PalmTwin",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/PalmTwin",
+   "name": "PalmTwin_9",
+   "x": -493.3,
+   "z": -910.56,
+   "y": 8,
+   "yaw": 212.2
+  },
+  {
+   "template": "DatePalm",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/DatePalm",
+   "name": "DatePalm_7",
+   "x": -361.12,
+   "z": -1021.28,
+   "y": 8,
+   "yaw": 287.3
+  },
+  {
+   "template": "DatePalm",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/DatePalm",
+   "name": "DatePalm_8",
+   "x": -227.55,
+   "z": -1180.0,
+   "y": 26,
+   "yaw": 118.4
+  },
+  {
+   "template": "DatePalm",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/DatePalm",
+   "name": "DatePalm_9",
+   "x": -514.46,
+   "z": -1067.59,
+   "y": 8,
+   "yaw": 236.4
+  },
+  {
+   "template": "DatePalm",
+   "source": "Decorations",
+   "folder": "Decorations/Palms/DatePalm",
+   "name": "DatePalm_10",
+   "x": -400.14,
+   "z": -1027.26,
+   "y": 8,
+   "yaw": 202.6
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_1",
+   "x": -518.19,
+   "z": -912.08,
+   "y": 8,
+   "yaw": 350.4
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_2",
+   "x": -252.1,
+   "z": -1277.48,
+   "y": 8,
+   "yaw": 197.5
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_3",
+   "x": -557.58,
+   "z": -1130.93,
+   "y": 8,
+   "yaw": 60.6
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_4",
+   "x": -346.78,
+   "z": -1273.04,
+   "y": 8,
+   "yaw": 61.9
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_5",
+   "x": -501.09,
+   "z": -1240.53,
+   "y": 8,
+   "yaw": 269.9
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_6",
+   "x": -361.06,
+   "z": -1217.97,
+   "y": 8,
+   "yaw": 280.3
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_7",
+   "x": -306.05,
+   "z": -1069.09,
+   "y": 8,
+   "yaw": 76.8
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_8",
+   "x": -348.09,
+   "z": -957.65,
+   "y": 8,
+   "yaw": 242.8
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_9",
+   "x": -307.29,
+   "z": -1128.56,
+   "y": 8,
+   "yaw": 172.4
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_10",
+   "x": -522.14,
+   "z": -995.71,
+   "y": 8,
+   "yaw": 70.0
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_11",
+   "x": -230.15,
+   "z": -1199.18,
+   "y": 28,
+   "yaw": 89.8
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_12",
+   "x": -233.41,
+   "z": -951.04,
+   "y": 8,
+   "yaw": 301.3
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_13",
+   "x": -353.23,
+   "z": -1029.13,
+   "y": 8,
+   "yaw": 96.8
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_14",
+   "x": -426.07,
+   "z": -1197.25,
+   "y": 8,
+   "yaw": 160.5
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_15",
+   "x": -510.66,
+   "z": -1124.68,
+   "y": 8,
+   "yaw": 87.5
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_16",
+   "x": -460.35,
+   "z": -903.08,
+   "y": 8,
+   "yaw": 222.6
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_17",
+   "x": -271.04,
+   "z": -1216.32,
+   "y": 8,
+   "yaw": 264.5
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_18",
+   "x": -483.63,
+   "z": -1024.65,
+   "y": 8,
+   "yaw": 282.0
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_19",
+   "x": -296.59,
+   "z": -1007.49,
+   "y": 8,
+   "yaw": 79.9
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_20",
+   "x": -492.04,
+   "z": -975.26,
+   "y": 8,
+   "yaw": 331.1
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_21",
+   "x": -220.83,
+   "z": -1045.71,
+   "y": 8,
+   "yaw": 243.4
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_22",
+   "x": -390.57,
+   "z": -931.39,
+   "y": 8,
+   "yaw": 74.7
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_23",
+   "x": -459.92,
+   "z": -1190.48,
+   "y": 8,
+   "yaw": 219.3
+  },
+  {
+   "template": "BarrelCactus",
+   "source": "Decorations",
+   "folder": "Decorations/Cacti",
+   "name": "BarrelCactus_24",
+   "x": -223.37,
+   "z": -1241.05,
+   "y": 8,
+   "yaw": 210.3
+  }
+ ]
+}
