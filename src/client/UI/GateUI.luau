@@ -24,6 +24,11 @@
 --     vines, the SignBoard and its ropes) turns invisible and walk-through once
 --     the player's HighestWorld reaches the gate's world, and the sign itself is
 --     switched off. It's local, so each player's gate opens alone.
+--   * Every Model in the gate with a SwingAngle attribute (World 4's two doors,
+--     2026-10-25, the user: the doors swing open) turns that many degrees about
+--     its pivot (the hinge) when the gate opens, over its SwingSeconds; a gate
+--     already open when the player joins starts open. The doors never collide
+--     (the gate's invisible Barrier does), so the swing is only a look.
 -- Luckiest Guy labels have UIPaddings, so Util.FontDrop centres them.
 
 local Players = game:GetService("Players")
@@ -31,7 +36,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local UiSound = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("UiSound"))
 
-local Config = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config")
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Animation = require(Shared:WaitForChild("Animation"))
+local Config = Shared:WaitForChild("Config")
 local Gates = require(Config:WaitForChild("Gates"))
 local Materials = require(Config:WaitForChild("Materials"))
 
@@ -80,9 +87,33 @@ local function modelOf(gate: Gates.Gate): Instance?
 	return folder and folder:FindFirstChild(gate.model)
 end
 
-local function setOpen(model: Instance?, open: boolean)
+-- each swinging door's closed pivot and whether it's shown open
+local doors: { [Model]: { closed: CFrame, open: boolean } } = {}
+
+local function swing(door: Model, open: boolean, animate: boolean)
+	local state = doors[door]
+	if not state then
+		state = { closed = door:GetPivot(), open = false }
+		doors[door] = state
+	end
+	if state.open == open then
+		return
+	end
+	state.open = open
+	local angle = attribute(door, "SwingAngle", 0)
+	local goal = if open then state.closed * CFrame.Angles(0, math.rad(angle), 0) else state.closed
+	if animate then
+		Animation.Motion.moveTo(door, goal, attribute(door, "SwingSeconds", 1.6), "QuadInOut")
+	else
+		door:PivotTo(goal)
+	end
+end
+
+local function setOpen(model: Instance?, open: boolean, animate: boolean)
 	for _, d in if model then model:GetDescendants() else {} do
-		if d:IsA("BasePart") and d:GetAttribute("OpensWithGate") then
+		if d:IsA("Model") and type(d:GetAttribute("SwingAngle")) == "number" then
+			swing(d, open, animate)
+		elseif d:IsA("BasePart") and d:GetAttribute("OpensWithGate") then
 			if closedCollide[d] == nil then
 				closedCollide[d] = d.CanCollide
 			end
@@ -137,7 +168,7 @@ local function stateOf(gate: Gates.Gate): string
 	return "Locked"
 end
 
-local function render(gui: SurfaceGui, gate: Gates.Gate)
+local function render(gui: SurfaceGui, gate: Gates.Gate, animate: boolean)
 	local Text = Gates.Text
 	local state = stateOf(gate)
 	local unlocked = state == "Unlocked"
@@ -147,7 +178,11 @@ local function render(gui: SurfaceGui, gate: Gates.Gate)
 	local shortColor = attribute(gui, "ShortColor", Color3.fromRGB(224, 48, 42))
 	local banner = gui:FindFirstChild("Banner")
 	setText(banner and banner:FindFirstChild("Label"), Text.banner:format(gate.world))
-	setText(gui:FindFirstChild("Title"), worldName(gate.world))
+	-- a world without its Config/Worlds entry yet (World 4) keeps the sign's own title
+	local name = worldName(gate.world)
+	if name ~= "" then
+		setText(gui:FindFirstChild("Title"), name)
+	end
 	fillRow(gui:FindFirstChild("LevelRow"), Text.level:format(gate.level), unlocked or level >= gate.level, Text.youLevel:format(level), shortColor)
 	fillRow(gui:FindFirstChild("CoinsRow"), Text.coins:format(deps.Util.Format.coins(gate.coins)), unlocked or coins >= gate.coins, Text.youCoins:format(deps.Util.Format.coins(coins)), shortColor)
 	local held = Materials.counts(player)
@@ -210,7 +245,7 @@ local function render(gui: SurfaceGui, gate: Gates.Gate)
 		end
 		buy.Active = state == "Met"
 	end
-	setOpen(modelOf(gate), unlocked)
+	setOpen(modelOf(gate), unlocked, animate)
 end
 
 local function wire(gui: SurfaceGui)
@@ -227,8 +262,12 @@ local function wire(gui: SurfaceGui)
 	end
 	deps.Util.FontDrop.watch(gui)
 
+	-- the first render puts a gate already open straight into place; later ones
+	-- (buying it) swing its doors
+	local first = true
 	local function update()
-		render(gui, gate)
+		render(gui, gate, not first)
+		first = false
 	end
 
 	local buy = gui:FindFirstChild("Buy")

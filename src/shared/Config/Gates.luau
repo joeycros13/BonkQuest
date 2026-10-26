@@ -52,6 +52,17 @@ Gates.list = {
 	-- mined materials; 2026-10-24, the user's pick of the simulated options: 30 + 5 and 250,000 made World 3 58.7 min,
 	-- this 52.9, the middle of its 45-60). World 3's run (world_sim.py, world3.json's gate) aims at it. It stands in World 2 and needs
 	-- World 3 (memory world-map-branches).
+	-- The Caravan Gate (2026-10-25, the user's pick B): in the corridor out of World 2's south-west corner,
+	-- its two lattice doors swing open (GateUI, SwingAngle).
+	{
+		id = "World4",
+		world = 4,
+		model = "World4Gate",
+		level = 75,
+		coins = 225000,
+		materials = { { id = "CrystalShard", count = 20 }, { id = "RawGem", count = 3 } },
+		requires = 3,
+	},
 } :: { Gate }
 
 -- The world a player must have unlocked before this gate can be bought.
