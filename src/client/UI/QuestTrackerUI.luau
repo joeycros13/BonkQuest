@@ -18,7 +18,8 @@
 --               A gather / bring step's tool phase (Quests.toolNeeded, 2026-10-21)
 --               shows "BUY A Wooden Axe" / "UPGRADE TO A Stone Axe", the tool's
 --               icon and "at the Weaponsmith" until the tool is owned
---   Chips       a "bring" step with several materials (2026-10-19, option A on the
+--   Chips       a "bring" step with several materials, or a "hunt" step with several enemies
+--               (2026-10-26: the enemy's portrait in the chip) (2026-10-19, option A on the
 --               Quest Tracker Materials canvas): instead of Count, one clone of
 --               QuestTracker/Templates/MaterialChip per item (Icon, Count "5/8" in
 --               its Format), coloured from its ShortFill / ShortText / DoneFill /
@@ -120,6 +121,18 @@ local function iconFor(line: Quests.Line, step: Quests.Step, ready: boolean): st
 		return line.npc.portrait
 	elseif step.kind == "kill" then
 		local def = Enemies.get(step.target or "")
+		return if def and def.portrait then def.portrait else ""
+	elseif step.kind == "hunt" then
+		-- the first kind still short
+		local kills = Quests.huntKills(player, line.id)
+		local pick = step.targets and step.targets[1]
+		for _, target in step.targets or {} do
+			if (kills[target.id] or 0) < target.count then
+				pick = target
+				break
+			end
+		end
+		local def = pick and Enemies.get(pick.id)
 		return if def and def.portrait then def.portrait else ""
 	elseif step.kind == "level" then
 		return attr("LevelIcon") or ""
@@ -249,7 +262,29 @@ local function renderReward(frame: Frame, step: Quests.Step)
 end
 
 -- One chip per material of a "bring" step: its icon and "held/needed", green once met.
-local function renderChips(chips: Instance, items: { { id: string, count: number } })
+-- One chip per thing a "bring" step needs (its material's icon) or a "hunt" step must defeat
+-- (the enemy's portrait): "have/needed", green once met.
+type Chip = { id: string, icon: string, have: number, need: number }
+
+local function chipsFor(line: Quests.Line, step: Quests.Step): { Chip }
+	local out: { Chip } = {}
+	if step.kind == "bring" then
+		local held = Materials.counts(player)
+		for _, item in step.items or {} do
+			local def = Materials.get(item.id)
+			table.insert(out, { id = item.id, icon = def and def.icon or "", have = held[item.id] or 0, need = item.count })
+		end
+	elseif step.kind == "hunt" then
+		local kills = Quests.huntKills(player, line.id)
+		for _, target in step.targets or {} do
+			local def = Enemies.get(target.id)
+			table.insert(out, { id = target.id, icon = def and def.portrait or "", have = kills[target.id] or 0, need = target.count })
+		end
+	end
+	return out
+end
+
+local function renderChips(chips: Instance, items: { Chip })
 	local gui = chips:FindFirstAncestorWhichIsA("ScreenGui")
 	local templates = gui and gui:FindFirstChild("Templates")
 	local template = templates and templates:FindFirstChild("MaterialChip")
@@ -269,23 +304,21 @@ local function renderChips(chips: Instance, items: { { id: string, count: number
 	if not template then
 		return
 	end
-	local held = Materials.counts(player)
 	for index, item in items do
 		local chip = chips:FindFirstChild(item.id) :: any
 		if not chip then
 			chip = template:Clone()
 			chip.Name = item.id
 			chip.Visible = true
-			local def = Materials.get(item.id)
-			chip.Icon.Image = def and def.icon or ""
 			chip.Parent = chips
 		end
+		chip.Icon.Image = item.icon
 		chip.LayoutOrder = index
-		local have = math.min(held[item.id] or 0, item.count)
-		local met = have >= item.count
+		local have = math.min(item.have, item.need)
+		local met = have >= item.need
 		chip.BackgroundColor3 = template:GetAttribute(if met then "DoneFill" else "ShortFill") or chip.BackgroundColor3
 		chip.Count.TextColor3 = template:GetAttribute(if met then "DoneText" else "ShortText") or chip.Count.TextColor3
-		chip.Count.Text = (template:GetAttribute("Format") or "%s/%s"):format(Format.commas(have), Format.commas(item.count))
+		chip.Count.Text = (template:GetAttribute("Format") or "%s/%s"):format(Format.commas(have), Format.commas(item.need))
 	end
 end
 
@@ -388,11 +421,12 @@ local function render()
 	targetLabel.Text = name
 	local countLabel = frame:FindFirstChild("Count") :: TextLabel
 	local chips = frame:FindFirstChild("Chips")
-	local byItem = not ready and not tool and step.kind == "bring" and chips ~= nil and #(step.items or {}) > 1
+	local list = if ready or tool then {} else chipsFor(line, step)
+	local byItem = chips ~= nil and #list > 1
 	countLabel.Visible = not byItem
 	if chips and chips:IsA("GuiObject") then
 		chips.Visible = byItem
-		renderChips(chips, if byItem then step.items or {} else {})
+		renderChips(chips, if byItem then list else {})
 	end
 	if ready then
 		countLabel.Text = line.returnNote
@@ -434,7 +468,7 @@ function QuestTrackerUI.start()
 		setRing(value)
 	end)
 	for _, id in Quests.order do
-		for _, field in { "Step", "State", "Progress" } do
+		for _, field in { "Step", "State", "Progress", "Kills" } do
 			player:GetAttributeChangedSignal(Quests.attr(field, id)):Connect(refresh)
 		end
 	end

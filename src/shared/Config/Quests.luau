@@ -29,6 +29,11 @@
 --              "bring" hand over `items` ({ { id, count } } materials, taken when
 --                      handing in); progress is the total held toward the total
 --                      needed. Fish never go in quests (user: they're for potions)
+--              "hunt"  defeat several kinds at once: `targets` ({ { id, count } } Config/Worlds
+--                      ids, 2026-10-26, the user: quests that kill several enemies); each
+--                      kind counts up to its own count (the kills go out as the
+--                      "QuestKills_<line>" attribute, "Chicken=5,Bull=2"), progress is
+--                      the total toward the total needed
 --   objective  the red objective line in the dialogue's Objective box
 --   track      the tracker line: the words before {braces} become the small
 --              label ("DEFEAT"), the part in braces the red name (the enemy or
@@ -78,6 +83,7 @@ export type Step = {
 	target: string?,
 	count: number?,
 	items: { { id: string, count: number } }?,
+	targets: { { id: string, count: number } }?,
 	amount: number?,
 	level: number?,
 	objective: string,
@@ -157,33 +163,33 @@ lines.DaleFarm = {
 			complete = { "Now that's a fine stack of firewood! Hang on to it, I'll be needin' logs for the barn soon. Here's a little somethin' for the sweat." },
 		},
 		{
-			kind = "kill",
-			target = "Chicken",
-			count = 15,
-			objective = "Defeat 15 Angry Chickens",
-			track = "Defeat {Angry Chickens}",
+			-- 2026-10-26 (the user): a mixed hunt
+			kind = "hunt",
+			targets = { { id = "Chicken", count = 12 }, { id = "Bull", count = 3 } },
+			objective = "Defeat 12 Angry Chickens and 3 Raging Bulls",
+			track = "Defeat {Chickens and Bulls}",
 			reward = { coins = 40, exp = 40 },
 			offer = {
-				"Bad news, partner. Them chickens multiplied overnight.",
-				"I need you to [defeat 15 Angry Chickens] before they eat my whole carrot patch!",
+				"Bad news, partner. Them chickens multiplied overnight, and now the bulls are joinin' in.",
+				"[Defeat 12 Angry Chickens and 3 Raging Bulls] before they flatten my whole carrot patch!",
 			},
-			reminder = { "Still a whole lotta cluckin' out there! [Defeat 15 Angry Chickens]." },
-			complete = { "Fifteen more down! My carrots thank ya. So do I." },
+			reminder = { "Still a whole lotta cluckin' and stompin' out there! [Defeat 12 Angry Chickens and 3 Raging Bulls]." },
+			complete = { "My carrots thank ya. So do I. Them bulls are another story, though..." },
 		},
 		{
 			kind = "kill",
 			target = "Bull",
-			count = 5,
-			objective = "Defeat 5 Raging Bulls",
+			count = 6,
+			objective = "Defeat 6 Raging Bulls",
 			track = "Defeat {Raging Bulls}",
 			reward = { coins = 60, exp = 60 },
 			offer = {
-				"Somethin' bigger's stirrin' now. Them bulls up the paths are seein' red.",
-				"They knocked my fence clean over! [Defeat 5 Raging Bulls] and teach 'em some manners.",
+				"Them bulls up the paths are seein' red. They knocked my fence clean over!",
+				"[Defeat 6 Raging Bulls] and teach 'em some manners.",
 				"Mind you, they hit hard. Some proper armor from the crafter wouldn't go amiss.",
 			},
-			reminder = { "Watch them horns! [Defeat 5 Raging Bulls]." },
-			complete = { "Five bulls! You're tougher than you look, friend." },
+			reminder = { "Watch them horns! [Defeat 6 Raging Bulls]." },
+			complete = { "Six bulls! You're tougher than you look, friend." },
 		},
 		{
 			-- 2026-10-26 (the user): the level step went; mining in its place
@@ -210,20 +216,6 @@ lines.DaleFarm = {
 			},
 		},
 		{
-			kind = "kill",
-			target = "Bull",
-			count = 8,
-			objective = "Defeat 8 Raging Bulls",
-			track = "Defeat {Raging Bulls}",
-			reward = { coins = 100, exp = 100 },
-			offer = {
-				"Word is the bulls are gatherin' near the boss platform.",
-				"Head up there and [defeat 8 Raging Bulls] before they stampede the whole valley.",
-			},
-			reminder = { "Them bulls ain't gonna fight themselves! [Defeat 8 Raging Bulls]." },
-			complete = { "The valley's quiet for the first time in weeks. Thank ya kindly." },
-		},
-		{
 			-- 2026-10-19 (user): was "give 200 coins"; the logs and stone are taken at hand-in
 			kind = "bring",
 			items = { { id = "OakLog", count = 15 }, { id = "Stone", count = 15 } },
@@ -240,6 +232,20 @@ lines.DaleFarm = {
 			},
 			reminder = { "No rush... but my barn door's still flat. [Bring me 15 Oak Logs and 15 Stone]." },
 			complete = { "Bless ya! That door'll be standin' by sundown. Here, it ain't much, but it's honest." },
+		},
+		{
+			-- 2026-10-26 (the user): a mixed hunt with the elites
+			kind = "hunt",
+			targets = { { id = "Bull", count = 6 }, { id = "Stallion", count = 3 } },
+			objective = "Defeat 6 Raging Bulls and 3 Wild Stallions",
+			track = "Defeat {Bulls and Stallions}",
+			reward = { coins = 100, exp = 100 },
+			offer = {
+				"Word is the bulls are gatherin' near the boss platform, and the wild stallions are runnin' with 'em now.",
+				"Head up there and [defeat 6 Raging Bulls and 3 Wild Stallions] before they stampede the whole valley.",
+			},
+			reminder = { "That herd ain't gonna round itself up! [Defeat 6 Raging Bulls and 3 Wild Stallions]." },
+			complete = { "The valley's quiet for the first time in weeks. And now I see who's been stirrin' 'em up..." },
 		},
 		{
 			kind = "kill",
@@ -275,21 +281,22 @@ lines.DaleFarm = {
 			complete = { "Six stallions! The strongest farmhand this meadow's ever seen." },
 		},
 		{
-			kind = "kill",
-			target = "BossScarecrow",
-			count = 5,
-			objective = "Defeat the Scarecrow King 5 times",
-			track = "Defeat the {Scarecrow King}",
+			-- 2026-10-26 (the user): the Clean Up, a long hunt through the whole world
+			kind = "hunt",
+			targets = { { id = "Chicken", count = 10 }, { id = "Bull", count = 6 }, { id = "Stallion", count = 4 }, { id = "BossScarecrow", count = 3 } },
+			objective = "Clean up the farm: defeat 10 Angry Chickens, 6 Raging Bulls, 4 Wild Stallions and the Scarecrow King 3 times",
+			track = "Clean up {the farm}",
 			-- The quest-only Weathervane Spear (Legendary, 2026-10-11).
 			reward = { coins = 300, exp = 300, weapon = "WeathervaneSpear" },
 			offer = {
-				"This is it, partner. The Scarecrow King has to learn his lesson for good.",
-				"[Defeat the Scarecrow King 5 times] and he'll never bother this farm again.",
+				"This is it, partner. Time for the big clean up.",
+				"Every critter on this farm's still sore from that scarecrow's spell, and he keeps stitchin' himself back together.",
+				"[Defeat 10 Angry Chickens, 6 Raging Bulls, 4 Wild Stallions and the Scarecrow King 3 times], and this farm'll finally have some peace.",
 				"Do this, and I'll give ya somethin' I've been savin' a long, long time.",
 			},
-			reminder = { "He keeps comin' back! [Defeat the Scarecrow King 5 times]." },
+			reminder = { "Still some cleanin' up to do! Chickens, bulls, stallions, and that pumpkin-headed menace." },
 			complete = {
-				"You did it! The farm's safe at last.",
+				"You did it! The farm's clean, quiet and safe at last.",
 				"Here. This was my granddaddy's. I reckon it's yours now.",
 			},
 		},
@@ -345,32 +352,32 @@ lines.RangerRedwoods = {
 			complete = { "Thick and warm. That'll make a fine grip, and the crafter can stitch the rest into a hide coat." },
 		},
 		{
-			kind = "kill",
-			target = "Fox",
-			count = 15,
-			objective = "Defeat 15 Snarling Foxes",
-			track = "Defeat {Snarling Foxes}",
+			-- 2026-10-26 (the user): a mixed hunt
+			kind = "hunt",
+			targets = { { id = "Fox", count = 12 }, { id = "Boar", count = 3 } },
+			objective = "Defeat 12 Snarling Foxes and 3 Wild Boars",
+			track = "Defeat {Foxes and Boars}",
 			reward = { coins = 400, exp = 400 },
 			offer = {
-				"I counted tracks this morning. Far more foxes than there should be.",
-				"Please [defeat 15 Snarling Foxes] before they overrun the camp.",
+				"I counted tracks this morning. Far more foxes than there should be, and boar prints among them.",
+				"Please [defeat 12 Snarling Foxes and 3 Wild Boars] before they overrun the camp.",
 			},
-			reminder = { "I can still hear them yipping. [Defeat 15 Snarling Foxes]." },
+			reminder = { "I can still hear them yipping and grunting. [Defeat 12 Snarling Foxes and 3 Wild Boars]." },
 			complete = { "Quiet at last. You move through these woods like you were born here." },
 		},
 		{
 			kind = "kill",
 			target = "Boar",
-			count = 5,
-			objective = "Defeat 5 Wild Boars",
+			count = 6,
+			objective = "Defeat 6 Wild Boars",
 			track = "Defeat {Wild Boars}",
 			reward = { coins = 600, exp = 600 },
 			offer = {
 				"Now the boars are charging hikers right off the trail.",
-				"Their hides are thick, so hit hard, and wear something tougher than you came in. [Defeat 5 Wild Boars].",
+				"Their hides are thick, so hit hard, and wear something tougher than you came in. [Defeat 6 Wild Boars].",
 			},
-			reminder = { "Mind those tusks! [Defeat 5 Wild Boars]." },
-			complete = { "Five boars! I'll mark those trails open again." },
+			reminder = { "Mind those tusks! [Defeat 6 Wild Boars]." },
+			complete = { "Six boars! I'll mark those trails open again." },
 		},
 		{
 			-- 2026-10-26 (the user): the level step went; chopping in its place
@@ -413,17 +420,17 @@ lines.RangerRedwoods = {
 			complete = { "Thank you. The tower will be standing tall by morning. Take this, it's what I can spare." },
 		},
 		{
-			kind = "kill",
-			target = "Bear",
-			count = 3,
-			objective = "Defeat 3 Grizzly Bears",
-			track = "Defeat {Grizzly Bears}",
+			-- 2026-10-26 (the user): a mixed hunt with the elites
+			kind = "hunt",
+			targets = { { id = "Boar", count = 6 }, { id = "Bear", count = 3 } },
+			objective = "Defeat 6 Wild Boars and 3 Grizzly Bears",
+			track = "Defeat {Boars and Bears}",
 			reward = { coins = 1000, exp = 1000 },
 			offer = {
-				"From the tower I spotted grizzlies guarding the path to the old ruins.",
-				"[Defeat 3 Grizzly Bears] so we can find out what's stirring in there.",
+				"From the tower I spotted grizzlies guarding the path to the old ruins, with a pack of boars around them.",
+				"[Defeat 6 Wild Boars and 3 Grizzly Bears] so we can find out what's stirring in there.",
 			},
-			reminder = { "The bears still block the ruins. [Defeat 3 Grizzly Bears]." },
+			reminder = { "The bears and boars still block the ruins. [Defeat 6 Wild Boars and 3 Grizzly Bears]." },
 			complete = { "The path's clear. And now I know what's behind all this..." },
 		},
 		{
@@ -460,19 +467,19 @@ lines.RangerRedwoods = {
 			complete = { "Six grizzlies! The strongest warden these woods have ever had." },
 		},
 		{
-			kind = "kill",
-			target = "ElderTreant",
-			count = 5, -- 3 until 2026-10-20 (World 2 balance; Dale's is 5 too)
-			objective = "Defeat the Elder Treant 5 times",
-			track = "Defeat the {Elder Treant}",
+			-- 2026-10-26 (the user): the Clean Up, a long hunt through the whole world
+			kind = "hunt",
+			targets = { { id = "Fox", count = 10 }, { id = "Boar", count = 6 }, { id = "Bear", count = 4 }, { id = "ElderTreant", count = 3 } },
+			objective = "Clean up the forest: defeat 10 Snarling Foxes, 6 Wild Boars, 4 Grizzly Bears and the Elder Treant 3 times",
+			track = "Clean up {the forest}",
 			-- The quest-only Firefly Lantern (Legendary, 2026-10-11).
 			reward = { coins = 3000, exp = 3000, weapon = "LanternFlail" },
 			offer = {
-				"This is it. We have to calm that old tree for good.",
-				"[Defeat the Elder Treant 5 times] and the forest can finally rest.",
+				"This is it. The treant keeps regrowing, and its rage still runs through every creature here.",
+				"[Defeat 10 Snarling Foxes, 6 Wild Boars, 4 Grizzly Bears and the Elder Treant 3 times], and the forest can finally rest.",
 				"Do this, and I'll trust you with something very special.",
 			},
-			reminder = { "It keeps regrowing! [Defeat the Elder Treant 5 times]." },
+			reminder = { "The forest isn't calm yet. Foxes, boars, bears, and that old tree." },
 			complete = {
 				"You did it. Listen... the forest is quiet again.",
 				"This lantern has lit my way for years. The fireflies chose you. It's yours now.",
@@ -538,31 +545,31 @@ lines.ExplorerCaverns = {
 			complete = { "Good solid ore! A natural! Now let's go find that trail." },
 		},
 		{
-			kind = "kill",
-			target = "CaveBat",
-			count = 15,
-			objective = "Defeat 15 Cave Bats",
-			track = "Defeat {Cave Bats}",
+			-- 2026-10-26 (the user): a mixed hunt
+			kind = "hunt",
+			targets = { { id = "CaveBat", count = 12 }, { id = "PebbleGolem", count = 3 } },
+			objective = "Defeat 12 Cave Bats and 3 Pebble Golems",
+			track = "Defeat {Bats and Pebble Golems}",
 			reward = { coins = 4000, exp = 4000 },
 			offer = {
-				"My crew marked their path on the walls, but the bats nested right over it.",
-				"[Defeat 15 Cave Bats] and clear the way.",
+				"My crew marked their path on the walls, but the bats nested right over it, and the rocks there walk.",
+				"[Defeat 12 Cave Bats and 3 Pebble Golems] and clear the way.",
 			},
-			reminder = { "The marks are under all those bats. [Defeat 15 Cave Bats]." },
+			reminder = { "The marks are under all those bats and pebbles. [Defeat 12 Cave Bats and 3 Pebble Golems]." },
 			complete = { "There! Chalk arrows, and a boot print. They came this way!" },
 		},
 		{
 			kind = "kill",
 			target = "PebbleGolem",
-			count = 5,
-			objective = "Defeat 5 Pebble Golems",
+			count = 6,
+			objective = "Defeat 6 Pebble Golems",
 			track = "Defeat {Pebble Golems}",
 			reward = { coins = 6000, exp = 6000 },
 			offer = {
-				"The arrows point down the tunnels, but the rocks there walk.",
-				"[Defeat 5 Pebble Golems] so I can chart it.",
+				"The arrows point down the tunnels, but more rocks keep getting up and walking.",
+				"[Defeat 6 Pebble Golems] so I can chart it.",
 			},
-			reminder = { "Can't draw a map with the map walking around. [Defeat 5 Pebble Golems]." },
+			reminder = { "Can't draw a map with the map walking around. [Defeat 6 Pebble Golems]." },
 			complete = { "Charted! Well, it's mostly pebbles now." },
 		},
 		{
@@ -596,17 +603,17 @@ lines.ExplorerCaverns = {
 			complete = { "Clank, whirr, glow, perfect! Hold on tight, we're going down." },
 		},
 		{
-			kind = "kill",
-			target = "CrystalGolem",
-			count = 3,
-			objective = "Defeat 3 Crystal Golems",
-			track = "Defeat {Crystal Golems}",
+			-- 2026-10-26 (the user): a mixed hunt with the elites
+			kind = "hunt",
+			targets = { { id = "PebbleGolem", count = 6 }, { id = "CrystalGolem", count = 3 } },
+			objective = "Defeat 6 Pebble Golems and 3 Crystal Golems",
+			track = "Defeat {Pebble and Crystal Golems}",
 			reward = { coins = 10000, exp = 10000 },
 			offer = {
-				"Bad news: the lower hall is guarded by Crystal Golems. Big shiny ones.",
-				"[Defeat 3 Crystal Golems] and we're through.",
+				"Bad news: the lower hall is guarded by Crystal Golems, big shiny ones, with pebble golems all around them.",
+				"[Defeat 6 Pebble Golems and 3 Crystal Golems] and we're through.",
 			},
-			reminder = { "They're pretty, but they're in the way. [Defeat 3 Crystal Golems]." },
+			reminder = { "They're pretty, but they're in the way. [Defeat 6 Pebble Golems and 3 Crystal Golems]." },
 			complete = { "We're through! And there's webbing everywhere. I don't like webbing." },
 		},
 		{
@@ -642,18 +649,18 @@ lines.ExplorerCaverns = {
 			complete = { "Ready? Me too. Let's finish this." },
 		},
 		{
-			kind = "kill",
-			target = "SpiderQueen",
-			count = 5,
-			objective = "Defeat the Spider Queen 5 times",
-			track = "Defeat the {Spider Queen}",
+			-- 2026-10-26 (the user): the Clean Up, a long hunt through the whole world
+			kind = "hunt",
+			targets = { { id = "CaveBat", count = 10 }, { id = "PebbleGolem", count = 6 }, { id = "CrystalGolem", count = 4 }, { id = "SpiderQueen", count = 3 } },
+			objective = "Clean up the caverns: defeat 10 Cave Bats, 6 Pebble Golems, 4 Crystal Golems and the Spider Queen 3 times",
+			track = "Clean up {the caverns}",
 			-- The quest-only Diamond Pickaxe (Legendary).
 			reward = { coins = 30000, exp = 30000, weapon = "DiamondPickaxe" },
 			offer = {
-				"She keeps coming back, and every time she seals the tunnel behind her with web.",
-				"[Defeat the Spider Queen 5 times] and we'll break through for good.",
+				"She keeps coming back, and the whole cave answers her: bats, pebbles, crystal golems, everything.",
+				"[Defeat 10 Cave Bats, 6 Pebble Golems, 4 Crystal Golems and the Spider Queen 3 times], and we'll break through for good.",
 			},
-			reminder = { "The web's thinning! [Defeat the Spider Queen 5 times]." },
+			reminder = { "The caverns still aren't safe. Bats, golems, and the Queen herself." },
 			complete = {
 				"We're through, and my crew's safe on the other side!",
 				"They dug this up down there. A diamond pickaxe. It's yours, partner.",
@@ -709,14 +716,26 @@ function Quests.goal(step: Step): number
 		return step.count or 1
 	elseif step.kind == "level" then
 		return step.level or 1
-	elseif step.kind == "bring" then
+	elseif step.kind == "bring" or step.kind == "hunt" then
 		local total = 0
-		for _, item in step.items or {} do
+		for _, item in (if step.kind == "hunt" then step.targets else step.items) or {} do
 			total += item.count
 		end
 		return math.max(total, 1)
 	end
 	return step.amount or 1
+end
+
+-- A hunt step's kills so far, per enemy (from the "QuestKills_<line>" attribute).
+function Quests.huntKills(player: Player, lineId: string): { [string]: number }
+	local out: { [string]: number } = {}
+	local raw = player:GetAttribute(Quests.attr("Kills", lineId))
+	if type(raw) == "string" then
+		for id, n in raw:gmatch("(%w+)=(%d+)") do
+			out[id] = tonumber(n) or 0
+		end
+	end
+	return out
 end
 
 -- The material a gather / bring step is about (its icon on the dialogue and tracker).

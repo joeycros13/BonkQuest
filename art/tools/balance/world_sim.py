@@ -137,6 +137,8 @@ class World:
         for s in self.quest:
             if "items" in s:
                 s["items"] = listify(s["items"])
+            if "targets" in s:
+                s["targets"] = listify(s["targets"])
         self.lv = data["leveling"]
         self.speed = data["walkSpeed"] * (data["balance"]["sprint"] if PLAYER["sprint"] else 1)
         self.respawnTime = data["respawnTime"]
@@ -239,6 +241,7 @@ class Run:
         self.step = 0              # quest step index; len(quest) = done
         self.accepted = False      # the current step has been taken from the giver
         self.progress = 0
+        self.hunt = {}
         self.gateDone = False
         self.dead = {}             # (archetype, marker index) -> time it comes back
         self.nodeDown = {}         # (node kind, index) -> time it stands again
@@ -465,6 +468,11 @@ class Run:
                 self.say("drop!", x["weapon"], "from", enemy)
         if self.accepted and self.cur() and self.cur()["kind"] == "kill" and self.cur()["target"] == enemy:
             self.progress += 1
+        # a hunt step (2026-10-26): each kind counts up to its own count
+        if self.accepted and self.cur() and self.cur()["kind"] == "hunt":
+            for t in self.cur()["targets"]:
+                if t["id"] == enemy and self.hunt.get(enemy, 0) < t["count"]:
+                    self.hunt[enemy] = self.hunt.get(enemy, 0) + 1
         return True
 
     def gather_one(self, kind):
@@ -514,6 +522,8 @@ class Run:
         k = c["kind"]
         if k == "kill":
             return self.progress >= c["count"]
+        if k == "hunt":
+            return all(self.hunt.get(t["id"], 0) >= t["count"] for t in c["targets"])
         if k == "gather":
             # what's held counts, and nothing is taken at hand-in (issue 21, 2026-10-25)
             return self.mats.get(c["target"], 0) >= c["count"]
@@ -536,7 +546,7 @@ class Run:
             if c is None:
                 return
             if not self.accepted:
-                self.accepted, self.progress = True, 0
+                self.accepted, self.progress, self.hunt = True, 0, {}
                 self.say("quest step", self.step + 1, "accepted:", c["kind"], c.get("target", c.get("level", "")))
                 if not self.step_ready():
                     return
@@ -766,6 +776,12 @@ class Run:
                         self.do(c["target"])
                         continue
                     # too strong for now: level up and gear up on something else
+                if k == "hunt":
+                    # the nearest kind still short that it can take on
+                    short = [t["id"] for t in c["targets"] if self.hunt.get(t["id"], 0) < t["count"] and self.beatable(t["id"])]
+                    if short:
+                        self.do(min(short, key=self.distance_to))
+                        continue
                 if k == "gather":
                     self.farm_material(c["target"])
                     continue

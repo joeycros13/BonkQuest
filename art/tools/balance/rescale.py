@@ -83,21 +83,26 @@ GATE_MATERIALS = {1: {"OakLog": 20, "Stone": 20}, 2: {"RedwoodLog": 35, "AmberSa
 # the questlines: no level steps (the user), every line has its elite, more kills and gathering;
 # (kind, target or items, count, coins, exp, extra reward)
 QUESTS = {
-    1: [("kill", "Chicken", 8, 25, 20), ("gather", "OakLog", 8, 30, 30), ("kill", "Chicken", 15, 40, 40),
-        ("kill", "Bull", 5, 60, 60), ("gather", "Stone", 10, 50, 60, {"weapon": "RustyBlade"}),
-        ("kill", "Bull", 8, 100, 100), ("bring", {"OakLog": 15, "Stone": 15}, None, 80, 100),
+    # (2026-10-26, the user's second round: mixed hunts at steps 3 and 7 and a Clean Up at step 10,
+    # every item where it was: Rusty Blade 5, the quest item 8, the quest weapon 10)
+    1: [("kill", "Chicken", 8, 25, 20), ("gather", "OakLog", 8, 30, 30),
+        ("hunt", {"Chicken": 12, "Bull": 3}, None, 40, 40), ("kill", "Bull", 6, 60, 60),
+        ("gather", "Stone", 10, 50, 60, {"weapon": "RustyBlade"}), ("bring", {"OakLog": 15, "Stone": 15}, None, 80, 100),
+        ("hunt", {"Bull": 6, "Stallion": 3}, None, 100, 100),
         ("kill", "BossScarecrow", 1, 150, 150, {"item": "LuckyHorseshoe"}), ("kill", "Stallion", 6, 120, 150),
-        ("kill", "BossScarecrow", 5, 300, 300, {"weapon": "WeathervaneSpear"})],
-    2: [("kill", "Fox", 8, 250, 200), ("gather", "FoxFur", 10, 300, 300), ("kill", "Fox", 15, 400, 400),
-        ("kill", "Boar", 5, 600, 600), ("gather", "RedwoodLog", 12, 500, 600),
-        ("bring", {"RedwoodLog": 15, "BoarTusk": 6}, None, 800, 1000), ("kill", "Bear", 3, 1000, 1000),
+        ("hunt", {"Chicken": 10, "Bull": 6, "Stallion": 4, "BossScarecrow": 3}, None, 300, 300, {"weapon": "WeathervaneSpear"})],
+    2: [("kill", "Fox", 8, 250, 200), ("gather", "FoxFur", 10, 300, 300),
+        ("hunt", {"Fox": 12, "Boar": 3}, None, 400, 400), ("kill", "Boar", 6, 600, 600),
+        ("gather", "RedwoodLog", 12, 500, 600), ("bring", {"RedwoodLog": 15, "BoarTusk": 6}, None, 800, 1000),
+        ("hunt", {"Boar": 6, "Bear": 3}, None, 1000, 1000),
         ("kill", "ElderTreant", 1, 1500, 1500, {"item": "RangerBadge"}), ("kill", "Bear", 6, 1200, 1500),
-        ("kill", "ElderTreant", 5, 3000, 3000, {"weapon": "LanternFlail"})],
-    3: [("kill", "CaveBat", 8, 2500, 2000), ("gather", "IronOre", 8, 3000, 3000), ("kill", "CaveBat", 15, 4000, 4000),
-        ("kill", "PebbleGolem", 5, 6000, 6000), ("gather", "CrystalShard", 10, 5000, 6000),
-        ("bring", {"IronOre": 15, "CrystalShard": 15}, None, 8000, 10000), ("kill", "CrystalGolem", 3, 10000, 10000),
+        ("hunt", {"Fox": 10, "Boar": 6, "Bear": 4, "ElderTreant": 3}, None, 3000, 3000, {"weapon": "LanternFlail"})],
+    3: [("kill", "CaveBat", 8, 2500, 2000), ("gather", "IronOre", 8, 3000, 3000),
+        ("hunt", {"CaveBat": 12, "PebbleGolem": 3}, None, 4000, 4000), ("kill", "PebbleGolem", 6, 6000, 6000),
+        ("gather", "CrystalShard", 10, 5000, 6000), ("bring", {"IronOre": 15, "CrystalShard": 15}, None, 8000, 10000),
+        ("hunt", {"PebbleGolem": 6, "CrystalGolem": 3}, None, 10000, 10000),
         ("kill", "SpiderQueen", 1, 15000, 15000, {"item": "MinersLantern"}), ("kill", "CrystalGolem", 6, 12000, 15000),
-        ("kill", "SpiderQueen", 5, 30000, 30000, {"weapon": "DiamondPickaxe"})],
+        ("hunt", {"CaveBat": 10, "PebbleGolem": 6, "CrystalGolem": 4, "SpiderQueen": 3}, None, 30000, 30000, {"weapon": "DiamondPickaxe"})],
 }
 
 
@@ -112,6 +117,8 @@ def quest_steps(n, exp_mult=1.0):
         step = {"kind": kind, "reward": reward}
         if kind == "bring":
             step["items"] = {str(k): {"id": m, "count": c} for k, (m, c) in enumerate(what.items(), 1)}
+        elif kind == "hunt":
+            step["targets"] = {str(k): {"id": m, "count": c} for k, (m, c) in enumerate(what.items(), 1)}
         else:
             step["target"], step["count"] = what, count
         out[str(i)] = step
