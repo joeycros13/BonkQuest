@@ -17,7 +17,9 @@ The pieces:
     so the walls are one height (top y 52) and built of thick blocks (the user: an earlier
     rim varied its height, ledge and foot every 24-48 studs, which left 2-stud slivers
     where stretches met); the east rim stops at x -176, where World 2's hedges begin, and
-    opens for the corridor at z -912..-878;
+    opens for the corridor at z -993..-959 (World 2's south-west corner, the user's pick
+    for the gate, 2026-10-25: the whole world was moved 82 studs south from where it was
+    first drawn, so its entry road lines up with that corner);
   * the road: a curvy loop round the pyramid, forking at the entry and meeting again by the
     boss in the west arm, rasterised like World 2's (Catmull-Rom curves, a 12-stud square
     brush on 4-stud blocks, so every bend steps sideways by 4), flush with the sand;
@@ -45,47 +47,47 @@ CELL = 2
 FLOOR = 8          # walkable top
 BASE = 2           # every column's bottom
 EAST_LIMIT = -176  # World 2's hedges start at x -175
-CORRIDOR = (-912, -878)
+CORRIDOR = (-993, -959)   # World 2's corridor through its south-west corner
 TERRACE = 11       # rim step height: measured, a player gets onto 9 but not 10
 RIM_LEVELS = 4     # terraces in every wall (top y 8 + 4 x 11 = 52)
 RIM_LEDGE = 8      # how deep each terrace is
 RIM_BACK = 12      # how far the top terrace runs on behind its edge
 
 # the walkable outline, clockwise from the north arm's north-west corner
-POLY = [(-526, -700), (-386, -700), (-386, -740), (-216, -740), (-216, -1050), (-246, -1050),
-        (-246, -1090), (-354, -1090), (-354, -1050), (-566, -1050), (-566, -910), (-526, -910)]
+POLY = [(-526, -782), (-386, -782), (-386, -822), (-216, -822), (-216, -1132), (-246, -1132),
+        (-246, -1172), (-354, -1172), (-354, -1132), (-566, -1132), (-566, -992), (-526, -992)]
 
 # the road's centre lines (control points of Catmull-Rom curves)
-FORK = (-258, -894)
-JOIN = (-500, -1004)
+FORK = (-258, -976)
+JOIN = (-500, -1086)
 ROUTES = [
     # in from the corridor to the fork
-    [(-176, -894), (-196, -894), (-222, -890), (-240, -896), FORK],
+    [(-176, -976), (-196, -976), (-222, -972), (-240, -978), FORK],
     # the north way round: up the east side, along the north past the oasis, down the west
-    [FORK, (-270, -852), (-262, -806), (-306, -784), (-366, -794), (-426, -778), (-482, -794),
-     (-498, -848), (-480, -906), (-496, -962), JOIN],
+    [FORK, (-270, -934), (-262, -888), (-306, -866), (-366, -876), (-426, -860), (-482, -876),
+     (-498, -930), (-480, -988), (-496, -1044), JOIN],
     # the south way round: down the east side, along the south
-    [FORK, (-270, -938), (-262, -988), (-312, -1010), (-372, -996), (-432, -1014), JOIN],
+    [FORK, (-270, -1020), (-262, -1070), (-312, -1092), (-372, -1078), (-432, -1096), JOIN],
     # on to the boss in the west arm
-    [JOIN, (-516, -996), (-530, -988)],
+    [JOIN, (-516, -1078), (-530, -1070)],
 ]
 PATH_HALF = 6
 
-PYRAMID = (-375, -900, 60)      # centre x, z, half base
+PYRAMID = (-375, -982, 60)      # centre x, z, half base
 PYR_RISE = 2.5                  # up a step (each step is 2 in)
-OASIS = (-454, -734, 48, 22)
-VOLCANO = (-300, -1066)         # centre; its radius is set by the road (VOLCANO_GAP)
+OASIS = (-454, -816, 48, 22)
+VOLCANO = (-300, -1148)         # centre; its radius is set by the road (VOLCANO_GAP)
 VOLCANO_GAP = 10                # studs of sand between the volcano's foot and the road
 VOLCANO_MAX = 56
 VOLCANO_STEP = 4                # each ring is 4 studs wide and 4 up
-BOSS = (-534, -988, 22)
+BOSS = (-534, -1070, 22)
 # mounds: centre x, z, radius x, z, height (they slope down to the road by themselves)
 DUNES = [
-    (-300, -752, 44, 16, 16), (-232, -804, 18, 30, 18), (-232, -1000, 18, 38, 20),
-    (-405, -1036, 46, 14, 16), (-292, -846, 14, 30, 14), (-292, -956, 14, 30, 14),
-    (-458, -870, 14, 34, 16), (-458, -950, 12, 26, 12), (-375, -816, 46, 12, 12),
-    (-375, -984, 46, 11, 12), (-512, -760, 14, 22, 16), (-470, -1036, 20, 12, 10),
-    (-546, -1032, 16, 12, 10), (-396, -716, 10, 14, 10),
+    (-300, -834, 44, 16, 16), (-232, -886, 18, 30, 18), (-232, -1082, 18, 38, 20),
+    (-405, -1118, 46, 14, 16), (-292, -928, 14, 30, 14), (-292, -1038, 14, 30, 14),
+    (-458, -952, 14, 34, 16), (-458, -1032, 12, 26, 12), (-375, -898, 46, 12, 12),
+    (-375, -1066, 46, 11, 12), (-512, -842, 14, 22, 16), (-470, -1118, 20, 12, 10),
+    (-546, -1114, 16, 12, 10), (-396, -798, 10, 14, 10),
 ]
 
 SAND = "E8C98E"
@@ -177,7 +179,7 @@ def rim_dist(x, z):
 
 def build():
     x0, x1 = -646, -176
-    z1, z0 = -620, -1170   # north, south
+    z1, z0 = -702, -1252   # north, south
     nx = (x1 - x0) // CELL
     nz = (z1 - z0) // CELL
 
