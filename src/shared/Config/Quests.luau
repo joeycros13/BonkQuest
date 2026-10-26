@@ -61,8 +61,11 @@
 --
 -- All the wording and numbers here are free to edit.
 
+local Enemies = require(script.Parent:WaitForChild("Enemies"))
 local Gathering = require(script.Parent:WaitForChild("Gathering"))
+local Materials = require(script.Parent:WaitForChild("Materials"))
 local Tools = require(script.Parent:WaitForChild("Tools"))
+local Weapons = require(script.Parent:WaitForChild("Weapons"))
 
 -- Each line's rewards are written for its world (about x10 the last world's, coins and EXP alike); nothing
 -- scales them in code.
@@ -179,17 +182,17 @@ lines.DaleFarm = {
 		{
 			kind = "kill",
 			target = "Bull",
-			count = 6,
-			objective = "Defeat 6 Raging Bulls",
+			count = 5,
+			objective = "Defeat 5 Raging Bulls",
 			track = "Defeat {Raging Bulls}",
 			reward = { coins = 60, exp = 60 },
 			offer = {
 				"Them bulls up the paths are seein' red. They knocked my fence clean over!",
-				"[Defeat 6 Raging Bulls] and teach 'em some manners.",
+				"[Defeat 5 Raging Bulls] and teach 'em some manners.",
 				"Mind you, they hit hard. Some proper armor from the crafter wouldn't go amiss.",
 			},
-			reminder = { "Watch them horns! [Defeat 6 Raging Bulls]." },
-			complete = { "Six bulls! You're tougher than you look, friend." },
+			reminder = { "Watch them horns! [Defeat 5 Raging Bulls]." },
+			complete = { "Five bulls! You're tougher than you look, friend." },
 		},
 		{
 			-- 2026-10-26 (the user): the level step went; mining in its place
@@ -265,33 +268,32 @@ lines.DaleFarm = {
 			},
 		},
 		{
-			-- 2026-10-26 (the user): the level step went; the elites in its place
-			kind = "kill",
-			target = "Stallion",
-			count = 6,
-			objective = "Defeat 6 Wild Stallions",
-			track = "Defeat {Wild Stallions}",
+			-- 2026-10-26 (the user): the elites and the boss together
+			kind = "hunt",
+			targets = { { id = "Stallion", count = 4 }, { id = "BossScarecrow", count = 1 } },
+			objective = "Defeat 4 Wild Stallions and the Scarecrow King",
+			track = "Defeat {Stallions and the King}",
 			reward = { coins = 120, exp = 150 },
 			offer = {
 				"Bad news. That old scarecrow's stitched himself back together.",
 				"And now he's got the wild stallions guardin' his platform. They kick like thunder.",
-				"[Defeat 6 Wild Stallions] so we can get at him. That Harvest Knight armor'd help, if you've a mind to craft it.",
+				"[Defeat 4 Wild Stallions and the Scarecrow King] again. That Harvest Knight armor'd help, if you've a mind to craft it.",
 			},
-			reminder = { "Them stallions are still guardin' the platform! [Defeat 6 Wild Stallions]." },
-			complete = { "Six stallions! The strongest farmhand this meadow's ever seen." },
+			reminder = { "Them stallions are still guardin' that pumpkin-head! [Defeat 4 Wild Stallions and the Scarecrow King]." },
+			complete = { "Stallions scattered and the King knocked flat again! The strongest farmhand this meadow's ever seen." },
 		},
 		{
 			-- 2026-10-26 (the user): the Clean Up, a long hunt through the whole world
 			kind = "hunt",
-			targets = { { id = "Chicken", count = 10 }, { id = "Bull", count = 6 }, { id = "Stallion", count = 4 }, { id = "BossScarecrow", count = 3 } },
-			objective = "Clean up the farm: defeat 10 Angry Chickens, 6 Raging Bulls, 4 Wild Stallions and the Scarecrow King 3 times",
+			targets = { { id = "Chicken", count = 10 }, { id = "Bull", count = 8 }, { id = "Stallion", count = 5 }, { id = "BossScarecrow", count = 3 } },
+			objective = "Clean up the farm: defeat 10 Angry Chickens, 8 Raging Bulls, 5 Wild Stallions and the Scarecrow King 3 times",
 			track = "Clean up {the farm}",
 			-- The quest-only Weathervane Spear (Legendary, 2026-10-11).
 			reward = { coins = 300, exp = 300, weapon = "WeathervaneSpear" },
 			offer = {
 				"This is it, partner. Time for the big clean up.",
 				"Every critter on this farm's still sore from that scarecrow's spell, and he keeps stitchin' himself back together.",
-				"[Defeat 10 Angry Chickens, 6 Raging Bulls, 4 Wild Stallions and the Scarecrow King 3 times], and this farm'll finally have some peace.",
+				"[Defeat 10 Angry Chickens, 8 Raging Bulls, 5 Wild Stallions and the Scarecrow King 3 times], and this farm'll finally have some peace.",
 				"Do this, and I'll give ya somethin' I've been savin' a long, long time.",
 			},
 			reminder = { "Still some cleanin' up to do! Chickens, bulls, stallions, and that pumpkin-headed menace." },
@@ -368,16 +370,16 @@ lines.RangerRedwoods = {
 		{
 			kind = "kill",
 			target = "Boar",
-			count = 6,
-			objective = "Defeat 6 Wild Boars",
+			count = 5,
+			objective = "Defeat 5 Wild Boars",
 			track = "Defeat {Wild Boars}",
 			reward = { coins = 600, exp = 600 },
 			offer = {
 				"Now the boars are charging hikers right off the trail.",
-				"Their hides are thick, so hit hard, and wear something tougher than you came in. [Defeat 6 Wild Boars].",
+				"Their hides are thick, so hit hard, and wear something tougher than you came in. [Defeat 5 Wild Boars].",
 			},
-			reminder = { "Mind those tusks! [Defeat 6 Wild Boars]." },
-			complete = { "Six boars! I'll mark those trails open again." },
+			reminder = { "Mind those tusks! [Defeat 5 Wild Boars]." },
+			complete = { "Five boars! I'll mark those trails open again." },
 		},
 		{
 			-- 2026-10-26 (the user): the level step went; chopping in its place
@@ -451,32 +453,31 @@ lines.RangerRedwoods = {
 			},
 		},
 		{
-			-- 2026-10-26 (the user): the level step went; the elites in its place
-			kind = "kill",
-			target = "Bear",
-			count = 6,
-			objective = "Defeat 6 Grizzly Bears",
-			track = "Defeat {Grizzly Bears}",
+			-- 2026-10-26 (the user): the elites and the boss together
+			kind = "hunt",
+			targets = { { id = "Bear", count = 4 }, { id = "ElderTreant", count = 1 } },
+			objective = "Defeat 4 Grizzly Bears and the Elder Treant",
+			track = "Defeat {Bears and the Treant}",
 			reward = { coins = 1200, exp = 1500 },
 			offer = {
 				"Bad news. Roots don't die easily. The treant is growing back, stronger than before.",
 				"Every bear in the forest has gathered round its ruins to guard it.",
-				"[Defeat 6 Grizzly Bears] and we'll have a clear shot at it.",
+				"[Defeat 4 Grizzly Bears and the Elder Treant] before it takes root for good.",
 			},
-			reminder = { "The grizzlies are still circling the ruins. [Defeat 6 Grizzly Bears]." },
-			complete = { "Six grizzlies! The strongest warden these woods have ever had." },
+			reminder = { "The grizzlies are still circling the ruins, and the treant's still standing. [Defeat 4 Grizzly Bears and the Elder Treant]." },
+			complete = { "Bears and treant both! The strongest warden these woods have ever had." },
 		},
 		{
 			-- 2026-10-26 (the user): the Clean Up, a long hunt through the whole world
 			kind = "hunt",
-			targets = { { id = "Fox", count = 10 }, { id = "Boar", count = 6 }, { id = "Bear", count = 4 }, { id = "ElderTreant", count = 3 } },
-			objective = "Clean up the forest: defeat 10 Snarling Foxes, 6 Wild Boars, 4 Grizzly Bears and the Elder Treant 3 times",
+			targets = { { id = "Fox", count = 10 }, { id = "Boar", count = 8 }, { id = "Bear", count = 5 }, { id = "ElderTreant", count = 3 } },
+			objective = "Clean up the forest: defeat 10 Snarling Foxes, 8 Wild Boars, 5 Grizzly Bears and the Elder Treant 3 times",
 			track = "Clean up {the forest}",
 			-- The quest-only Firefly Lantern (Legendary, 2026-10-11).
 			reward = { coins = 3000, exp = 3000, weapon = "LanternFlail" },
 			offer = {
 				"This is it. The treant keeps regrowing, and its rage still runs through every creature here.",
-				"[Defeat 10 Snarling Foxes, 6 Wild Boars, 4 Grizzly Bears and the Elder Treant 3 times], and the forest can finally rest.",
+				"[Defeat 10 Snarling Foxes, 8 Wild Boars, 5 Grizzly Bears and the Elder Treant 3 times], and the forest can finally rest.",
 				"Do this, and I'll trust you with something very special.",
 			},
 			reminder = { "The forest isn't calm yet. Foxes, boars, bears, and that old tree." },
@@ -561,15 +562,15 @@ lines.ExplorerCaverns = {
 		{
 			kind = "kill",
 			target = "PebbleGolem",
-			count = 6,
-			objective = "Defeat 6 Pebble Golems",
+			count = 5,
+			objective = "Defeat 5 Pebble Golems",
 			track = "Defeat {Pebble Golems}",
 			reward = { coins = 6000, exp = 6000 },
 			offer = {
 				"The arrows point down the tunnels, but more rocks keep getting up and walking.",
-				"[Defeat 6 Pebble Golems] so I can chart it.",
+				"[Defeat 5 Pebble Golems] so I can chart it.",
 			},
-			reminder = { "Can't draw a map with the map walking around. [Defeat 6 Pebble Golems]." },
+			reminder = { "Can't draw a map with the map walking around. [Defeat 5 Pebble Golems]." },
 			complete = { "Charted! Well, it's mostly pebbles now." },
 		},
 		{
@@ -634,31 +635,30 @@ lines.ExplorerCaverns = {
 			},
 		},
 		{
-			-- 2026-10-26 (the user): the level step went; the elites in its place
-			kind = "kill",
-			target = "CrystalGolem",
-			count = 6,
-			objective = "Defeat 6 Crystal Golems",
-			track = "Defeat {Crystal Golems}",
+			-- 2026-10-26 (the user): the elites and the boss together
+			kind = "hunt",
+			targets = { { id = "CrystalGolem", count = 4 }, { id = "SpiderQueen", count = 1 } },
+			objective = "Defeat 4 Crystal Golems and the Spider Queen",
+			track = "Defeat {Crystal Golems and the Queen}",
 			reward = { coins = 12000, exp = 15000 },
 			offer = {
-				"Fresh tracks lead past her hall, deeper than any map. But the golems have closed ranks behind us.",
-				"[Defeat 6 Crystal Golems] and we can follow the tracks.",
+				"Fresh tracks lead past her hall, deeper than any map. But she's back, and the golems have closed ranks around her.",
+				"[Defeat 4 Crystal Golems and the Spider Queen] and we can follow the tracks.",
 			},
-			reminder = { "They keep reforming! [Defeat 6 Crystal Golems]." },
+			reminder = { "They keep reforming, and she keeps spinning! [Defeat 4 Crystal Golems and the Spider Queen]." },
 			complete = { "Ready? Me too. Let's finish this." },
 		},
 		{
 			-- 2026-10-26 (the user): the Clean Up, a long hunt through the whole world
 			kind = "hunt",
-			targets = { { id = "CaveBat", count = 10 }, { id = "PebbleGolem", count = 6 }, { id = "CrystalGolem", count = 4 }, { id = "SpiderQueen", count = 3 } },
-			objective = "Clean up the caverns: defeat 10 Cave Bats, 6 Pebble Golems, 4 Crystal Golems and the Spider Queen 3 times",
+			targets = { { id = "CaveBat", count = 10 }, { id = "PebbleGolem", count = 8 }, { id = "CrystalGolem", count = 5 }, { id = "SpiderQueen", count = 3 } },
+			objective = "Clean up the caverns: defeat 10 Cave Bats, 8 Pebble Golems, 5 Crystal Golems and the Spider Queen 3 times",
 			track = "Clean up {the caverns}",
 			-- The quest-only Diamond Pickaxe (Legendary).
 			reward = { coins = 30000, exp = 30000, weapon = "DiamondPickaxe" },
 			offer = {
 				"She keeps coming back, and the whole cave answers her: bats, pebbles, crystal golems, everything.",
-				"[Defeat 10 Cave Bats, 6 Pebble Golems, 4 Crystal Golems and the Spider Queen 3 times], and we'll break through for good.",
+				"[Defeat 10 Cave Bats, 8 Pebble Golems, 5 Crystal Golems and the Spider Queen 3 times], and we'll break through for good.",
 			},
 			reminder = { "The caverns still aren't safe. Bats, golems, and the Queen herself." },
 			complete = {
@@ -724,6 +724,39 @@ function Quests.goal(step: Step): number
 		return math.max(total, 1)
 	end
 	return step.amount or 1
+end
+
+-- What a hunt or bring step's icon shows (2026-10-26, the user: the stronger enemy, then the
+-- next as each is done): the toughest enemy still short (the most health; a boss over its
+-- elite and so on), or for a bring step the rarest material still short. Once all are met,
+-- the toughest / rarest of all. `held` is the player's material counts (Materials.counts),
+-- `kills` the hunt's kills (Quests.huntKills). Returns the Config/Worlds or Config/Materials id.
+function Quests.focus(step: Step, kills: { [string]: number }?, held: { [string]: number }?): string?
+	local list = if step.kind == "hunt" then step.targets elseif step.kind == "bring" then step.items else nil
+	if not list or #list == 0 then
+		return nil
+	end
+	local function weight(id: string): number
+		if step.kind == "hunt" then
+			local def = Enemies.get(id)
+			return def and def.hp or 0
+		end
+		local def = Materials.get(id)
+		return if def then (table.find(Weapons.Rarities, def.rarity) or 0) else 0
+	end
+	local have = if step.kind == "hunt" then kills or {} else held or {}
+	local best, bestWeight = nil, -math.huge
+	local top, topWeight = nil, -math.huge
+	for _, item in list do
+		local w = weight(item.id)
+		if w > topWeight then
+			top, topWeight = item.id, w
+		end
+		if (have[item.id] or 0) < item.count and w > bestWeight then
+			best, bestWeight = item.id, w
+		end
+	end
+	return best or top
 end
 
 -- A hunt step's kills so far, per enemy (from the "QuestKills_<line>" attribute).

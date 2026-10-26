@@ -179,14 +179,16 @@ local function iconFor(step: Quests.Step): string
 		return if type(value) == "string" then value else ""
 	end
 	if step.kind == "kill" or step.kind == "hunt" then
-		-- a hunt shows its first kind
-		local first = if step.kind == "hunt" then step.targets and step.targets[1] and step.targets[1].id else step.target
+		-- a hunt shows its toughest kind (Quests.focus)
+		local first = if step.kind == "hunt" then Quests.focus(step, {}) else step.target
 		local def = Enemies.get(first or "")
 		return if def and def.portrait then def.portrait else ""
 	elseif step.kind == "level" then
 		return attr("LevelIcon")
 	elseif Quests.material(step) then
-		local def = Materials.get(Quests.material(step))
+		-- a bring step shows its rarest material still short (Quests.focus)
+		local id = if step.kind == "bring" then Quests.focus(step, nil, Materials.counts(player)) else Quests.material(step)
+		local def = Materials.get(id or "")
 		return def and def.icon or ""
 	end
 	return attr("CoinIcon")

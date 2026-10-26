@@ -12,7 +12,8 @@
 -- like materials but at most once per player ever (remembered in `received`, so
 -- infusing one later never lets it drop again), luck never changes their chance
 -- (the user's rule, 2026-10-19), and they announce through the big Index popup
--- (Remotes.IndexDiscovered { kind = "Core", id }) instead of a toast.
+-- (Remotes.IndexDiscovered { kind = "Core", id }) instead of a toast. Every player who hit
+-- the enemy since it last healed rolls its table on their own (2026-10-26).
 --
 -- The counts reach the client as the player's "Materials" attribute,
 -- "BullHide=3,ChickenFeather=12" (read it with Materials.counts). Remotes.MaterialsDropped
@@ -127,39 +128,47 @@ local function bodyPosition(body: Instance): Vector3?
 	return nil
 end
 
-local function onKill(enemy: any, killer: Player?)
-	if not killer then
-		return
-	end
+local function onKill(enemy: any, killer: Player?, hitters: { Player }?)
 	local def = Enemies.get(enemy.archetype)
 	local table_ = def and def.materials
 	if not table_ then
 		return
 	end
-	local profile = profileOf(killer)
-	local items = {}
-	for _, drop in table_ do
-		local material = Materials.get(drop.id)
-		if not material then
+	-- every player who hit it since it last healed rolls on their own, whoever killed it
+	-- (2026-10-26, the user; WorldEnemyService's `hitters`)
+	local rollers = hitters or {}
+	if #rollers == 0 and killer then
+		rollers = { killer }
+	end
+	for _, player in rollers do
+		if not player.Parent then
 			continue
 		end
-		if material.core then
-			-- one per player, ever: no duplicates
-			if not profile.received[drop.id] and random:NextNumber() < drop.chance then
-				profile.received[drop.id] = true
-				MaterialService.add(killer, drop.id, 1)
-				if discovered then
-					discovered:FireClient(killer, { kind = "Core", id = drop.id })
+		local profile = profileOf(player)
+		local items = {}
+		for _, drop in table_ do
+			local material = Materials.get(drop.id)
+			if not material then
+				continue
+			end
+			if material.core then
+				-- one per player, ever: no duplicates
+				if not profile.received[drop.id] and random:NextNumber() < drop.chance then
+					profile.received[drop.id] = true
+					MaterialService.add(player, drop.id, 1)
+					if discovered then
+						discovered:FireClient(player, { kind = "Core", id = drop.id })
+					end
+				end
+			elseif random:NextNumber() < drop.chance then
+				local amount = random:NextInteger(drop.min, math.max(drop.min, drop.max))
+				if amount > 0 then
+					table.insert(items, { id = drop.id, amount = amount })
 				end
 			end
-		elseif random:NextNumber() < drop.chance then
-			local amount = random:NextInteger(drop.min, math.max(drop.min, drop.max))
-			if amount > 0 then
-				table.insert(items, { id = drop.id, amount = amount })
-			end
 		end
+		MaterialService.drop(player, items, bodyPosition(enemy.instance) or enemy.origin, enemy.instance)
 	end
-	MaterialService.drop(killer, items, bodyPosition(enemy.instance) or enemy.origin, enemy.instance)
 end
 
 -- Give the player these materials and show them (the side toast). Kills and gathering

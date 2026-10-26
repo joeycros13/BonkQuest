@@ -123,30 +123,16 @@ local function iconFor(line: Quests.Line, step: Quests.Step, ready: boolean): st
 		local def = Enemies.get(step.target or "")
 		return if def and def.portrait then def.portrait else ""
 	elseif step.kind == "hunt" then
-		-- the first kind still short
-		local kills = Quests.huntKills(player, line.id)
-		local pick = step.targets and step.targets[1]
-		for _, target in step.targets or {} do
-			if (kills[target.id] or 0) < target.count then
-				pick = target
-				break
-			end
-		end
-		local def = pick and Enemies.get(pick.id)
+		-- the toughest kind still short, then the next (Quests.focus)
+		local def = Enemies.get(Quests.focus(step, Quests.huntKills(player, line.id)) or "")
 		return if def and def.portrait then def.portrait else ""
 	elseif step.kind == "level" then
 		return attr("LevelIcon") or ""
 	elseif Quests.material(step) then
 		local id = Quests.material(step)
 		if step.kind == "bring" then
-			-- the first item still short
-			local held = Materials.counts(player)
-			for _, item in step.items or {} do
-				if (held[item.id] or 0) < item.count then
-					id = item.id
-					break
-				end
-			end
+			-- the rarest item still short, then the next (Quests.focus)
+			id = Quests.focus(step, nil, Materials.counts(player)) or id
 		end
 		local def = Materials.get(id)
 		return def and def.icon or ""

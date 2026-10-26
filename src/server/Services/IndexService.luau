@@ -447,7 +447,31 @@ local function watchItems(player: Player, profile: Profile)
 	updateTitles(player, profile, true)
 end
 
-local function onKill(enemy: any, killer: Player?)
+-- Weapon drops: every player who hit the enemy since it last healed rolls on their own,
+-- whoever killed it (2026-10-26, the user; WorldEnemyService's `hitters`).
+local function rollDrops(enemy: any, killer: Player?, hitters: { Player }?)
+	local rollers = hitters or {}
+	if #rollers == 0 and killer then
+		rollers = { killer }
+	end
+	for _, player in rollers do
+		if not profiles[player] then
+			continue
+		end
+		-- passes, boosts and the Luck upgrade, added (Config/Bonuses)
+		local luck = Bonuses.luck(player)
+		for _, drop in Index.dropsOf(enemy.archetype) do
+			if random:NextNumber() < math.min(1, drop.chance * luck) and MeleeService.grant(player, drop.weapon) then
+				-- the first find is NEW; one already in the Index (sold or removed, now
+				-- back) still pops up, just without the NEW tag
+				IndexService.showWeapon(player, drop.weapon)
+			end
+		end
+	end
+end
+
+local function onKill(enemy: any, killer: Player?, hitters: { Player }?)
+	rollDrops(enemy, killer, hitters)
 	local profile = killer and profiles[killer]
 	if not (killer and profile) then
 		return
@@ -461,15 +485,6 @@ local function onKill(enemy: any, killer: Player?)
 		announce(killer, "Enemy", id)
 		if profile.held then
 			updateTitles(killer, profile)
-		end
-	end
-	-- passes, boosts and the Luck upgrade, added (Config/Bonuses)
-	local luck = Bonuses.luck(killer)
-	for _, drop in Index.dropsOf(id) do
-		if random:NextNumber() < math.min(1, drop.chance * luck) and MeleeService.grant(killer, drop.weapon) then
-			-- the first find is NEW; one already in the Index (sold or removed, now
-			-- back) still pops up, just without the NEW tag
-			IndexService.showWeapon(killer, drop.weapon)
 		end
 	end
 end
