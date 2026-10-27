@@ -1,0 +1,251 @@
+{
+ "PatchworkVest": {
+  "pieces": {
+   "Patch": {
+    "offset": [
+     -0.66,
+     -0.48,
+     -0.564
+    ],
+    "size": [
+     0.52,
+     0.48,
+     0.0
+    ],
+    "colour": "a07a45",
+    "bone": "Torso"
+   },
+   "Rope": {
+    "offset": [
+     -0.0,
+     -1.05,
+     -0.05
+    ],
+    "size": [
+     2.2,
+     0.48,
+     1.3
+    ],
+    "colour": "b98a4e",
+    "bone": "Torso"
+   },
+   "RopeL": {
+    "offset": [
+     -1.5,
+     -0.67,
+     0.0
+    ],
+    "size": [
+     1.14,
+     0.14,
+     1.14
+    ],
+    "colour": "b98a4e",
+    "bone": "LeftArm"
+   },
+   "RopeR": {
+    "offset": [
+     1.5,
+     -0.67,
+     0.0
+    ],
+    "size": [
+     1.14,
+     0.14,
+     1.14
+    ],
+    "colour": "b98a4e",
+    "bone": "RightArm"
+   },
+   "SackL": {
+    "offset": [
+     -1.5,
+     0.775,
+     0.0
+    ],
+    "size": [
+     1.2,
+     0.69,
+     1.2
+    ],
+    "colour": "cfa96d",
+    "bone": "LeftArm"
+   },
+   "SackR": {
+    "offset": [
+     1.5,
+     0.775,
+     0.0
+    ],
+    "size": [
+     1.2,
+     0.69,
+     1.2
+    ],
+    "colour": "cfa96d",
+    "bone": "RightArm"
+   },
+   "ShinL": {
+    "offset": [
+     -0.5,
+     -2.45,
+     0.0
+    ],
+    "size": [
+     1.14,
+     0.86,
+     1.14
+    ],
+    "colour": "cfa96d",
+    "bone": "LeftLeg"
+   },
+   "ShinR": {
+    "offset": [
+     0.5,
+     -2.45,
+     0.0
+    ],
+    "size": [
+     1.14,
+     0.86,
+     1.14
+    ],
+    "colour": "cfa96d",
+    "bone": "RightLeg"
+   },
+   "ShinRopeL": {
+    "offset": [
+     -0.5,
+     -2.505,
+     0.0
+    ],
+    "size": [
+     1.22,
+     0.43,
+     1.22
+    ],
+    "colour": "b98a4e",
+    "bone": "LeftLeg"
+   },
+   "ShinRopeR": {
+    "offset": [
+     0.5,
+     -2.505,
+     0.0
+    ],
+    "size": [
+     1.22,
+     0.43,
+     1.22
+    ],
+    "colour": "b98a4e",
+    "bone": "RightLeg"
+   },
+   "ShoeL": {
+    "offset": [
+     -0.5,
+     -2.96,
+     0.0
+    ],
+    "size": [
+     1.14,
+     0.16,
+     1.14
+    ],
+    "colour": "5a3a22",
+    "bone": "LeftLeg"
+   },
+   "ShoeR": {
+    "offset": [
+     0.5,
+     -2.96,
+     0.0
+    ],
+    "size": [
+     1.14,
+     0.16,
+     1.14
+    ],
+    "colour": "5a3a22",
+    "bone": "RightLeg"
+   },
+   "Stencil": {
+    "offset": [
+     -0.0,
+     0.055,
+     -0.564
+    ],
+    "size": [
+     0.68,
+     0.75,
+     0.0
+    ],
+    "colour": "c6402e",
+    "bone": "Torso"
+   },
+   "Stitch": {
+    "offset": [
+     -0.66,
+     -0.48,
+     -0.568
+    ],
+    "size": [
+     0.4744,
+     0.4344,
+     0.0
+    ],
+    "colour": "5a3a22",
+    "bone": "Torso"
+   },
+   "StitchL": {
+    "offset": [
+     -2.104,
+     0.86,
+     0.0
+    ],
+    "size": [
+     0.0,
+     0.173,
+     0.173
+    ],
+    "colour": "5a3a22",
+    "bone": "LeftArm"
+   },
+   "StitchR": {
+    "offset": [
+     2.104,
+     0.86,
+     0.0
+    ],
+    "size": [
+     0.0,
+     0.173,
+     0.173
+    ],
+    "colour": "5a3a22",
+    "bone": "RightArm"
+   },
+   "Tunic": {
+    "offset": [
+     -0.0,
+     -0.145,
+     0.0
+    ],
+    "size": [
+     2.12,
+     2.37,
+     1.12
+    ],
+    "colour": "cfa96d",
+    "bone": "Torso"
+   }
+  },
+  "size": [
+   4.208,
+   4.16,
+   1.31
+  ],
+  "minZ": -3.04,
+  "maxZ": 1.12
+ }
+}
