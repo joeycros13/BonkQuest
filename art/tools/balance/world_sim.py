@@ -62,6 +62,10 @@ PLAYER = {
                              # player tops up first; 1.1 until then, when deaths were rare anyway)
     "replanEvery": 4,        # kills between rethinking what to farm
     "closeEnough": 0.10,     # activities paying within this share of the best are equal: the nearest wins
+    "enemyLand": 0.78,       # share of an enemy's attacks that land in the game: the user's playtest (2026-10-26, a
+                             # fresh save, no upgrades) kept 40-45% after a Bull fight the simulation gave 24% for,
+                             # and lived through a Stallion fight it called lethal (the player moving, the enemy
+                             # turning and closing in)
     "tooStrong": 0.85,       # skip a fight that would take this share of max HP: get stronger first (0.7 until
                              # 2026-10-26: a maxed arrival's first small-enemy fight takes ~75% since the rescale)
                              # (0.9 until 2026-10-24; with ~50% small-enemy fights a player backs off sooner)
@@ -386,6 +390,7 @@ class Run:
             while na + m["windup"] < end:
                 taken += max(1, math.floor(m["damage"] * (1 - self.defense()) * upg("defense") + 0.5))
                 na += m["cooldown"]
+            taken *= PLAYER["enemyLand"]
         return end, taken
 
     def use_fountain(self, markers, rest_seconds):

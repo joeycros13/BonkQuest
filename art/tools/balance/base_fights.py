@@ -28,6 +28,7 @@ HIT_RATE = 0.85        # world_sim PLAYER.hitRate
 ENGAGE = 1.0           # world_sim PLAYER.engageSeconds
 FIRST_ATTACK = 0.5     # MeleeService FIRST_ATTACK_DELAY
 CRIT_CHANCE, CRIT_MULT = 0.10, 1.5   # Balance.Melee, the Crit upgrades' level 0
+ENEMY_LAND = 0.78      # world_sim PLAYER.enemyLand: the share of enemy attacks that land in the game
 
 # Config/Upgrades steps a level
 UP = {"Health": 0.05, "Defense": -0.01, "Attack": 0.03, "AttackSpeed": -0.015,
@@ -88,6 +89,7 @@ def fight(rng, weapon, enemy, up, taken_mult):
     while na + enemy["windup"] < end:
         taken += max(1, math.floor(enemy["damage"] * taken_mult + 0.5))
         na += enemy["cooldown"]
+    taken *= ENEMY_LAND
     return end - ENGAGE, taken
 
 

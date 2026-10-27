@@ -45,7 +45,7 @@ Infuse.REACH_PER_CORE = 0.05
 -- multiplied by its world's offense scale, x2 / x8 / x32 / x128... (see Config/Leveling). Tier 2 follows
 -- World 2's weapons x0.8 (2026-10-24, the rescale: a maxed World 2 player near 1,000 DPS): 819 x 1.1;
 -- tier 3 World 3's x0.63 then x1.15 (2026-10-24, near 12,000): 8,277 x 1.1.
-Infuse.DPS = { 104.5, 189.2, 381.7, 763.4, 1526.8, 3053.6, 6107.2, 12214.4 } -- damage per second at 1..8 cores (trial numbers)
+Infuse.DPS = { 124.3, 229.9, 462, 924, 1848, 3696, 7392, 14784 } -- damage per second at 1..8 cores (trial numbers)
 
 export type Tier = { cores: number, damage: number, cooldown: number, reach: number, speedBonus: number, reachBonus: number }
 

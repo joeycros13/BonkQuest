@@ -54,6 +54,7 @@ def main():
     files = {}
     changes = []
 
+    weapons_text = (SRC / "Weapons.luau").read_text(encoding="utf-8")
     # --- enemies ---------------------------------------------------------------
     for n, fname in WORLD_FILES.items():
         path = SRC / "Worlds" / f"{fname}.luau"
@@ -73,6 +74,8 @@ def main():
                 if "exp" in e:
                     text, span = sub_in(text, span, r"exp = \d+,", f"exp = {e['exp']},", changes, f"{eid} exp {e['exp']}")
                 for dr in items(e.get("drops", {})):
+                    if not re.search(r"\n\t" + dr["weapon"] + r" = \{", weapons_text):
+                        continue  # a weapon still to be made (rescale.py's WORLD1_NEW)
                     text, span = sub_in(text, span, r'(\{ weapon = "' + dr["weapon"] + r'", chance = )[\d.]+',
                                         r"\g<1>" + num(dr["chance"]), changes, f"{eid} drop {dr['weapon']} {dr['chance']}")
         files[path] = text

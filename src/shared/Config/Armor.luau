@@ -78,7 +78,7 @@ Armor.Defs = {
 		sell = 40,
 		order = 0,
 		rarity = "Common",
-		level = 3,
+		level = 7,
 		coins = 500,
 		recipe = {
 		},
@@ -94,8 +94,8 @@ Armor.Defs = {
 		sell = 62,
 		order = 1,
 		rarity = "Uncommon",
-		level = 7,
-		coins = 75,
+		level = 12,
+		coins = 900,
 		recipe = {
 			{ id = "ChickenFeather", count = 10 },
 			{ id = "BullHide", count = 3 },

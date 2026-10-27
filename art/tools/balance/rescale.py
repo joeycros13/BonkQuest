@@ -73,7 +73,7 @@ GATHER_YIELD = 1            # every node gives one of its material a break (2-3 
 # its level 5)
 ARMOR_CHANGES = {
     # no Stone (2026-10-26): the pickaxe only comes at Dale's step 5, after the bulls the set is for
-    "FarmhandsGear": {"coins": 75},
+    "FarmhandsGear": {"coins": 900},
     "WoodlandHide": {"RedwoodLog": 15},
     "HeartwoodBark": {"RedwoodLog": 20},
     "CaveRunner": {"IronOre": 18},
@@ -129,23 +129,51 @@ BOSS_LEGENDARY_CHANCE = 0.02
 # about 10 DPS and the enemies were all alike; the first weapon should do very little, chickens have
 # very little health, the Bull a big step up that kills a player without the Machete and leaves one
 # with it and the coin set at 80-90%) -----------------------------------------------------------------
-WORLD1_DPS = {"Dagger": 10, "Sickle": 16, "Machete": 26, "Pitchfork": 33, "Shovel": 42, "Scythe": 54,
-              "WeathervaneSpear": 66, "PumpkinMace": 75, "CornCob": 95, "RustyBlade": 9}
-# the chickens' drops as they were before the quartering (the user): the Sickle 20%, the Machete 5%
-WORLD1_DROPS = {("Chicken", "Sickle"): 0.20, ("Chicken", "Machete"): 0.05}
+# Three weapons per enemy (the user's third round): a common one that makes its own tier quicker,
+# one that just beats the next tier, and a rare one that beats the next tier easily, which the next
+# enemy up drops again as its common one. So the ladder is
+#   Chicken: Sickle 20% (quicker chickens), Machete 6% (just beats a Bull), Pitchfork 1% (easy Bulls)
+#   Bull:    Pitchfork 20%, Shovel 6% (just beats a Stallion), the new Rare 1% (easy Stallions)
+#   Stallion: the new Rare 20%, Scythe 6% (just beats the King), the new Epic 1% (easy King)
+#   King:    the new Epic 20%, Pumpkin King's Mace 2%, Corn Cob 0.1%
+# with the Weathervane Spear (Dale's) between the new Epic and the Mace. The "just beats" weapons are
+# the ones the enemies are solved against (WORLD1_FIGHTS); the "easily" ones are solved here for a
+# fight that takes WORLD1_EASY's share at the same level and armour; the rest step from them.
+WORLD1_DPS = {"Dagger": 10, "Sickle": 16, "Machete": 26, "RustyBlade": 9}
+WORLD1_EASY = {"Pitchfork": ("Bull", 0.55), "W1Rare": ("Stallion", 0.55), "W1Epic": ("BossScarecrow", 0.55)}
+WORLD1_STEP = {"Shovel": ("Pitchfork", 1.15), "Scythe": ("W1Rare", 1.15),
+               "WeathervaneSpear": ("W1Epic", 1.1), "PumpkinMace": ("W1Epic", 1.2), "CornCob": ("W1Epic", 1.5)}
+# the two new weapons until they're designed (the canvas): placeholder ids, stats like their neighbours;
+# apply_rescale.py leaves out anything Config/Weapons doesn't have yet
+WORLD1_NEW = {"W1Rare": {"name": "World 1 Rare", "rarity": "Rare", "cooldown": 1.0, "hitTime": 0.55,
+                         "handed": 2, "price": 1100, "sell": 90},
+              "W1Epic": {"name": "World 1 Epic", "rarity": "Epic", "cooldown": 1.1, "hitTime": 0.5,
+                         "handed": 2, "price": 2600, "sell": 240}}
+WORLD1_DROP_TABLE = {
+    "Chicken": {"Sickle": 0.20, "Machete": 0.06, "Pitchfork": 0.01},
+    "Bull": {"Pitchfork": 0.20, "Shovel": 0.06, "W1Rare": 0.01},
+    "Stallion": {"W1Rare": 0.20, "Scythe": 0.06, "W1Epic": 0.01},
+    "BossScarecrow": {"W1Epic": 0.20, "PumpkinMace": 0.02, "CornCob": 0.001},
+}
 # each world's coin set (the user: a worse set bought with coins alone, from a decent number of kills
 # of its first enemy), first in the Crafter's list
 COIN_SETS = {1: {"PatchworkVest": {"id": "PatchworkVest", "name": "Patchwork Vest", "world": 1, "order": 0,
-                                   "rarity": "Common", "level": 3, "coins": 500, "recipe": {},
+                                   "rarity": "Common", "level": 7, "coins": 500, "recipe": {},
                                    "defense": 0.05, "health": 60, "sell": 40}}}
 # and Farmhand's Gear buffed (the user): it is what makes the Bulls a fair fight
+# (its second round: level 12 and 900 coins, so the Patchwork Vest carries a player from level 7 to 12)
 WORLD1_ARMOR = {"FarmhandsGear": {"health": 220, "defense": 0.12}}
 # World 1's fights, each solved for the enemy's damage: (hp, weapon, level, armour, share of max HP taken)
 WORLD1_FIGHTS = {
     "Chicken": (35, "Dagger", 1, None, 0.55),          # the first fight: at least half your health
-    "Bull": (240, "Machete", 5, "PatchworkVest", 0.85),  # 80-90% with the Machete and the coin set
-    "Stallion": (450, "Shovel", 11, "FarmhandsGear", 0.65),
-    "BossScarecrow": (700, "Scythe", 14, "FarmhandsGear", 0.85),
+    # (the user's second round, from their playtest) level 7 with the Machete: 75% with the Patchwork
+    # Vest, dead without it
+    "Bull": (240, "Machete", 7, "PatchworkVest", 0.75),
+    # level 12 with the Shovel: Farmhand's Gear needed (about 70% with it, dead in the Patchwork Vest)
+    "Stallion": (450, "Shovel", 12, "FarmhandsGear", 0.70),
+    # the Scythe leaves a quarter of your health, in Farmhand's Gear at level 15 (Harvest Knight needs the
+    # King's Lucky Horseshoe, so he's fought before it)
+    "BossScarecrow": (700, "Scythe", 15, "FarmhandsGear", 0.75),
     "CornWraith": (500, "Shovel", 12, "FarmhandsGear", 0.7),
 }
 
@@ -263,35 +291,71 @@ def main(knobs=KNOBS, quiet=False):
         d["quest"]["steps"] = quest_steps(n, knobs[n].get("questExp", 1.0))
     log.append("gathering 1 a break; armour counts; gates; questlines (no level steps)")
 
+    # enemies (before the weapons: World 1's ladder is solved from its fights)
+    for n, d in data.items():
+        cfg = d["config"]
+        for group, is_boss in ((cfg["enemies"], False), (cfg["bosses"], True)):
+            for eid, e in group.items():
+                m = e["melee"]
+                move = m["move"]
+                if move in TIMING:
+                    w0, c0 = TIMING[move]
+                    log.append(f"enemy {eid} timing: windup {m['windup']} -> {w0}, cooldown {m['cooldown']} -> {c0}")
+                    m["windup"], m["cooldown"] = w0, c0
+                # drops
+                if n == 1 and eid in WORLD1_DROP_TABLE:
+                    e["drops"] = {str(k): {"weapon": wid, "chance": c}
+                                  for k, (wid, c) in enumerate(WORLD1_DROP_TABLE[eid].items(), 1)}
+                    log.append(f"drops {eid}: {WORLD1_DROP_TABLE[eid]}")
+                else:
+                    for dr in items(e.get("drops", {})):
+                        old = dr["chance"]
+                        if old <= 0.001:
+                            continue  # secrets stay 0.1%
+                        if is_boss and dr["weapon"] == BOSS_WEAPON[n]:
+                            dr["chance"] = BOSS_LEGENDARY_CHANCE
+                        else:
+                            dr["chance"] = round(old * DROP_SHARE, 4)
+                        log.append(f"drop {eid} -> {dr['weapon']}: {old} -> {dr['chance']}")
+                e["exp"] = max(1, round(e.get("exp", 0) * knobs[n]["exp"]))
+                e["coins"] = {"min": max(1, round(e["coins"]["min"] * knobs[n]["coins"])),
+                              "max": max(1, round(e["coins"]["max"] * knobs[n]["coins"]))}
+
     # weapons, world by world
     anchor = WORLD1_COMMON
     new_dps = {}
+    for wid, w in WORLD1_NEW.items():
+        data[1]["weapons"][wid] = dict(w, id=wid, world=1, damage=1, reach=7, arc=90, maxTargets=2, swing="Sweep",
+                                       order=max(v.get("order", 0) for v in data[1]["weapons"].values()) + 1)
     for n in (1, 2, 3):
         ws = data[n]["weapons"]
-        by_rarity = {}
-        for wid, w in ws.items():
-            if w.get("starter") or w.get("rarity") in ("Relic", "Transcendent") or wid in (QUEST_WEAPON[n], BOSS_WEAPON[n]):
-                continue
-            by_rarity.setdefault(w["rarity"], []).append(wid)
-        targets = {}
-        for rarity, ids in by_rarity.items():
-            mean = sum(dps(ws[i]) for i in ids) / len(ids)
-            for i in ids:
-                # weapons sharing a rarity keep their spread round the rung
-                share = dps(ws[i]) / mean
-                targets[i] = anchor * LADDER[rarity] * share
-        targets[QUEST_WEAPON[n]] = anchor * QUEST_LEGENDARY
-        targets[BOSS_WEAPON[n]] = anchor * BOSS_LEGENDARY
         if n == 1:
-            targets = dict(WORLD1_DPS)
-        for wid, t in targets.items():
-            w = ws[wid]
-            if w.get("ignoreArmor"):
-                t *= ARMOR_PIERCE
-            dmg = max(1, round(t * w["cooldown"]))
-            log.append(f"weapon {wid} (W{n} {w['rarity']}): {w['damage']} -> {dmg}  ({dps(w):.1f} -> {dmg / w['cooldown']:.1f} DPS)")
-            w["damage"] = dmg
-            new_dps[wid] = dmg / w["cooldown"]
+            solve_world1(data, log)
+            for wid, w in ws.items():
+                new_dps[wid] = dps(w)
+        else:
+            by_rarity = {}
+            for wid, w in ws.items():
+                if w.get("starter") or w.get("rarity") in ("Relic", "Transcendent") or wid in (QUEST_WEAPON[n], BOSS_WEAPON[n]):
+                    continue
+                by_rarity.setdefault(w["rarity"], []).append(wid)
+            targets = {}
+            for rarity, ids in by_rarity.items():
+                mean = sum(dps(ws[i]) for i in ids) / len(ids)
+                for i in ids:
+                    # weapons sharing a rarity keep their spread round the rung
+                    share = dps(ws[i]) / mean
+                    targets[i] = anchor * LADDER[rarity] * share
+            targets[QUEST_WEAPON[n]] = anchor * QUEST_LEGENDARY
+            targets[BOSS_WEAPON[n]] = anchor * BOSS_LEGENDARY
+            for wid, t in targets.items():
+                w = ws[wid]
+                if w.get("ignoreArmor"):
+                    t *= ARMOR_PIERCE
+                dmg = max(1, round(t * w["cooldown"]))
+                log.append(f"weapon {wid} (W{n} {w['rarity']}): {w['damage']} -> {dmg}  ({dps(w):.1f} -> {dmg / w['cooldown']:.1f} DPS)")
+                w["damage"] = dmg
+                new_dps[wid] = dmg / w["cooldown"]
         # the Worldheart tier of this world: its secret x1.1
         for wid, w in ws.items():
             if w.get("rarity") == "Transcendent":
@@ -301,38 +365,10 @@ def main(knobs=KNOBS, quiet=False):
         anchor = new_dps[BOSS_WEAPON[n]] * NEXT_WORLD_STEP
     # carried weapons (world N+1's dump lists the last world's for --from): keep them in step
     for n in (2, 3):
-        for wid, w in data[n]["weapons"].items():
+        for wid, w in list(data[n]["weapons"].items()):
             for m in (1, 2):
                 if m < n and wid in data[m]["weapons"]:
                     w["damage"] = data[m]["weapons"][wid]["damage"]
-
-    # enemies
-    for n, d in data.items():
-        cfg = d["config"]
-        for group, is_boss in ((cfg["enemies"], False), (cfg["bosses"], True)):
-            for eid, e in group.items():
-                m = e["melee"]
-                moves = m.get("moves")
-                move = m["move"]
-                if move in TIMING:
-                    w0, c0 = TIMING[move]
-                    log.append(f"enemy {eid} timing: windup {m['windup']} -> {w0}, cooldown {m['cooldown']} -> {c0}")
-                    m["windup"], m["cooldown"] = w0, c0
-                # drops
-                for dr in items(e.get("drops", {})):
-                    old = dr["chance"]
-                    if old <= 0.001:
-                        continue  # secrets stay 0.1%
-                    if (eid, dr["weapon"]) in WORLD1_DROPS:
-                        dr["chance"] = WORLD1_DROPS[(eid, dr["weapon"])]
-                    elif is_boss and dr["weapon"] == BOSS_WEAPON[n]:
-                        dr["chance"] = BOSS_LEGENDARY_CHANCE
-                    else:
-                        dr["chance"] = round(old * DROP_SHARE, 4)
-                    log.append(f"drop {eid} -> {dr['weapon']}: {old} -> {dr['chance']}")
-                e["exp"] = max(1, round(e.get("exp", 0) * knobs[n]["exp"]))
-                e["coins"] = {"min": max(1, round(e["coins"]["min"] * knobs[n]["coins"])),
-                              "max": max(1, round(e["coins"]["max"] * knobs[n]["coins"]))}
     calibrate(data, log)
     if not quiet:
         print("\n".join(log))
@@ -341,6 +377,81 @@ def main(knobs=KNOBS, quiet=False):
 
 # the base player of each world: (level, base weapon, armour worn, upgrade level)
 BASE_PLAYER = {1: (1, "Dagger", None, 0), 2: (25, "PumpkinMace", "HarvestKnight", 3), 3: (50, "HeartwoodStaff", "HeartwoodBark", 6)}
+
+
+def solve_world1(data, log, runs=4000):
+    """World 1's ladder and enemies together (WORLD1_DPS / _EASY / _STEP / _FIGHTS): each enemy's damage
+    from the fight with its "just beats it" weapon, then the weapon that beats it easily, solved for
+    WORLD1_EASY's share of the same player's health, then the next rungs from that one."""
+    import random, statistics
+    import base_fights as B
+    ws, armor, lv = data[1]["weapons"], data[1]["armor"], data[1]["leveling"]
+    cfg = data[1]["config"]
+    enemies = dict(cfg["enemies"]); enemies.update(cfg["bosses"])
+
+    def set_dps(wid, t, why):
+        w = ws[wid]
+        dmg = max(1, round(t * w["cooldown"]))
+        log.append(f"weapon {wid} (W1 {w['rarity']}): {w['damage']} -> {dmg}  ({dps(w):.1f} -> {dmg / w['cooldown']:.1f} DPS; {why})")
+        w["damage"] = dmg
+
+    def player(eid):
+        _, _, level, aid, _ = WORLD1_FIGHTS[eid]
+        arm = armor[aid] if aid else {"health": 0, "defense": 0}
+        return B.max_hp(lv, level, arm["health"], 0), 1 - arm["defense"], level, aid
+
+    def stats(eid):
+        x = enemies[eid]
+        return {"hp": x["hp"], "armor": x["melee"].get("armor", 0), "windup": x["melee"]["windup"],
+                "cooldown": x["melee"]["cooldown"], "damage": x["melee"]["damage"]}
+
+    def taken(eid, w):
+        hp, mult, _, _ = player(eid)
+        rng = random.Random(1)
+        return statistics.mean(B.fight(rng, w, stats(eid), 0, mult)[1] for _ in range(runs)) / hp
+
+    def solve_enemy(eid):
+        x = enemies[eid]
+        new_hp, wid, level, aid, share = WORLD1_FIGHTS[eid]
+        x["hp"] = new_hp
+        hp = player(eid)[0]
+        lo, hi = 1, hp
+        for _ in range(30):
+            mid = (lo + hi) / 2
+            x["melee"]["damage"] = mid
+            lo, hi = (mid, hi) if taken(eid, ws[wid]) < share else (lo, mid)
+        dmg = round((lo + hi) / 2)
+        x["melee"]["damage"] = dmg
+        log.append(f"enemy {eid} (W1): hp {new_hp}, damage {dmg}  ({wid}, level {level}, {aid or 'no armour'}: "
+                   f"~{share:.0%} of {hp:,.0f} HP)")
+
+    def solve_easy(wid):
+        eid, share = WORLD1_EASY[wid]
+        w = dict(ws[wid])
+        lo, hi = 1, 2000
+        for _ in range(30):
+            mid = (lo + hi) / 2
+            w["damage"] = mid * w["cooldown"]
+            lo, hi = (lo, mid) if taken(eid, w) < share else (mid, hi)
+        set_dps(wid, (lo + hi) / 2, f"beats the {eid} easily: ~{share:.0%} taken")
+
+    def step(wid):
+        base, mult = WORLD1_STEP[wid]
+        set_dps(wid, dps(ws[base]) * mult, f"{base} x{mult}")
+
+    for wid, t in WORLD1_DPS.items():
+        set_dps(wid, t, "set")
+    # the order the ladder climbs in: each enemy before the weapon that beats it easily
+    solve_enemy("Chicken")
+    solve_enemy("Bull"); solve_easy("Pitchfork"); step("Shovel")
+    solve_enemy("Stallion"); solve_enemy("CornWraith"); solve_easy("W1Rare"); step("Scythe")
+    solve_enemy("BossScarecrow"); solve_easy("W1Epic")
+    for wid in ("WeathervaneSpear", "PumpkinMace", "CornCob"):
+        step(wid)
+    # the check: every fight with the ladder's weapons
+    for eid in WORLD1_FIGHTS:
+        for wid in [w for w, (e, _) in WORLD1_EASY.items() if e == eid] + [WORLD1_FIGHTS[eid][1]]:
+            log.append(f"  check {eid} with {wid}: {taken(eid, ws[wid]):.0%} of max HP taken")
 
 
 def calibrate(data, log, runs=4000):
@@ -353,28 +464,6 @@ def calibrate(data, log, runs=4000):
     for d in data.values():
         weapons.update(d["weapons"]); armor.update(d["armor"])
     lv = data[1]["leveling"]
-    # World 1: every enemy from its own fight (WORLD1_FIGHTS)
-    cfg1 = data[1]["config"]
-    for group in (cfg1["enemies"], cfg1["bosses"]):
-        for eid, x in group.items():
-            if eid not in WORLD1_FIGHTS:
-                continue
-            new_hp, wid, level, aid, share = WORLD1_FIGHTS[eid]
-            arm = armor[aid] if aid else {"health": 0, "defense": 0}
-            hp = B.max_hp(lv, level, arm["health"], 0)
-            e = {"hp": new_hp, "armor": x["melee"].get("armor", 0), "windup": x["melee"]["windup"],
-                 "cooldown": x["melee"]["cooldown"]}
-            rng = random.Random(1)
-            lo, hi = 1, hp
-            for _ in range(30):
-                mid = (lo + hi) / 2
-                e["damage"] = mid
-                got = statistics.mean(B.fight(rng, weapons[wid], e, 0, 1 - arm["defense"])[1] for _ in range(runs)) / hp
-                lo, hi = (mid, hi) if got < share else (lo, mid)
-            dmg = round((lo + hi) / 2)
-            log.append(f"enemy {eid} (W1): hp {x['hp']} -> {new_hp}, damage {x['melee']['damage']} -> {dmg}"
-                       f"  ({wid}, level {level}, {aid or 'no armour'}: ~{share:.0%} of {hp:,.0f} HP)")
-            x["hp"], x["melee"]["damage"] = new_hp, dmg
     for n in (2, 3):
         cfg = data[n]["config"]
         small_id, length, share = BASE[n]
