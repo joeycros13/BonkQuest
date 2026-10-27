@@ -1,0 +1,293 @@
+{
+ "IronPlate": {
+  "pieces": {
+   "Belt": {
+    "offset": [
+     -0.0,
+     -0.94,
+     0.0
+    ],
+    "size": [
+     2.25,
+     0.16,
+     1.25
+    ],
+    "colour": "5b4a3a",
+    "bone": "Torso"
+   },
+   "BracerL": {
+    "offset": [
+     -1.5,
+     -0.6,
+     0.0
+    ],
+    "size": [
+     1.13,
+     0.52,
+     1.13
+    ],
+    "colour": "9aa0a8",
+    "bone": "LeftArm"
+   },
+   "BracerR": {
+    "offset": [
+     1.5,
+     -0.6,
+     0.0
+    ],
+    "size": [
+     1.13,
+     0.52,
+     1.13
+    ],
+    "colour": "9aa0a8",
+    "bone": "RightArm"
+   },
+   "Buckle": {
+    "offset": [
+     -0.0,
+     -0.94,
+     -0.655
+    ],
+    "size": [
+     0.26,
+     0.22,
+     0.06
+    ],
+    "colour": "c9a227",
+    "bone": "Torso"
+   },
+   "Fauld": {
+    "offset": [
+     -0.0,
+     -1.12,
+     0.0
+    ],
+    "size": [
+     2.13,
+     0.28,
+     1.13
+    ],
+    "colour": "7d828b",
+    "bone": "Torso"
+   },
+   "GreaveL": {
+    "offset": [
+     -0.5,
+     -2.44,
+     0.0
+    ],
+    "size": [
+     1.13,
+     0.72,
+     1.13
+    ],
+    "colour": "9aa0a8",
+    "bone": "LeftLeg"
+   },
+   "GreaveR": {
+    "offset": [
+     0.5,
+     -2.44,
+     0.0
+    ],
+    "size": [
+     1.13,
+     0.72,
+     1.13
+    ],
+    "colour": "9aa0a8",
+    "bone": "RightLeg"
+   },
+   "KneeL": {
+    "offset": [
+     -0.5,
+     -2.04,
+     -0.615
+    ],
+    "size": [
+     0.62,
+     0.4,
+     0.1
+    ],
+    "colour": "7d828b",
+    "bone": "LeftLeg"
+   },
+   "KneeR": {
+    "offset": [
+     0.5,
+     -2.04,
+     -0.615
+    ],
+    "size": [
+     0.62,
+     0.4,
+     0.1
+    ],
+    "colour": "7d828b",
+    "bone": "RightLeg"
+   },
+   "LameL": {
+    "offset": [
+     -1.5,
+     0.33,
+     0.0
+    ],
+    "size": [
+     1.13,
+     0.18,
+     1.13
+    ],
+    "colour": "7d828b",
+    "bone": "LeftArm"
+   },
+   "LameR": {
+    "offset": [
+     1.5,
+     0.33,
+     0.0
+    ],
+    "size": [
+     1.13,
+     0.18,
+     1.13
+    ],
+    "colour": "7d828b",
+    "bone": "RightArm"
+   },
+   "PauldronL": {
+    "offset": [
+     -1.5,
+     0.78,
+     0.0
+    ],
+    "size": [
+     1.32,
+     0.72,
+     1.32
+    ],
+    "colour": "9aa0a8",
+    "bone": "LeftArm"
+   },
+   "PauldronR": {
+    "offset": [
+     1.5,
+     0.78,
+     0.0
+    ],
+    "size": [
+     1.32,
+     0.72,
+     1.32
+    ],
+    "colour": "9aa0a8",
+    "bone": "RightArm"
+   },
+   "Plate": {
+    "offset": [
+     -0.0,
+     0.04,
+     0.0
+    ],
+    "size": [
+     2.13,
+     2.08,
+     1.13
+    ],
+    "colour": "9aa0a8",
+    "bone": "Torso"
+   },
+   "Ridge": {
+    "offset": [
+     -0.0,
+     0.0,
+     -0.59
+    ],
+    "size": [
+     0.12,
+     1.8,
+     0.05
+    ],
+    "colour": "c3c8cf",
+    "bone": "Torso"
+   },
+   "Rivets": {
+    "offset": [
+     -0.0,
+     0.08,
+     -0.03
+    ],
+    "size": [
+     3.09,
+     1.65,
+     1.26
+    ],
+    "colour": "3a3d44",
+    "bone": "Torso"
+   },
+   "RivetsL": {
+    "offset": [
+     -1.5,
+     -0.6,
+     -0.58
+    ],
+    "size": [
+     0.8,
+     0.08,
+     0.04
+    ],
+    "colour": "3a3d44",
+    "bone": "LeftArm"
+   },
+   "RivetsR": {
+    "offset": [
+     1.5,
+     -0.6,
+     -0.58
+    ],
+    "size": [
+     0.8,
+     0.08,
+     0.04
+    ],
+    "colour": "3a3d44",
+    "bone": "RightArm"
+   },
+   "SabatonL": {
+    "offset": [
+     -0.5,
+     -2.92,
+     0.0
+    ],
+    "size": [
+     1.18,
+     0.24,
+     1.18
+    ],
+    "colour": "5b5f68",
+    "bone": "LeftLeg"
+   },
+   "SabatonR": {
+    "offset": [
+     0.5,
+     -2.92,
+     0.0
+    ],
+    "size": [
+     1.18,
+     0.24,
+     1.18
+    ],
+    "colour": "5b5f68",
+    "bone": "RightLeg"
+   }
+  },
+  "size": [
+   4.32,
+   4.18,
+   1.345
+  ],
+  "minZ": -3.04,
+  "maxZ": 1.14
+ }
+}

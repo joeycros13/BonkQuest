@@ -93,6 +93,10 @@ Weapons.HOLDS = {
 	Mace = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
 	LanternFlail = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
 	MarshmallowStick = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
+	-- the Honeycomb Hammer (Rare, 2026-10-27): the one-handed hold, swung with the overhead CornBonk
+	HoneycombHammer = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
+	-- World 3's Copper Drill (Rare, 2026-10-27): the one-handed hold, the Dagger's Jab
+	CopperDrill = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
 	-- two-handers: the Pitchfork's hold
 	WoodsmansAxe = { hand = { 1.1, -0.9, -0.75 }, dir = { -0.75, 0.65, -0.2 }, roll = 0, two = 1 },
 	Greatclub = { hand = { 1.1, -0.9, -0.75 }, dir = { -0.75, 0.65, -0.2 }, roll = 0, two = 1 },

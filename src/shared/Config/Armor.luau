@@ -72,6 +72,7 @@ Armor.Defs = {
 	-- health; no model or icon yet, so it only changes the stats)
 	PatchworkVest = {
 		id = "PatchworkVest",
+		icon = "rbxassetid://83170628579779",
 		name = "Patchwork Vest",
 		blurb = "Scraps of sacking sewn into a vest. Bought, not crafted.",
 		world = 1,
@@ -127,6 +128,24 @@ Armor.Defs = {
 		health = 700,
 	},
 	-- ==================== World 2 (The Redwood Forest) ====================
+	-- World 2's coin set (2026-10-27, the user's pick on https://claude.ai/artifact/JfZ26WCcj2QYXq163LXaCV): rows of
+	-- pinecone scales; a step up from Harvest Knight, under Woodland Hide. Blender w2_armor_pinecone_build
+	PineconeScale = {
+		id = "PineconeScale",
+		icon = "rbxassetid://114824616394982",
+		name = "Pinecone Scale",
+		blurb = "Rows of pinecone scales on a mossy belt. Bought, not crafted.",
+		world = 2,
+		sell = 400,
+		order = 2.5,
+		rarity = "Uncommon",
+		level = 26,
+		coins = 5000,
+		recipe = {
+		},
+		defense = 0.21,
+		health = 1100,
+	},
 	WoodlandHide = {
 		id = "WoodlandHide",
 		icon = "rbxassetid://112957981852004",
@@ -170,6 +189,24 @@ Armor.Defs = {
 		regen = 0.0025,
 	},
 	-- ==================== World 3 (The Crystal Caverns), 2026-10-13 ====================
+	-- World 3's coin set (2026-10-27, the user's pick on https://claude.ai/artifact/JfZ26WCcj2QYXq163LXaCV): plain
+	-- riveted iron; a step up from Heartwood Bark, under Cave Runner. Blender w3_armor_ironplate_build
+	IronPlate = {
+		id = "IronPlate",
+		icon = "rbxassetid://140122534880082",
+		name = "Iron Plate",
+		blurb = "Plain riveted iron from the mine's smithy. Bought, not crafted.",
+		world = 3,
+		sell = 4000,
+		order = 4.5,
+		rarity = "Rare",
+		level = 52,
+		coins = 50000,
+		recipe = {
+		},
+		defense = 0.35,
+		health = 11000,
+	},
 	CaveRunner = {
 		id = "CaveRunner",
 		icon = "rbxassetid://114489790834583",

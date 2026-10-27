@@ -86,8 +86,10 @@ local World: WorldTypes.WorldDef = {
 			coins = { min = 215, max = 424 },
 			exp = 480,
 			drops = {
-				{ weapon = "BatwingBlade", chance = 0.05 },
-				{ weapon = "IronPickaxe", chance = 0.0125 },
+				-- (2026-10-27) World 1's pattern: a common drop for this tier, one that just beats the next, a rare one that beats it easily
+				{ weapon = "BatwingBlade", chance = 0.25 },
+				{ weapon = "IronPickaxe", chance = 0.08 },
+				{ weapon = "PebbleMallet", chance = 0.015 },
 			},
 			materials = { { id = "BatWing", chance = 0.5, min = 1, max = 1 } },
 		},
@@ -103,9 +105,9 @@ local World: WorldTypes.WorldDef = {
 			coins = { min = 407, max = 803 },
 			exp = 915,
 			drops = {
-				{ weapon = "IronPickaxe", chance = 0.05 },
-				{ weapon = "PebbleMallet", chance = 0.0375 },
-				{ weapon = "GoldGauntlets", chance = 0.02 },
+				{ weapon = "PebbleMallet", chance = 0.15 },
+				{ weapon = "GoldGauntlets", chance = 0.05 },
+				{ weapon = "CopperDrill", chance = 0.01 },
 			},
 			materials = { { id = "GolemPebble", chance = 0.5, min = 1, max = 1 } },
 		},
@@ -121,9 +123,9 @@ local World: WorldTypes.WorldDef = {
 			coins = { min = 578, max = 1150 },
 			exp = 1312,
 			drops = {
-				{ weapon = "GoldGauntlets", chance = 0.0375 },
-				{ weapon = "GeodeGlaive", chance = 0.025 },
-				{ weapon = "EmberCoalMaul", chance = 0.02 },
+				{ weapon = "CopperDrill", chance = 0.1 },
+				{ weapon = "EmberCoalMaul", chance = 0.03 },
+				{ weapon = "GeodeGlaive", chance = 0.005 },
 			},
 			materials = { { id = "GolemCrystal", chance = 0.5, min = 1, max = 1 } },
 		},
@@ -162,8 +164,7 @@ local World: WorldTypes.WorldDef = {
 			coins = { min = 2486, max = 4928 },
 			exp = 5640,
 			drops = {
-				{ weapon = "GeodeGlaive", chance = 0.05 },
-				{ weapon = "EmberCoalMaul", chance = 0.05 },
+				{ weapon = "GeodeGlaive", chance = 0.08 },
 				-- Legendary: the Queen's own fang
 				{ weapon = "QueensFang", chance = 0.02 },
 				-- the secret Rock Candy Club (hidden in the Index until found)

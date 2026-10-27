@@ -103,8 +103,10 @@ local World: WorldTypes.WorldDef = {
 			coins = { min = 39, max = 78 },
 			exp = 67,
 			drops = {
-				{ weapon = "Hatchet", chance = 0.05 },
-				{ weapon = "Cleaver", chance = 0.0125 },
+				-- (2026-10-27) World 1's pattern: a common drop for this tier, one that just beats the next, a rare one that beats it easily
+				{ weapon = "Hatchet", chance = 0.25 },
+				{ weapon = "Quarterstaff", chance = 0.08 },
+				{ weapon = "Cleaver", chance = 0.015 },
 			},
 			-- crafting materials (Config/Materials): the first armour set
 			materials = { { id = "FoxFur", chance = 0.5, min = 1, max = 1 } },
@@ -121,9 +123,9 @@ local World: WorldTypes.WorldDef = {
 			coins = { min = 73, max = 151 },
 			exp = 123,
 			drops = {
-				{ weapon = "Cleaver", chance = 0.05 },
-				{ weapon = "Quarterstaff", chance = 0.0375 },
-				{ weapon = "Mace", chance = 0.02 },
+				{ weapon = "Cleaver", chance = 0.15 },
+				{ weapon = "Mace", chance = 0.05 },
+				{ weapon = "HoneycombHammer", chance = 0.01 },
 			},
 			materials = { { id = "BoarTusk", chance = 0.5, min = 1, max = 1 } },
 		},
@@ -139,9 +141,9 @@ local World: WorldTypes.WorldDef = {
 			coins = { min = 106, max = 213 },
 			exp = 179,
 			drops = {
-				{ weapon = "Mace", chance = 0.0375 },
-				{ weapon = "WoodsmansAxe", chance = 0.025 },
-				{ weapon = "Greatclub", chance = 0.02 },
+				{ weapon = "HoneycombHammer", chance = 0.1 },
+				{ weapon = "Greatclub", chance = 0.03 },
+				{ weapon = "WoodsmansAxe", chance = 0.005 },
 			},
 			-- the second armour set
 			materials = { { id = "BearClaw", chance = 0.5, min = 1, max = 1 } },
@@ -180,8 +182,7 @@ local World: WorldTypes.WorldDef = {
 			coins = { min = 459, max = 913 },
 			exp = 773,
 			drops = {
-				{ weapon = "WoodsmansAxe", chance = 0.05 },
-				{ weapon = "Greatclub", chance = 0.05 },
+				{ weapon = "WoodsmansAxe", chance = 0.08 },
 				-- Legendary: the treant's living heart
 				{ weapon = "HeartwoodStaff", chance = 0.02 },
 				-- the secret Marshmallow Stick (hidden in the Index until found)

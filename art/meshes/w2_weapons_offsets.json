@@ -867,5 +867,83 @@
   "maxZ": 0.357,
   "weaponId": "LanternFlail",
   "length": 5.16
+ },
+ "HoneycombHammer": {
+  "pieces": {
+   "Cells": {
+    "offset": [
+     -0.0,
+     0.0,
+     -2.6
+    ],
+    "size": [
+     1.2006,
+     1.63,
+     1.2132
+    ],
+    "colour": "ca8b13"
+   },
+   "Comb": {
+    "offset": [
+     -0.0,
+     0.0,
+     -2.6
+    ],
+    "size": [
+     1.32,
+     1.56,
+     1.1432
+    ],
+    "colour": "f2b72e"
+   },
+   "Drips": {
+    "offset": [
+     0.0274,
+     -0.1527,
+     -1.7234
+    ],
+    "size": [
+     0.746,
+     1.2065,
+     0.73
+    ],
+    "colour": "f59f14"
+   },
+   "Grip": {
+    "offset": [
+     -0.0,
+     0.0213,
+     0.001
+    ],
+    "size": [
+     0.3087,
+     0.3685,
+     0.8455
+    ],
+    "colour": "6b3d1c"
+   },
+   "Handle": {
+    "offset": [
+     -0.0,
+     0.0,
+     -0.635
+    ],
+    "size": [
+     0.3637,
+     0.42,
+     3.43
+    ],
+    "colour": "dab37d"
+   }
+  },
+  "size": [
+   1.32,
+   1.63,
+   4.287
+  ],
+  "minZ": -0.815,
+  "maxZ": 0.815,
+  "weaponId": "HoneycombHammer",
+  "length": 4.287
  }
 }

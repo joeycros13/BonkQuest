@@ -157,11 +157,41 @@ WORLD1_DROP_TABLE = {
     "Stallion": {"FarriersHammer": 0.10, "Scythe": 0.03, "CrowbaneHoe": 0.005},
     "BossScarecrow": {"CrowbaneHoe": 0.08, "PumpkinMace": 0.02, "CornCob": 0.001},
 }
+# Worlds 2 and 3 the same way (2026-10-27, the user's picks on https://claude.ai/artifact/F1P7JW8tuzRYJRE2zfhAWx):
+# each gets a 7th regular weapon, a Rare that beats the elite easily (the medium enemy's rare drop and the
+# elite's common one, like the Farrier's Hammer), and World 1's drop rates; the two Epics split as the
+# Scythe and the Crowbane Hoe do (the stronger one is the elite's rare drop and the boss's common one)
+NEW_WEAPONS = {
+    2: {"HoneycombHammer": {"name": "Honeycomb Hammer", "rarity": "Rare", "cooldown": 1.0, "hitTime": 0.6, "handed": 1,
+                            "reach": 6.5, "arc": 90, "maxTargets": 3, "swing": "CornBonk", "price": 11000, "sell": 900, "order": 13.5}},
+    3: {"CopperDrill": {"name": "Copper Drill", "rarity": "Rare", "cooldown": 0.7, "hitTime": 0.5, "handed": 1,
+                        "reach": 7.5, "arc": 50, "maxTargets": 2, "swing": "Jab", "price": 110000, "sell": 9000, "order": 25.5}},
+}
+NEW_RUNG = 1.3   # of the world's Common: between its Rare (1.25) and its Epics (1.4)
+DROP_TABLES = {
+    1: WORLD1_DROP_TABLE,
+    2: {"Fox": {"Hatchet": 0.25, "Quarterstaff": 0.08, "Cleaver": 0.015},   # the Cleaver is the stronger Uncommon
+        "Boar": {"Cleaver": 0.15, "Mace": 0.05, "HoneycombHammer": 0.01},
+        "Bear": {"HoneycombHammer": 0.10, "Greatclub": 0.03, "WoodsmansAxe": 0.005},
+        "ElderTreant": {"WoodsmansAxe": 0.08, "HeartwoodStaff": 0.02, "MarshmallowStick": 0.001}},
+    3: {"CaveBat": {"BatwingBlade": 0.25, "IronPickaxe": 0.08, "PebbleMallet": 0.015},
+        "PebbleGolem": {"PebbleMallet": 0.15, "GoldGauntlets": 0.05, "CopperDrill": 0.01},
+        "CrystalGolem": {"CopperDrill": 0.10, "EmberCoalMaul": 0.03, "GeodeGlaive": 0.005},
+        "SpiderQueen": {"GeodeGlaive": 0.08, "QueensFang": 0.02, "RockCandyClub": 0.001}},
+}
 # each world's coin set (the user: a worse set bought with coins alone, from a decent number of kills
 # of its first enemy), first in the Crafter's list
 COIN_SETS = {1: {"PatchworkVest": {"id": "PatchworkVest", "name": "Patchwork Vest", "world": 1, "order": 0,
                                    "rarity": "Common", "level": 7, "coins": 500, "recipe": {},
-                                   "defense": 0.05, "health": 60, "sell": 40}}}
+                                   "defense": 0.05, "health": 60, "sell": 40}},
+             # (2026-10-27, the user's picks on https://claude.ai/artifact/JfZ26WCcj2QYXq163LXaCV) a step up from the
+             # last world's best set, under the world's first crafted one
+             2: {"PineconeScale": {"id": "PineconeScale", "name": "Pinecone Scale", "world": 2, "order": 2.5,
+                                   "rarity": "Uncommon", "level": 26, "coins": 5000, "recipe": {},
+                                   "defense": 0.21, "health": 1100, "sell": 400}},
+             3: {"IronPlate": {"id": "IronPlate", "name": "Iron Plate", "world": 3, "order": 4.5,
+                               "rarity": "Rare", "level": 52, "coins": 50000, "recipe": {},
+                               "defense": 0.35, "health": 11000, "sell": 4000}}}
 # and Farmhand's Gear buffed (the user): it is what makes the Bulls a fair fight
 # (its second round: level 12 and 900 coins, so the Patchwork Vest carries a player from level 7 to 12)
 WORLD1_ARMOR = {"FarmhandsGear": {"health": 220, "defense": 0.12}}
@@ -305,10 +335,10 @@ def main(knobs=KNOBS, quiet=False):
                     log.append(f"enemy {eid} timing: windup {m['windup']} -> {w0}, cooldown {m['cooldown']} -> {c0}")
                     m["windup"], m["cooldown"] = w0, c0
                 # drops
-                if n == 1 and eid in WORLD1_DROP_TABLE:
-                    e["drops"] = {str(k): {"weapon": wid, "chance": c}
-                                  for k, (wid, c) in enumerate(WORLD1_DROP_TABLE[eid].items(), 1)}
-                    log.append(f"drops {eid}: {WORLD1_DROP_TABLE[eid]}")
+                if eid in DROP_TABLES.get(n, {}):
+                    table = DROP_TABLES[n][eid]
+                    e["drops"] = {str(k): {"weapon": wid, "chance": c} for k, (wid, c) in enumerate(table.items(), 1)}
+                    log.append(f"drops {eid}: {table}")
                 else:
                     for dr in items(e.get("drops", {})):
                         old = dr["chance"]
@@ -329,6 +359,9 @@ def main(knobs=KNOBS, quiet=False):
     for wid, w in WORLD1_NEW.items():
         data[1]["weapons"][wid] = dict(w, id=wid, world=1, damage=1, reach=7, arc=90, maxTargets=2, swing="Sweep",
                                        order=max(v.get("order", 0) for v in data[1]["weapons"].values()) + 1)
+    for n, new in NEW_WEAPONS.items():
+        for wid, w in new.items():
+            data[n]["weapons"][wid] = dict(w, id=wid, world=n, damage=1)
     for n in (1, 2, 3):
         ws = data[n]["weapons"]
         if n == 1:
@@ -340,6 +373,8 @@ def main(knobs=KNOBS, quiet=False):
             for wid, w in ws.items():
                 if w.get("starter") or w.get("rarity") in ("Relic", "Transcendent") or wid in (QUEST_WEAPON[n], BOSS_WEAPON[n]):
                     continue
+                if wid in NEW_WEAPONS.get(n, {}):
+                    continue  # its own rung (NEW_RUNG)
                 by_rarity.setdefault(w["rarity"], []).append(wid)
             targets = {}
             for rarity, ids in by_rarity.items():
@@ -348,6 +383,8 @@ def main(knobs=KNOBS, quiet=False):
                     # weapons sharing a rarity keep their spread round the rung
                     share = dps(ws[i]) / mean
                     targets[i] = anchor * LADDER[rarity] * share
+            for wid in NEW_WEAPONS.get(n, {}):
+                targets[wid] = anchor * NEW_RUNG
             targets[QUEST_WEAPON[n]] = anchor * QUEST_LEGENDARY
             targets[BOSS_WEAPON[n]] = anchor * BOSS_LEGENDARY
             for wid, t in targets.items():
