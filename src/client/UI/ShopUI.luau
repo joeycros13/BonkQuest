@@ -397,8 +397,35 @@ local function refresh()
 	end
 end
 
+-- Window/List scrolls (2026-10-26: World 1 sells 8 weapons, more than the 6 the window holds). Its canvas
+-- is the layout's content plus the UIPadding's room above and below (kept for a quest row's glow and ribbon).
+local function fitList()
+	local list = shop and shop:FindFirstChild("List", true)
+	if not (list and list:IsA("ScrollingFrame")) then
+		return
+	end
+	local layout = list:FindFirstChildWhichIsA("UIGridStyleLayout")
+	local pad = list:FindFirstChildOfClass("UIPadding")
+	local extra = if pad then pad.PaddingTop.Offset + pad.PaddingBottom.Offset else 0
+	if layout then
+		list.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + extra)
+	end
+end
+
+local function scrollToTop()
+	local list = shop and shop:FindFirstChild("List", true)
+	if list and list:IsA("ScrollingFrame") then
+		list.CanvasPosition = Vector2.zero
+	end
+end
+
 local function wire(gui: ScreenGui)
 	shop = gui
+	local list = gui:FindFirstChild("List", true)
+	local layout = list and list:FindFirstChildWhichIsA("UIGridStyleLayout")
+	if layout then
+		layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(fitList)
+	end
 	for _, row in rows() do
 		local id = row:GetAttribute("ItemId") :: string
 		-- the shared tile in the Art slot (its own name and damage pill are hidden:
@@ -469,6 +496,7 @@ local function wire(gui: ScreenGui)
 			button.Activated:Connect(function()
 				tab = name
 				refresh()
+				scrollToTop()
 			end)
 		end
 	end
@@ -498,8 +526,12 @@ local function wire(gui: ScreenGui)
 			tab = "Tools"
 		end
 		refresh()
+		if gui.Enabled then
+			scrollToTop()
+		end
 	end)
 	refresh()
+	fitList()
 end
 
 function ShopUI.init(injected: any)

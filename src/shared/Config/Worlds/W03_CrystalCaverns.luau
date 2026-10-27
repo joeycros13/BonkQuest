@@ -81,7 +81,7 @@ local World: WorldTypes.WorldDef = {
 			tier = "small",
 			name = "Cave Bat",
 			portrait = "rbxassetid://72271902069536", -- calm face (2026-10-13)
-			hp = 2500, -- x10 the Fox (2026-10-24); 10,048 before
+			hp = 3360, -- x10 the Fox (2026-10-24); 10,048 before
 			melee = { damage = 1456, cooldown = 0.7, windup = 0.25, range = 1.6, chaseSpeed = 18, armor = 0, move = "swoop" },
 			coins = { min = 215, max = 424 },
 			exp = 480,
@@ -98,7 +98,7 @@ local World: WorldTypes.WorldDef = {
 			tier = "medium",
 			name = "Pebble Golem",
 			portrait = "rbxassetid://92185614445143", -- calm face (2026-10-13)
-			hp = 7500, -- x10 the Boar (2026-10-24); 23,904 before
+			hp = 10080, -- x10 the Boar (2026-10-24); 23,904 before
 			melee = { damage = 1615, cooldown = 1.1, windup = 0.3, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "punch" },
 			coins = { min = 407, max = 803 },
 			exp = 915,
@@ -116,7 +116,7 @@ local World: WorldTypes.WorldDef = {
 			tier = "elite",
 			name = "Crystal Golem",
 			portrait = "rbxassetid://84986641261720", -- calm face (2026-10-13)
-			hp = 11250, -- x10 the Bear (2026-10-24); 32,704 before
+			hp = 15120, -- x10 the Bear (2026-10-24); 32,704 before
 			melee = { damage = 2441, cooldown = 1.4, windup = 0.35, range = 1.6, chaseSpeed = 12, armor = 0.15, move = "smash" },
 			coins = { min = 578, max = 1150 },
 			exp = 1312,
@@ -138,7 +138,7 @@ local World: WorldTypes.WorldDef = {
 		GemMole = {
 			id = "GemMole",
 			name = "Gem Mole",
-			hp = 12500, -- x10 the Fairy (2026-10-24); 45,280 before
+			hp = 16800, -- x10 the Fairy (2026-10-24); 45,280 before
 			secret = true,
 			adminPortrait = "rbxassetid://95259297161320", -- admin panel only, never the Index (2026-10-17)
 			melee = { damage = 3664, cooldown = 1, windup = 0.3, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
@@ -157,7 +157,7 @@ local World: WorldTypes.WorldDef = {
 			id = "SpiderQueen",
 			name = "Spider Queen",
 			portrait = "rbxassetid://80870479752276", -- calm face (2026-10-13)
-			hp = 15000, -- x10 the Elder Treant (2026-10-24); 50,304 before
+			hp = 20160, -- x10 the Elder Treant (2026-10-24); 50,304 before
 			melee = { damage = 2685, cooldown = 1.4, windup = 0.35, range = 1.5, chaseSpeed = 11, armor = 0.2, move = "legstab", moves = { "legstab", "rearslam" } },
 			coins = { min = 2486, max = 4928 },
 			exp = 5640,

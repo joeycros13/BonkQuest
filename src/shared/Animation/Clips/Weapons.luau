@@ -82,6 +82,10 @@ Weapons.HOLDS = {
 	-- both hands on the two pegs (right on the upper peg, left on the lower), the
 	-- snath leaning up to the right, blade out to the right and curving down
 	Scythe = { hand = { 0.9, 1.0, -1.25 }, dir = { 0.57, 0.82, -0.03 }, roll = 125, two = 1 },
+	-- the Farrier's Hammer (Rare, 2026-10-26): the one-handed hold, swung with the overhead CornBonk
+	FarriersHammer = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
+	-- the Crowbane Hoe (Epic, 2026-10-26): the two-handed hold, the Woodsman's Axe's Chop2H
+	CrowbaneHoe = { hand = { 1.1, -0.9, -0.75 }, dir = { -0.75, 0.65, -0.2 }, roll = 0, two = 1 },
 	-- ==================== World 2 (2026-10-11) ====================
 	-- one-handers: the Dagger's hold
 	Hatchet = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },

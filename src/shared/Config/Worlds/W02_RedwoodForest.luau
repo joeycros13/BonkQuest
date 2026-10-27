@@ -97,9 +97,9 @@ local World: WorldTypes.WorldDef = {
 			tier = "small",
 			name = "Snarling Fox",
 			portrait = "rbxassetid://102792357956654", -- calm face (2026-10-11)
-			hp = 960, -- x10 the Chicken (2026-10-24); 904 before
+			hp = 1280, -- x10 the Chicken (2026-10-24); 904 before
 			-- Quick pounces with a snap at the end.
-			melee = { damage = 95, cooldown = 0.6, windup = 0.25, range = 1.5, chaseSpeed = 17, armor = 0, move = "pounce" },
+			melee = { damage = 99, cooldown = 0.6, windup = 0.25, range = 1.5, chaseSpeed = 17, armor = 0, move = "pounce" },
 			coins = { min = 39, max = 78 },
 			exp = 67,
 			drops = {
@@ -116,8 +116,8 @@ local World: WorldTypes.WorldDef = {
 			tier = "medium",
 			name = "Wild Boar",
 			portrait = "rbxassetid://105726195455752", -- calm face (2026-10-11)
-			hp = 2880, -- x10 the Bull (2026-10-24); 2,144 before
-			melee = { damage = 104, cooldown = 1.1, windup = 0.3, range = 1.5, chaseSpeed = 15, armor = 0.1, move = "charge" },
+			hp = 3840, -- x10 the Bull (2026-10-24); 2,144 before
+			melee = { damage = 108, cooldown = 1.1, windup = 0.3, range = 1.5, chaseSpeed = 15, armor = 0.1, move = "charge" },
 			coins = { min = 73, max = 151 },
 			exp = 123,
 			drops = {
@@ -134,8 +134,8 @@ local World: WorldTypes.WorldDef = {
 			tier = "elite",
 			name = "Grizzly Bear",
 			portrait = "rbxassetid://117018743106247", -- calm face (2026-10-11)
-			hp = 4320, -- x10 the Stallion (2026-10-24); 2,928 before
-			melee = { damage = 158, cooldown = 1.4, windup = 0.35, range = 1.6, chaseSpeed = 13, armor = 0.15, move = "slam" },
+			hp = 5760, -- x10 the Stallion (2026-10-24); 2,928 before
+			melee = { damage = 165, cooldown = 1.4, windup = 0.35, range = 1.6, chaseSpeed = 13, armor = 0.15, move = "slam" },
 			coins = { min = 106, max = 213 },
 			exp = 179,
 			drops = {
@@ -155,10 +155,10 @@ local World: WorldTypes.WorldDef = {
 		Fairy = {
 			id = "Fairy",
 			name = "Fairy",
-			hp = 4800, -- x10 the Corn Wraith (2026-10-24); 4,056 before
+			hp = 6400, -- x10 the Corn Wraith (2026-10-24); 4,056 before
 			secret = true,
 			adminPortrait = "rbxassetid://128352315360379", -- admin panel only, never the Index (2026-10-17)
-			melee = { damage = 236, cooldown = 1, windup = 0.25, range = 2.2, chaseSpeed = 18, armor = 0.1, move = "zap" },
+			melee = { damage = 246, cooldown = 1, windup = 0.25, range = 2.2, chaseSpeed = 18, armor = 0.1, move = "zap" },
 			coins = { min = 151, max = 297 },
 			exp = 252,
 			-- the Forest Core: about 1%, once per player (trial numbers)
@@ -173,10 +173,10 @@ local World: WorldTypes.WorldDef = {
 			id = "ElderTreant",
 			name = "Elder Treant",
 			portrait = "rbxassetid://98505547017601", -- calm face (2026-10-11)
-			hp = 5760, -- x10 the Scarecrow King (2026-10-24); 4,504 before
+			hp = 7680, -- x10 the Scarecrow King (2026-10-24); 4,504 before
 			-- Two attacks, picked 50/50, same damage and timing (user, 2026-10-11): the
 			-- knee-up stomp and an overhead double-arm smash.
-			melee = { damage = 191, cooldown = 1.4, windup = 0.35, range = 1.5, chaseSpeed = 10, armor = 0.2, move = "stomp", moves = { "stomp", "smash" } },
+			melee = { damage = 199, cooldown = 1.4, windup = 0.35, range = 1.5, chaseSpeed = 10, armor = 0.2, move = "stomp", moves = { "stomp", "smash" } },
 			coins = { min = 459, max = 913 },
 			exp = 773,
 			drops = {

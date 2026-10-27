@@ -140,20 +140,22 @@ BOSS_LEGENDARY_CHANCE = 0.02
 # the ones the enemies are solved against (WORLD1_FIGHTS); the "easily" ones are solved here for a
 # fight that takes WORLD1_EASY's share at the same level and armour; the rest step from them.
 WORLD1_DPS = {"Dagger": 10, "Sickle": 16, "Machete": 26, "RustyBlade": 9}
-WORLD1_EASY = {"Pitchfork": ("Bull", 0.55), "W1Rare": ("Stallion", 0.55), "W1Epic": ("BossScarecrow", 0.55)}
-WORLD1_STEP = {"Shovel": ("Pitchfork", 1.15), "Scythe": ("W1Rare", 1.15),
-               "WeathervaneSpear": ("W1Epic", 1.1), "PumpkinMace": ("W1Epic", 1.2), "CornCob": ("W1Epic", 1.5)}
-# the two new weapons until they're designed (the canvas): placeholder ids, stats like their neighbours;
-# apply_rescale.py leaves out anything Config/Weapons doesn't have yet
-WORLD1_NEW = {"W1Rare": {"name": "World 1 Rare", "rarity": "Rare", "cooldown": 1.0, "hitTime": 0.55,
-                         "handed": 2, "price": 1100, "sell": 90},
-              "W1Epic": {"name": "World 1 Epic", "rarity": "Epic", "cooldown": 1.1, "hitTime": 0.5,
-                         "handed": 2, "price": 2600, "sell": 240}}
+WORLD1_EASY = {"Pitchfork": ("Bull", 0.5), "FarriersHammer": ("Stallion", 0.5), "CrowbaneHoe": ("BossScarecrow", 0.5)}
+WORLD1_STEP = {"Shovel": ("Pitchfork", 1.15), "Scythe": ("FarriersHammer", 1.15),
+               "WeathervaneSpear": ("CrowbaneHoe", 1.1), "PumpkinMace": ("CrowbaneHoe", 1.2), "CornCob": ("CrowbaneHoe", 1.5)}
+# the two new weapons (the user's picks on the canvas: A and B): their stats live in Config/Weapons, these
+# are for the simulations; apply_rescale.py leaves out any weapon Config/Weapons doesn't have
+WORLD1_NEW = {"FarriersHammer": {"name": "Farrier's Hammer", "rarity": "Rare", "cooldown": 1.0, "hitTime": 0.6,
+                                 "handed": 1, "price": 1100, "sell": 90},
+              "CrowbaneHoe": {"name": "Crowbane Hoe", "rarity": "Epic", "cooldown": 1.15, "hitTime": 0.6,
+                              "handed": 2, "price": 2600, "sell": 240}}
+# (the user's fourth round: the rates needn't be 20 / 6 / 1 everywhere, only harder to get for the
+# stronger enemies' weapons)
 WORLD1_DROP_TABLE = {
-    "Chicken": {"Sickle": 0.20, "Machete": 0.06, "Pitchfork": 0.01},
-    "Bull": {"Pitchfork": 0.20, "Shovel": 0.06, "W1Rare": 0.01},
-    "Stallion": {"W1Rare": 0.20, "Scythe": 0.06, "W1Epic": 0.01},
-    "BossScarecrow": {"W1Epic": 0.20, "PumpkinMace": 0.02, "CornCob": 0.001},
+    "Chicken": {"Sickle": 0.25, "Machete": 0.08, "Pitchfork": 0.015},
+    "Bull": {"Pitchfork": 0.15, "Shovel": 0.05, "FarriersHammer": 0.01},
+    "Stallion": {"FarriersHammer": 0.10, "Scythe": 0.03, "CrowbaneHoe": 0.005},
+    "BossScarecrow": {"CrowbaneHoe": 0.08, "PumpkinMace": 0.02, "CornCob": 0.001},
 }
 # each world's coin set (the user: a worse set bought with coins alone, from a decent number of kills
 # of its first enemy), first in the Crafter's list
@@ -444,8 +446,8 @@ def solve_world1(data, log, runs=4000):
     # the order the ladder climbs in: each enemy before the weapon that beats it easily
     solve_enemy("Chicken")
     solve_enemy("Bull"); solve_easy("Pitchfork"); step("Shovel")
-    solve_enemy("Stallion"); solve_enemy("CornWraith"); solve_easy("W1Rare"); step("Scythe")
-    solve_enemy("BossScarecrow"); solve_easy("W1Epic")
+    solve_enemy("Stallion"); solve_enemy("CornWraith"); solve_easy("FarriersHammer"); step("Scythe")
+    solve_enemy("BossScarecrow"); solve_easy("CrowbaneHoe")
     for wid in ("WeathervaneSpear", "PumpkinMace", "CornCob"):
         step(wid)
     # the check: every fight with the ladder's weapons
