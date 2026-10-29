@@ -27,7 +27,7 @@ local World: WorldTypes.WorldDef = {
 	-- The undead roster (2026-10-28, the user's picks; memory world4-roster). PLACEHOLDER numbers
 	-- (2026-10-29): about x10 World 3's at each rank, so the bodies can stand on the map; the real
 	-- ones come from the base-fight rescale (art/tools/balance/rescale.py) with World 4's weapons.
-	-- No drops, portraits or materials yet: the weapons aren't in Config/Weapons.
+	-- No weapon drops or portraits yet (the weapons aren't in Config/Weapons); the materials are in (2026-10-29).
 	enemies = {
 		BoneJackal = {
 			id = "BoneJackal",
@@ -38,6 +38,7 @@ local World: WorldTypes.WorldDef = {
 			coins = { min = 2800, max = 5500 },
 			exp = 3000,
 			drops = {},
+			materials = { { id = "JackalFang", chance = 0.5, min = 1, max = 1 } },
 		},
 		ShamblingMummy = {
 			id = "ShamblingMummy",
@@ -48,6 +49,7 @@ local World: WorldTypes.WorldDef = {
 			coins = { min = 5300, max = 10400 },
 			exp = 5700,
 			drops = {},
+			materials = { { id = "MummyLinen", chance = 0.5, min = 1, max = 1 } },
 		},
 		TombGuardian = {
 			id = "TombGuardian",
@@ -58,6 +60,7 @@ local World: WorldTypes.WorldDef = {
 			coins = { min = 7500, max = 14800 },
 			exp = 8100,
 			drops = {},
+			materials = { { id = "GuardianBronze", chance = 0.5, min = 1, max = 1 } },
 		},
 		PhantomPharaoh = {
 			id = "PhantomPharaoh",
@@ -68,6 +71,7 @@ local World: WorldTypes.WorldDef = {
 			coins = { min = 10400, max = 20700 },
 			exp = 11400,
 			drops = {},
+			materials = { { id = "DesertCore", chance = 0.01, min = 1, max = 1 } },
 		},
 	},
 
@@ -80,6 +84,7 @@ local World: WorldTypes.WorldDef = {
 			coins = { min = 32000, max = 64000 },
 			exp = 35000,
 			drops = {},
+			materials = { { id = "PharaohsGold", chance = 0.5, min = 1, max = 1 } },
 		},
 	},
 

@@ -472,11 +472,85 @@ Materials.Defs = {
 		color = Color3.fromRGB(168, 140, 255),
 	},
 	-- ==================== World 4 (The Scorching Sands) ====================
+	-- World 4's enemy materials (2026-10-29, the user's picks on https://claude.ai/artifact/GgzBGjpZz3yu4YYZ5fbYZo): the
+	-- Bone Jackal's and Shambling Mummy's go into the Bone Warden, the Tomb Guardian's and Sand Pharaoh's into the Sun
+	-- King's Regalia with the quest's Sunstone Amulet. Icons art/tools/icons/w4_icons.html.
+	JackalFang = {
+		id = "JackalFang",
+		icon = "rbxassetid://74180816198873",
+		rarity = "Common",
+		name = "Jackal Fang",
+		world = 4,
+		sell = 2000,
+		order = 1,
+		source = "BoneJackal",
+		color = Color3.fromRGB(255, 250, 240),
+	},
+	MummyLinen = {
+		id = "MummyLinen",
+		icon = "rbxassetid://73775737184807",
+		rarity = "Uncommon",
+		name = "Mummy Linen",
+		world = 4,
+		sell = 3000,
+		order = 2,
+		source = "ShamblingMummy",
+		color = Color3.fromRGB(239, 228, 200),
+	},
+	GuardianBronze = {
+		id = "GuardianBronze",
+		icon = "rbxassetid://94102824897399",
+		rarity = "Rare",
+		name = "Guardian Bronze",
+		world = 4,
+		sell = 8000,
+		order = 3,
+		source = "TombGuardian",
+		color = Color3.fromRGB(181, 118, 58),
+	},
+	PharaohsGold = {
+		id = "PharaohsGold",
+		icon = "rbxassetid://117890321609974",
+		rarity = "Epic",
+		name = "Pharaoh's Gold",
+		world = 4,
+		sell = 14000,
+		order = 4,
+		source = "SandPharaoh",
+		color = Color3.fromRGB(242, 193, 78),
+	},
+	-- the World 4 quest item: Professor Dusty's defeat-the-Sand-Pharaoh step (the questline, "ArchaeologistSands", is
+	-- still to be written). Goes into the Sun King's Regalia.
+	SunstoneAmulet = {
+		id = "SunstoneAmulet",
+		icon = "rbxassetid://90133302610688",
+		rarity = "Legendary",
+		name = "Sunstone Amulet",
+		world = 4,
+		order = 5,
+		source = "ArchaeologistSands",
+		quest = true,
+		color = Color3.fromRGB(255, 122, 26),
+	},
+	-- the World 4 secret core (2026-10-29): deep amber with a gold stepped pyramid, dropped by the Phantom Pharaoh
+	-- (not placed until World 4 has its secret room). Model: Blender shared_secretcores_build build_desert_core_q.
+	DesertCore = {
+		id = "DesertCore",
+		rarity = "Core",
+		icon = "rbxassetid://134836662736589",
+		name = "Desert Core",
+		world = 4,
+		order = 6,
+		source = "PhantomPharaoh",
+		core = true,
+		color = Color3.fromRGB(217, 98, 15),
+	},
 	-- Gathered (2026-10-28): the saguaro's Cactus Rib, the dig pile's Fossil, Old Coin and Golden Scarab,
 	-- and the oasis's fish (memory tools-per-world). World 4's enemy materials come with its roster's
 	-- drops. No icons yet; sells x10 World 3's (placeholders).
 	CactusRib = {
 		id = "CactusRib",
+		icon = "rbxassetid://73306401949691",
 		rarity = "Common",
 		name = "Cactus Rib",
 		world = 4,
@@ -488,6 +562,7 @@ Materials.Defs = {
 	},
 	Fossil = {
 		id = "Fossil",
+		icon = "rbxassetid://134892582558324",
 		rarity = "Common",
 		name = "Fossil",
 		world = 4,
@@ -499,6 +574,7 @@ Materials.Defs = {
 	},
 	OldCoin = {
 		id = "OldCoin",
+		icon = "rbxassetid://82966059292974",
 		rarity = "Uncommon",
 		name = "Old Coin",
 		world = 4,
@@ -510,6 +586,7 @@ Materials.Defs = {
 	},
 	GoldenScarab = {
 		id = "GoldenScarab",
+		icon = "rbxassetid://88573096156282",
 		rarity = "Rare",
 		name = "Golden Scarab",
 		world = 4,
@@ -521,6 +598,7 @@ Materials.Defs = {
 	},
 	Pupfish = {
 		id = "Pupfish",
+		icon = "rbxassetid://89772019118194",
 		rarity = "Common",
 		name = "Pupfish",
 		world = 4,
@@ -533,6 +611,7 @@ Materials.Defs = {
 	},
 	OasisKoi = {
 		id = "OasisKoi",
+		icon = "rbxassetid://79320368527481",
 		rarity = "Uncommon",
 		name = "Oasis Koi",
 		world = 4,
@@ -545,6 +624,7 @@ Materials.Defs = {
 	},
 	SandShark = {
 		id = "SandShark",
+		icon = "rbxassetid://107529624538647",
 		rarity = "Rare",
 		name = "Sand Shark",
 		world = 4,
