@@ -27,7 +27,8 @@ local World: WorldTypes.WorldDef = {
 	-- The undead roster (2026-10-28, the user's picks; memory world4-roster). PLACEHOLDER numbers
 	-- (2026-10-29): about x10 World 3's at each rank, so the bodies can stand on the map; the real
 	-- ones come from the base-fight rescale (art/tools/balance/rescale.py) with World 4's weapons.
-	-- No weapon drops or portraits yet (the weapons aren't in Config/Weapons); the materials are in (2026-10-29).
+	-- Weapon drops (2026-10-29) follow World 3's table slot for slot: each enemy drops the weapon that makes it quicker,
+	-- one that beats the next enemy and a rare one that beats it easily. No portraits yet.
 	enemies = {
 		BoneJackal = {
 			id = "BoneJackal",
@@ -37,7 +38,11 @@ local World: WorldTypes.WorldDef = {
 			melee = { damage = 18000, cooldown = 0.7, windup = 0.25, range = 1.5, chaseSpeed = 17, armor = 0, move = "pounce" },
 			coins = { min = 2800, max = 5500 },
 			exp = 3000,
-			drops = {},
+			drops = {
+				{ weapon = "BoneClub", chance = 0.25 },
+				{ weapon = "Khopesh", chance = 0.08 },
+				{ weapon = "ScarabMace", chance = 0.015 },
+			},
 			materials = { { id = "JackalFang", chance = 0.5, min = 1, max = 1 } },
 		},
 		ShamblingMummy = {
@@ -48,7 +53,11 @@ local World: WorldTypes.WorldDef = {
 			melee = { damage = 19000, cooldown = 1.1, windup = 0.3, range = 1.5, chaseSpeed = 12, armor = 0.1, move = "punch" },
 			coins = { min = 5300, max = 10400 },
 			exp = 5700,
-			drops = {},
+			drops = {
+				{ weapon = "ScarabMace", chance = 0.125 },
+				{ weapon = "LinenSpear", chance = 0.042 },
+				{ weapon = "DesertScimitar", chance = 0.008 },
+			},
 			materials = { { id = "MummyLinen", chance = 0.5, min = 1, max = 1 } },
 		},
 		TombGuardian = {
@@ -59,7 +68,11 @@ local World: WorldTypes.WorldDef = {
 			melee = { damage = 48000, cooldown = 1.4, windup = 0.35, range = 1.6, chaseSpeed = 12, armor = 0.15, move = "slash" },
 			coins = { min = 7500, max = 14800 },
 			exp = 8100,
-			drops = {},
+			drops = {
+				{ weapon = "DesertScimitar", chance = 0.071 },
+				{ weapon = "SarcophagusGreatsword", chance = 0.021 },
+				{ weapon = "CursedAnkh", chance = 0.004 },
+			},
 			materials = { { id = "GuardianBronze", chance = 0.5, min = 1, max = 1 } },
 		},
 		PhantomPharaoh = {
@@ -83,7 +96,11 @@ local World: WorldTypes.WorldDef = {
 			melee = { damage = 61000, cooldown = 1.4, windup = 0.35, range = 1.5, chaseSpeed = 11, armor = 0.2, move = "smash", moves = { "smash", "stomp" } },
 			coins = { min = 32000, max = 64000 },
 			exp = 35000,
-			drops = {},
+			drops = {
+				{ weapon = "CursedAnkh", chance = 0.05 },
+				{ weapon = "PharaohsCrook", chance = 0.0125 },
+				{ weapon = "CactusClub", chance = 0.001 },
+			},
 			materials = { { id = "PharaohsGold", chance = 0.5, min = 1, max = 1 } },
 		},
 	},

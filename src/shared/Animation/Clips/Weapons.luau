@@ -142,6 +142,17 @@ Weapons.HOLDS = {
 	-- the arms angled up (user, 2026-10-13). The gloves line up with the forearms (def.worn),
 	-- so only the hands' positions matter.
 	GoldGauntlets = { hand = { 1.0, 1.05, -1.15 }, dir = { 0, 1, -1 }, roll = 0, two = 0, left = { -1.0, 1.05, -1.15 } },
+	-- ==================== World 4 (2026-10-29): the one- and two-handed holds ====================
+	BoneClub = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
+	Khopesh = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
+	ScarabMace = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
+	LinenSpear = { hand = { 1.1, -0.9, -0.75 }, dir = { -0.75, 0.65, -0.2 }, roll = 0, two = 1 },
+	DesertScimitar = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
+	SarcophagusGreatsword = { hand = { 1.1, -0.9, -0.75 }, dir = { -0.75, 0.65, -0.2 }, roll = 0, two = 1 },
+	CursedAnkh = { hand = { 1.1, -0.9, -0.75 }, dir = { -0.75, 0.65, -0.2 }, roll = 0, two = 1 },
+	PharaohsCrook = { hand = { 1.1, -0.9, -0.75 }, dir = { -0.75, 0.65, -0.2 }, roll = 0, two = 1 },
+	StaffOfRa = { hand = { 1.1, -0.9, -0.75 }, dir = { -0.75, 0.65, -0.2 }, roll = 0, two = 1 },
+	CactusClub = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
 } :: { [string]: Key }
 
 -- ==================== swings ====================

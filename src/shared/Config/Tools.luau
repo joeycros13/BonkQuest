@@ -271,9 +271,10 @@ Tools.Defs = {
 	-- the earlier tools' sizes (sandstone heads with gold edges and caps, lapis and turquoise inlays; the
 	-- axe's turquoise grip, the pickaxe's lapis, the shovel's carnelian, the rod's gold tip). The recipes
 	-- take World 3's gathered things for now (World 4's enemies have no drops yet). Prices and power x10
-	-- World 3's; all placeholders. No icons yet.
+	-- World 3's; all placeholders. Icons rendered like the other tools' (w1_icons_rerender, art/tools/ui/tool_icons.py).
 	SandstoneAxe = {
 		id = "SandstoneAxe",
+		icon = "rbxassetid://94072455395551",
 		name = "Sandstone Axe",
 		kind = "Axe",
 		tier = 4,
@@ -300,6 +301,7 @@ Tools.Defs = {
 	},
 	SandstonePickaxe = {
 		id = "SandstonePickaxe",
+		icon = "rbxassetid://131036256306824",
 		name = "Sandstone Pickaxe",
 		kind = "Pickaxe",
 		tier = 4,
@@ -326,6 +328,7 @@ Tools.Defs = {
 	},
 	SandstoneShovel = {
 		id = "SandstoneShovel",
+		icon = "rbxassetid://91759919988456",
 		name = "Sandstone Shovel",
 		kind = "Shovel",
 		tier = 4,
@@ -351,6 +354,7 @@ Tools.Defs = {
 	},
 	SandstoneRod = {
 		id = "SandstoneRod",
+		icon = "rbxassetid://114014911885940",
 		name = "Sandstone Rod",
 		kind = "Rod",
 		tier = 4,

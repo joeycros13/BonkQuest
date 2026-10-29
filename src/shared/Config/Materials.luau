@@ -499,7 +499,7 @@ Materials.Defs = {
 	},
 	GuardianBronze = {
 		id = "GuardianBronze",
-		icon = "rbxassetid://94102824897399",
+		icon = "rbxassetid://124150482206298",
 		rarity = "Rare",
 		name = "Guardian Bronze",
 		world = 4,
@@ -510,7 +510,7 @@ Materials.Defs = {
 	},
 	PharaohsGold = {
 		id = "PharaohsGold",
-		icon = "rbxassetid://117890321609974",
+		icon = "rbxassetid://84015847035330",
 		rarity = "Epic",
 		name = "Pharaoh's Gold",
 		world = 4,
@@ -523,7 +523,7 @@ Materials.Defs = {
 	-- still to be written). Goes into the Sun King's Regalia.
 	SunstoneAmulet = {
 		id = "SunstoneAmulet",
-		icon = "rbxassetid://90133302610688",
+		icon = "rbxassetid://73125002066196",
 		rarity = "Legendary",
 		name = "Sunstone Amulet",
 		world = 4,
@@ -537,7 +537,7 @@ Materials.Defs = {
 	DesertCore = {
 		id = "DesertCore",
 		rarity = "Core",
-		icon = "rbxassetid://134836662736589",
+		icon = "rbxassetid://91222459236386",
 		name = "Desert Core",
 		world = 4,
 		order = 6,
@@ -550,7 +550,7 @@ Materials.Defs = {
 	-- drops. No icons yet; sells x10 World 3's (placeholders).
 	CactusRib = {
 		id = "CactusRib",
-		icon = "rbxassetid://73306401949691",
+		icon = "rbxassetid://122584201424665",
 		rarity = "Common",
 		name = "Cactus Rib",
 		world = 4,
