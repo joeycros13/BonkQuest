@@ -39,7 +39,7 @@ those numbers are in PLAYER below.
   py world_sim.py --set boss.PumpkinMace=0.05 --set gate.coins=2000   # try changes
   py world_sim.py --trace             # one run, step by step
 """
-import argparse, json, math, random, statistics, sys
+import argparse, os, json, math, random, statistics, sys
 from collections import Counter
 from pathlib import Path
 
@@ -84,7 +84,7 @@ def level_health(lv, level):
 
 
 def load(world):
-    data = json.load(open(HERE / f"world{world}.json", encoding="utf-8"))
+    data = json.load(open(Path(os.environ.get("WORLD_DIR", HERE)) / f"world{world}.json", encoding="utf-8"))
     # Luau's JSONEncode writes an empty table as [] (World 2 has no gathering or tools yet)
     for k in ("gathering", "tools", "armor", "weapons"):
         if isinstance(data.get(k), list):
@@ -109,6 +109,7 @@ class World:
         self.d = data
         self.goal = goal
         cfg = data["config"]
+        self.n = cfg.get("id", 1)
         self.enemies = {}
         for group, boss in ((cfg["enemies"], False), (cfg["bosses"], True)):
             for eid, e in group.items():
@@ -218,8 +219,20 @@ UPG_WORLDS = {"sprint": (1, 4), "luck": (3, 7), "health": (1, 5), "defense": (1,
               "coins": (2, 6), "exp": (5, 8), "gathering": (2, 6)}
 
 
+# what a run starts with (--upgrades); each run copies it into UPG and buys its own world's levels
+START_UPG = dict(UPG)
+# Config/Upgrades prices: STEP_PRICES by the level within its world's set x WORLD_SCALE of that world
+UPG_PRICES = (100, 250, 500)
+
+
 def upg(name):
     return 1 + UPG_STEP[name] * UPG[name]
+
+
+def upg_price(name, level):
+    """The coins for an upgrade's level (Upgrades.cost)."""
+    world = UPG_WORLDS[name][(level - 1) // 3]
+    return UPG_PRICES[(level - 1) % 3] * 10 ** (world - 1)
 
 
 def crit():
@@ -264,6 +277,7 @@ class Run:
         self.levelHeals = 0
         self.fights = []           # (time, enemy, share of max HP it took)
         self.kills = {}
+        UPG.clear(); UPG.update(START_UPG)
         if START:
             self.weapons |= set(START.get("weapons", []))
             self.armor |= set(START.get("armor", []))
@@ -621,6 +635,7 @@ class Run:
             n += self.w.weapons[ups[0]]["price"] if ups else 0
         n += sum(v["coins"] for a, v in self.w.armor.items() if a not in self.armor)
         n += sum(self.w.tools[t]["price"] for t in self.w.needTools - self.tools)
+        n += sum(p for p, _, _ in self.upgrades_left())
         if not self.gateDone:
             n += self.w.gate["coins"]
         for s in self.w.quest[self.step:]:
@@ -637,6 +652,18 @@ class Run:
         quest = {s.get("reward", {}).get("weapon") for s in self.w.quest}
         return [x for x in self.w.needWeapons - self.weapons if not self.w.weapons[x].get("price") and x not in quest]
 
+    def upgrades_left(self):
+        """(price, upgrade) of every level this world's upgrader still sells, cheapest first
+        (2026-10-28: the world's enemies are balanced on them, so they're all bought before the gate)."""
+        out = []
+        for k, worlds in UPG_WORLDS.items():
+            if self.w.n not in worlds:
+                continue
+            top = 3 * (worlds.index(self.w.n) + 1)
+            for lvl in range(UPG[k] + 1, top + 1):
+                out.append((upg_price(k, lvl), k, lvl))
+        return sorted(out)
+
     # --- shopping ------------------------------------------------------------
     def shop(self, final=False):
         """At the plaza: tools, weapon upgrades, armour. Returns True if anything happened."""
@@ -651,6 +678,16 @@ class Run:
                 self.tools.add(t)
                 self.say("made", t)
                 did = True
+        # the upgrader's next levels, cheapest first (each upgrade's levels in order)
+        while True:
+            nxt = [(p, k) for p, k, lvl in self.upgrades_left() if lvl == UPG[k] + 1 and p <= self.coins]
+            if not nxt:
+                break
+            p, k = min(nxt)
+            self.coins -= p
+            UPG[k] += 1
+            self.say("upgraded", k, UPG[k])
+            did = True
         # the gate's coins come last: keep them only once everything else is bought
         missing = sorted((x for x in w.needWeapons - self.weapons if w.weapons[x].get("price")), key=lambda x: w.weapons[x]["price"])
         if w.goal == "gate":
@@ -698,6 +735,8 @@ class Run:
         if any(self.coins >= w.weapons[x]["price"] for x in w.needWeapons - self.weapons if w.weapons[x].get("price")):
             return True
         if w.goal == "gate" and any(self.coins >= w.weapons[x]["price"] for x in self.upgrades()):
+            return True
+        if any(p <= self.coins for p, k, lvl in self.upgrades_left() if lvl == UPG[k] + 1):
             return True
         for a, v in w.armor.items():
             if a not in self.armor and self.level() >= v["level"] and self.coins >= v["coins"] and all(self.mats.get(x["id"], 0) >= x["count"] for x in v["recipe"]):
@@ -874,7 +913,7 @@ class Run:
     def ready_for_gate(self):
         g = self.w.gate
         if self.w.goal == "gate":
-            return (self.level() >= g["level"] and self.coins >= g["coins"]
+            return (self.level() >= g["level"] and self.coins >= g["coins"] and not self.upgrades_left()
                     and all(self.mats.get(x["id"], 0) >= x["count"] for x in g["materials"]))
         return (self.step >= len(self.w.quest) and not (self.w.needWeapons - self.weapons)
                 and len(self.armor) == len(self.w.armor) and self.w.needTools <= self.tools
@@ -1029,6 +1068,7 @@ def main():
     # --upgrades N: every set sold up to world N // 3 bought (3: World 1's, 6: Worlds 1-2's)
     for k in UPG:
         UPG[k] = 3 * sum(1 for w in UPG_WORLDS[k] if w <= a.upgrades // 3)
+    START_UPG.update(UPG)
     old_curve = dict(data["leveling"])
     apply_overrides(data, a.set)
     if a.remap:

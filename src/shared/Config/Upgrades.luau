@@ -69,8 +69,9 @@ Upgrades.MAX_WORLD = 8
 
 -- Coins for the 1st / 2nd / 3rd level of a set, x its world's scale: x10 a world
 -- since 2026-10-23 (it was 1, 4, 12, 30...), like the gates' coins (Config/Leveling, world scale).
--- x3 since 2026-10-28 (was 100 / 250 / 500): a world sells 9 levels, not 36.
-Upgrades.STEP_PRICES = { 300, 750, 1500 }
+-- A world's three upgrades (9 levels) cost about its gate's coins (2026-10-28, the user: 2,550
+-- in World 1 against its 2,500 gate): the enemies are balanced on having them.
+Upgrades.STEP_PRICES = { 100, 250, 500 }
 Upgrades.WORLD_SCALE = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000 }
 
 Upgrades.Defs = {

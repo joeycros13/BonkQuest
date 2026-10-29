@@ -87,7 +87,7 @@ local World: WorldTypes.WorldDef = {
 			hp = 240, -- 140 until 2026-10-20 (the health ladder: Chicken < Bull < Stallion < King)
 			portrait = "rbxassetid://105217136953827", -- calm face (2026-10-11)
 			-- Slow, heavy horn charges with a long reach.
-			melee = { damage = 22, cooldown = 1.2, windup = 0.3, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "gore" },
+			melee = { damage = 26, cooldown = 1.2, windup = 0.3, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "gore" },
 			coins = { min = 29, max = 56 },
 			exp = 26,
 			drops = {
@@ -108,7 +108,7 @@ local World: WorldTypes.WorldDef = {
 			name = "Wild Stallion",
 			hp = 450, -- 220 until 2026-10-20 (the health ladder)
 			portrait = "rbxassetid://73569429526048", -- calm face (2026-10-12)
-			melee = { damage = 43, cooldown = 1.4, windup = 0.35, range = 1.6, chaseSpeed = 16, armor = 0.15, move = "slam" },
+			melee = { damage = 59, cooldown = 1.4, windup = 0.35, range = 1.6, chaseSpeed = 16, armor = 0.15, move = "slam" },
 			coins = { min = 40, max = 80 },
 			exp = 38,
 			drops = {
@@ -131,7 +131,7 @@ local World: WorldTypes.WorldDef = {
 			hp = 500,
 			secret = true,
 			adminPortrait = "rbxassetid://85851674951625", -- admin panel only, never the Index (2026-10-17)
-			melee = { damage = 30, cooldown = 1, windup = 0.3, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
+			melee = { damage = 40, cooldown = 1, windup = 0.3, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
 			coins = { min = 56, max = 112 },
 			exp = 54,
 			-- the Farm Core: 1%, once per player; luck never changes a core's chance
@@ -150,7 +150,7 @@ local World: WorldTypes.WorldDef = {
 			portrait = "rbxassetid://80515484828150", -- calm black face, with the elbow and knee ties (2026-10-11; was 122472392610626)
 			-- Pitchfork jabs with the longest reach; armour halves weapon damage so the
 			-- fight outlasts the Bull's.
-			melee = { damage = 45, cooldown = 1.3, windup = 0.3, range = 1.2, chaseSpeed = 11, armor = 0.2, move = "stab" },
+			melee = { damage = 72, cooldown = 1.3, windup = 0.3, range = 1.2, chaseSpeed = 11, armor = 0.2, move = "stab" },
 			coins = { min = 176, max = 344 },
 			exp = 162,
 			drops = {

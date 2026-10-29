@@ -23,7 +23,7 @@ then go into the Luau configs (apply_rescale.py).
 
   py rescale.py              # write world1..3.json from before/
 """
-import copy, json, math
+import copy, json, math, os
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -140,8 +140,10 @@ BOSS_LEGENDARY_CHANCE = 0.02
 # with the Weathervane Spear (Dale's) between the new Epic and the Mace. The "just beats" weapons are
 # the ones the enemies are solved against (WORLD1_FIGHTS); the "easily" ones are solved here for a
 # fight that takes WORLD1_EASY's share at the same level and armour; the rest step from them.
-WORLD1_DPS = {"Dagger": 10, "Sickle": 16, "Machete": 26, "RustyBlade": 9}
-WORLD1_EASY = {"Pitchfork": ("Bull", 0.5), "FarriersHammer": ("Stallion", 0.5), "CrowbaneHoe": ("BossScarecrow", 0.5)}
+WORLD1_DPS = {"Dagger": 10, "Machete": 26, "RustyBlade": 9}
+# (2026-10-28, the user: each enemy's own common drop makes it easier, "not crazy easier": the Sickle
+# took a Chicken fight from the Dagger's 55% to 31%, so it's solved for 40%)
+WORLD1_EASY = {"Sickle": ("Chicken", 0.40), "Pitchfork": ("Bull", 0.5), "FarriersHammer": ("Stallion", 0.5), "CrowbaneHoe": ("BossScarecrow", 0.5)}
 WORLD1_STEP = {"Shovel": ("Pitchfork", 1.15), "Scythe": ("FarriersHammer", 1.15),
                "WeathervaneSpear": ("CrowbaneHoe", 1.1), "PumpkinMace": ("CrowbaneHoe", 1.2), "CornCob": ("CrowbaneHoe", 1.5)}
 # the two new weapons (the user's picks on the canvas: A and B): their stats live in Config/Weapons, these
@@ -232,20 +234,77 @@ WORLD_FIGHTS = {
         "SpiderQueen": ("EmberCoalMaul", 61, "CaveRunner", 0.75)},
 }
 WORLD_UPGRADES = {2: 3, 3: 6}
+# Each fight assumes the upgrades bought by then (2026-10-28, the user: "the upgrades should be almost
+# required for going into the next world"): every set sold in the worlds before complete, and this
+# world's own sets bought as the player climbs, OWN_LEVELS levels of each by the enemy's tier. Enemy
+# damage is solved with them, so without them every fight costs more than its share (a Bull in World 1
+# 0.75 x 1.15 / 0.95 = 91% without the first Health and Defense levels, the King 0.75 x 1.45 / 0.85, dead);
+# enemy health grows with the damage they add (World 2's Attack, World 3's Attack Speed), so a fight
+# without them lasts longer; and weapon drops shrink by the luck they add (World 3's Luck), so the
+# rates players see with it bought are the ladder's. Secrets keep their 0.1%.
+OWN_LEVELS = {"small": 0, "medium": 1, "elite": 2, "secret": 2, "boss": 3}
+
+
+def fight_upgrades(n, tier):
+    """Every upgrade's level when World n's `tier` enemy is fought."""
+    import base_fights as B
+    ups = B.levels_through(n - 1)
+    for k, worlds in B.UP_WORLDS.items():
+        if n in worlds:
+            ups[k] += OWN_LEVELS[tier]
+    return ups
+
+
+def up_dps(ups):
+    """How much the upgrades raise a weapon's damage a second (crits on average)."""
+    import base_fights as B
+    chance = B.CRIT_CHANCE + B.UP["CritChance"] * B.L(ups, "CritChance")
+    mult = B.CRIT_MULT + B.UP["CritDamage"] * B.L(ups, "CritDamage")
+    return ((1 + B.UP["Attack"] * B.L(ups, "Attack")) / (1 + B.UP["AttackSpeed"] * B.L(ups, "AttackSpeed"))
+            * (1 + chance * (mult - 1)))
+
+
+def up_taken(ups):
+    """Damage taken x this with the Defense upgrade."""
+    import base_fights as B
+    return 1 + B.UP["Defense"] * B.L(ups, "Defense")
 # the small enemy's common drop is the world's anchor (the last boss Legendary x1.15); its "just beats
 # the medium enemy" drop a step over it
-WORLD_SET = {2: {"Hatchet": 1.0, "Quarterstaff": 1.15}, 3: {"BatwingBlade": 1.0, "IronPickaxe": 1.15}}
-WORLD_EASY = {2: {"Cleaver": ("Boar", 0.5), "HoneycombHammer": ("Bear", 0.5), "WoodsmansAxe": ("ElderTreant", 0.5)},
-              3: {"PebbleMallet": ("PebbleGolem", 0.5), "CopperDrill": ("CrystalGolem", 0.5), "GeodeGlaive": ("SpiderQueen", 0.5)}}
-WORLD_STEP = {2: {"Mace": ("Cleaver", 1.15), "Greatclub": ("HoneycombHammer", 1.15),
+# (2026-10-28, the user's drop rule) the small enemy's common drop now makes its fight easier (55%,
+# against the arrival weapon's 75%; as the world's Common anchored on the last boss Legendary it was
+# 67-69%), so it's solved like the "easily" weapons and its "just beats" drop steps from it
+WORLD_SET = {2: {}, 3: {}}
+WORLD_EASY = {2: {"Hatchet": ("Fox", 0.55), "Cleaver": ("Boar", 0.5), "HoneycombHammer": ("Bear", 0.5), "WoodsmansAxe": ("ElderTreant", 0.5)},
+              3: {"BatwingBlade": ("CaveBat", 0.55), "PebbleMallet": ("PebbleGolem", 0.5), "CopperDrill": ("CrystalGolem", 0.5), "GeodeGlaive": ("SpiderQueen", 0.5)}}
+WORLD_STEP = {2: {"Quarterstaff": ("Hatchet", 1.15), "Mace": ("Cleaver", 1.15), "Greatclub": ("HoneycombHammer", 1.15),
                   "LanternFlail": ("WoodsmansAxe", 1.1), "HeartwoodStaff": ("WoodsmansAxe", 1.2), "MarshmallowStick": ("WoodsmansAxe", 1.5)},
-              3: {"GoldGauntlets": ("PebbleMallet", 1.15), "EmberCoalMaul": ("CopperDrill", 1.15),
+              3: {"IronPickaxe": ("BatwingBlade", 1.15), "GoldGauntlets": ("PebbleMallet", 1.15), "EmberCoalMaul": ("CopperDrill", 1.15),
                   "DiamondPickaxe": ("GeodeGlaive", 1.1), "QueensFang": ("GeodeGlaive", 1.2), "RockCandyClub": ("GeodeGlaive", 1.5)}}
 # the order each world's ladder climbs in (each enemy before the weapon that beats it easily)
-WORLD_ORDER = {2: ["Fox", "Boar", "+Cleaver", "+Mace", "Bear", "Fairy", "+HoneycombHammer", "+Greatclub", "ElderTreant",
+WORLD_ORDER = {2: ["Fox", "+Hatchet", "+Quarterstaff", "Boar", "+Cleaver", "+Mace", "Bear", "Fairy", "+HoneycombHammer", "+Greatclub", "ElderTreant",
                    "+WoodsmansAxe", "+LanternFlail", "+HeartwoodStaff", "+MarshmallowStick"],
-               3: ["CaveBat", "PebbleGolem", "+PebbleMallet", "+GoldGauntlets", "CrystalGolem", "GemMole", "+CopperDrill",
+               3: ["CaveBat", "+BatwingBlade", "+IronPickaxe", "PebbleGolem", "+PebbleMallet", "+GoldGauntlets", "CrystalGolem", "GemMole", "+CopperDrill",
                    "+EmberCoalMaul", "SpiderQueen", "+GeodeGlaive", "+DiamondPickaxe", "+QueensFang", "+RockCandyClub"]}
+
+# each enemy's drops in order: (its own common drop, the one that just beats the next enemy, the rare
+# one that beats the next enemy easily); the user's rule (2026-10-28): the first makes its own enemy
+# easier (not crazy easier), the second barely beats the next with the right armour, the third beats
+# the next easier (not crazy easy). drop_check prints all three against the fights they're for.
+NEXT_ENEMY = {1: {"Chicken": "Bull", "Bull": "Stallion", "Stallion": "BossScarecrow"},
+              2: {"Fox": "Boar", "Boar": "Bear", "Bear": "ElderTreant"},
+              3: {"CaveBat": "PebbleGolem", "PebbleGolem": "CrystalGolem", "CrystalGolem": "SpiderQueen"}}
+
+
+def drop_check(n, taken, weapon, log):
+    for eid, table in DROP_TABLES[n].items():
+        common, mid, rare = list(table)
+        line = f"  drops {eid}: {common} on {eid} {taken(eid, weapon(common)):.0%}"
+        nxt = NEXT_ENEMY[n].get(eid)
+        if nxt:
+            line += (f" | {mid} on {nxt} {taken(nxt, weapon(mid)):.0%}"
+                     f" | {rare} on {nxt} {taken(nxt, weapon(rare)):.0%}")
+        log.append(line)
+
 
 # base fights: (small enemy, its base fight length in seconds, share of max HP it should take)
 BASE = {1: ("Chicken", None, 0.50), 2: ("Fox", 10.0, 0.75), 3: ("CaveBat", 11.0, 0.75)}
@@ -387,8 +446,12 @@ def main(knobs=KNOBS, quiet=False):
                 # drops
                 if eid in DROP_TABLES.get(n, {}):
                     table = DROP_TABLES[n][eid]
+                    # the luck this world's upgrades add by then (World 3's Luck): the rates seen with it are the table's
+                    import base_fights as B
+                    luck = 1 + B.UP["Luck"] * B.L(fight_upgrades(n, tier_of(e, is_boss)), "Luck")
+                    table = {wid: (c if c <= 0.001 else round(c / luck, 4)) for wid, c in table.items()}
                     e["drops"] = {str(k): {"weapon": wid, "chance": c} for k, (wid, c) in enumerate(table.items(), 1)}
-                    log.append(f"drops {eid}: {table}")
+                    log.append(f"drops {eid}: {table}" + (f"  (luck x{luck:.2f})" if luck > 1 else ""))
                 else:
                     for dr in items(e.get("drops", {})):
                         old = dr["chance"]
@@ -460,10 +523,14 @@ def solve_world1(data, log, runs=4000):
         log.append(f"weapon {wid} (W1 {w['rarity']}): {w['damage']} -> {dmg}  ({dps(w):.1f} -> {dmg / w['cooldown']:.1f} DPS; {why})")
         w["damage"] = dmg
 
+    def ups(eid):
+        return fight_upgrades(1, tier_of(enemies[eid], eid in cfg["bosses"]))
+
     def player(eid):
         _, _, level, aid, _ = WORLD1_FIGHTS[eid]
         arm = armor[aid] if aid else {"health": 0, "defense": 0}
-        return B.max_hp(lv, level, arm["health"], 0), 1 - arm["defense"], level, aid
+        u = ups(eid)
+        return B.max_hp(lv, level, arm["health"], u), (1 - arm["defense"]) * up_taken(u), level, aid
 
     def stats(eid):
         x = enemies[eid]
@@ -473,7 +540,7 @@ def solve_world1(data, log, runs=4000):
     def taken(eid, w):
         hp, mult, _, _ = player(eid)
         rng = random.Random(1)
-        return statistics.mean(B.fight(rng, w, stats(eid), 0, mult)[1] for _ in range(runs)) / hp
+        return statistics.mean(B.fight(rng, w, stats(eid), ups(eid), mult)[1] for _ in range(runs)) / hp
 
     def solve_enemy(eid):
         x = enemies[eid]
@@ -487,7 +554,9 @@ def solve_world1(data, log, runs=4000):
             lo, hi = (mid, hi) if taken(eid, ws[wid]) < share else (lo, mid)
         dmg = round((lo + hi) / 2)
         x["melee"]["damage"] = dmg
-        log.append(f"enemy {eid} (W1): hp {new_hp}, damage {dmg}  ({wid}, level {level}, {aid or 'no armour'}: "
+        u = ups(eid)
+        log.append(f"enemy {eid} (W1): hp {new_hp}, damage {dmg}  ({wid}, level {level}, {aid or 'no armour'}, "
+                   f"Health {u['Health']} Defense {u['Defense']}: "
                    f"~{share:.0%} of {hp:,.0f} HP)")
 
     def solve_easy(wid):
@@ -507,12 +576,13 @@ def solve_world1(data, log, runs=4000):
     for wid, t in WORLD1_DPS.items():
         set_dps(wid, t, "set")
     # the order the ladder climbs in: each enemy before the weapon that beats it easily
-    solve_enemy("Chicken")
+    solve_enemy("Chicken"); solve_easy("Sickle")
     solve_enemy("Bull"); solve_easy("Pitchfork"); step("Shovel")
     solve_enemy("Stallion"); solve_enemy("CornWraith"); solve_easy("FarriersHammer"); step("Scythe")
     solve_enemy("BossScarecrow"); solve_easy("CrowbaneHoe")
     for wid in ("WeathervaneSpear", "PumpkinMace", "CornCob"):
         step(wid)
+    drop_check(1, taken, lambda w: ws[w], log)
     # the check: every fight with the ladder's weapons
     for eid in WORLD1_FIGHTS:
         for wid in [w for w, (e, _) in WORLD1_EASY.items() if e == eid] + [WORLD1_FIGHTS[eid][1]]:
@@ -534,8 +604,10 @@ def solve_world(data, n, anchor, log, runs=4000):
         every_a.update(d["armor"])
     cfg = data[n]["config"]
     enemies = dict(cfg["enemies"]); enemies.update(cfg["bosses"])
-    up = WORLD_UPGRADES[n]
     fights = WORLD_FIGHTS[n]
+
+    def ups(eid):
+        return fight_upgrades(n, tier_of(enemies[eid], eid in cfg["bosses"]))
 
     def set_dps(wid, t, why):
         w = ws[wid]
@@ -546,7 +618,8 @@ def solve_world(data, n, anchor, log, runs=4000):
     def player(eid):
         _, level, aid, _ = fights[eid]
         arm = every_a[aid]
-        return B.max_hp(lv, level, arm["health"], up), (1 - arm["defense"]) * (1 + B.UP["Defense"] * B.L(up, "Defense"))
+        u = ups(eid)
+        return B.max_hp(lv, level, arm["health"], u), (1 - arm["defense"]) * up_taken(u)
 
     def stats(eid):
         x = enemies[eid]
@@ -556,23 +629,23 @@ def solve_world(data, n, anchor, log, runs=4000):
     def taken(eid, w):
         hp, mult = player(eid)
         rng = random.Random(1)
-        return statistics.mean(B.fight(rng, w, stats(eid), up, mult)[1] for _ in range(runs)) / hp
+        return statistics.mean(B.fight(rng, w, stats(eid), ups(eid), mult)[1] for _ in range(runs)) / hp
 
     def seconds(eid, w):
         rng = random.Random(1)
-        return statistics.mean(B.fight(rng, w, stats(eid), up, 1)[0] for _ in range(runs // 4))
+        return statistics.mean(B.fight(rng, w, stats(eid), ups(eid), 1)[0] for _ in range(runs // 4))
 
     # health: the small enemy's from its base fight's length against the arrival weapon, the rest by the ladder
     small_id, length, _ = BASE[n]
     wpn = every_w[fights[small_id][0]]
-    per = wpn["damage"] * (1 + B.UP["Attack"] * B.L(up, "Attack"))
-    cd = wpn["cooldown"] * (1 + B.UP["AttackSpeed"] * B.L(up, "AttackSpeed"))
-    chance, mult = B.CRIT_CHANCE + B.UP["CritChance"] * B.L(up, "CritChance"), B.CRIT_MULT + B.UP["CritDamage"] * B.L(up, "CritDamage")
-    small_hp = round(per * (1 + chance * (mult - 1)) * B.HIT_RATE / cd * length / 10) * 10
+    small_up = fight_upgrades(n, "small")
+    small_hp = round(wpn["damage"] / wpn["cooldown"] * up_dps(small_up) * B.HIT_RATE * length / 10) * 10
     for group, is_boss in ((cfg["enemies"], False), (cfg["bosses"], True)):
         for eid, x in group.items():
-            new_hp = round(small_hp * HP_LADDER[tier_of(x, is_boss)] / 10) * 10
-            log.append(f"enemy {eid} (W{n}): hp {x['hp']} -> {new_hp}")
+            # and x the damage this world's upgrades add by then, so a fight lasts as long with them
+            grow = up_dps(fight_upgrades(n, tier_of(x, is_boss))) / up_dps(small_up)
+            new_hp = round(small_hp * HP_LADDER[tier_of(x, is_boss)] * grow / 10) * 10
+            log.append(f"enemy {eid} (W{n}): hp {x['hp']} -> {new_hp}" + (f"  (upgrades x{grow:.2f})" if grow > 1.001 else ""))
             x["hp"] = new_hp
 
     def solve_enemy(eid):
@@ -586,7 +659,9 @@ def solve_world(data, n, anchor, log, runs=4000):
             lo, hi = (mid, hi) if taken(eid, every_w[wid]) < share else (lo, mid)
         dmg = round((lo + hi) / 2)
         x["melee"]["damage"] = dmg
-        log.append(f"enemy {eid} (W{n}): hp {x['hp']}, damage {dmg}  ({wid}, level {level}, {aid}, upgrades {up}: "
+        u = ups(eid)
+        own = ", ".join(f"{k} {u[k]}" for k in sorted(u) if n in B.UP_WORLDS[k])
+        log.append(f"enemy {eid} (W{n}): hp {x['hp']}, damage {dmg}  ({wid}, level {level}, {aid}, own upgrades {own}: "
                    f"~{share:.0%} of {hp:,.0f} HP, {seconds(eid, every_w[wid]):.1f} s)")
 
     def solve_easy(wid):
@@ -615,6 +690,7 @@ def solve_world(data, n, anchor, log, runs=4000):
             (solve_easy if wid in WORLD_EASY[n] else step)(wid)
         else:
             solve_enemy(item)
+    drop_check(n, taken, lambda w: every_w[w], log)
     for eid, f in fights.items():
         for w2 in [w for w, (e, _) in WORLD_EASY[n].items() if e == eid] + [f[0]]:
             log.append(f"  check {eid} with {w2}: {taken(eid, every_w[w2]):.0%} of max HP taken, {seconds(eid, every_w[w2]):.1f} s")
@@ -682,7 +758,7 @@ def tier_of(e, is_boss):
 
 def write(data):
     for n, d in data.items():
-        with open(HERE / f"world{n}.json", "w", encoding="utf-8", newline="\n") as f:
+        with open(Path(os.environ.get("WORLD_DIR", HERE)) / f"world{n}.json", "w", encoding="utf-8", newline="\n") as f:
             json.dump(d, f, separators=(",", ":"))  # compact, like dump_world.luau writes it
 
 

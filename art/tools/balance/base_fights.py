@@ -33,7 +33,7 @@ ENEMY_LAND = 0.78      # world_sim PLAYER.enemyLand: the share of enemy attacks 
 # Config/Upgrades steps a level (2026-10-28 rework: each world's upgrader sells three upgrades,
 # 3 levels each, and every upgrade is sold in two worlds, Upgrades.Defs `worlds`)
 UP = {"Health": 0.15, "Defense": -0.05, "Attack": 0.12, "AttackSpeed": -0.06,
-      "CritDamage": 0.20, "CritChance": 0.04}
+      "CritDamage": 0.20, "CritChance": 0.04, "Luck": 0.20}
 UP_WORLDS = {"Sprint": (1, 4), "Luck": (3, 7), "Health": (1, 5), "Defense": (1, 4), "Attack": (2, 5),
              "AttackSpeed": (3, 7), "CritDamage": (6, 8), "CritChance": (4, 8), "Regen": (3, 7),
              "Coins": (2, 6), "Exp": (5, 8), "Gathering": (2, 6)}
