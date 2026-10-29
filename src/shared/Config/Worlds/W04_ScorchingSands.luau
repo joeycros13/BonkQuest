@@ -84,7 +84,7 @@ local World: WorldTypes.WorldDef = {
 			coins = { min = 10400, max = 20700 },
 			exp = 11400,
 			drops = {},
-			materials = { { id = "DesertCore", chance = 0.01, min = 1, max = 1 } },
+			materials = { { id = "DesertCore", chance = 0.0001, min = 1, max = 1 } },
 		},
 	},
 
@@ -98,8 +98,8 @@ local World: WorldTypes.WorldDef = {
 			exp = 35000,
 			drops = {
 				{ weapon = "CursedAnkh", chance = 0.05 },
-				{ weapon = "PharaohsCrook", chance = 0.0125 },
-				{ weapon = "CactusClub", chance = 0.001 },
+				{ weapon = "PharaohsCrook", chance = 0.0075 },
+				{ weapon = "CactusClub", chance = 0.00005 },
 			},
 			materials = { { id = "PharaohsGold", chance = 0.5, min = 1, max = 1 } },
 		},

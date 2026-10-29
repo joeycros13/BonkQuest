@@ -150,8 +150,8 @@ local World: WorldTypes.WorldDef = {
 			melee = { damage = 3295, cooldown = 1, windup = 0.3, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
 			coins = { min = 1044, max = 2073 },
 			exp = 1139,
-			-- the Cave Core: about 1%, once per player (trial numbers)
-			materials = { { id = "CaveCore", chance = 0.01, min = 1, max = 1 } },
+			-- the Cave Core: 0.04% x luck, once per player (2026-10-29)
+			materials = { { id = "CaveCore", chance = 0.0004, min = 1, max = 1 } },
 		},
 	},
 
@@ -170,9 +170,9 @@ local World: WorldTypes.WorldDef = {
 			drops = {
 				{ weapon = "GeodeGlaive", chance = 0.05 },
 				-- Legendary: the Queen's own fang
-				{ weapon = "QueensFang", chance = 0.0125 },
+				{ weapon = "QueensFang", chance = 0.01 },
 				-- the secret Rock Candy Club (hidden in the Index until found)
-				{ weapon = "RockCandyClub", chance = 0.001 }, -- secrets drop at 0.1% (the user's rule); 2% until 2026-10-24
+				{ weapon = "RockCandyClub", chance = 0.0002 }, -- (2026-10-29, the user) each world's secret rarer than the last
 			},
 			materials = { { id = "QueensSilk", chance = 0.5, min = 1, max = 1 } },
 		},

@@ -776,9 +776,10 @@ Weapons.Defs = {
 	-- <- Batwing Blade, Khopesh <- Iron Pickaxe, Scarab Mace <- Pebble Mallet, Linen Spear <- Gold Gauntlets, Desert
 	-- Scimitar <- Copper Drill, Sarcophagus Greatsword <- Ember Coal Maul, Cursed Ankh <- Geode Glaive, Pharaoh's
 	-- Crook <- Queen's Fang (the Sand Pharaoh's 1.25%), Staff of Ra <- Diamond Pickaxe (Professor Dusty's step 10,
-	-- ignores armour), Cactus Club <- Rock Candy Club (secret, 0.1%). No icons yet (the viewport fallback).
+	-- ignores armour), Cactus Club <- Rock Candy Club (secret). Icons: w1_icons_rerender render(id), weapon_icons_finish.py.
 	BoneClub = {
 		id = "BoneClub",
+		icon = "rbxassetid://115848499478008",
 		world = 4,
 		sell = 18000,
 		price = 150000,
@@ -798,6 +799,7 @@ Weapons.Defs = {
 	},
 	Khopesh = {
 		id = "Khopesh",
+		icon = "rbxassetid://131626433868621",
 		world = 4,
 		sell = 45000,
 		price = 400000,
@@ -817,6 +819,7 @@ Weapons.Defs = {
 	},
 	ScarabMace = {
 		id = "ScarabMace",
+		icon = "rbxassetid://115018328921576",
 		world = 4,
 		sell = 50000,
 		price = 650000,
@@ -836,6 +839,7 @@ Weapons.Defs = {
 	},
 	LinenSpear = {
 		id = "LinenSpear",
+		icon = "rbxassetid://71314013019141",
 		world = 4,
 		sell = 58000,
 		price = 700000,
@@ -855,6 +859,7 @@ Weapons.Defs = {
 	},
 	DesertScimitar = {
 		id = "DesertScimitar",
+		icon = "rbxassetid://105279577619310",
 		world = 4,
 		sell = 90000,
 		price = 1100000,
@@ -874,6 +879,7 @@ Weapons.Defs = {
 	},
 	SarcophagusGreatsword = {
 		id = "SarcophagusGreatsword",
+		icon = "rbxassetid://120576608884340",
 		world = 4,
 		sell = 170000,
 		price = 1800000,
@@ -893,6 +899,7 @@ Weapons.Defs = {
 	},
 	CursedAnkh = {
 		id = "CursedAnkh",
+		icon = "rbxassetid://76010437338590",
 		world = 4,
 		sell = 180000,
 		price = 2000000,
@@ -913,6 +920,7 @@ Weapons.Defs = {
 	},
 	PharaohsCrook = {
 		id = "PharaohsCrook",
+		icon = "rbxassetid://77735020109429",
 		world = 4,
 		sell = 390000,
 		rarity = "Legendary",
@@ -931,6 +939,7 @@ Weapons.Defs = {
 	},
 	StaffOfRa = {
 		id = "StaffOfRa",
+		icon = "rbxassetid://89617705559836",
 		world = 4,
 		sell = 335000,
 		rarity = "Legendary",
@@ -950,6 +959,7 @@ Weapons.Defs = {
 	},
 	CactusClub = {
 		id = "CactusClub",
+		icon = "rbxassetid://101269384158205",
 		world = 4,
 		sell = 1200000,
 		rarity = "Secret",
@@ -1061,6 +1071,27 @@ Weapons.Defs = {
 		swing = "DiagonalHuge",
 		keep = true,
 		worldheartTier = 3,
+	},
+	-- Tier 4 (2026-10-29): the Desert Core (the Phantom Pharaoh's drop) set in at World 4's Infuser. Same model,
+	-- hold and swing; stats are tier 4's (Cactus Club DPS x1.1, +30% speed, +15% reach).
+	WorldheartBlade4 = {
+		id = "WorldheartBlade4",
+		world = 4,
+		rarity = "Transcendent",
+		name = "Worldheart Blade IV",
+		blurb = "The Farm, Forest, Cave and Desert Cores burn in its sockets. Four remain empty.",
+		order = 22.5,
+		color = Color3.fromRGB(107, 47, 168),
+		handed = 1,
+		damage = 65385,
+		cooldown = 0.7308,
+		reach = 9.775,
+		arc = 110,
+		maxTargets = 3,
+		hitTime = 0.5,
+		swing = "DiagonalHuge",
+		keep = true,
+		worldheartTier = 4,
 	},
 } :: { [string]: WeaponDef }
 

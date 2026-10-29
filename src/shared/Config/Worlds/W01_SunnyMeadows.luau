@@ -134,8 +134,9 @@ local World: WorldTypes.WorldDef = {
 			melee = { damage = 40, cooldown = 1, windup = 0.3, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
 			coins = { min = 56, max = 112 },
 			exp = 54,
-			-- the Farm Core: 1%, once per player; luck never changes a core's chance
-			materials = { { id = "FarmCore", chance = 0.01, min = 1, max = 1 } },
+			-- the Farm Core: 0.2% x the killer's luck, once per player (the user, 2026-10-29: each world's core a step
+			-- rarer, a touch easier than its secret weapon; it was 1% with no luck)
+			materials = { { id = "FarmCore", chance = 0.002, min = 1, max = 1 } },
 		},
 	},
 

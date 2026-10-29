@@ -10,8 +10,8 @@
 -- chance by the killer's "LuckBoost"; luck is for weapon drops). Quest items come
 -- from QuestService (give), once per player. Secret-weapon cores (`core`) drop
 -- like materials but at most once per player ever (remembered in `received`, so
--- infusing one later never lets it drop again), luck never changes their chance
--- (the user's rule, 2026-10-19), and they announce through the big Index popup
+-- infusing one later never lets it drop again), and since 2026-10-29 (the user, reversing 2026-10-19's
+-- rule) the killer's luck multiplies their chance like a weapon drop's (Bonuses.luck), and they announce through the big Index popup
 -- (Remotes.IndexDiscovered { kind = "Core", id }) instead of a toast. Every player who hit
 -- the enemy since it last healed rolls its table on their own (2026-10-26).
 --
@@ -34,6 +34,7 @@ local Config = Shared:WaitForChild("Config")
 local Enemies = require(Config:WaitForChild("Enemies"))
 local Materials = require(Config:WaitForChild("Materials"))
 local Upgrades = require(Config:WaitForChild("Upgrades"))
+local Bonuses = require(Config:WaitForChild("Bonuses"))
 
 local MaterialService = {}
 
@@ -153,7 +154,7 @@ local function onKill(enemy: any, killer: Player?, hitters: { Player }?)
 			end
 			if material.core then
 				-- one per player, ever: no duplicates
-				if not profile.received[drop.id] and random:NextNumber() < drop.chance then
+				if not profile.received[drop.id] and random:NextNumber() < math.min(1, drop.chance * Bonuses.luck(player)) then
 					profile.received[drop.id] = true
 					MaterialService.add(player, drop.id, 1)
 					if discovered then

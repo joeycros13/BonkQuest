@@ -346,11 +346,11 @@ Tools.Defs = {
 		},
 		handed = 1,
 		cooldown = 0.9,
-		hitTime = 0.58,
+		hitTime = 0.5,
 		reach = 5,
 		arc = 70,
 		maxTargets = 1,
-		swing = "Mine",
+		swing = "Dig", -- (2026-10-29) a real dig: in, lever up, tip it over the shoulder
 	},
 	SandstoneRod = {
 		id = "SandstoneRod",

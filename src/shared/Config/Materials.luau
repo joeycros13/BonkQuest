@@ -23,8 +23,8 @@
 --           first enemy's material is Common, the second's Uncommon, the third's Rare,
 --           the boss's Epic; quest items are Legendary
 --   quest   true for a quest item: given once, never dropped
---   core    true for a secret-weapon core (2026-10-12): one per world, dropped about 1% by
---           that world's secret enemy, at most once per player (no duplicates, no pity);
+--   core    true for a secret-weapon core (2026-10-12): one per world, dropped by
+--           that world's secret enemy (0.2 / 0.1 / 0.04 / 0.01% x luck, 2026-10-29), at most once per player (no duplicates, no pity);
 --           it shows the big Index-style popup (rarity "Core") instead of a side toast, and
 --           is infused into the Rusty Blade at that world's Crafter (the Farm Core first)
 --   sell    coins for selling ONE from the Inventory (placeholder, 2026-10-20); quest items

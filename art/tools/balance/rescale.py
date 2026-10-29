@@ -176,12 +176,16 @@ DROP_TABLES = {
     2: {"Fox": {"Hatchet": 0.25, "Quarterstaff": 0.08, "Cleaver": 0.015},   # the Cleaver is the stronger Uncommon
         "Boar": {"Cleaver": 0.15, "Mace": 0.05, "HoneycombHammer": 0.01},
         "Bear": {"HoneycombHammer": 0.10, "Greatclub": 0.03, "WoodsmansAxe": 0.005},
-        "ElderTreant": {"WoodsmansAxe": 0.08, "HeartwoodStaff": 0.02, "MarshmallowStick": 0.001}},
+        "ElderTreant": {"WoodsmansAxe": 0.08, "HeartwoodStaff": 0.015, "MarshmallowStick": 0.0005}},
     3: {"CaveBat": {"BatwingBlade": 0.25, "IronPickaxe": 0.08, "PebbleMallet": 0.015},
         "PebbleGolem": {"PebbleMallet": 0.15, "GoldGauntlets": 0.05, "CopperDrill": 0.01},
         "CrystalGolem": {"CopperDrill": 0.10, "EmberCoalMaul": 0.03, "GeodeGlaive": 0.005},
-        "SpiderQueen": {"GeodeGlaive": 0.08, "QueensFang": 0.02, "RockCandyClub": 0.001}},
+        "SpiderQueen": {"GeodeGlaive": 0.08, "QueensFang": 0.01, "RockCandyClub": 0.0002}},
 }
+# (2026-10-29, the user) each world's boss Legendary and secret a step rarer than the last: Legendaries 2 / 1.5 /
+# 1 / 0.75%, secrets 0.1 / 0.05 / 0.02 / 0.005%. These are the rates players see before luck, never divided by the
+# luck a world's upgrades add (below); the secret enemies' cores 0.2 / 0.1 / 0.04 / 0.01%, luck applying.
+FIXED_RATES = {"PumpkinMace", "CornCob", "HeartwoodStaff", "MarshmallowStick", "QueensFang", "RockCandyClub"}
 # each world's coin set (the user: a worse set bought with coins alone, from a decent number of kills
 # of its first enemy), first in the Crafter's list
 COIN_SETS = {1: {"PatchworkVest": {"id": "PatchworkVest", "name": "Patchwork Vest", "world": 1, "order": 0,
@@ -377,7 +381,7 @@ def main(knobs=KNOBS, quiet=False):
                 weakest = min(fit, key=lambda t: t["tier"])
                 node["hp"] = HITS_PER_NODE * weakest["power"]
     log.append(f"nodes: {HITS_PER_NODE} hits of the weakest tool that breaks them")
-    # every enemy material a flat 50% for 1, luck never applied (cores keep their 1%)
+    # every enemy material a flat 50% for 1, luck never applied (cores keep their own rates, with luck since 2026-10-29)
     for d in data.values():
         for group in ("enemies", "bosses"):
             for e in d["config"][group].values():
@@ -449,7 +453,7 @@ def main(knobs=KNOBS, quiet=False):
                     # the luck this world's upgrades add by then (World 3's Luck): the rates seen with it are the table's
                     import base_fights as B
                     luck = 1 + B.UP["Luck"] * B.L(fight_upgrades(n, tier_of(e, is_boss)), "Luck")
-                    table = {wid: (c if c <= 0.001 else round(c / luck, 4)) for wid, c in table.items()}
+                    table = {wid: (c if wid in FIXED_RATES else round(c / luck, 4)) for wid, c in table.items()}
                     e["drops"] = {str(k): {"weapon": wid, "chance": c} for k, (wid, c) in enumerate(table.items(), 1)}
                     log.append(f"drops {eid}: {table}" + (f"  (luck x{luck:.2f})" if luck > 1 else ""))
                 else:

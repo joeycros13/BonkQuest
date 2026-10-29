@@ -167,8 +167,8 @@ local World: WorldTypes.WorldDef = {
 			melee = { damage = 255, cooldown = 1, windup = 0.25, range = 2.2, chaseSpeed = 18, armor = 0.1, move = "zap" },
 			coins = { min = 169, max = 331 },
 			exp = 176,
-			-- the Forest Core: about 1%, once per player (trial numbers)
-			materials = { { id = "ForestCore", chance = 0.01, min = 1, max = 1 } },
+			-- the Forest Core: 0.1% x luck, once per player (2026-10-29)
+			materials = { { id = "ForestCore", chance = 0.001, min = 1, max = 1 } },
 		},
 	},
 
@@ -188,9 +188,9 @@ local World: WorldTypes.WorldDef = {
 			drops = {
 				{ weapon = "WoodsmansAxe", chance = 0.08 },
 				-- Legendary: the treant's living heart
-				{ weapon = "HeartwoodStaff", chance = 0.02 },
+				{ weapon = "HeartwoodStaff", chance = 0.015 },
 				-- the secret Marshmallow Stick (hidden in the Index until found)
-				{ weapon = "MarshmallowStick", chance = 0.001 }, -- secrets drop at 0.1% (the user's rule); 2% until 2026-10-20
+				{ weapon = "MarshmallowStick", chance = 0.0005 }, -- (2026-10-29, the user) each world's secret rarer than the last
 			},
 			materials = { { id = "HeartwoodSap", chance = 0.5, min = 1, max = 1 } },
 		},
