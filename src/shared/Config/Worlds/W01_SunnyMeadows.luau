@@ -49,6 +49,8 @@ local World: WorldTypes.WorldDef = {
 	-- comes back after the same time in its world; bosses and the secret enemy
 	-- after `boss` / `secret`. A spawn marker's RespawnSeconds attribute still wins.
 	respawn = { small = 10, medium = 15, elite = 20, boss = 30, secret = 30 },
+	-- enemies start an attack this far past their front: only the Weathervane Spear (10.5) and the Pitchfork (10) hit from beyond it (2026-10-28)
+	attackStart = 9.5,
 
 	enemies = {
 		-- Minion: the weakest world enemy, in flocks along the front of every path

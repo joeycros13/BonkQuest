@@ -61,6 +61,7 @@ local Balance = require(Config:WaitForChild("Balance"))
 local Enemies = require(Config:WaitForChild("Enemies"))
 local MapLayout = require(Config:WaitForChild("MapLayout"))
 local Weapons = require(Config:WaitForChild("Weapons"))
+local Worlds = require(Config:WaitForChild("Worlds"))
 local Tools = require(Config:WaitForChild("Tools"))
 -- the Worldheart Blade's damage / speed / reach follow the cores in it (Infuse.adjust)
 local Infuse = require(Config:WaitForChild("Infuse"))
@@ -165,6 +166,14 @@ end
 local function meleeOf(enemy: any): any
 	local def = Enemies.get(enemy.archetype)
 	return def and def.melee
+end
+
+-- How far past its front an enemy starts an attack: its world's attackStart (just
+-- under the world's longest weapon reaches, 2026-10-28), else its own range's share.
+local function attackStart(enemy: any, melee: any): number
+	local world = Worlds.get(enemy.worldId)
+	local start = world and world.attackStart
+	return if type(start) == "number" then start else melee.range * Balance.Melee.stopFraction
 end
 
 -- Half the enemy's widest footprint: reach is measured to its edge, not its
@@ -548,7 +557,7 @@ local function beginAttack(enemy: any, fight: Fight, melee: any, now: number)
 			return
 		end
 		local gap = flat(root.Position - fight.position).Magnitude
-		local reach = frontReach(enemy) + melee.range + Balance.Melee.dodgeSlack
+		local reach = frontReach(enemy) + math.max(melee.range, attackStart(enemy, melee)) + Balance.Melee.dodgeSlack
 		if gap <= reach and math.abs(root.Position.Y - fight.position.Y) < MAX_HEIGHT_GAP then
 			local defense = target:GetAttribute("ArmorDefense")
 			defense = if type(defense) == "number" then math.clamp(defense, 0, 0.9) else 0
@@ -602,11 +611,14 @@ local function stepFight(enemy: any, fight: Fight, melee: any, dt: number, now: 
 	if toTarget.Magnitude > 1e-3 then
 		fight.look = toTarget.Unit
 	end
-	local stop = frontReach(enemy) + melee.range * Balance.Melee.stopFraction
-	-- Winding up, the enemy lunges after its target faster than it chases, so
-	-- stepping or strafing away (shift lock included) doesn't dodge the blow.
+	local front = frontReach(enemy)
+	local stop = front + attackStart(enemy, melee)
+	-- Winding up, the enemy lunges at its target faster than it chases, right up to
+	-- it (it starts from attackStart away), so stepping or strafing away (shift lock
+	-- included) doesn't dodge the blow.
 	if now < fight.lungeUntil then
-		fight.position = approach(fight.position, root.Position, melee.chaseSpeed * Balance.Melee.lungeScale * dt, stop)
+		local close = front + melee.range * Balance.Melee.stopFraction
+		fight.position = approach(fight.position, root.Position, melee.chaseSpeed * Balance.Melee.lungeScale * dt, close)
 		return
 	end
 	if now < fight.busyUntil then

@@ -90,6 +90,9 @@ export type WorldDef = {
 	worldEnemy: WorldEnemyDef?,
 	-- seconds until a defeated enemy comes back, by tier (Balance.WorldEnemy if absent)
 	respawn: RespawnDef?,
+	-- studs past its front at which an enemy here starts an attack (MeleeService); set
+	-- just under the world's longest weapon reaches, so only those can outrange it
+	attackStart: number?,
 }
 
 return {}
