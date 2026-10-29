@@ -28,12 +28,14 @@ local World: WorldTypes.WorldDef = {
 	-- (2026-10-29): about x10 World 3's at each rank, so the bodies can stand on the map; the real
 	-- ones come from the base-fight rescale (art/tools/balance/rescale.py) with World 4's weapons.
 	-- Weapon drops (2026-10-29) follow World 3's table slot for slot: each enemy drops the weapon that makes it quicker,
-	-- one that beats the next enemy and a rare one that beats it easily. No portraits yet.
+	-- one that beats the next enemy and a rare one that beats it easily. Portraits (2026-10-29): art/portraits/enemies/portrait_<id>.png;
+	-- the Phantom Pharaoh, a secret, gets none.
 	enemies = {
 		BoneJackal = {
 			id = "BoneJackal",
 			tier = "small",
 			name = "Bone Jackal",
+			portrait = "rbxassetid://75318763153938",
 			hp = 115000,
 			melee = { damage = 18000, cooldown = 0.7, windup = 0.25, range = 1.5, chaseSpeed = 17, armor = 0, move = "pounce" },
 			coins = { min = 2800, max = 5500 },
@@ -49,6 +51,7 @@ local World: WorldTypes.WorldDef = {
 			id = "ShamblingMummy",
 			tier = "medium",
 			name = "Shambling Mummy",
+			portrait = "rbxassetid://131789092253692",
 			hp = 370000,
 			melee = { damage = 19000, cooldown = 1.1, windup = 0.3, range = 1.5, chaseSpeed = 12, armor = 0.1, move = "punch" },
 			coins = { min = 5300, max = 10400 },
@@ -64,6 +67,7 @@ local World: WorldTypes.WorldDef = {
 			id = "TombGuardian",
 			tier = "elite",
 			name = "Tomb Guardian",
+			portrait = "rbxassetid://137733596334165",
 			hp = 590000,
 			melee = { damage = 48000, cooldown = 1.4, windup = 0.35, range = 1.6, chaseSpeed = 12, armor = 0.15, move = "slash" },
 			coins = { min = 7500, max = 14800 },
@@ -92,6 +96,7 @@ local World: WorldTypes.WorldDef = {
 		SandPharaoh = {
 			id = "SandPharaoh",
 			name = "Sand Pharaoh",
+			portrait = "rbxassetid://114101663877562",
 			hp = 845000,
 			melee = { damage = 61000, cooldown = 1.4, windup = 0.35, range = 1.5, chaseSpeed = 11, armor = 0.2, move = "smash", moves = { "smash", "stomp" } },
 			coins = { min = 32000, max = 64000 },
