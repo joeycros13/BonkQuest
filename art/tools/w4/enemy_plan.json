@@ -75,11 +75,12 @@
    "template": "ShamblingMummy",
    "folder": "EnemySpawns",
    "name": "ShamblingMummy_02",
-   "x": -247.0,
+   "x": -248.0,
    "y": 8,
-   "z": -957.0,
-   "yaw": -0.0,
-   "wander": 4
+   "z": -946.0,
+   "yaw": 1.5481576989779677,
+   "wander": 4,
+   "moved": true
   },
   {
    "template": "ShamblingMummy",
@@ -115,11 +116,12 @@
    "template": "ShamblingMummy",
    "folder": "EnemySpawns",
    "name": "ShamblingMummy_06",
-   "x": -223.0,
+   "x": -258.0,
    "y": 8,
-   "z": -1145.0,
-   "yaw": 60.64224645720873,
-   "wander": 4
+   "z": -1205.0,
+   "yaw": 172.8749836510982,
+   "wander": 4,
+   "moved": true
   },
   {
    "template": "BoneJackal",
@@ -255,21 +257,23 @@
    "template": "BoneJackal",
    "folder": "EnemySpawns",
    "name": "BoneJackal_14",
-   "x": -253.0,
+   "x": -255.0,
    "y": 8,
-   "z": -1137.0,
-   "yaw": 90.0,
-   "wander": 4
+   "z": -1222.0,
+   "yaw": 136.7357045889284,
+   "wander": 4,
+   "moved": true
   },
   {
    "template": "BoneJackal",
    "folder": "EnemySpawns",
    "name": "BoneJackal_15",
-   "x": -249.0,
+   "x": -289.0,
    "y": 8,
-   "z": -1015.0,
-   "yaw": 90.0,
-   "wander": 4
+   "z": -998.0,
+   "yaw": 180.0,
+   "wander": 4,
+   "moved": true
   },
   {
    "template": "BoneJackal",

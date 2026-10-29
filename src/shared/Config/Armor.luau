@@ -250,6 +250,72 @@ Armor.Defs = {
 		regen = 0.005,
 		speed = 0.08,
 	},
+	-- ==================== World 4 (The Scorching Sands), 2026-10-29 ====================
+	-- The user's picks on the World 4 armour canvas: coin set A "Nomad Wraps", set 1 B "Bone Warden", set 2 A
+	-- "Sun King's Regalia". Numbers x10 World 3's set for set (health, coins, sells), levels the same distance
+	-- past the World 4 gate's 75 as World 3's past its 50; both bonuses from here on. Icons art/tools/icons/w4_armor_icons.html.
+	-- Blender w4_armor_nomad_build / w4_armor_bonewarden_build / w4_armor_sunking_build.
+	NomadWraps = {
+		id = "NomadWraps",
+		icon = "rbxassetid://99908469133573",
+		name = "Nomad Wraps",
+		blurb = "A desert traveller's robe, sash and wraps. Bought, not crafted.",
+		world = 4,
+		sell = 40000,
+		order = 6.5,
+		rarity = "Epic",
+		level = 77,
+		coins = 500000,
+		recipe = {
+		},
+		defense = 0.46,
+		health = 110000,
+	},
+	BoneWarden = {
+		id = "BoneWarden",
+		icon = "rbxassetid://132285634877132",
+		name = "Bone Warden",
+		blurb = "Jackal bones over a ragged tunic, a skull on the belt.",
+		world = 4,
+		sell = 62000,
+		order = 7,
+		rarity = "Legendary",
+		level = 83,
+		coins = 150000,
+		recipe = {
+			{ id = "JackalFang", count = 22 },
+			{ id = "MummyLinen", count = 10 },
+			{ id = "CactusRib", count = 18 },
+		},
+		defense = 0.49,
+		health = 220000,
+		regen = 0.005,
+		speed = 0.12,
+	},
+	SunKing = {
+		id = "SunKing",
+		icon = "rbxassetid://115831306353855",
+		name = "Sun King's Regalia",
+		blurb = "Gold scales, a jewelled collar and the Sunstone scarab.",
+		world = 4,
+		sell = 150000,
+		order = 8,
+		rarity = "Legendary",
+		level = 90,
+		coins = 750000,
+		recipe = {
+			{ id = "GuardianBronze", count = 10 },
+			{ id = "SunstoneAmulet", count = 1 },
+			{ id = "PharaohsGold", count = 3 },
+			{ id = "GoldenScarab", count = 1 },
+			{ id = "Fossil", count = 20 },
+			{ id = "MummyLinen", count = 10 },
+		},
+		defense = 0.54,
+		health = 700000,
+		regen = 0.0075,
+		speed = 0.15,
+	},
 } :: { [string]: ArmorDef }
 
 function Armor.get(id: any): ArmorDef?

@@ -450,6 +450,15 @@ local function wire(gui: ScreenGui)
 		-- an upgrade's path: the previous tool's tile in UpgradeFrom (the shared tile, like Art)
 		local from = row:FindFirstChild("UpgradeFrom")
 		local prev = def and def.recipe and def.recipe.tool and Tools.get(def.recipe.tool)
+		if from and def and def.recipe and not prev then
+			-- a recipe with no tool before it (the Sandstone Shovel, the first shovel): no path to show
+			for _, name in { "UpgradeFrom", "Arrow", "FromText" } do
+				local piece = row:FindFirstChild(name)
+				if piece and piece:IsA("GuiObject") then
+					piece.Visible = false
+				end
+			end
+		end
 		if from and prev and not from:FindFirstChild(prev.id) then
 			local tile = WeaponTile.new(prev, { name = false, stat = false, statText = "" })
 			if tile then
@@ -524,6 +533,20 @@ local function wire(gui: ScreenGui)
 		-- opening with a quest tool for sale here goes straight to its tab
 		if gui.Enabled and next(questTools(currentWorld())) ~= nil then
 			tab = "Tools"
+		end
+		-- a world whose weapons aren't on sale yet (World 4) opens on its tools
+		if gui.Enabled and tab == "Weapons" then
+			local world, any = currentWorld(), false
+			for _, row in rows() do
+				local def = defOf(row)
+				if def and not isTool(row) and (def.world or 1) == world then
+					any = true
+					break
+				end
+			end
+			if not any then
+				tab = "Tools"
+			end
 		end
 		refresh()
 		if gui.Enabled then

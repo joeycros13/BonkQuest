@@ -86,10 +86,11 @@
    "source": "Decorations",
    "folder": "Structures/Tombs",
    "name": "Tomb_2",
-   "x": -234.12,
-   "z": -1031.56,
+   "x": -240.62,
+   "z": -1136.86,
    "y": 8,
-   "yaw": 91.3
+   "yaw": 113.2,
+   "moved": true
   },
   {
    "template": "Saguaro",
@@ -126,20 +127,22 @@
    "source": "Gathering",
    "folder": "Gathering",
    "name": "Saguaro_4",
-   "x": -249.27,
-   "z": -1124.57,
+   "x": -253.77,
+   "z": -1148.14,
    "y": 8,
-   "yaw": 142.9
+   "yaw": 37.4,
+   "moved": true
   },
   {
    "template": "Saguaro",
    "source": "Gathering",
    "folder": "Gathering",
    "name": "Saguaro_5",
-   "x": -250.76,
-   "z": -1039.17,
+   "x": -276.36,
+   "z": -1057.52,
    "y": 8,
-   "yaw": 91.2
+   "yaw": 265.9,
+   "moved": true
   },
   {
    "template": "Saguaro",
@@ -246,10 +249,11 @@
    "source": "Gathering",
    "folder": "Gathering",
    "name": "DigPile_8",
-   "x": -248.09,
-   "z": -999.43,
+   "x": -275.05,
+   "z": -1000.93,
    "y": 8,
-   "yaw": 171.9
+   "yaw": 270.6,
+   "moved": true
   },
   {
    "template": "LotusPads",
@@ -636,20 +640,22 @@
    "source": "Decorations",
    "folder": "Decorations/Palms/PalmTall",
    "name": "PalmTall_7",
-   "x": -244.1,
-   "z": -1046.6,
+   "x": -224.8,
+   "z": -1039.69,
    "y": 8,
-   "yaw": 232.1
+   "yaw": 232.1,
+   "moved": true
   },
   {
    "template": "PalmTall",
    "source": "Decorations",
    "folder": "Decorations/Palms/PalmTall",
    "name": "PalmTall_8",
-   "x": -227.03,
-   "z": -1131.44,
+   "x": -226.03,
+   "z": -1127.05,
    "y": 8,
-   "yaw": 68.0
+   "yaw": 68.0,
+   "moved": true
   },
   {
    "template": "PalmTall",
@@ -806,10 +812,11 @@
    "source": "Decorations",
    "folder": "Decorations/Palms/PalmTwin",
    "name": "PalmTwin_8",
-   "x": -263.11,
+   "x": -262.61,
    "z": -970.56,
    "y": 8,
-   "yaw": 46.6
+   "yaw": 46.6,
+   "moved": true
   },
   {
    "template": "PalmTwin",
