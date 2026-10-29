@@ -344,7 +344,7 @@ Tools.Defs = {
 				{ id = "Glowfish", count = 4 },
 			},
 		},
-		handed = 1,
+		handed = 2, -- (2026-10-29) the dig uses both hands; it rests in one, like the rods
 		cooldown = 0.9,
 		hitTime = 0.5,
 		reach = 5,

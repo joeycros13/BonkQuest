@@ -1077,6 +1077,7 @@ Weapons.Defs = {
 	WorldheartBlade4 = {
 		id = "WorldheartBlade4",
 		world = 4,
+		icon = "rbxassetid://130348012138545", -- tier 4: Farm + Forest + Cave + Desert Core gems
 		rarity = "Transcendent",
 		name = "Worldheart Blade IV",
 		blurb = "The Farm, Forest, Cave and Desert Cores burn in its sockets. Four remain empty.",

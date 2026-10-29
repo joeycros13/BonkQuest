@@ -119,7 +119,7 @@ Weapons.HOLDS = {
 	-- World 4's (2026-10-28) too
 	SandstoneAxe = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
 	SandstonePickaxe = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
-	SandstoneShovel = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
+	SandstoneShovel = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0, two = 0 }, -- rests in one hand; digs with both
 	SandstoneRod = { hand = { 1.45, -0.75, -0.45 }, dir = { 0, 0.45, -1 }, roll = 0, two = 0 },
 	-- the 10-stud Pinecone Staff (6.3 ahead of the hand, 3.8 behind): held level across
 	-- the front, head out to the right and a touch back, the butt crossing in front of
@@ -353,17 +353,19 @@ Weapons.SWINGS = {
 		{ u = 0.76, hand = { 0.95, -0.3, -1.42 }, dir = { 0, -0.48, -1 }, wp = 12, rz = 0.3 },
 		{ u = 1 },
 	},
-	-- Shovels (2026-10-29, the user: the shovel only hit; "make it actually shovel it up"): a dig. The right
-	-- hand stays on the handle's end (the grip), the left comes down onto the shaft (off -1.3, toward the
-	-- spade); the spade is driven down into the ground in front (the "Hit" at the def's hitTime 0.5, where
-	-- the dig pile takes the blow), the handle is levered down so the spade comes up level with its load,
-	-- then lifted and tipped out over the right shoulder (wy turns the body that way), and back to the hold.
+	-- Shovels (2026-10-29, the user: the shovel only hit; "make it actually shovel it up"; then: both hands): a
+	-- two-handed dig (the tool's handed = 2; it rests in one hand like the rods). The right hand stays on the
+	-- handle's end (the grip), the left comes onto the shaft below it (off = studs down the shaft toward the
+	-- spade); the shovel is worked in front and a little left, where the left arm reaches the shaft. The spade
+	-- is driven into the ground (the "Hit" at the def's hitTime 0.5, where the dig pile takes the blow),
+	-- levered up level with its load, then swung up and tipped out to the left (every swing travels right to
+	-- left), and back to the hold.
 	Dig = {
 		{ u = 0 },
-		{ u = 0.22, hand = { 0.6, 0.55, -0.6 }, dir = { 0, -0.55, -1 }, two = 1, off = -1.3, wp = -3 },
-		{ u = 0.5, hand = { 0.55, -0.1, -1.1 }, dir = { 0, -1, -0.55 }, two = 1, off = -1.3, wp = 8, rz = 0.3, ease = "out" },
-		{ u = 0.66, hand = { 0.7, -0.35, -0.75 }, dir = { 0, -0.15, -1 }, two = 1, off = -1.3, wp = 6, rz = 0.2 },
-		{ u = 0.84, hand = { 1.3, 0.9, -0.7 }, dir = { 0.55, 0.55, -0.65 }, roll = 70, two = 1, off = -1.3, wy = -25, wp = -4, ease = "out" },
+		{ u = 0.22, hand = { 0.35, 0.5, -0.8 }, dir = { -0.35, -0.6, -1 }, two = 1, off = 0.9, wy = -6, wp = -3 },
+		{ u = 0.5, hand = { 0.2, 0.0, -1.0 }, dir = { -0.45, -1, -0.3 }, two = 1, off = 0.9, wy = 4, wp = 8, rz = 0.3, ease = "out" },
+		{ u = 0.66, hand = { 0.1, -0.35, -0.8 }, dir = { -0.3, -0.25, -1 }, two = 1, off = 0.8, wy = 6, wp = 5, rz = 0.2 },
+		{ u = 0.84, hand = { 0.0, 0.5, -1.1 }, dir = { -0.8, 0.4, -0.5 }, roll = -60, two = 1, off = 0.8, wy = 25, wp = -2, ease = "out" },
 		{ u = 1, two = 0 },
 	},
 	-- Diamond Pickaxe: the same mining swing, stopping a little higher and less steep for
