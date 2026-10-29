@@ -56,6 +56,12 @@
 --                               ribbon out from the spool, twice, eyes on it), beret
 --                               (straightens the beret with a little wiggle) and pat (two
 --                               pats on the apron pocket).
+--                  "Archaeologist" (Professor Dusty, the W4 quest giver, 2026-10-29) the
+--                               left arm rests raised with the magnifying glass, the
+--                               brush in the right fist; peer (the glass up to the eye,
+--                               leaning in and looking along something), brush (dusts
+--                               a find in front of him, eyes down) and ponder (taps
+--                               the brush handle on his chin, head tilted).
 --                Default style: the shopkeepers' wave / wipe.
 --   IdleActions  a comma list restricting the actions; "" means none.
 --   HandPoint    Vector3, the torso-local fist of the right hand. Parts with
@@ -149,6 +155,7 @@ local function adopt(inst: Instance)
 		elseif style == "Explorer" then { "compass", "glasses", "study" }
 		elseif style == "Sensei" then { "stroke", "bow", "stamp" }
 		elseif style == "Wrapper" then { "unspool", "beret", "pat" }
+		elseif style == "Archaeologist" then { "peer", "brush", "ponder" }
 		else { "wave", "wipe" }
 	local handAttr = inst:GetAttribute("HandPoint")
 	local listed = inst:GetAttribute("IdleActions")
@@ -211,6 +218,7 @@ local ACTION_SECONDS: { [string]: number } = {
 	compass = 3.0, glasses = 1.8, study = 3.2, -- Explorer
 	stroke = 2.8, bow = 2.6, -- Sensei (+ stamp)
 	unspool = 2.8, beret = 2.2, pat = 1.8, -- Wrapper
+	peer = 3.0, brush = 2.6, ponder = 2.4, -- Archaeologist
 }
 
 -- Per-style base motion: a weight shift (radians), whether the right arm holds still (a held
@@ -227,6 +235,7 @@ local STYLE_BASE: { [string]: { shift: number, steadyRight: boolean, lookRate: n
 	Explorer = { shift = WEIGHT_SHIFT, steadyRight = true, lookRate = 1.3, lookScale = 1.1 },
 	Sensei = { shift = 0.012, steadyRight = true, lookRate = 0.7, lookScale = 0.8 },
 	Wrapper = { shift = 0.02, steadyRight = true, lookRate = 1.1, lookScale = 0.9 },
+	Archaeologist = { shift = WEIGHT_SHIFT, steadyRight = false, lookRate = 1.1, lookScale = 1 },
 }
 
 local function pose(npc: Npc, now: number, dt: number)
@@ -472,6 +481,31 @@ local function pose(npc: Npc, now: number, dt: number)
 		fwdL = (0.5 + 0.12 * tap) * k
 		armL = -0.32 * k
 		nod = 0.22 * k
+	-- ---------- Archaeologist (the left arm rests raised with the magnifier, the brush in the right fist) ----------
+	elseif action == "peer" then
+		-- the glass comes up in front of the eye, he leans in and looks slowly along something
+		local k = plateau(u)
+		fwdL = 0.35 * k
+		armL = -0.25 * k
+		lean = 0.07 * k
+		nod = 0.06 * k
+		yawExtra = 0.18 * math.sin(u * math.pi * 2) * k
+	elseif action == "brush" then
+		-- dusting a find in front of him: the brush hand flicks side to side, eyes down
+		local k = plateau(u)
+		local flick = math.sin(now * 11)
+		fwdR = (0.75 + 0.1 * flick) * k
+		armR = (-0.2 + 0.16 * flick) * k
+		lean = 0.08 * k
+		nod = 0.26 * k
+	elseif action == "ponder" then
+		-- the brush handle tapped against the chin, head tilted, thinking it over
+		local k = plateau(u)
+		local tap = math.max(0, math.sin(u * math.pi * 6))
+		fwdR = (1.8 + 0.08 * tap) * k
+		armR = -0.45 * k
+		nod = -0.06 * k
+		yawExtra = -0.15 * k
 	end
 
 	local t = now + npc.phase

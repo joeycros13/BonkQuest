@@ -669,10 +669,186 @@ lines.ExplorerCaverns = {
 	} :: { Step },
 }
 
+-- Professor Dusty at the start of World 4 (2026-10-29), on the entry road between the corridor and the
+-- Crafter. His dig cracked the seal on the pyramid and woke the Sand Pharaoh; the Sunstone Amulet that
+-- sealed him is in its hall. The step pattern every line uses since 2026-10-26; rewards x10 Pip's step
+-- for step (trial numbers: World 4 isn't in the simulation yet).
+lines.ArchaeologistSands = {
+	id = "ArchaeologistSands",
+	name = "Curse of the Sand Pharaoh",
+	world = 4,
+	short = "The Sands",
+	npc = {
+		name = "Professor Dusty",
+		short = "Dusty",
+		portrait = "",
+	},
+	returnTrack = "Return to {Professor Dusty}",
+	returnNote = "to claim your reward",
+	finished = { "The curse is broken and the dig is open again. History owes you one, my friend!" },
+	steps = {
+		{
+			kind = "kill",
+			target = "BoneJackal",
+			count = 8,
+			objective = "Defeat 8 Bone Jackals",
+			track = "Defeat {Bone Jackals}",
+			reward = { coins = 25000, exp = 20000 },
+			offer = {
+				"Ah, a visitor! Professor Dusty, archaeologist. Mind the sand, it gets everywhere.",
+				"My team was digging at the old tombs when the bones started to walk. They ran. I stayed, naturally.",
+				"Those jackals keep running off with my finds. Could you [defeat 8 Bone Jackals]?",
+			},
+			reminder = { "They're chewing on my best pottery! [Defeat 8 Bone Jackals], please." },
+			complete = { "Splendid! And hardly a shard broken." },
+		},
+		{
+			-- the saguaros: the Sandstone Axe, made from the Stone Axe at the Weaponsmith
+			kind = "gather",
+			target = "CactusRib",
+			count = 8,
+			objective = "Collect 8 Cactus Ribs",
+			track = "Collect {Cactus Ribs}",
+			reward = { coins = 30000, exp = 30000 },
+			offer = {
+				"My trenches keep caving in. Cactus ribs make fine props: light, and tough as anything.",
+				"The Weaponsmith by the way in can turn your stone axe into a Sandstone Axe.",
+				"Then chop the big saguaros and [collect 8 Cactus Ribs]. Hold on to them, we'll want more for the shoring later.",
+			},
+			offerHasTool = {
+				"My trenches keep caving in. Cactus ribs make fine props, and I see you've got a Sandstone Axe already.",
+				"Chop the big saguaros and [collect 8 Cactus Ribs]. Hold on to them, we'll want more for the shoring later.",
+			},
+			reminder = { "The tall cacti with the arms. [Collect 8 Cactus Ribs] with a Sandstone Axe." },
+			complete = { "Good stout ribs! The trenches will hold." },
+		},
+		{
+			kind = "hunt",
+			targets = { { id = "BoneJackal", count = 12 }, { id = "ShamblingMummy", count = 3 } },
+			objective = "Defeat 12 Bone Jackals and 3 Shambling Mummies",
+			track = "Defeat {Jackals and Mummies}",
+			reward = { coins = 40000, exp = 40000 },
+			offer = {
+				"A sandstorm blew my field notes right into a pack of jackals, and now the mummies are up too.",
+				"[Defeat 12 Bone Jackals and 3 Shambling Mummies] so I can gather my pages.",
+			},
+			reminder = { "My notes are out there with them! [Defeat 12 Bone Jackals and 3 Shambling Mummies]." },
+			complete = { "Page twelve! And thirteen! They say the pyramid was sealed with a sunstone." },
+		},
+		{
+			kind = "kill",
+			target = "ShamblingMummy",
+			count = 5,
+			objective = "Defeat 5 Shambling Mummies",
+			track = "Defeat {Shambling Mummies}",
+			reward = { coins = 60000, exp = 60000 },
+			offer = {
+				"The mummies keep shuffling into my trenches and unwrapping everything.",
+				"[Defeat 5 Shambling Mummies] before they make a mess of the whole site.",
+			},
+			reminder = { "There's linen all over my dig! [Defeat 5 Shambling Mummies]." },
+			complete = { "All wrapped up. Ha! Archaeology humour." },
+		},
+		{
+			-- the dig piles: the Sandstone Shovel, World 4's first shovel (bought)
+			kind = "gather",
+			target = "Fossil",
+			count = 10,
+			objective = "Collect 10 Fossils",
+			track = "Collect {Fossils}",
+			reward = { coins = 50000, exp = 60000 },
+			offer = {
+				"Now, the fun part: digging! The mounds with a red X are full of old bones and treasure.",
+				"The Weaponsmith sells a Sandstone Shovel. Dig them up and [collect 10 Fossils].",
+			},
+			offerHasTool = {
+				"Now, the fun part: digging! The mounds with a red X are full of old bones and treasure.",
+				"You've a shovel already, splendid. Dig them up and [collect 10 Fossils].",
+			},
+			reminder = { "The mounds with the red X. [Collect 10 Fossils] with a Sandstone Shovel." },
+			complete = { "Marvellous specimens! Keep them safe, I'll want some for the key." },
+		},
+		{
+			kind = "bring",
+			items = { { id = "Fossil", count = 15 }, { id = "CactusRib", count = 15 } },
+			objective = "Bring Dusty 15 Cactus Ribs and 15 Fossils",
+			track = "Bring Dusty {Ribs and Fossils}",
+			reward = { coins = 80000, exp = 100000 },
+			offer = {
+				"The way into the pyramid's hall is shut with an old puzzle lock, all bone and timber. I can rebuild its key.",
+				"Could you [bring me 15 Cactus Ribs and 15 Fossils]? Ribs for the frame, fossils for the teeth.",
+			},
+			reminder = { "No key, no hall. [Bring me 15 Cactus Ribs and 15 Fossils]." },
+			complete = { "Click, clack... it fits! The hall is open. Oh dear. Something heard that." },
+		},
+		{
+			kind = "hunt",
+			targets = { { id = "ShamblingMummy", count = 6 }, { id = "TombGuardian", count = 3 } },
+			objective = "Defeat 6 Shambling Mummies and 3 Tomb Guardians",
+			track = "Defeat {Mummies and Guardians}",
+			reward = { coins = 100000, exp = 100000 },
+			offer = {
+				"The Tomb Guardians have woken at every doorway, and the mummies are pouring out behind them.",
+				"[Defeat 6 Shambling Mummies and 3 Tomb Guardians] and we can get inside.",
+			},
+			reminder = { "Those guardians are very large and very cross. [Defeat 6 Shambling Mummies and 3 Tomb Guardians]." },
+			complete = { "The way in is clear. And there in the great hall... the Sand Pharaoh himself." },
+		},
+		{
+			kind = "kill",
+			target = "SandPharaoh",
+			count = 1,
+			objective = "Defeat the Sand Pharaoh",
+			track = "Defeat the {Sand Pharaoh}",
+			reward = { coins = 150000, exp = 150000, item = "SunstoneAmulet" },
+			offer = {
+				"My notes say he wore the sunstone that sealed him in. When my dig cracked the seal, he woke.",
+				"[Defeat the Sand Pharaoh] and bring back anything he drops.",
+			},
+			reminder = { "He's in the hall at the heart of the pyramid. [Defeat the Sand Pharaoh]." },
+			complete = {
+				"The Sunstone Amulet! Warm as the noon sun. I never thought I'd hold it.",
+				"Keep the [Sunstone Amulet]. The Crafter here can set it into armor fit for a king.",
+			},
+		},
+		{
+			kind = "hunt",
+			targets = { { id = "TombGuardian", count = 4 }, { id = "SandPharaoh", count = 1 } },
+			objective = "Defeat 4 Tomb Guardians and the Sand Pharaoh",
+			track = "Defeat {Guardians and the Pharaoh}",
+			reward = { coins = 120000, exp = 150000 },
+			offer = {
+				"Without the sunstone his curse is weaker, but he's back, and his guardians with him.",
+				"[Defeat 4 Tomb Guardians and the Sand Pharaoh] and I can read the writing in his hall.",
+			},
+			reminder = { "The guardians won't let me near the walls. [Defeat 4 Tomb Guardians and the Sand Pharaoh]." },
+			complete = { "The inscriptions! They say the curse only breaks when the whole desert is quiet." },
+		},
+		{
+			-- the Clean Up, a long hunt through the whole world
+			kind = "hunt",
+			targets = { { id = "BoneJackal", count = 10 }, { id = "ShamblingMummy", count = 8 }, { id = "TombGuardian", count = 5 }, { id = "SandPharaoh", count = 3 } },
+			objective = "Clean up The Sands: defeat 10 Bone Jackals, 8 Shambling Mummies, 5 Tomb Guardians and the Sand Pharaoh 3 times",
+			track = "Clean up {The Sands}",
+			-- The quest-only Staff of Ra (Legendary).
+			reward = { coins = 300000, exp = 300000, weapon = "StaffOfRa" },
+			offer = {
+				"Every jackal, every mummy, every guardian answers him. The whole desert has to go quiet.",
+				"[Defeat 10 Bone Jackals, 8 Shambling Mummies, 5 Tomb Guardians and the Sand Pharaoh 3 times], and the curse will break.",
+			},
+			reminder = { "The sands are still restless. Jackals, mummies, guardians, and the Pharaoh himself." },
+			complete = {
+				"Listen... nothing at all. The curse is broken!",
+				"I found this in the Pharaoh's hall. The Staff of Ra. It belongs with a hero, not in a museum.",
+			},
+		},
+	} :: { Step },
+}
+
 Quests.lines = lines
 -- the order lines are checked in (the tracker's fallback when the player's
 -- world has nothing to show)
-Quests.order = { "DaleFarm", "RangerRedwoods", "ExplorerCaverns" }
+Quests.order = { "DaleFarm", "RangerRedwoods", "ExplorerCaverns", "ArchaeologistSands" }
 
 function Quests.get(id: any): Line?
 	return if type(id) == "string" then lines[id] else nil
