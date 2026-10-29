@@ -141,7 +141,7 @@ for tomb in [it for it in moving if it["template"] == "Tomb"]:
         if any(math.hypot(ax - bx, az - bz) < ar + br + D["GAP"] for (ax, az, ar) in jars for (bx, bz, br) in foot):
             D["placed"][:] = [p for p in D["placed"] if not (p[0] == it["template"] and abs(p[1] - it["x"]) < 0.01 and abs(p[2] - it["z"]) < 0.01)]
             relocate(it, avoid=jars)
-json.dump(plan, open(os.path.join(HERE, "decor_plan.json"), "w"), indent=1)
+json.dump(plan, open(os.path.join(HERE, "decor_plan.json"), "w", newline="\n"), indent=1)
 
 # --- enemies ----------------------------------------------------------------------------
 _esrc = open(os.path.join(HERE, "place_enemies.py"), encoding="utf-8").read().replace("\r\n", "\n")
@@ -175,4 +175,4 @@ for m in eplan["markers"]:
     assert found, m["name"]
     print("move %s (%.1f, %.1f) -> (%.1f, %.1f)" % (m["name"], m["x"], m["z"], found[0], found[1]))
     m.update(x=float(found[0]), z=float(found[1]), yaw=E["face_road"](*found), moved=True)
-json.dump(eplan, open(os.path.join(HERE, "enemy_plan.json"), "w", encoding="utf-8"), indent=1)
+json.dump(eplan, open(os.path.join(HERE, "enemy_plan.json"), "w", encoding="utf-8", newline="\n"), indent=1)
