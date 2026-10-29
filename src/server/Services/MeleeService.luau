@@ -28,8 +28,10 @@
 --
 -- Fighting back. A hit enemy leaves its client-side wander and becomes a Fight
 -- owned here: it chases its attacker, stops just inside its attack range, and
--- attacks on its own cooldown. An attack lands after the enemy's windup only if
--- the player is still in reach, so stepping back dodges it. If the enemy or its
+-- attacks on its own cooldown. Through its windup it lunges after the player
+-- (Balance.Melee.lungeScale) and the blow reaches dodgeSlack past its range, so
+-- an attack that starts in reach all but always lands (the user, 2026-10-28:
+-- players dodged every attack with shift lock). If the enemy or its
 -- target strays past Balance.Melee.leashRange from the spawn point -- or the
 -- target dies or leaves -- it walks home (immune on the way) and
 -- heals to full. Damage to players goes through Humanoid:TakeDamage, so dying is
@@ -124,6 +126,8 @@ type Fight = {
 	target: Player,
 	nextAttack: number,
 	busyUntil: number,
+	-- until the attack lands the enemy keeps lunging at its target (os.clock time)
+	lungeUntil: number,
 }
 
 local playerStates: { [Player]: PlayerState } = {}
@@ -511,6 +515,7 @@ local function startFight(enemy: any, attacker: Player, seenAt: Vector3)
 		target = attacker,
 		nextAttack = os.clock() + FIRST_ATTACK_DELAY,
 		busyUntil = 0,
+		lungeUntil = 0,
 	}
 	WorldEnemyService.setAiState(enemy.id, "Chase")
 	WorldEnemyService.setFightPose(enemy.id, start, fights[enemy.id].look)
@@ -529,6 +534,7 @@ end
 local function beginAttack(enemy: any, fight: Fight, melee: any, now: number)
 	fight.nextAttack = now + melee.cooldown
 	fight.busyUntil = now + melee.windup + RECOVERY
+	fight.lungeUntil = now + melee.windup
 	WorldEnemyService.signalAttack(enemy.id)
 	local target = fight.target
 	task.delay(melee.windup, function()
@@ -596,10 +602,16 @@ local function stepFight(enemy: any, fight: Fight, melee: any, dt: number, now: 
 	if toTarget.Magnitude > 1e-3 then
 		fight.look = toTarget.Unit
 	end
+	local stop = frontReach(enemy) + melee.range * Balance.Melee.stopFraction
+	-- Winding up, the enemy lunges after its target faster than it chases, so
+	-- stepping or strafing away (shift lock included) doesn't dodge the blow.
+	if now < fight.lungeUntil then
+		fight.position = approach(fight.position, root.Position, melee.chaseSpeed * Balance.Melee.lungeScale * dt, stop)
+		return
+	end
 	if now < fight.busyUntil then
 		return
 	end
-	local stop = frontReach(enemy) + melee.range * Balance.Melee.stopFraction
 	if toTarget.Magnitude > stop + STOP_TOLERANCE then
 		fight.position = approach(fight.position, root.Position, melee.chaseSpeed * dt, stop)
 	elseif now >= fight.nextAttack then

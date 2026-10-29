@@ -38,6 +38,8 @@ local CONTROLLER_ORDER = {
 	"EnemyAnimator",
 	"CritterController",
 	"SprintController",
+	-- our own shift lock on Ctrl (Roblox's is off)
+	"ShiftLockController",
 	-- Before WeaponController: both pose joints each frame, and the weapon arm and
 	-- swings must win over the idle / walk / sprint pose.
 	"PlayerAnimator",

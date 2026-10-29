@@ -8,7 +8,7 @@
 -- SecretOpen_W3 attribute for the session and their client opens the way in.
 --
 -- The client says which crystal a swing reached (Remotes.SecretCrystalHit); the server
--- re-checks that the player is standing by it with a weapon out, then steps the code:
+-- re-checks that the player is standing by it with a weapon or tool out, then steps the code:
 -- the next crystal in order moves it on, any other resets it (the first crystal
 -- starts it again).
 
@@ -50,7 +50,10 @@ local function onHit(player: Player, order: any)
 	local character = player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart")
 	local target = crystal(order)
-	if not (character and root and root:IsA("BasePart") and target and character:GetAttribute("Weapon")) then
+	-- a weapon or a gathering tool in hand both count, in any mix (2026-10-28, the user:
+	-- the tools' hits chimed but only weapon hits moved the code)
+	local armed = character and (character:GetAttribute("Weapon") or character:GetAttribute("Tool"))
+	if not (character and root and root:IsA("BasePart") and target and armed) then
 		return
 	end
 	if (target:GetPivot().Position - root.Position).Magnitude > MAX_DISTANCE then

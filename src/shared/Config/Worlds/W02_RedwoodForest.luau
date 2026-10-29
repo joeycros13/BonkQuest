@@ -100,8 +100,8 @@ local World: WorldTypes.WorldDef = {
 			hp = 1280, -- x10 the Chicken (2026-10-24); 904 before
 			-- Quick pounces with a snap at the end.
 			melee = { damage = 99, cooldown = 0.6, windup = 0.25, range = 1.5, chaseSpeed = 17, armor = 0, move = "pounce" },
-			coins = { min = 39, max = 78 },
-			exp = 67,
+			coins = { min = 27, max = 55 },
+			exp = 47,
 			drops = {
 				-- (2026-10-27) World 1's pattern: a common drop for this tier, one that just beats the next, a rare one that beats it easily
 				{ weapon = "Hatchet", chance = 0.25 },
@@ -119,9 +119,9 @@ local World: WorldTypes.WorldDef = {
 			name = "Wild Boar",
 			portrait = "rbxassetid://105726195455752", -- calm face (2026-10-11)
 			hp = 3840, -- x10 the Bull (2026-10-24); 2,144 before
-			melee = { damage = 108, cooldown = 1.1, windup = 0.3, range = 1.5, chaseSpeed = 15, armor = 0.1, move = "charge" },
-			coins = { min = 73, max = 151 },
-			exp = 123,
+			melee = { damage = 96, cooldown = 1.1, windup = 0.3, range = 1.5, chaseSpeed = 15, armor = 0.1, move = "charge" },
+			coins = { min = 51, max = 106 },
+			exp = 86,
 			drops = {
 				{ weapon = "Cleaver", chance = 0.15 },
 				{ weapon = "Mace", chance = 0.05 },
@@ -137,9 +137,9 @@ local World: WorldTypes.WorldDef = {
 			name = "Grizzly Bear",
 			portrait = "rbxassetid://117018743106247", -- calm face (2026-10-11)
 			hp = 5760, -- x10 the Stallion (2026-10-24); 2,928 before
-			melee = { damage = 165, cooldown = 1.4, windup = 0.35, range = 1.6, chaseSpeed = 13, armor = 0.15, move = "slam" },
-			coins = { min = 106, max = 213 },
-			exp = 179,
+			melee = { damage = 232, cooldown = 1.4, windup = 0.35, range = 1.6, chaseSpeed = 13, armor = 0.15, move = "slam" },
+			coins = { min = 74, max = 149 },
+			exp = 125,
 			drops = {
 				{ weapon = "HoneycombHammer", chance = 0.1 },
 				{ weapon = "Greatclub", chance = 0.03 },
@@ -160,9 +160,9 @@ local World: WorldTypes.WorldDef = {
 			hp = 6400, -- x10 the Corn Wraith (2026-10-24); 4,056 before
 			secret = true,
 			adminPortrait = "rbxassetid://128352315360379", -- admin panel only, never the Index (2026-10-17)
-			melee = { damage = 246, cooldown = 1, windup = 0.25, range = 2.2, chaseSpeed = 18, armor = 0.1, move = "zap" },
-			coins = { min = 151, max = 297 },
-			exp = 252,
+			melee = { damage = 149, cooldown = 1, windup = 0.25, range = 2.2, chaseSpeed = 18, armor = 0.1, move = "zap" },
+			coins = { min = 106, max = 208 },
+			exp = 176,
 			-- the Forest Core: about 1%, once per player (trial numbers)
 			materials = { { id = "ForestCore", chance = 0.01, min = 1, max = 1 } },
 		},
@@ -178,9 +178,9 @@ local World: WorldTypes.WorldDef = {
 			hp = 7680, -- x10 the Scarecrow King (2026-10-24); 4,504 before
 			-- Two attacks, picked 50/50, same damage and timing (user, 2026-10-11): the
 			-- knee-up stomp and an overhead double-arm smash.
-			melee = { damage = 199, cooldown = 1.4, windup = 0.35, range = 1.5, chaseSpeed = 10, armor = 0.2, move = "stomp", moves = { "stomp", "smash" } },
-			coins = { min = 459, max = 913 },
-			exp = 773,
+			melee = { damage = 298, cooldown = 1.4, windup = 0.35, range = 1.5, chaseSpeed = 10, armor = 0.2, move = "stomp", moves = { "stomp", "smash" } },
+			coins = { min = 321, max = 639 },
+			exp = 541,
 			drops = {
 				{ weapon = "WoodsmansAxe", chance = 0.08 },
 				-- Legendary: the treant's living heart

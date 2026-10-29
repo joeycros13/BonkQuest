@@ -22,6 +22,11 @@
 -- Polled like the walk-in rings (nothing in the game uses Touched); a player is
 -- only teleported again after COOLDOWN, so arriving inside another zone can't loop.
 --
+-- A zone with a ProximityPrompt child named "Prompt" isn't walked into: pressing the
+-- prompt sends you instead (the two secret rooms' exits, 2026-10-28, the user: the
+-- walk-in exits kept bugging out). The prompt is hand-placed (ActionText "Leave",
+-- Style Custom, so PromptController draws it as the speech bubble).
+--
 --   PortalService.send(player, target, opts?)   teleport by code (the Worlds menu will)
 
 local CollectionService = game:GetService("CollectionService")
@@ -148,6 +153,45 @@ function PortalService.isBusy(player: Player): boolean
 	return (busy[player] or 0) > os.clock()
 end
 
+local function promptOf(zone: Instance): ProximityPrompt?
+	local prompt = zone:FindFirstChild("Prompt")
+	return if prompt and prompt:IsA("ProximityPrompt") then prompt else nil
+end
+
+-- Send a player through a zone (its Target, with its Fade / KeepFalling).
+local function useZone(player: Player, zone: BasePart)
+	local value = zone:FindFirstChild("Target")
+	local target = value and value:IsA("ObjectValue") and value.Value
+	if target and target:IsA("BasePart") then
+		busy[player] = os.clock() + COOLDOWN
+		task.spawn(PortalService.send, player, target, {
+			fade = zone:GetAttribute("Fade") == true,
+			keepFalling = zone:GetAttribute("KeepFalling") == true,
+		})
+	else
+		warn(("[PortalService] %s has no Target part"):format(zone:GetFullName()))
+	end
+end
+
+-- A prompt zone sends whoever presses its prompt (not mid-teleport, and alive).
+local wired: { [Instance]: boolean } = setmetatable({}, { __mode = "k" }) :: any
+local function wirePrompt(zone: Instance)
+	local prompt = promptOf(zone)
+	if not (prompt and zone:IsA("BasePart")) or wired[prompt] then
+		return
+	end
+	wired[prompt] = true
+	prompt.Triggered:Connect(function(player: Player)
+		if (busy[player] or 0) > os.clock() or not zone:IsDescendantOf(workspace) then
+			return
+		end
+		local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+		if humanoid and humanoid.Health > 0 then
+			useZone(player, zone :: BasePart)
+		end
+	end)
+end
+
 local function poll()
 	local zones = CollectionService:GetTagged(MapLayout.Tags.TeleportZone)
 	if #zones == 0 then
@@ -168,7 +212,7 @@ local function poll()
 		end
 		local found: BasePart? = nil
 		for _, zone in zones do
-			if zone:IsA("BasePart") and zone:IsDescendantOf(workspace) and inside(zone, root.Position) then
+			if zone:IsA("BasePart") and zone:IsDescendantOf(workspace) and not promptOf(zone) and inside(zone, root.Position) then
 				found = zone
 				break
 			end
@@ -192,17 +236,7 @@ local function poll()
 			end
 			charging[player] = nil
 		end
-		local value = zone:FindFirstChild("Target")
-		local target = value and value:IsA("ObjectValue") and value.Value
-		if target and target:IsA("BasePart") then
-			busy[player] = now + COOLDOWN
-			task.spawn(PortalService.send, player, target, {
-				fade = zone:GetAttribute("Fade") == true,
-				keepFalling = zone:GetAttribute("KeepFalling") == true,
-			})
-		else
-			warn(("[PortalService] %s has no Target part"):format(zone:GetFullName()))
-		end
+		useZone(player, zone)
 	end
 	-- charge-up effects follow whoever is standing in a charging zone
 	for _, zone in zones do
@@ -250,6 +284,10 @@ function PortalService.start()
 		busy[player] = nil
 		charging[player] = nil
 	end)
+	for _, zone in CollectionService:GetTagged(MapLayout.Tags.TeleportZone) do
+		wirePrompt(zone)
+	end
+	CollectionService:GetInstanceAddedSignal(MapLayout.Tags.TeleportZone):Connect(wirePrompt)
 	task.spawn(function()
 		while true do
 			poll()

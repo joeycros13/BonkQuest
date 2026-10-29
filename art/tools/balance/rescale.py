@@ -209,6 +209,43 @@ WORLD1_FIGHTS = {
     "CornWraith": (500, "Shovel", 12, "FarmhandsGear", 0.7),
 }
 
+# --- Worlds 2 and 3 fight by fight, like World 1 (2026-10-27, the user: "do the same fight-by-fight
+# balancing for Worlds 2 and 3"). Each world's small enemy keeps its base fight (the arrival from the
+# world before, 75% taken); the medium enemy is fought at the coin set's level wearing it with the
+# small enemy's "just beats it" drop, the elite at the first crafted set's level in it, the boss three
+# levels on in the same set (the second crafted set needs the boss's quest item), the secret enemy as
+# the elite; the shares are World 1's. Health keeps the world's ladder (HP_LADDER); every enemy's damage
+# is solved from its fight, the "beats it easily" weapons for 50% of the same fight, and the rest step
+# from them as World 1's do. Upgrades: the arrival's (World 2 3, World 3 6).
+# (enemy: (weapon, level, armour, share))
+WORLD_FIGHTS = {
+    2: {"Fox": ("PumpkinMace", 25, "HarvestKnight", 0.75),
+        "Boar": ("Quarterstaff", 26, "PineconeScale", 0.75),
+        "Bear": ("Mace", 28, "WoodlandHide", 0.70),
+        "Fairy": ("Mace", 28, "WoodlandHide", 0.70),
+        "ElderTreant": ("Greatclub", 31, "WoodlandHide", 0.75)},
+    3: {"CaveBat": ("HeartwoodStaff", 50, "HeartwoodBark", 0.75),
+        "PebbleGolem": ("IronPickaxe", 52, "IronPlate", 0.75),
+        "CrystalGolem": ("GoldGauntlets", 58, "CaveRunner", 0.70),
+        "GemMole": ("GoldGauntlets", 58, "CaveRunner", 0.70),
+        "SpiderQueen": ("EmberCoalMaul", 61, "CaveRunner", 0.75)},
+}
+WORLD_UPGRADES = {2: 3, 3: 6}
+# the small enemy's common drop is the world's anchor (the last boss Legendary x1.15); its "just beats
+# the medium enemy" drop a step over it
+WORLD_SET = {2: {"Hatchet": 1.0, "Quarterstaff": 1.15}, 3: {"BatwingBlade": 1.0, "IronPickaxe": 1.15}}
+WORLD_EASY = {2: {"Cleaver": ("Boar", 0.5), "HoneycombHammer": ("Bear", 0.5), "WoodsmansAxe": ("ElderTreant", 0.5)},
+              3: {"PebbleMallet": ("PebbleGolem", 0.5), "CopperDrill": ("CrystalGolem", 0.5), "GeodeGlaive": ("SpiderQueen", 0.5)}}
+WORLD_STEP = {2: {"Mace": ("Cleaver", 1.15), "Greatclub": ("HoneycombHammer", 1.15),
+                  "LanternFlail": ("WoodsmansAxe", 1.1), "HeartwoodStaff": ("WoodsmansAxe", 1.2), "MarshmallowStick": ("WoodsmansAxe", 1.5)},
+              3: {"GoldGauntlets": ("PebbleMallet", 1.15), "EmberCoalMaul": ("CopperDrill", 1.15),
+                  "DiamondPickaxe": ("GeodeGlaive", 1.1), "QueensFang": ("GeodeGlaive", 1.2), "RockCandyClub": ("GeodeGlaive", 1.5)}}
+# the order each world's ladder climbs in (each enemy before the weapon that beats it easily)
+WORLD_ORDER = {2: ["Fox", "Boar", "+Cleaver", "+Mace", "Bear", "Fairy", "+HoneycombHammer", "+Greatclub", "ElderTreant",
+                   "+WoodsmansAxe", "+LanternFlail", "+HeartwoodStaff", "+MarshmallowStick"],
+               3: ["CaveBat", "PebbleGolem", "+PebbleMallet", "+GoldGauntlets", "CrystalGolem", "GemMole", "+CopperDrill",
+                   "+EmberCoalMaul", "SpiderQueen", "+GeodeGlaive", "+DiamondPickaxe", "+QueensFang", "+RockCandyClub"]}
+
 # base fights: (small enemy, its base fight length in seconds, share of max HP it should take)
 BASE = {1: ("Chicken", None, 0.50), 2: ("Fox", 10.0, 0.75), 3: ("CaveBat", 11.0, 0.75)}
 
@@ -369,32 +406,9 @@ def main(knobs=KNOBS, quiet=False):
             for wid, w in ws.items():
                 new_dps[wid] = dps(w)
         else:
-            by_rarity = {}
+            solve_world(data, n, anchor, log)
             for wid, w in ws.items():
-                if w.get("starter") or w.get("rarity") in ("Relic", "Transcendent") or wid in (QUEST_WEAPON[n], BOSS_WEAPON[n]):
-                    continue
-                if wid in NEW_WEAPONS.get(n, {}):
-                    continue  # its own rung (NEW_RUNG)
-                by_rarity.setdefault(w["rarity"], []).append(wid)
-            targets = {}
-            for rarity, ids in by_rarity.items():
-                mean = sum(dps(ws[i]) for i in ids) / len(ids)
-                for i in ids:
-                    # weapons sharing a rarity keep their spread round the rung
-                    share = dps(ws[i]) / mean
-                    targets[i] = anchor * LADDER[rarity] * share
-            for wid in NEW_WEAPONS.get(n, {}):
-                targets[wid] = anchor * NEW_RUNG
-            targets[QUEST_WEAPON[n]] = anchor * QUEST_LEGENDARY
-            targets[BOSS_WEAPON[n]] = anchor * BOSS_LEGENDARY
-            for wid, t in targets.items():
-                w = ws[wid]
-                if w.get("ignoreArmor"):
-                    t *= ARMOR_PIERCE
-                dmg = max(1, round(t * w["cooldown"]))
-                log.append(f"weapon {wid} (W{n} {w['rarity']}): {w['damage']} -> {dmg}  ({dps(w):.1f} -> {dmg / w['cooldown']:.1f} DPS)")
-                w["damage"] = dmg
-                new_dps[wid] = dmg / w["cooldown"]
+                new_dps[wid] = dps(w)
         # the Worldheart tier of this world: its secret x1.1
         for wid, w in ws.items():
             if w.get("rarity") == "Transcendent":
@@ -408,7 +422,6 @@ def main(knobs=KNOBS, quiet=False):
             for m in (1, 2):
                 if m < n and wid in data[m]["weapons"]:
                     w["damage"] = data[m]["weapons"][wid]["damage"]
-    calibrate(data, log)
     if not quiet:
         print("\n".join(log))
     return data
@@ -491,6 +504,107 @@ def solve_world1(data, log, runs=4000):
     for eid in WORLD1_FIGHTS:
         for wid in [w for w, (e, _) in WORLD1_EASY.items() if e == eid] + [WORLD1_FIGHTS[eid][1]]:
             log.append(f"  check {eid} with {wid}: {taken(eid, ws[wid]):.0%} of max HP taken")
+
+
+def solve_world(data, n, anchor, log, runs=4000):
+    """World n (2 or 3) fight by fight (WORLD_FIGHTS / _SET / _EASY / _STEP): health from the world's
+    ladder (the small enemy's from its base fight's length), every enemy's damage from its fight, the
+    "beats it easily" weapons from theirs, the rest stepped."""
+    import random, statistics
+    import base_fights as B
+    ws, lv = data[n]["weapons"], data[1]["leveling"]
+    every_w, every_a = {}, {}
+    for m, d in data.items():
+        for wid, w in d["weapons"].items():
+            if w.get("world") == m:
+                every_w[wid] = w
+        every_a.update(d["armor"])
+    cfg = data[n]["config"]
+    enemies = dict(cfg["enemies"]); enemies.update(cfg["bosses"])
+    up = WORLD_UPGRADES[n]
+    fights = WORLD_FIGHTS[n]
+
+    def set_dps(wid, t, why):
+        w = ws[wid]
+        dmg = max(1, round(t * w["cooldown"]))
+        log.append(f"weapon {wid} (W{n} {w['rarity']}): {w['damage']} -> {dmg}  ({dps(w):.1f} -> {dmg / w['cooldown']:.1f} DPS; {why})")
+        w["damage"] = dmg
+
+    def player(eid):
+        _, level, aid, _ = fights[eid]
+        arm = every_a[aid]
+        return B.max_hp(lv, level, arm["health"], up), (1 - arm["defense"]) * (1 + B.UP["Defense"] * up)
+
+    def stats(eid):
+        x = enemies[eid]
+        return {"hp": x["hp"], "armor": x["melee"].get("armor", 0), "windup": x["melee"]["windup"],
+                "cooldown": x["melee"]["cooldown"], "damage": x["melee"]["damage"]}
+
+    def taken(eid, w):
+        hp, mult = player(eid)
+        rng = random.Random(1)
+        return statistics.mean(B.fight(rng, w, stats(eid), up, mult)[1] for _ in range(runs)) / hp
+
+    def seconds(eid, w):
+        rng = random.Random(1)
+        return statistics.mean(B.fight(rng, w, stats(eid), up, 1)[0] for _ in range(runs // 4))
+
+    # health: the small enemy's from its base fight's length against the arrival weapon, the rest by the ladder
+    small_id, length, _ = BASE[n]
+    wpn = every_w[fights[small_id][0]]
+    per = wpn["damage"] * (1 + B.UP["Attack"] * up)
+    cd = wpn["cooldown"] * (1 + B.UP["AttackSpeed"] * up)
+    chance, mult = B.CRIT_CHANCE + B.UP["CritChance"] * up, B.CRIT_MULT + B.UP["CritDamage"] * up
+    small_hp = round(per * (1 + chance * (mult - 1)) * B.HIT_RATE / cd * length / 10) * 10
+    for group, is_boss in ((cfg["enemies"], False), (cfg["bosses"], True)):
+        for eid, x in group.items():
+            new_hp = round(small_hp * HP_LADDER[tier_of(x, is_boss)] / 10) * 10
+            log.append(f"enemy {eid} (W{n}): hp {x['hp']} -> {new_hp}")
+            x["hp"] = new_hp
+
+    def solve_enemy(eid):
+        x = enemies[eid]
+        wid, level, aid, share = fights[eid]
+        hp = player(eid)[0]
+        lo, hi = 1, hp
+        for _ in range(30):
+            mid = (lo + hi) / 2
+            x["melee"]["damage"] = mid
+            lo, hi = (mid, hi) if taken(eid, every_w[wid]) < share else (lo, mid)
+        dmg = round((lo + hi) / 2)
+        x["melee"]["damage"] = dmg
+        log.append(f"enemy {eid} (W{n}): hp {x['hp']}, damage {dmg}  ({wid}, level {level}, {aid}, upgrades {up}: "
+                   f"~{share:.0%} of {hp:,.0f} HP, {seconds(eid, every_w[wid]):.1f} s)")
+
+    def solve_easy(wid):
+        eid, share = WORLD_EASY[n][wid]
+        w = dict(ws[wid])
+        lo, hi = 1, 1e6
+        for _ in range(40):
+            mid = (lo + hi) / 2
+            w["damage"] = mid * w["cooldown"]
+            lo, hi = (lo, mid) if taken(eid, w) < share else (mid, hi)
+        set_dps(wid, (lo + hi) / 2, f"beats the {eid} easily: ~{share:.0%} taken")
+
+    def step(wid):
+        base, k = WORLD_STEP[n][wid]
+        t = dps(ws[base]) * k
+        pierce = ws[wid].get("ignoreArmor")
+        if pierce:
+            t *= ARMOR_PIERCE
+        set_dps(wid, t, f"{base} x{k}" + (" x armour-piercing" if pierce else ""))
+
+    for wid, k in WORLD_SET[n].items():
+        set_dps(wid, anchor * k, f"anchor x{k}")
+    for item in WORLD_ORDER[n]:
+        if item.startswith("+"):
+            wid = item[1:]
+            (solve_easy if wid in WORLD_EASY[n] else step)(wid)
+        else:
+            solve_enemy(item)
+    for eid, f in fights.items():
+        for w2 in [w for w, (e, _) in WORLD_EASY[n].items() if e == eid] + [f[0]]:
+            log.append(f"  check {eid} with {w2}: {taken(eid, every_w[w2]):.0%} of max HP taken, {seconds(eid, every_w[w2]):.1f} s")
 
 
 def calibrate(data, log, runs=4000):
