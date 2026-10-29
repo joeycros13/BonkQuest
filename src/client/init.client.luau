@@ -65,6 +65,8 @@ local CONTROLLER_ORDER = {
 	"InfuserController",
 	-- World 3's secret: the three breathing crystals and their colour code
 	"SecretCrystalController",
+	-- the secret rooms' plaques: the core's shadow until you have it, then the core
+	"SecretPlaqueController",
 	-- trees and rocks you break with your weapon for materials
 	"GatherController",
 	-- casting, the bobber and the line, bites and the reel-in (FishingBarUI draws the reel bar)
