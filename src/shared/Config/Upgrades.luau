@@ -89,7 +89,7 @@ Upgrades.Defs = {
 	Exp = { id = "Exp", name = "EXP", icon = "rbxassetid://72394547070909", base = 1, step = 0.15, show = "x", format = "%s EXP", order = 11, worlds = { 5, 8 } },
 	-- the chance a tree's or rock's drop comes doubled (2026-10-22, the user: 0% at level 0;
 	-- +12% a level since 2026-10-28, was +1%; it was +10% materials a level before)
-	Gathering = { id = "Gathering", name = "Gathering", icon = "rbxassetid://129985267522626", base = 0, step = 0.12, show = "percent", format = "%s chance to double materials", order = 12, worlds = { 2, 6 } },
+	Gathering = { id = "Gathering", name = "Gathering", icon = "rbxassetid://138227733867903", base = 0, step = 0.12, show = "percent", format = "%s chance to double materials", order = 12, worlds = { 2, 6 } },
 } :: { [string]: UpgradeDef }
 
 -- Every word the panel shows (the user's rule: UI text lives in code).
@@ -104,6 +104,7 @@ Upgrades.Text = {
 	buy = "Upgrade",
 	maxWorld = "Max for World %d · more in World %d",
 	maxHere = "All of World %d's levels",
+	moreLater = "More levels in World %d",
 	maxAll = "Fully upgraded",
 	noSprint = "No sprint yet",
 	-- the second set before the first is done: "Finish Defense at World 1's upgrader"
