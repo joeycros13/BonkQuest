@@ -1,22 +1,27 @@
 --!strict
--- UpgradesUI: the Upgrades stand's panel (2026-10-19, option B "list + detail" on
+-- UpgradesUI: the upgrader's panel (2026-10-19, option B "list + detail" on
 -- https://claude.ai/artifact/AxKfkGh2E8rdPAGwFEfDR1), hand-built as
--- StarterGui/UpgradesShop (Panel = "Upgrades", opened by the stand's ring,
+-- StarterGui/UpgradesShop (Panel = "Upgrades", opened by every world's upgrader ring,
 -- Station "Upgrades"). The upgrades and every word are in Config/Upgrades.
+-- Since 2026-10-28 each world's upgrader sells only that world's three upgrades
+-- (Upgrades.soldIn): the panel shows those (the player's CurrentWorld), each row's pips
+-- are that world's set, the track shows the upgrade's two sets, and a second set waits
+-- ("Finish Defense at World 1's upgrader") until the first is bought in its own world.
 --
 -- Names the code uses:
---   Window/List       a ScrollingFrame of Templates/UpgradeRow clones, one per upgrade
---                     (Icon, UpgradeName, Pips/Pip1..3 for this world's three levels;
---                     IdleFill / SelectedFill / PipOn / PipOff attributes). Its canvas
---                     follows its layout (a one-column UIGridLayout since 2026-10-20, so a
---                     hovered or selected row grows round its own middle).
---   Window/World      Label: the highest world unlocked (it sets the cap)
+--   Window/List       a ScrollingFrame of Templates/UpgradeRow clones, one per upgrade,
+--                     only this world's shown (Icon, UpgradeName, Pips/Pip1..3 for this
+--                     world's three levels; IdleFill / SelectedFill / PipOn / PipOff
+--                     attributes). Its canvas follows its layout (a one-column UIGridLayout
+--                     since 2026-10-20, so a hovered or selected row grows round its own middle).
+--   Window/World      Label: the world this upgrader is in
 --   Window/Coins      Amount (deep): the player's coins
 --   Window/Detail/Card/Stage/Preview   the selected upgrade's icon
 --   .../Info          UpgradeName, LevelPill/Label "Lv 2 / 3", Note ("Level 2 of 3 in
 --                     World 1"), NowCard / NextCard (Title, Value, StatIcon(+Shadow) =
 --                     the icon), TrackLabel, Track (Templates/WorldTemplate clones, one
---                     per world: Pips/Pip1..3, Label "W1"; PipOn / PipOpen / PipLocked /
+--                     per world, only the upgrade's two shown: Pips/Pip1..3, Label "W1";
+--                     PipOn / PipOpen / PipLocked /
 --                     LockedTransparency attributes), Cost (Amount, deep; MetColor /
 --                     ShortColor), Buy (Skin, Label; SkinCraft / SkinLocked,
 --                     StrokeCraft / StrokeLocked, TextBuy / TextCoins / TextCapped /
@@ -55,6 +60,11 @@ end
 
 local function highest(): number
 	return math.clamp(number("HighestWorld", 1), 1, Upgrades.MAX_WORLD)
+end
+
+-- The world whose upgrader the player stands at (the stall is in their current world).
+local function here(): number
+	return math.clamp(number("CurrentWorld", 1), 1, Upgrades.MAX_WORLD)
 end
 
 local function setButton(button: any, look: string, words: string)
@@ -133,8 +143,9 @@ function UpgradesUI.refresh()
 		return
 	end
 	build()
-	local world = highest()
-	local cap = Upgrades.cap(world)
+	-- the stall stands in the player's world: it sells that world's three upgrades
+	local world = here()
+	local top = highest()
 	local info = Worlds.get(world)
 	if info and window:FindFirstChild("World") then
 		window.World.Label.Text = Upgrades.Text.worldPill:format(world, (info.name:gsub("^The ", "")))
@@ -144,37 +155,56 @@ function UpgradesUI.refresh()
 		coinsAmount.Text = Format.coins(number("Coins", 0))
 	end
 
-	-- the rows: this world's three levels
-	local from = (world - 1) * Upgrades.LEVELS_PER_WORLD
+	local sold = Upgrades.soldIn(world)
+	local soldHere: { [string]: boolean } = {}
+	for _, d in sold do
+		soldHere[d.id] = true
+	end
+	if not soldHere[selected] and sold[1] then
+		selected = sold[1].id
+	end
+
+	-- the rows: this world's upgrades, each with this world's set of three levels
 	for _, row in window.List:GetChildren() do
 		local def = Upgrades.get(row.Name)
 		if def and row:IsA("GuiButton") then
-			local level = Upgrades.level(player, def.id)
-			row.BackgroundColor3 = row:GetAttribute(if def.id == selected then "SelectedFill" else "IdleFill") or row.BackgroundColor3
-			row:SetAttribute("Selected", def.id == selected) -- stays grown (Util.ButtonFx)
-			paintPips(row.Pips, from, level, true, row)
+			row.Visible = soldHere[def.id] == true
+			if row.Visible then
+				local level = Upgrades.level(player, def.id)
+				local set = Upgrades.setIn(def, world) :: number
+				row.BackgroundColor3 = row:GetAttribute(if def.id == selected then "SelectedFill" else "IdleFill") or row.BackgroundColor3
+				row:SetAttribute("Selected", def.id == selected) -- stays grown (Util.ButtonFx)
+				paintPips(row.Pips, (set - 1) * Upgrades.LEVELS_PER_WORLD, level, true, row)
+			end
 		end
 	end
 
 	local def = Upgrades.get(selected)
-	if not def then
+	if not (def and soldHere[def.id]) then
 		return
 	end
 	local level = Upgrades.level(player, def.id)
-	local inWorld = math.clamp(level - from, 0, Upgrades.LEVELS_PER_WORLD)
+	local set = Upgrades.setIn(def, world) :: number
+	local from = (set - 1) * Upgrades.LEVELS_PER_WORLD
+	local inSet = math.clamp(level - from, 0, Upgrades.LEVELS_PER_WORLD)
 	local card = window.Detail.Card
 	local detail = card.Info
 	card.Stage.Preview.Image = def.icon
 	detail.UpgradeName.Text = def.name
-	detail.LevelPill.Label.Text = ("Lv %d / %d"):format(inWorld, Upgrades.LEVELS_PER_WORLD)
-	detail.Note.Text = Upgrades.Text.levelOf:format(inWorld, Upgrades.LEVELS_PER_WORLD, world)
+	detail.LevelPill.Label.Text = ("Lv %d / %d"):format(inSet, Upgrades.LEVELS_PER_WORLD)
+	detail.Note.Text = Upgrades.Text.levelOf:format(inSet, Upgrades.LEVELS_PER_WORLD, world)
 	detail.NowCard.Title.Text = Upgrades.Text.now
 	detail.NowCard.Value.Text = Upgrades.describe(def, level)
 	detail.NextCard.Title.Text = Upgrades.Text.next
 	local maxed = level >= Upgrades.maxLevel()
-	local capped = not maxed and level >= cap
+	-- this world's three are bought (more may come in the upgrade's other world)
+	local doneHere = not maxed and inSet >= Upgrades.LEVELS_PER_WORLD
+	-- the first set, sold in its own world, comes first
+	local waiting = level < from
+	local later = def.worlds[set + 1]
 	detail.NextCard.Value.Text = if maxed then Upgrades.Text.maxAll
-		elseif capped then Upgrades.Text.maxWorld:format(world, world + 1)
+		elseif doneHere then (if later then Upgrades.Text.maxWorld:format(world, later) else Upgrades.Text.maxHere:format(world))
+		elseif waiting then Upgrades.Text.finishFirst:format(def.name, def.worlds[1])
 		else Upgrades.describe(def, level + 1)
 	for _, cardName in { "NowCard", "NextCard" } do
 		for _, iconName in { "StatIcon", "StatIconShadow" } do
@@ -184,29 +214,35 @@ function UpgradesUI.refresh()
 			end
 		end
 	end
+	-- the track: the upgrade's two sets, in the two worlds that sell them
 	detail.TrackLabel.Text = Upgrades.Text.allLevels
 	for _, group in detail.Track:GetChildren() do
 		local w = tonumber((group.Name:match("^W(%d+)$")))
 		if w and group:IsA("GuiObject") then
-			local open = w <= world
-			paintPips(group.Pips, (w - 1) * Upgrades.LEVELS_PER_WORLD, level, open, window.Templates.WorldTemplate)
-			local fade = if open then 0 else (window.Templates.WorldTemplate:GetAttribute("LockedTransparency") or 0.5)
-			group.Label.TextTransparency = fade
+			local index = Upgrades.setIn(def, w)
+			group.Visible = index ~= nil
+			if index then
+				local open = w <= top
+				paintPips(group.Pips, (index - 1) * Upgrades.LEVELS_PER_WORLD, level, open, window.Templates.WorldTemplate)
+				local fade = if open then 0 else (window.Templates.WorldTemplate:GetAttribute("LockedTransparency") or 0.5)
+				group.Label.TextTransparency = fade
+			end
 		end
 	end
 
 	local buy = detail.Buy
-	local cost = if maxed then 0 else Upgrades.cost(def, level + 1)
+	local blocked = maxed or doneHere or waiting
+	local cost = if blocked then 0 else Upgrades.cost(def, level + 1)
 	local amount = detail.Cost:FindFirstChild("Amount", true)
-	detail.Cost.Visible = not maxed and not capped
+	detail.Cost.Visible = not blocked
 	if amount then
 		amount.Text = Format.coins(cost)
 		amount.TextColor3 = detail.Cost:GetAttribute(if number("Coins", 0) >= cost then "MetColor" else "ShortColor") or amount.TextColor3
 	end
-	if maxed then
+	if maxed or doneHere then
 		setButton(buy, "Locked", buy:GetAttribute("TextMaxed") or "Maxed")
-	elseif capped then
-		setButton(buy, "Locked", (buy:GetAttribute("TextCapped") or "Unlock World %d"):format(world + 1))
+	elseif waiting then
+		setButton(buy, "Locked", Upgrades.Text.finishShort:format(def.worlds[1]))
 	elseif number("Coins", 0) < cost then
 		setButton(buy, "Locked", buy:GetAttribute("TextCoins") or "Need Coins")
 	else
@@ -233,7 +269,7 @@ end
 local function wire(found: ScreenGui)
 	window = found:WaitForChild("Window")
 	window.Detail.Card.Info.Buy.Activated:Connect(onBuy)
-	local names = { "Coins", "HighestWorld" }
+	local names = { "Coins", "HighestWorld", "CurrentWorld" }
 	for _, def in Upgrades.list() do
 		table.insert(names, Upgrades.attr(def.id))
 	end

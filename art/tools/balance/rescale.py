@@ -69,6 +69,7 @@ DROP_SHARE = 0.25
 # --- gathering matters more (the user, 2026-10-26: wood and stone came too easily, in big bunches;
 # "more integrated into the game so it's not just a killing RPG") -------------------------------
 GATHER_YIELD = 1            # every node gives one of its material a break (2-3 before); rare extras stay
+HITS_PER_NODE = 4           # hits of the weakest tool that breaks a node (2026-10-28; World 1 was 5, World 3 5-6)
 # armour recipes: material -> count (the coins too); the first set cheaper (the user: hard to come by at
 # its level 5)
 ARMOR_CHANGES = {
@@ -305,6 +306,18 @@ def main(knobs=KNOBS, quiet=False):
         data[1]["gathering"][nid]["hp"] = 50
     for tid in ("WoodenAxe", "WoodenPickaxe"):
         data[1]["tools"][tid]["power"] = 10
+    # every node breaks in HITS_PER_NODE hits of the lowest tool that can break it (2026-10-28, the
+    # user: 4 a node in every world, so recipes can ask for a lot more of what they give)
+    tools = {}
+    for d in data.values():
+        tools.update(d.get("tools", {}))
+    for d in data.values():
+        for nid, node in d.get("gathering", {}).items():
+            fit = [t for t in tools.values() if t.get("kind") == node.get("tool") and t.get("tier", 0) >= node.get("tier", 0) and t.get("power")]
+            if fit:
+                weakest = min(fit, key=lambda t: t["tier"])
+                node["hp"] = HITS_PER_NODE * weakest["power"]
+    log.append(f"nodes: {HITS_PER_NODE} hits of the weakest tool that breaks them")
     # every enemy material a flat 50% for 1, luck never applied (cores keep their 1%)
     for d in data.values():
         for group in ("enemies", "bosses"):
@@ -533,7 +546,7 @@ def solve_world(data, n, anchor, log, runs=4000):
     def player(eid):
         _, level, aid, _ = fights[eid]
         arm = every_a[aid]
-        return B.max_hp(lv, level, arm["health"], up), (1 - arm["defense"]) * (1 + B.UP["Defense"] * up)
+        return B.max_hp(lv, level, arm["health"], up), (1 - arm["defense"]) * (1 + B.UP["Defense"] * B.L(up, "Defense"))
 
     def stats(eid):
         x = enemies[eid]
@@ -552,9 +565,9 @@ def solve_world(data, n, anchor, log, runs=4000):
     # health: the small enemy's from its base fight's length against the arrival weapon, the rest by the ladder
     small_id, length, _ = BASE[n]
     wpn = every_w[fights[small_id][0]]
-    per = wpn["damage"] * (1 + B.UP["Attack"] * up)
-    cd = wpn["cooldown"] * (1 + B.UP["AttackSpeed"] * up)
-    chance, mult = B.CRIT_CHANCE + B.UP["CritChance"] * up, B.CRIT_MULT + B.UP["CritDamage"] * up
+    per = wpn["damage"] * (1 + B.UP["Attack"] * B.L(up, "Attack"))
+    cd = wpn["cooldown"] * (1 + B.UP["AttackSpeed"] * B.L(up, "AttackSpeed"))
+    chance, mult = B.CRIT_CHANCE + B.UP["CritChance"] * B.L(up, "CritChance"), B.CRIT_MULT + B.UP["CritDamage"] * B.L(up, "CritDamage")
     small_hp = round(per * (1 + chance * (mult - 1)) * B.HIT_RATE / cd * length / 10) * 10
     for group, is_boss in ((cfg["enemies"], False), (cfg["bosses"], True)):
         for eid, x in group.items():
@@ -624,14 +637,14 @@ def calibrate(data, log, runs=4000):
         wpn = weapons[wid]
         arm = armor[aid] if aid else {"health": 0, "defense": 0}
         hp = B.max_hp(lv, level, arm["health"], up)
-        taken = (1 - arm["defense"]) * (1 + B.UP["Defense"] * up)
+        taken = (1 - arm["defense"]) * (1 + B.UP["Defense"] * B.L(up, "Defense"))
         small = cfg["enemies"][small_id]
         old_small_dmg = small["melee"]["damage"]
         if length:
             # the base weapon's damage a second against it, hits and crits on average
-            per = wpn["damage"] * (1 + B.UP["Attack"] * up)
-            cd = wpn["cooldown"] * (1 + B.UP["AttackSpeed"] * up)
-            chance, mult = B.CRIT_CHANCE + B.UP["CritChance"] * up, B.CRIT_MULT + B.UP["CritDamage"] * up
+            per = wpn["damage"] * (1 + B.UP["Attack"] * B.L(up, "Attack"))
+            cd = wpn["cooldown"] * (1 + B.UP["AttackSpeed"] * B.L(up, "AttackSpeed"))
+            chance, mult = B.CRIT_CHANCE + B.UP["CritChance"] * B.L(up, "CritChance"), B.CRIT_MULT + B.UP["CritDamage"] * B.L(up, "CritDamage")
             eff = per * (1 + chance * (mult - 1)) * B.HIT_RATE / cd
             new_hp = round(eff * length / 10) * 10
             log.append(f"enemy {small_id} (W{n} base): hp {small['hp']} -> {new_hp}")

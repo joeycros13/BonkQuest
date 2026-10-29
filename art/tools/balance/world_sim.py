@@ -210,8 +210,12 @@ START = {}
 # it was only Health, Defense, Attack and Attack Speed). Config/Upgrades steps a level.
 UPG = {"health": 0, "defense": 0, "attack": 0, "speed": 0, "critChance": 0, "critDamage": 0,
        "regen": 0, "coins": 0, "exp": 0, "luck": 0, "gathering": 0, "sprint": 0}
-UPG_STEP = {"health": 0.05, "defense": -0.01, "attack": 0.03, "speed": -0.015, "critChance": 0.01, "critDamage": 0.05,
-            "regen": 0.0015, "coins": 0.04, "exp": 0.04, "luck": 0.05, "gathering": 0.01, "sprint": 0.04}
+UPG_STEP = {"health": 0.15, "defense": -0.05, "attack": 0.12, "speed": -0.06, "critChance": 0.04, "critDamage": 0.20,
+            "regen": 0.005, "coins": 0.15, "exp": 0.15, "luck": 0.20, "gathering": 0.12, "sprint": 0.12}
+# the two worlds whose upgraders sell each upgrade's levels 1-3 and 4-6 (2026-10-28 rework)
+UPG_WORLDS = {"sprint": (1, 4), "luck": (3, 7), "health": (1, 5), "defense": (1, 4), "attack": (2, 5),
+              "speed": (3, 7), "critDamage": (6, 8), "critChance": (4, 8), "regen": (3, 7),
+              "coins": (2, 6), "exp": (5, 8), "gathering": (2, 6)}
 
 
 def upg(name):
@@ -299,7 +303,7 @@ class Run:
         # with the Sprint upgrade the player sprints everywhere (Bonuses.speed adds its share)
         boost = min(self.worn("speed"), 0.5)
         if UPG["sprint"] > 0:
-            boost += 0.16 + UPG_STEP["sprint"] * UPG["sprint"]
+            boost += 0.18 + UPG_STEP["sprint"] * UPG["sprint"]
         return self.w.speed * (1 + boost)
 
     def maxhp(self):
@@ -1022,8 +1026,9 @@ def main():
             "armor": [x for x in a.start_armor.split(",") if x],
             "wear": a.start_wear or None,
         })
+    # --upgrades N: every set sold up to world N // 3 bought (3: World 1's, 6: Worlds 1-2's)
     for k in UPG:
-        UPG[k] = a.upgrades
+        UPG[k] = 3 * sum(1 for w in UPG_WORLDS[k] if w <= a.upgrades // 3)
     old_curve = dict(data["leveling"])
     apply_overrides(data, a.set)
     if a.remap:

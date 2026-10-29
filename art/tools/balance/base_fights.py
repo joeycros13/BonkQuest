@@ -30,9 +30,26 @@ FIRST_ATTACK = 0.5     # MeleeService FIRST_ATTACK_DELAY
 CRIT_CHANCE, CRIT_MULT = 0.10, 1.5   # Balance.Melee, the Crit upgrades' level 0
 ENEMY_LAND = 0.78      # world_sim PLAYER.enemyLand: the share of enemy attacks that land in the game
 
-# Config/Upgrades steps a level
-UP = {"Health": 0.05, "Defense": -0.01, "Attack": 0.03, "AttackSpeed": -0.015,
-      "CritDamage": 0.05, "CritChance": 0.01}
+# Config/Upgrades steps a level (2026-10-28 rework: each world's upgrader sells three upgrades,
+# 3 levels each, and every upgrade is sold in two worlds, Upgrades.Defs `worlds`)
+UP = {"Health": 0.15, "Defense": -0.05, "Attack": 0.12, "AttackSpeed": -0.06,
+      "CritDamage": 0.20, "CritChance": 0.04}
+UP_WORLDS = {"Sprint": (1, 4), "Luck": (3, 7), "Health": (1, 5), "Defense": (1, 4), "Attack": (2, 5),
+             "AttackSpeed": (3, 7), "CritDamage": (6, 8), "CritChance": (4, 8), "Regen": (3, 7),
+             "Coins": (2, 6), "Exp": (5, 8), "Gathering": (2, 6)}
+
+
+def levels_through(world):
+    """Every upgrade's level with every set sold in worlds 1..world bought."""
+    return {k: 3 * sum(1 for w in ws if w <= world) for k, ws in UP_WORLDS.items()}
+
+
+def L(up, name):
+    """An upgrade's level: `up` is a {name: level} table, or a number n meaning every set sold
+    up to world n // 3 bought (3: World 1's, 6: Worlds 1-2's; the old "upgrades n" arrivals)."""
+    if isinstance(up, dict):
+        return up.get(name, 0)
+    return levels_through(up // 3)[name]
 
 def load(n):
     return json.load(open(HERE / f"world{n}.json", encoding="utf-8"))
@@ -55,7 +72,7 @@ def enemies_of(data):
 def max_hp(lv, level, armor_health, up):
     if lv.get("healthKnee"):
         from world_sim import level_health
-        return (level_health(lv, level) + armor_health) * (1 + UP["Health"] * up)
+        return (level_health(lv, level) + armor_health) * (1 + UP["Health"] * L(up, "Health"))
     if lv.get("growth"):
         # Leveling since 2026-10-24: x10 every 25 levels
         base = math.floor(lv["baseHealth"] * lv["growth"] ** (level - lv["start"]) + 0.5)
@@ -65,16 +82,16 @@ def max_hp(lv, level, armor_health, up):
             if level >= at:
                 scale = mult
         base = (lv["baseHealth"] + lv["healthPerLevel"] * (level - lv["start"])) * scale
-    return (base + armor_health) * (1 + UP["Health"] * up)
+    return (base + armor_health) * (1 + UP["Health"] * L(up, "Health"))
 
 
 def fight(rng, weapon, enemy, up, taken_mult):
     """One fight. Returns (seconds, damage taken)."""
-    per = weapon["damage"] * (1 + UP["Attack"] * up) * (1 - (0 if weapon.get("ignoreArmor") else enemy["armor"]))
-    cooldown = weapon["cooldown"] * (1 + UP["AttackSpeed"] * up)
-    chance, mult = CRIT_CHANCE + UP["CritChance"] * up, CRIT_MULT + UP["CritDamage"] * up
+    per = weapon["damage"] * (1 + UP["Attack"] * L(up, "Attack")) * (1 - (0 if weapon.get("ignoreArmor") else enemy["armor"]))
+    cooldown = weapon["cooldown"] * (1 + UP["AttackSpeed"] * L(up, "AttackSpeed"))
+    chance, mult = CRIT_CHANCE + UP["CritChance"] * L(up, "CritChance"), CRIT_MULT + UP["CritDamage"] * L(up, "CritDamage")
     hp = enemy["hp"]
-    t = ENGAGE + weapon["hitTime"] * (1 + UP["AttackSpeed"] * up)
+    t = ENGAGE + weapon["hitTime"] * (1 + UP["AttackSpeed"] * L(up, "AttackSpeed"))
     first = None
     while True:
         if rng.random() < HIT_RATE:
@@ -95,7 +112,7 @@ def fight(rng, weapon, enemy, up, taken_mult):
 
 def maxed_dps(weapon, up):
     """Hits only, no crits (Bonuses.dps): damage x Attack / (cooldown x Attack Speed)."""
-    return weapon["damage"] * (1 + UP["Attack"] * up) / (weapon["cooldown"] * (1 + UP["AttackSpeed"] * up))
+    return weapon["damage"] * (1 + UP["Attack"] * L(up, "Attack")) / (weapon["cooldown"] * (1 + UP["AttackSpeed"] * L(up, "AttackSpeed")))
 
 
 def main():
@@ -119,7 +136,7 @@ def main():
         wpn = weapons[wid]
         arm = armor[aid] if aid else {"health": 0, "defense": 0}
         hp = max_hp(lv, level, arm["health"], up)
-        taken_mult = (1 - arm["defense"]) * (1 + UP["Defense"] * up)
+        taken_mult = (1 - arm["defense"]) * (1 + UP["Defense"] * L(up, "Defense"))
         print(f"\nWorld {world}: level {level}, {wpn['name']}, {aid or 'no armour'}, upgrades {up}: {hp:,.0f} HP, takes x{taken_mult:.3f}")
         for eid, e in worlds[world].items():
             res = [fight(rng, wpn, e, up, taken_mult) for _ in range(a.runs)]

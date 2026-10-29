@@ -1,6 +1,6 @@
 --!strict
--- UpgradeService: the stat upgrades bought at World 1's Upgrades stand
--- (Config/Upgrades; 2026-10-19, the user's design).
+-- UpgradeService: the stat upgrades bought at each world's upgrader stall
+-- (Config/Upgrades; 2026-10-19, the user's design; one per world since 2026-10-28).
 --
 -- Each player's levels are saved as the "upgrades" section of PlayerDataService,
 -- { [id] = level }, and published as "Upgrade_<id>" player attributes, which the
@@ -10,9 +10,9 @@
 -- healing: Roblox's own Health script keeps its 1% a second, and every second
 -- this adds the upgrade's extra share of max health.
 --
--- Remotes.BuyUpgrade(id) -> (ok, reason): at the Upgrades stand (StallService.atStall,
--- Station "Upgrades"), below the player's cap (3 levels per world unlocked,
--- HighestWorld) and with the coins.
+-- Remotes.BuyUpgrade(id) -> (ok, reason): at the upgrader of the world that sells the
+-- next level (StallService.atStall, Station "Upgrades", the ring's World attribute),
+-- that world unlocked (HighestWorld) and with the coins.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -49,15 +49,20 @@ local function highestWorld(player: Player): number
 	return if type(value) == "number" then value else 1
 end
 
--- Why `player` can't buy the next level of `def` now, or nil if they can.
+-- Why `player` can't buy the next level of `def` now, or nil if they can. The next
+-- level belongs to one world's set and is sold only at that world's upgrader, so a
+-- second set (World 4's Defense) waits for the first, bought back in its own world.
 function UpgradeService.blocker(player: Player, def: Upgrades.UpgradeDef): string?
 	local level = Upgrades.level(player, def.id)
 	if level >= Upgrades.maxLevel() then
 		return "maxed"
-	elseif level >= Upgrades.cap(highestWorld(player)) then
+	end
+	local world = Upgrades.worldOf(def, level + 1)
+	local stalls = deps.Services.StallService
+	if world > highestWorld(player) then
 		return "capped"
-	elseif not deps.Services.StallService.atStall(player, STATION) then
-		return "away"
+	elseif not stalls.atStall(player, STATION, world) then
+		return if stalls.atStall(player, STATION) then "elsewhere" else "away"
 	elseif deps.Services.CoinService.get(player) < Upgrades.cost(def, level + 1) then
 		return "coins"
 	end

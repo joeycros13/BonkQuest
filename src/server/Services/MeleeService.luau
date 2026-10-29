@@ -168,6 +168,14 @@ local function meleeOf(enemy: any): any
 	return def and def.melee
 end
 
+-- How fast an enemy runs: its own chase speed x its world's chaseScale (2026-10-28, the
+-- user: enemies faster every world, so the Sprint levels are worth buying).
+local function chaseSpeed(enemy: any, melee: any): number
+	local world = Worlds.get(enemy.worldId)
+	local scale = world and world.chaseScale
+	return melee.chaseSpeed * (if type(scale) == "number" then scale else 1)
+end
+
 -- How far past its front an enemy starts an attack: its world's attackStart (just
 -- under the world's longest weapon reaches, 2026-10-28), else its own range's share.
 local function attackStart(enemy: any, melee: any): number
@@ -597,7 +605,7 @@ local function stepFight(enemy: any, fight: Fight, melee: any, dt: number, now: 
 			return
 		end
 		fight.look = toHome.Unit
-		fight.position = approach(fight.position, home, melee.chaseSpeed * Balance.Melee.returnSpeedScale * dt, 0)
+		fight.position = approach(fight.position, home, chaseSpeed(enemy, melee) * Balance.Melee.returnSpeedScale * dt, 0)
 		return
 	end
 
@@ -618,14 +626,14 @@ local function stepFight(enemy: any, fight: Fight, melee: any, dt: number, now: 
 	-- included) doesn't dodge the blow.
 	if now < fight.lungeUntil then
 		local close = front + melee.range * Balance.Melee.stopFraction
-		fight.position = approach(fight.position, root.Position, melee.chaseSpeed * Balance.Melee.lungeScale * dt, close)
+		fight.position = approach(fight.position, root.Position, chaseSpeed(enemy, melee) * Balance.Melee.lungeScale * dt, close)
 		return
 	end
 	if now < fight.busyUntil then
 		return
 	end
 	if toTarget.Magnitude > stop + STOP_TOLERANCE then
-		fight.position = approach(fight.position, root.Position, melee.chaseSpeed * dt, stop)
+		fight.position = approach(fight.position, root.Position, chaseSpeed(enemy, melee) * dt, stop)
 	elseif now >= fight.nextAttack then
 		beginAttack(enemy, fight, melee, now)
 	end

@@ -93,6 +93,8 @@ export type WorldDef = {
 	-- studs past its front at which an enemy here starts an attack (MeleeService); set
 	-- just under the world's longest weapon reaches, so only those can outrange it
 	attackStart: number?,
+	-- every enemy's chase speed here x this (MeleeService; faster every world)
+	chaseScale: number?,
 }
 
 return {}

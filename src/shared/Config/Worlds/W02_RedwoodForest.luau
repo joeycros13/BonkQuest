@@ -88,8 +88,10 @@ local World: WorldTypes.WorldDef = {
 	-- comes back after the same time in its world; bosses and the secret enemy
 	-- after `boss` / `secret`. A spawn marker's RespawnSeconds attribute still wins.
 	respawn = { small = 10, medium = 15, elite = 20, boss = 30, secret = 30 },
-	-- enemies start an attack this far past their front: only the Quarterstaff (11) and the Heartwood Staff (10.5) hit from beyond it (2026-10-28)
-	attackStart = 10,
+	-- enemies start an attack this far past their front: only the Quarterstaff (11) and the Heartwood Staff (10.5) hit from beyond it, with a stud or two to spare (2026-10-28; a stud shorter the same day, the user: a touch too far)
+	attackStart = 9,
+	-- every enemy here chases at its own speed x this (2026-10-28: faster every world)
+	chaseScale = 1.4,
 
 	enemies = {
 		-- Minion: quick and common, at the front of both lanes
