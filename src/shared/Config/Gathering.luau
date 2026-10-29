@@ -135,6 +135,40 @@ Gathering.Nodes = {
 			{ id = "RawGem", min = 1, max = 1, chance = 0.1 },
 		},
 	},
+	-- ==================== World 4 (The Scorching Sands) ====================
+	-- (2026-10-28) A saguaro to chop (the Sandstone Axe) and a dig pile to dig (the Sandstone Shovel,
+	-- the game's first shovel), each in 4 hits at power 20,000 like every node (rescale.HITS_PER_NODE).
+	-- Models: Blender w4_deco_build, Assets/Gathering/Saguaro (a pale notch on its front, a pink
+	-- flower; the stump as Remains) and DigPile (a stepped mound with a red X; the dug hole as Remains).
+	-- The dig pile's extras: an Old Coin (placeholder 25%) and the rare Golden Scarab (10%).
+	Saguaro = {
+		id = "Saguaro",
+		name = "Saguaro",
+		world = 4,
+		verb = "Chop",
+		tool = "Axe",
+		tier = 4,
+		hp = 80000,
+		respawn = 45,
+		drops = {
+			{ id = "CactusRib", min = 1, max = 1, chance = 1 },
+		},
+	},
+	DigPile = {
+		id = "DigPile",
+		name = "Dig Pile",
+		world = 4,
+		verb = "Dig",
+		tool = "Shovel",
+		tier = 4,
+		hp = 80000,
+		respawn = 45,
+		drops = {
+			{ id = "Fossil", min = 1, max = 1, chance = 1 },
+			{ id = "OldCoin", min = 1, max = 1, chance = 0.25 },
+			{ id = "GoldenScarab", min = 1, max = 1, chance = 0.1 },
+		},
+	},
 } :: { [string]: NodeDef }
 
 function Gathering.get(id: any): NodeDef?

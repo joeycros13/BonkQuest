@@ -262,6 +262,119 @@ Tools.Defs = {
 		maxTargets = 0,
 		swing = "Cast",
 	},
+
+	-- ==================== World 4 (The Scorching Sands) ====================
+	-- (2026-10-28, the user: "sandstone tools but a little more decorated") A full set: the Sandstone
+	-- Axe (from the Stone Axe) chops the saguaros, the Sandstone Shovel (the first shovel, so no tool
+	-- before it) digs the dig piles, the Sandstone Pickaxe (from the Crystal Pickaxe) and the Sandstone
+	-- Rod (from the Crystal Rod) fishes the oasis. Models: Blender w4_tools_build, art/meshes/w4_tools.fbx,
+	-- the earlier tools' sizes (sandstone heads with gold edges and caps, lapis and turquoise inlays; the
+	-- axe's turquoise grip, the pickaxe's lapis, the shovel's carnelian, the rod's gold tip). The recipes
+	-- take World 3's gathered things for now (World 4's enemies have no drops yet). Prices and power x10
+	-- World 3's; all placeholders. No icons yet.
+	SandstoneAxe = {
+		id = "SandstoneAxe",
+		name = "Sandstone Axe",
+		kind = "Axe",
+		tier = 4,
+		world = 4,
+		sell = 11000,
+		power = 20000,
+		rarity = "Epic",
+		price = 50000,
+		recipe = {
+			tool = "StoneAxe",
+			materials = {
+				{ id = "IronOre", count = 10 },
+				{ id = "CrystalShard", count = 8 },
+				{ id = "RawGem", count = 1 },
+			},
+		},
+		handed = 1,
+		cooldown = 0.8,
+		hitTime = 0.52,
+		reach = 5,
+		arc = 70,
+		maxTargets = 1,
+		swing = "Diagonal",
+	},
+	SandstonePickaxe = {
+		id = "SandstonePickaxe",
+		name = "Sandstone Pickaxe",
+		kind = "Pickaxe",
+		tier = 4,
+		world = 4,
+		sell = 11000,
+		power = 20000,
+		rarity = "Epic",
+		price = 50000,
+		recipe = {
+			tool = "CrystalPickaxe",
+			materials = {
+				{ id = "IronOre", count = 12 },
+				{ id = "CrystalShard", count = 10 },
+				{ id = "RawGem", count = 1 },
+			},
+		},
+		handed = 1,
+		cooldown = 0.9,
+		hitTime = 0.58,
+		reach = 5,
+		arc = 70,
+		maxTargets = 1,
+		swing = "Mine",
+	},
+	SandstoneShovel = {
+		id = "SandstoneShovel",
+		name = "Sandstone Shovel",
+		kind = "Shovel",
+		tier = 4,
+		world = 4,
+		sell = 11000,
+		power = 20000,
+		rarity = "Epic",
+		price = 50000,
+		recipe = {
+			materials = {
+				{ id = "IronOre", count = 10 },
+				{ id = "CrystalShard", count = 10 },
+				{ id = "Glowfish", count = 4 },
+			},
+		},
+		handed = 1,
+		cooldown = 0.9,
+		hitTime = 0.58,
+		reach = 5,
+		arc = 70,
+		maxTargets = 1,
+		swing = "Mine",
+	},
+	SandstoneRod = {
+		id = "SandstoneRod",
+		name = "Sandstone Rod",
+		kind = "Rod",
+		tier = 4,
+		world = 4,
+		sell = 16000,
+		power = 0,
+		rarity = "Epic",
+		price = 75000,
+		recipe = {
+			tool = "CrystalRod",
+			materials = {
+				{ id = "IronOre", count = 8 },
+				{ id = "CrystalShard", count = 6 },
+				{ id = "BlindCavefish", count = 4 },
+			},
+		},
+		handed = 2,
+		cooldown = 1.0,
+		hitTime = 0.56,
+		reach = 0,
+		arc = 0,
+		maxTargets = 0,
+		swing = "Cast",
+	},
 } :: { [string]: ToolDef }
 
 -- Studio only (testing): every player owns these from the start. Emptied 2026-10-19 now

@@ -10,9 +10,9 @@
 -- The entry exists so the game knows World 4 (2026-10-26): the world guard keeps out players who
 -- haven't bought the gate, the banner names it, and SpawnService can send a player to its
 -- Spawns/PlayerSpawn, just inside the corridor. The roster, drops, lighting and Index picture
--- come later; until then it has no enemies (WorldEnemyService places none) and takes the
--- lighting as built in Studio (World 1's golden afternoon). Numbers follow the base-fight rules
--- (memory world-scaling-baseline) once the roster is picked.
+-- come later (the enemies below are placed, with placeholder numbers); it takes the lighting as
+-- built in Studio (World 1's golden afternoon). Numbers follow the base-fight rules (memory
+-- world-scaling-baseline) once the weapons are in.
 local WorldTypes = require(script.Parent.Parent.WorldTypes)
 
 local World: WorldTypes.WorldDef = {
@@ -21,8 +21,69 @@ local World: WorldTypes.WorldDef = {
 	folder = "W04_ScorchingSands",
 	-- Respawn seconds by kind (the user's rule, 2026-10-19), as every other world's.
 	respawn = { small = 10, medium = 15, elite = 20, boss = 30, secret = 30 },
-	enemies = {},
-	bosses = {},
+	attackStart = 10,
+	chaseScale = 2.0,
+
+	-- The undead roster (2026-10-28, the user's picks; memory world4-roster). PLACEHOLDER numbers
+	-- (2026-10-29): about x10 World 3's at each rank, so the bodies can stand on the map; the real
+	-- ones come from the base-fight rescale (art/tools/balance/rescale.py) with World 4's weapons.
+	-- No drops, portraits or materials yet: the weapons aren't in Config/Weapons.
+	enemies = {
+		BoneJackal = {
+			id = "BoneJackal",
+			tier = "small",
+			name = "Bone Jackal",
+			hp = 115000,
+			melee = { damage = 18000, cooldown = 0.7, windup = 0.25, range = 1.5, chaseSpeed = 17, armor = 0, move = "pounce" },
+			coins = { min = 2800, max = 5500 },
+			exp = 3000,
+			drops = {},
+		},
+		ShamblingMummy = {
+			id = "ShamblingMummy",
+			tier = "medium",
+			name = "Shambling Mummy",
+			hp = 370000,
+			melee = { damage = 19000, cooldown = 1.1, windup = 0.3, range = 1.5, chaseSpeed = 12, armor = 0.1, move = "punch" },
+			coins = { min = 5300, max = 10400 },
+			exp = 5700,
+			drops = {},
+		},
+		TombGuardian = {
+			id = "TombGuardian",
+			tier = "elite",
+			name = "Tomb Guardian",
+			hp = 590000,
+			melee = { damage = 48000, cooldown = 1.4, windup = 0.35, range = 1.6, chaseSpeed = 12, armor = 0.15, move = "slash" },
+			coins = { min = 7500, max = 14800 },
+			exp = 8100,
+			drops = {},
+		},
+		PhantomPharaoh = {
+			id = "PhantomPharaoh",
+			name = "Phantom Pharaoh",
+			hp = 655000,
+			secret = true,
+			melee = { damage = 33000, cooldown = 1, windup = 0.3, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "zap" },
+			coins = { min = 10400, max = 20700 },
+			exp = 11400,
+			drops = {},
+		},
+	},
+
+	bosses = {
+		SandPharaoh = {
+			id = "SandPharaoh",
+			name = "Sand Pharaoh",
+			hp = 845000,
+			melee = { damage = 61000, cooldown = 1.4, windup = 0.35, range = 1.5, chaseSpeed = 11, armor = 0.2, move = "smash", moves = { "smash", "stomp" } },
+			coins = { min = 32000, max = 64000 },
+			exp = 35000,
+			drops = {},
+		},
+	},
+
+	worldEnemy = { archetype = "BoneJackal" },
 }
 
 return World

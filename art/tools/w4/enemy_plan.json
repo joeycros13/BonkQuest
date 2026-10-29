@@ -1,0 +1,305 @@
+{
+ "place": {
+  "frm": [
+   -176,
+   -988
+  ],
+  "to": [
+   -142,
+   -1018
+  ],
+  "turn": -45
+ },
+ "markers": [
+  {
+   "template": "SandPharaoh",
+   "folder": "BossSpawns",
+   "name": "SandPharaoh",
+   "x": -376,
+   "y": 10.0,
+   "z": -1098,
+   "yaw": -90.0,
+   "wander": 4
+  },
+  {
+   "template": "TombGuardian",
+   "folder": "EnemySpawns",
+   "name": "TombGuardian_01",
+   "x": -306.0,
+   "y": 8,
+   "z": -1098.0,
+   "yaw": -90.0,
+   "wander": 2
+  },
+  {
+   "template": "TombGuardian",
+   "folder": "EnemySpawns",
+   "name": "TombGuardian_02",
+   "x": -446.0,
+   "y": 8,
+   "z": -1098.0,
+   "yaw": 90.0,
+   "wander": 2
+  },
+  {
+   "template": "TombGuardian",
+   "folder": "EnemySpawns",
+   "name": "TombGuardian_03",
+   "x": -376.0,
+   "y": 8,
+   "z": -1028.0,
+   "yaw": 180.0,
+   "wander": 2
+  },
+  {
+   "template": "TombGuardian",
+   "folder": "EnemySpawns",
+   "name": "TombGuardian_04",
+   "x": -376.0,
+   "y": 8,
+   "z": -1168.0,
+   "yaw": 0.0,
+   "wander": 2
+  },
+  {
+   "template": "ShamblingMummy",
+   "folder": "EnemySpawns",
+   "name": "ShamblingMummy_01",
+   "x": -523.0,
+   "y": 8,
+   "z": -1237.0,
+   "yaw": -147.2647737278924,
+   "wander": 4
+  },
+  {
+   "template": "ShamblingMummy",
+   "folder": "EnemySpawns",
+   "name": "ShamblingMummy_02",
+   "x": -247.0,
+   "y": 8,
+   "z": -957.0,
+   "yaw": -0.0,
+   "wander": 4
+  },
+  {
+   "template": "ShamblingMummy",
+   "folder": "EnemySpawns",
+   "name": "ShamblingMummy_03",
+   "x": -249.0,
+   "y": 8,
+   "z": -1237.0,
+   "yaw": 145.4914770123316,
+   "wander": 4
+  },
+  {
+   "template": "ShamblingMummy",
+   "folder": "EnemySpawns",
+   "name": "ShamblingMummy_04",
+   "x": -517.0,
+   "y": 8,
+   "z": -987.0,
+   "yaw": -59.03624346792648,
+   "wander": 4
+  },
+  {
+   "template": "ShamblingMummy",
+   "folder": "EnemySpawns",
+   "name": "ShamblingMummy_05",
+   "x": -557.0,
+   "y": 8,
+   "z": -1119.0,
+   "yaw": -75.06858282186245,
+   "wander": 4
+  },
+  {
+   "template": "ShamblingMummy",
+   "folder": "EnemySpawns",
+   "name": "ShamblingMummy_06",
+   "x": -223.0,
+   "y": 8,
+   "z": -1145.0,
+   "yaw": 60.64224645720873,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_01",
+   "x": -337.0,
+   "y": 8,
+   "z": -1235.0,
+   "yaw": -169.69515353123398,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_02",
+   "x": -359.0,
+   "y": 8,
+   "z": -953.0,
+   "yaw": -18.43494882292201,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_03",
+   "x": -441.0,
+   "y": 8,
+   "z": -1011.0,
+   "yaw": 175.6012946450045,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_04",
+   "x": -477.0,
+   "y": 8,
+   "z": -1189.0,
+   "yaw": -0.0,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_05",
+   "x": -279.0,
+   "y": 8,
+   "z": -1011.0,
+   "yaw": -36.86989764584402,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_06",
+   "x": -519.0,
+   "y": 8,
+   "z": -1049.0,
+   "yaw": -90.0,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_07",
+   "x": -499.0,
+   "y": 8,
+   "z": -1099.0,
+   "yaw": -101.30993247402021,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_08",
+   "x": -435.0,
+   "y": 8,
+   "z": -1191.0,
+   "yaw": -39.80557109226519,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_09",
+   "x": -371.0,
+   "y": 8,
+   "z": -1211.0,
+   "yaw": -180.0,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_10",
+   "x": -479.0,
+   "y": 8,
+   "z": -1053.0,
+   "yaw": 53.13010235415598,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_11",
+   "x": -283.0,
+   "y": 8,
+   "z": -1219.0,
+   "yaw": -180.0,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_12",
+   "x": -475.0,
+   "y": 8,
+   "z": -1017.0,
+   "yaw": 135.0,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_13",
+   "x": -511.0,
+   "y": 8,
+   "z": -1019.0,
+   "yaw": -90.0,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_14",
+   "x": -253.0,
+   "y": 8,
+   "z": -1137.0,
+   "yaw": 90.0,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_15",
+   "x": -249.0,
+   "y": 8,
+   "z": -1015.0,
+   "yaw": 90.0,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_16",
+   "x": -529.0,
+   "y": 8,
+   "z": -1115.0,
+   "yaw": -57.9946167919165,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_17",
+   "x": -519.0,
+   "y": 8,
+   "z": -1079.0,
+   "yaw": -119.05460409907714,
+   "wander": 4
+  },
+  {
+   "template": "BoneJackal",
+   "folder": "EnemySpawns",
+   "name": "BoneJackal_18",
+   "x": -377.0,
+   "y": 8,
+   "z": -973.0,
+   "yaw": -0.0,
+   "wander": 4
+  }
+ ]
+}
