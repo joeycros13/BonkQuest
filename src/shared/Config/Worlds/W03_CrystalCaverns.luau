@@ -85,8 +85,8 @@ local World: WorldTypes.WorldDef = {
 			tier = "small",
 			name = "Cave Bat",
 			portrait = "rbxassetid://72271902069536", -- calm face (2026-10-13)
-			hp = 10520, -- x10 the Fox (2026-10-24); 10,048 before
-			melee = { damage = 1453, cooldown = 0.7, windup = 0.25, range = 1.6, chaseSpeed = 18, armor = 0, move = "swoop" },
+			hp = 9990, -- x10 the Fox (2026-10-24); 10,048 before
+			melee = { damage = 1805, cooldown = 0.7, windup = 0.25, range = 1.6, chaseSpeed = 18, armor = 0, move = "swoop" },
 			coins = { min = 133, max = 263 },
 			exp = 298,
 			drops = {
@@ -104,8 +104,8 @@ local World: WorldTypes.WorldDef = {
 			tier = "medium",
 			name = "Pebble Golem",
 			portrait = "rbxassetid://92185614445143", -- calm face (2026-10-13)
-			hp = 31560, -- x10 the Boar (2026-10-24); 23,904 before
-			melee = { damage = 1259, cooldown = 1.1, windup = 0.3, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "punch" },
+			hp = 29970, -- x10 the Boar (2026-10-24); 23,904 before
+			melee = { damage = 1547, cooldown = 1.1, windup = 0.3, range = 1.5, chaseSpeed = 14, armor = 0.1, move = "punch" },
 			coins = { min = 252, max = 498 },
 			exp = 567,
 			drops = {
@@ -122,8 +122,8 @@ local World: WorldTypes.WorldDef = {
 			tier = "elite",
 			name = "Crystal Golem",
 			portrait = "rbxassetid://84986641261720", -- calm face (2026-10-13)
-			hp = 47340, -- x10 the Bear (2026-10-24); 32,704 before
-			melee = { damage = 3234, cooldown = 1.4, windup = 0.35, range = 1.6, chaseSpeed = 12, armor = 0.15, move = "smash" },
+			hp = 44960, -- x10 the Bear (2026-10-24); 32,704 before
+			melee = { damage = 3933, cooldown = 1.4, windup = 0.35, range = 1.6, chaseSpeed = 12, armor = 0.15, move = "smash" },
 			coins = { min = 358, max = 713 },
 			exp = 814,
 			drops = {
@@ -144,10 +144,10 @@ local World: WorldTypes.WorldDef = {
 		GemMole = {
 			id = "GemMole",
 			name = "Gem Mole",
-			hp = 52600, -- x10 the Fairy (2026-10-24); 45,280 before
+			hp = 49950, -- x10 the Fairy (2026-10-24); 45,280 before
 			secret = true,
 			adminPortrait = "rbxassetid://95259297161320", -- admin panel only, never the Index (2026-10-17)
-			melee = { damage = 2209, cooldown = 1, windup = 0.3, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
+			melee = { damage = 2703, cooldown = 1, windup = 0.3, range = 1.8, chaseSpeed = 15, armor = 0.1, move = "slash" },
 			coins = { min = 501, max = 996 },
 			exp = 1139,
 			-- the Cave Core: about 1%, once per player (trial numbers)
@@ -163,8 +163,8 @@ local World: WorldTypes.WorldDef = {
 			id = "SpiderQueen",
 			name = "Spider Queen",
 			portrait = "rbxassetid://80870479752276", -- calm face (2026-10-13)
-			hp = 63120, -- x10 the Elder Treant (2026-10-24); 50,304 before
-			melee = { damage = 4289, cooldown = 1.4, windup = 0.35, range = 1.5, chaseSpeed = 11, armor = 0.2, move = "legstab", moves = { "legstab", "rearslam" } },
+			hp = 59940, -- x10 the Elder Treant (2026-10-24); 50,304 before
+			melee = { damage = 5162, cooldown = 1.4, windup = 0.35, range = 1.5, chaseSpeed = 11, armor = 0.2, move = "legstab", moves = { "legstab", "rearslam" } },
 			coins = { min = 1541, max = 3055 },
 			exp = 3497,
 			drops = {

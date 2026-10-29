@@ -147,6 +147,8 @@ def main():
     for n in (1, 2, 3):
         for nid, node in data[n].get("gathering", {}).items():
             span = block(text, nid, "\t")
+            # its health (rescale.HITS_PER_NODE hits of the weakest tool that breaks it)
+            text, span = sub_in(text, span, r"\n\t\thp = \d+,", f"\n\t\thp = {node['hp']},", changes, f"node {nid} hp {node['hp']}")
             for dr in items(node["drops"]):
                 text, span = sub_in(text, span, r'\{ id = "' + dr["id"] + r'", min = \d+, max = \d+,',
                                     f'{{ id = "{dr["id"]}", min = {dr["min"]}, max = {dr["max"]},', changes,

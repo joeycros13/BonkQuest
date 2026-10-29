@@ -66,7 +66,7 @@ Gathering.Nodes = {
 		verb = "Chop",
 		tool = "Axe",
 		tier = 1,
-		hp = 50,
+		hp = 40,
 		respawn = 45,
 		drops = {
 			{ id = "OakLog", min = 1, max = 1, chance = 1 },
@@ -79,7 +79,7 @@ Gathering.Nodes = {
 		verb = "Mine",
 		tool = "Pickaxe",
 		tier = 1,
-		hp = 50,
+		hp = 40,
 		respawn = 45,
 		drops = {
 			{ id = "Stone", min = 1, max = 1, chance = 1 },
@@ -95,7 +95,7 @@ Gathering.Nodes = {
 		verb = "Chop",
 		tool = "Axe",
 		tier = 2,
-		hp = 1000,
+		hp = 800,
 		respawn = 45,
 		drops = {
 			{ id = "RedwoodLog", min = 1, max = 1, chance = 1 },
@@ -115,7 +115,7 @@ Gathering.Nodes = {
 		verb = "Mine",
 		tool = "Pickaxe",
 		tier = 3,
-		hp = 12000,
+		hp = 8000,
 		respawn = 45,
 		drops = {
 			{ id = "IronOre", min = 1, max = 1, chance = 1 },
@@ -128,7 +128,7 @@ Gathering.Nodes = {
 		verb = "Mine",
 		tool = "Pickaxe",
 		tier = 3,
-		hp = 10000,
+		hp = 8000,
 		respawn = 45,
 		drops = {
 			{ id = "CrystalShard", min = 1, max = 1, chance = 1 },
