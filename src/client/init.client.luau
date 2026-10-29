@@ -67,6 +67,8 @@ local CONTROLLER_ORDER = {
 	"SecretCrystalController",
 	-- the secret rooms' plaques: the core's shadow until you have it, then the core
 	"SecretPlaqueController",
+	-- World 4's secret tomb: its traps, the quicksand sink and the shortcut tablet (Config/Tomb)
+	"TombController",
 	-- trees and rocks you break with your weapon for materials
 	"GatherController",
 	-- casting, the bobber and the line, bites and the reel-in (FishingBarUI draws the reel bar)
