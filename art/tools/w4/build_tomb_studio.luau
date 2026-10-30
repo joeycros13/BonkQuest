@@ -125,7 +125,7 @@ for _, item in D.traps do
 	elseif kind == "Blade" then
 		m:SetAttribute("Period", item.period)
 		m:SetAttribute("Offset", item.offset)
-		m:SetAttribute("Amplitude", 24)
+		m:SetAttribute("Amplitude", 16)
 		m:SetAttribute("Length", 7.35)
 		m:SetAttribute("Radius", 2.2)
 		m:SetAttribute("Damage", 0.2)
@@ -168,7 +168,7 @@ for _, item in D.traps do
 				part("Plate", Vector3.new(7.8, 0.1, 2), cf * CFrame.new(0, 0.05, z), "b8925a", m)
 			end
 		end
-		local panel = CFrame.new(L(item.wall) + Vector3.new(0, 0.5, 0)) * CFrame.Angles(0, math.rad(item.face), 0)
+		local panel = CFrame.new(L(item.wall) + Vector3.new(0, 0.66, 0)) * CFrame.Angles(0, math.rad(item.face), 0)
 		clone("DartPanel", panel, m, "Panel")
 		for _, h in { 0.83, 1.58, 2.33 } do
 			part("Hole", Vector3.new(0.1, 0.1, 0.1), panel * CFrame.new(0, h, -0.66), nil, m)
@@ -197,12 +197,11 @@ for _, item in D.traps do
 			for col = 0, 3 do
 				local safe = item.safe[row + 1] == col
 				local at = cf * CFrame.new(-3 + col * 2, 0.05, -3.75 + row * 2.5)
-				local tile = part(if safe then "Tile" else "Cracked", Vector3.new(1.96, 0.1, 2.46), at, if safe then "c4a378" else "a8844f", m)
+				-- a cracked tile is only a shade darker with one thin crack: look before you step
+				local tile = part(if safe then "Tile" else "Cracked", Vector3.new(1.96, 0.1, 2.46), at, if safe then "c4a378" else "b8955f", m)
 				if not safe then
-					for _, a in { 35, -50 } do
-						local crack = part("Crack", Vector3.new(0.09, 0.02, 1.9), at * CFrame.new(0, 0.06, 0) * CFrame.Angles(0, math.rad(a), 0), "3d2c1e", tile)
-						crack.CastShadow = false
-					end
+					local crack = part("Crack", Vector3.new(0.06, 0.02, 2.1), at * CFrame.new(0, 0.06, 0) * CFrame.Angles(0, math.rad(if (row + col) % 2 == 0 then 32 else -38), 0), "7a5a36", tile)
+					crack.CastShadow = false
 				end
 			end
 		end
@@ -210,7 +209,7 @@ for _, item in D.traps do
 		m:SetAttribute("Damage", 0.2)
 		local h = item.hole
 		local x0, x1, z0, z1 = h[1], h[2], h[3], h[4]
-		local lava = part("Lava", Vector3.new(x1 - x0, 2.4, z1 - z0), CFrame.new(L({ (x0 + x1) / 2, -2.8, (z0 + z1) / 2 })), "ff6a1a", m, true)
+		local lava = part("Lava", Vector3.new(x1 - x0, 2.4, z1 - z0), CFrame.new(L({ (x0 + x1) / 2, -2.8, (z0 + z1) / 2 })), "ff4d1a", m, true)
 		lava.Material = Enum.Material.Neon
 		local light = Instance.new("PointLight")
 		light.Color = Color3.fromHex("ff7a2a")
@@ -268,6 +267,21 @@ for _, c in D.checkpoints do
 	cp.Parent = cps
 	CS:AddTag(cp, "TombCheckpoint")
 end
+-- torchlight, not daylight: dim, short lights and an ambience zone with the outdoor haze off
+local torchLight = TT.Torch:FindFirstChild("PointLight", true)
+if torchLight then
+	torchLight.Brightness = 0.6
+	torchLight.Range = 16
+end
+for _, z in { tomb.Zones.MazeAmbience, tomb.Zones.ChamberAmbience } do
+	z:SetAttribute("ExposureCompensation", -0.2)
+	z:SetAttribute("AtmosphereDensity", 0)
+	z:SetAttribute("AtmosphereHaze", 0)
+	z:SetAttribute("AtmosphereGlare", 0)
+end
+tomb.Zones.MazeAmbience:SetAttribute("Ambient", Color3.fromHex("3a3542"))
+tomb.Zones.MazeAmbience:SetAttribute("OutdoorAmbient", Color3.fromHex("3a3542"))
+tomb.Zones.MazeAmbience:SetAttribute("Brightness", 0)
 local torches = folder(tomb, "Torches")
 local torchRot = TT.Torch:GetPivot().Rotation
 for _, t in D.torches do
