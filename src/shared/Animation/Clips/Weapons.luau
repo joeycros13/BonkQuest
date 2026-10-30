@@ -322,7 +322,7 @@ Weapons.SWINGS = {
 	-- front on the hit.
 	FlailWhirl = {
 		{ u = 0 },
-		{ u = 0.32, hand = { 1.95, 0.45, 0.9 }, dir = { 0.4, 0.55, 0.75 }, wy = -28, wp = -6, stop = true },
+		{ u = 0.32, hand = { 1.9, 0.75, -0.85 }, dir = { 0.3, 0.8, 0.5 }, wy = -12, wp = -4, stop = true },
 		{ u = 0.56, hand = { 0.95, 0.15, -1.5 }, dir = { 0.05, 0.1, -1 }, wy = 12, wp = 9, rz = 0.35, hit = true },
 		{ u = 0.74, hand = { 0.3, -0.35, -1.2 }, dir = { -0.55, -0.35, -0.75 }, wy = 24, wp = 6, stop = true },
 		{ u = 1 },
