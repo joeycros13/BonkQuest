@@ -223,7 +223,7 @@ Weapons.Defs = {
 		arc = 80,
 		maxTargets = 2,
 		hitTime = 0.6,
-		swing = "CornBonk",
+		swing = "Hammer",
 	},
 	-- Epic (2026-10-26, the user's pick B): the scarecrow's own hoe, dark wood and a long steel blade, crow
 	-- feathers hanging from a purple wrap with a gold button eye. Beats the Scarecrow King easily: the
@@ -428,7 +428,7 @@ Weapons.Defs = {
 		arc = 80,
 		maxTargets = 2,
 		hitTime = 0.6,
-		swing = "CornBonk",
+		swing = "Bash",
 		ignoreArmor = true,
 	},
 	-- the Honeycomb Hammer (Rare, 2026-10-27, the user's pick: World 2's 7th weapon): the Boar's rare drop
@@ -451,7 +451,7 @@ Weapons.Defs = {
 		arc = 90,
 		maxTargets = 3,
 		hitTime = 0.6,
-		swing = "CornBonk",
+		swing = "Hammer",
 	},
 	WoodsmansAxe = {
 		id = "WoodsmansAxe",
@@ -512,7 +512,7 @@ Weapons.Defs = {
 		arc = 60,
 		maxTargets = 5,
 		hitTime = 0.55,
-		swing = "Thrust",
+		swing = "StaffSmite",
 	},
 	-- Legendary: the park ranger's final quest reward (the ranger isn't built yet).
 	-- Must out-damage the Heartwood Staff per hit and per second.
@@ -533,7 +533,7 @@ Weapons.Defs = {
 		arc = 160,
 		maxTargets = 4,
 		hitTime = 0.55, -- where the Hook passes in front of the body
-		swing = "Hook",
+		swing = "FlailWhirl",
 	},
 	-- Secret: the Elder Treant's 2% drop, a forked roasting stick with two
 	-- marshmallows. Beats both World 2 Legendaries.
@@ -555,7 +555,7 @@ Weapons.Defs = {
 		arc = 60,
 		maxTargets = 3,
 		hitTime = 0.5,
-		swing = "Jab",
+		swing = "Poke",
 	},
 	-- ==================== World 3 (The Crystal Caverns), 2026-10-13 ====================
 	-- Ore and crystal weapons (memory world3-weapons). About 1.5x World 2's damage per
@@ -579,7 +579,7 @@ Weapons.Defs = {
 		arc = 130,
 		maxTargets = 2,
 		hitTime = 0.55,
-		swing = "HookEdge",
+		swing = "Hook",
 	},
 	IronPickaxe = {
 		id = "IronPickaxe",
@@ -619,7 +619,7 @@ Weapons.Defs = {
 		arc = 90,
 		maxTargets = 2,
 		hitTime = 0.6,
-		swing = "CornBonk",
+		swing = "Hammer",
 	},
 	-- worn on both fists: the right glove is the model, the left glove its LeftGauntlet
 	GoldGauntlets = {
@@ -663,7 +663,7 @@ Weapons.Defs = {
 		arc = 50,
 		maxTargets = 2,
 		hitTime = 0.5,
-		swing = "Jab",
+		swing = "Drill",
 	},
 	GeodeGlaive = {
 		id = "GeodeGlaive",
@@ -724,7 +724,7 @@ Weapons.Defs = {
 		arc = 140,
 		maxTargets = 4,
 		hitTime = 0.5,
-		swing = "Diagonal",
+		swing = "FangStrike",
 	},
 	-- Legendary: the World 3 quest's final reward (Explorer Pip, ExplorerCaverns step 10, 2026-10-17).
 	-- The only World 3 weapon that ignores armour (user's pick).
@@ -796,7 +796,7 @@ Weapons.Defs = {
 		arc = 90,
 		maxTargets = 2,
 		hitTime = 0.6,
-		swing = "CornBonk",
+		swing = "ClubSmash",
 	},
 	Khopesh = {
 		id = "Khopesh",
@@ -836,7 +836,7 @@ Weapons.Defs = {
 		arc = 80,
 		maxTargets = 2,
 		hitTime = 0.6,
-		swing = "Bonk",
+		swing = "Bash",
 	},
 	LinenSpear = {
 		id = "LinenSpear",
@@ -876,7 +876,7 @@ Weapons.Defs = {
 		arc = 120,
 		maxTargets = 3,
 		hitTime = 0.5,
-		swing = "Diagonal",
+		swing = "Crescent",
 	},
 	SarcophagusGreatsword = {
 		id = "SarcophagusGreatsword",
@@ -896,7 +896,7 @@ Weapons.Defs = {
 		arc = 120,
 		maxTargets = 4,
 		hitTime = 0.6,
-		swing = "Chop2H",
+		swing = "GreatCleave",
 	},
 	CursedAnkh = {
 		id = "CursedAnkh",
@@ -936,7 +936,7 @@ Weapons.Defs = {
 		arc = 100,
 		maxTargets = 4,
 		hitTime = 0.6,
-		swing = "Chop2H",
+		swing = "CrookSweep",
 	},
 	StaffOfRa = {
 		id = "StaffOfRa",
@@ -955,7 +955,7 @@ Weapons.Defs = {
 		arc = 60,
 		maxTargets = 5,
 		hitTime = 0.55,
-		swing = "Thrust",
+		swing = "SunCall",
 		ignoreArmor = true,
 	},
 	CactusClub = {
@@ -976,7 +976,7 @@ Weapons.Defs = {
 		arc = 90,
 		maxTargets = 3,
 		hitTime = 0.6,
-		swing = "CornBonk",
+		swing = "ClubSmash",
 	},
 	-- ==================== the secret super weapon (memory secret-weapon-plan) ====================
 	-- The Rusty Blade (2026-10-12): an extra reward on Dale's quest 5. Weaker than the

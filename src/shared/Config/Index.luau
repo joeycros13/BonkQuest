@@ -134,6 +134,11 @@ end
 
 function Index.percent(chance: number): string
 	local p = chance * 100
+	if p > 0 and p < 0.1 then
+		-- the secrets' rare chances (0.05%, 0.005%...) read 0.0% at one decimal: show their first figure
+		local digits = math.ceil(-math.log10(p))
+		return (("%." .. digits .. "f"):format(p):gsub("0+$", "")) .. "%"
+	end
 	return if p >= 10 or p == math.floor(p) then ("%d%%"):format(math.floor(p + 0.5)) else ("%.1f%%"):format(p)
 end
 

@@ -90,7 +90,7 @@ Tools.Defs = {
 		arc = 70,
 		maxTargets = 1,
 		-- the Machete's diagonal: a chop down and across into the trunk
-		swing = "Diagonal",
+		swing = "Chop",
 	},
 	WoodenPickaxe = {
 		id = "WoodenPickaxe",
@@ -169,7 +169,7 @@ Tools.Defs = {
 		reach = 5,
 		arc = 70,
 		maxTargets = 1,
-		swing = "Diagonal",
+		swing = "Chop",
 	},
 	StoneRod = {
 		id = "StoneRod",
@@ -299,7 +299,7 @@ Tools.Defs = {
 		reach = 5,
 		arc = 70,
 		maxTargets = 1,
-		swing = "Diagonal",
+		swing = "Chop",
 	},
 	SandstoneShovel = {
 		id = "SandstoneShovel",

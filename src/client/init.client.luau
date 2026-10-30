@@ -44,6 +44,8 @@ local CONTROLLER_ORDER = {
 	-- swings must win over the idle / walk / sprint pose.
 	"PlayerAnimator",
 	"WeaponController",
+	-- the flail's chain, after the weapon is placed
+	"FlailController",
 	"LootController",
 	"SpinnerController",
 	"FlowController",

@@ -204,18 +204,33 @@ local function release(inst: Instance)
 	end
 end
 
--- 0 -> 1 -> 0 across u in [0, 1].
+-- 0 -> 1 -> 0 across u in [0, 1], leaving and coming back to rest at no speed (2026-10-29,
+-- the user: no snapping in or out of an action; a plain sine left the rest pose at full speed).
 local function bump(u: number): number
-	return math.sin(math.clamp(u, 0, 1) * math.pi)
+	local s = math.sin(math.clamp(u, 0, 1) * math.pi)
+	return s * s
+end
+
+local function smoothstep(x: number): number
+	x = math.clamp(x, 0, 1)
+	return x * x * (3 - 2 * x)
+end
+
+-- A rhythmic tap (pats, tugs, nods): the positive halves of a sine, squared so each beat
+-- starts and ends softly instead of kinking at zero.
+local function pulse(x: number): number
+	local s = math.max(0, math.sin(x))
+	return s * s
 end
 
 local function about(pivot: Vector3, rot: CFrame): CFrame
 	return CFrame.new(pivot) * rot * CFrame.new(-pivot)
 end
 
--- Rises to 1, holds, falls back: a gesture that stays at its peak for a while.
+-- Rises to 1, holds, falls back: a gesture that stays at its peak for a while (eased in over
+-- the first 30% and out over the last, with no corner where it reaches the top).
 local function plateau(u: number): number
-	return math.min(1, bump(u) * 1.6)
+	return smoothstep(u / 0.3) * smoothstep((1 - u) / 0.3)
 end
 
 -- How long each action lasts, in seconds.
@@ -302,7 +317,7 @@ local function pose(npc: Npc, now: number, dt: number)
 		nod = 0.15 * k
 	elseif action == "stamp" then
 		-- lift the pitchfork, then thump it down (the Tool follows the fist)
-		local lift = if u < 0.45 then math.sin(u / 0.45 * math.pi / 2) else math.max(0, 1 - (u - 0.45) / 0.1)
+		local lift = if u < 0.45 then smoothstep(u / 0.45) else math.max(0, 1 - (u - 0.45) / 0.1)
 		local thump = if u >= 0.55 then bump((u - 0.55) / 0.45) else 0
 		fwdR = 0.3 * lift - 0.04 * thump
 		lean = 0.05 * lift
@@ -344,7 +359,7 @@ local function pose(npc: Npc, now: number, dt: number)
 	elseif action == "stitch" then
 		-- the left hand holds the cloth out while the needle hand pulls the thread through, three times
 		local k = plateau(u)
-		local pull = math.max(0, math.sin(u * math.pi * 6))
+		local pull = pulse(u * math.pi * 6)
 		fwdL = 0.9 * k
 		fwdR = 0.45 * pull * k
 		armR = 0.35 * pull * k
@@ -407,7 +422,7 @@ local function pose(npc: Npc, now: number, dt: number)
 	elseif action == "lampTap" then
 		-- hand up to the headlamp on the front of the hard hat, tapping it twice
 		local k = plateau(u)
-		local tap = math.max(0, math.sin(u * math.pi * 4))
+		local tap = pulse(u * math.pi * 4)
 		fwdR = (2.6 + 0.12 * tap) * k
 		armR = -0.45 * k
 		nod = (0.06 + 0.05 * tap) * k
@@ -464,7 +479,7 @@ local function pose(npc: Npc, now: number, dt: number)
 	elseif action == "stroke" then
 		-- the free hand up to the chin, drawing down the long beard twice, a thoughtful tilt
 		local k = plateau(u)
-		fwdL = (1.75 - 0.25 * math.max(0, math.sin(u * math.pi * 4))) * k
+		fwdL = (1.75 - 0.25 * pulse(u * math.pi * 4)) * k
 		armL = -0.45 * k
 		nod = -0.05 * k
 		yawExtra = -0.1 * k
@@ -493,7 +508,7 @@ local function pose(npc: Npc, now: number, dt: number)
 	elseif action == "pat" then
 		-- two pats on the apron pocket, eyes down to it
 		local k = plateau(u)
-		local tap = math.max(0, math.sin(u * math.pi * 4))
+		local tap = pulse(u * math.pi * 4)
 		fwdL = (0.5 + 0.12 * tap) * k
 		armL = -0.32 * k
 		nod = 0.22 * k
@@ -517,7 +532,7 @@ local function pose(npc: Npc, now: number, dt: number)
 	elseif action == "ponder" then
 		-- the brush handle tapped against the chin, head tilted, thinking it over
 		local k = plateau(u)
-		local tap = math.max(0, math.sin(u * math.pi * 6))
+		local tap = pulse(u * math.pi * 6)
 		fwdR = (1.8 + 0.08 * tap) * k
 		armR = -0.45 * k
 		nod = -0.06 * k
@@ -540,7 +555,7 @@ local function pose(npc: Npc, now: number, dt: number)
 	elseif action == "beckon" then
 		-- the free hand out in front, palm up, curling the customer over, twice
 		local k = plateau(u)
-		local curl = math.max(0, math.sin(u * math.pi * 4))
+		local curl = pulse(u * math.pi * 4)
 		fwdL = (0.95 + 0.25 * curl) * k
 		armL = (0.25 - 0.1 * curl) * k
 		lean = 0.03 * k
@@ -563,7 +578,7 @@ local function pose(npc: Npc, now: number, dt: number)
 	elseif action == "vials" then
 		-- the free hand runs along the vials on the sash, eyes down, and taps one
 		local k = plateau(u)
-		fwdL = (0.42 + 0.05 * math.max(0, math.sin(u * math.pi * 6))) * k
+		fwdL = (0.42 + 0.05 * pulse(u * math.pi * 6)) * k
 		armL = (-0.15 - 0.3 * u) * k
 		nod = 0.26 * k
 		yawExtra = -0.15 * k
