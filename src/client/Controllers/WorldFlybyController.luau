@@ -15,6 +15,9 @@
 --      the last P: World 2) or "Path" (it turns with the path: World 3's cave lanes), `Pitch`
 --      (degrees it looks down), `Seconds` (the flight's length; else the gui's FlightSeconds),
 --      `BossTurn` (the last share of the flight over which the view turns onto the boss).
+--      A `Focus` part in the folder pulls the view toward it (World 4 circles its pyramid):
+--      `FocusWeight` (0..1, how far toward it), up to `FocusUntil` (a share of the path),
+--      then easing off over `FocusFade` (a share).
 --      The view direction is filtered (LOOK_SMOOTH), so it never jitters (2026-10-25, the user:
 --      World 2's first version was "too movey", it needed to be really smooth). The world's
 --      banner (WorldBannerUI) shows its name as the camera crosses in.
@@ -254,6 +257,10 @@ function WorldFlybyController.play(world: number)
 	-- the last share of the flight that turns the view onto the boss (World 3's ends in the
 	-- boss hall looking past her otherwise)
 	local bossTurn = math.clamp(number(flyby, "BossTurn", 0), 0, 1)
+	local focus = flyby:FindFirstChild("Focus")
+	local focusWeight = math.clamp(number(flyby, "FocusWeight", 0), 0, 1)
+	local focusUntil = math.clamp(number(flyby, "FocusUntil", 1), 0, 1)
+	local focusFade = math.max(number(flyby, "FocusFade", 0.08), 1e-3)
 
 	-- the boss goes back to its spawn point (the middle of its wander circle), where the
 	-- boss shot is aimed, stops wandering and turns to the shot
@@ -357,6 +364,13 @@ function WorldFlybyController.play(world: number)
 			heading = if d.Magnitude > 1e-3 then d.Unit else lineHeading
 		end
 		local look = heading * math.cos(pitch) + Vector3.new(0, math.sin(pitch), 0)
+		if focus and focus:IsA("BasePart") and focusWeight > 0 then
+			local w = focusWeight * (1 - smoother(math.clamp((s / total - focusUntil) / focusFade, 0, 1)))
+			local toFocus = focus.Position - at(raw, lengths, s)
+			if w > 0 and toFocus.Magnitude > 1e-3 then
+				look = look:Lerp(toFocus.Unit, w).Unit
+			end
+		end
 		local turnFrom = total * (1 - bossTurn)
 		if bossAt and bossTurn > 0 and s > turnFrom then
 			local toBoss = bossAt - at(raw, lengths, s)
