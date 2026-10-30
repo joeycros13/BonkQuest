@@ -60,6 +60,9 @@ export type WeaponDef = {
 	maxTargets: number,
 	hitTime: number,
 	swing: string,
+	-- swings taken in turn, one a click (the Gold Gauntlets' right and left punches, 2026-10-29);
+	-- `swing` is the first, for previews
+	swings: { string }?,
 	rarity: string?,
 	handed: number?,
 	starter: boolean?,
@@ -630,7 +633,7 @@ Weapons.Defs = {
 		price = 70000,
 		rarity = "Rare",
 		name = "Gold Gauntlets",
-		blurb = "Solid gold fists. A fast one-two.",
+		blurb = "Solid gold fists. Right, left, right, left.",
 		order = 25,
 		color = Color3.fromRGB(224, 170, 34),
 		handed = 2,
@@ -641,7 +644,9 @@ Weapons.Defs = {
 		arc = 70,
 		maxTargets = 1,
 		hitTime = 0.36,
-		swing = "Punch",
+		-- one punch a click, the fists in turn (2026-10-29, the user: two punches for one hit was dumb)
+		swing = "PunchRight",
+		swings = { "PunchRight", "PunchLeft" },
 	},
 	-- the Copper Drill (Rare, 2026-10-27, the user's pick: World 3's 7th weapon): the Pebble Golem's rare drop
 	-- and the Crystal Golem's common one, between the Gold Gauntlets and the Epics; Blender w3_weapons_drill_build

@@ -85,6 +85,7 @@ type Rig = {
 	swingBody: any?, -- its additive body layer (twist, lean, lunge)
 	trail: any?, -- slash trail handle on the held weapon
 	trailModel: Model?,
+	turn: number, -- swings thrown so far, for a def's `swings` taken in turn (the gauntlets' fists)
 }
 
 local rigs: { [Model]: Rig } = {}
@@ -241,10 +242,17 @@ local function startSwing(rig: Rig, def: Weapons.WeaponDef): any
 		rig.swingBody:Stop(0.05)
 	end
 	local speed = 1 / def.cooldown
-	local track = rig.animator:Play(WeaponClips.swing(def), { speed = speed })
+	local arms, body = WeaponClips.swing(def), WeaponClips.swingBody(def)
+	local turns = (def :: any).swings
+	if turns and #turns > 0 then
+		-- swings taken in turn: the gauntlets punch right, left, right...
+		rig.turn += 1
+		arms, body = WeaponClips.extra(def, turns[(rig.turn - 1) % #turns + 1], def.hitTime)
+	end
+	local track = rig.animator:Play(arms, { speed = speed })
 	-- The body moves additively on top of walking, so the legs and foot planting
 	-- carry on through the attack.
-	rig.swingBody = rig.animator:Play(WeaponClips.swingBody(def), { speed = speed })
+	rig.swingBody = rig.animator:Play(body, { speed = speed })
 	rig.swing = track
 	local impact = if def.impact == "Slam" then slam elseif def.impact == "Gust" then gust elseif def.impact == "Pumpkin" then pumpkin else nil
 	if impact then
@@ -300,6 +308,7 @@ local function adopt(model: Model, cull: boolean): Rig
 		swingBody = nil,
 		trail = nil,
 		trailModel = nil,
+		turn = 0,
 	}
 	rigs[model] = rig
 	sync(rig)

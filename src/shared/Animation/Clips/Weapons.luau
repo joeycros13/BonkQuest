@@ -459,15 +459,22 @@ Weapons.SWINGS = {
 		with(RECOVER_2H, { off = 2.0 }),
 		{ u = 1, off = 2.0 },
 	},
-	-- Gold Gauntlets: a one-two. The right fist pulls back and punches straight out
-	-- (the hit), then the left fist punches as the right comes back, the body twisting
-	-- into each.
-	Punch = {
+	-- Gold Gauntlets: one punch a click, the fists taking turns (the def's `swings`; 2026-10-29,
+	-- the user: the old one-two threw two punches for one hit). Each fist pulls back a touch and
+	-- drives straight out from the guard, the body twisting into it, while the other fist stays
+	-- up by the face.
+	PunchRight = {
 		{ u = 0 },
-		{ u = 0.16, hand = { 1.35, 1.55, -0.75 }, wy = -14, stop = true },
-		{ u = 0.36, hand = { 0.45, 0.7, -1.6 }, left = { -1.0, 1.3, -1.05 }, wy = 22, wp = 6, rz = 0.35, hit = true },
-		{ u = 0.5, hand = { 1.0, 1.3, -1.05 }, left = { -1.35, 1.55, -0.75 }, wy = 8, wp = 3 },
-		{ u = 0.66, hand = { 1.0, 1.3, -1.05 }, left = { -0.45, 0.7, -1.6 }, wy = -20, wp = 6, rz = 0.3 },
+		{ u = 0.18, hand = { 1.35, 1.55, -0.75 }, left = { -1.0, 1.15, -1.05 }, wy = -12, stop = true },
+		{ u = 0.4, hand = { 0.45, 0.75, -1.6 }, left = { -1.0, 1.2, -1.0 }, wy = 22, wp = 6, rz = 0.35, hit = true },
+		{ u = 0.58, hand = { 0.65, 0.85, -1.45 }, left = { -1.0, 1.15, -1.05 }, wy = 14, wp = 4, rz = 0.25 },
+		{ u = 1 },
+	},
+	PunchLeft = {
+		{ u = 0 },
+		{ u = 0.18, hand = { 1.0, 1.15, -1.05 }, left = { -1.35, 1.55, -0.75 }, wy = 12, stop = true },
+		{ u = 0.4, hand = { 1.0, 1.2, -1.0 }, left = { -0.45, 0.75, -1.6 }, wy = -22, wp = 6, rz = 0.35, hit = true },
+		{ u = 0.58, hand = { 1.0, 1.15, -1.05 }, left = { -0.65, 0.85, -1.45 }, wy = -14, wp = 4, rz = 0.25 },
 		{ u = 1 },
 	},
 	-- Pickaxes: a mining swing (user, 2026-10-13). Raised high with the head tipped back
