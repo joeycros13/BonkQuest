@@ -211,7 +211,7 @@ for _, item in D.traps do
 		local h = item.hole
 		local x0, x1, z0, z1 = h[1], h[2], h[3], h[4]
 		-- a stone floor under the lava, so it never shows in the tunnel's ceiling below
-		part("PitFloor", Vector3.new(x1 - x0, 1.4, z1 - z0), CFrame.new(L({ (x0 + x1) / 2, -3.3, (z0 + z1) / 2 })), "5a4632", m, true)
+		part("PitFloor", Vector3.new(x1 - x0, 1.4, z1 - z0), CFrame.new(L({ (x0 + x1) / 2, -3.3, (z0 + z1) / 2 })), "ad9470", m, true)
 		local lava = part("Lava", Vector3.new(x1 - x0, 1, z1 - z0), CFrame.new(L({ (x0 + x1) / 2, -2.1, (z0 + z1) / 2 })), "ff4d1a", m, true)
 		lava.Material = Enum.Material.Neon
 		local light = Instance.new("PointLight")
@@ -224,12 +224,13 @@ for _, item in D.traps do
 		local size
 		if item.axis == "z" then
 			bx += item.beam
-			size = Vector3.new(1.4, 4, z1 - z0)
+			size = Vector3.new(1.4, 2.6, z1 - z0)
 		else
 			bz += item.beam
-			size = Vector3.new(x1 - x0, 4, 1.4)
+			size = Vector3.new(x1 - x0, 2.6, 1.4)
 		end
-		part("Beam", size, CFrame.new(L({ bx, -2, bz })), "8f7656", m, true)
+		-- the beam stands on the pit floor (its underside never shares the tunnel ceiling's plane)
+		part("Beam", size, CFrame.new(L({ bx, -1.3, bz })), "8f7656", m, true)
 		part("Zone", Vector3.new(x1 - x0, 5.8, z1 - z0), CFrame.new(L({ (x0 + x1) / 2, -1.1, (z0 + z1) / 2 })), nil, m)
 	end
 	CS:AddTag(m, "TombTrap")
