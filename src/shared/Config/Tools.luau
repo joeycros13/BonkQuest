@@ -138,7 +138,7 @@ Tools.Defs = {
 	-- ==================== World 2 (The Redwood Forest) ====================
 	-- The approved table (2026-10-20, memory tools-per-world): World 2 sells a Stone Axe and a
 	-- Stone Rod (no pickaxe: the Wooden Pickaxe lasts until World 3). Models: Blender
-	-- w2_tools_build, art/meshes/w2_tools.fbx, built to the wooden ones' sizes ("Redwood +
+	-- w2_tools_build, art/meshes/w2/w2_tools.fbx, built to the wooden ones' sizes ("Redwood +
 	-- slate": knapped slate, vine lashing; the axe's amber grip, the all-stone rod's teal reel).
 	-- Prices, power, sell and the recipes are placeholders.
 	StoneAxe = {
@@ -204,7 +204,7 @@ Tools.Defs = {
 	-- ==================== World 3 (The Crystal Caverns) ====================
 	-- (2026-10-24, the user: "Crystal" fits the caves) World 3 sells a Crystal Pickaxe (from the
 	-- Wooden Pickaxe: World 2 had none) and a Crystal Rod (from the Stone Rod); the Stone Axe carries
-	-- on. Models: Blender w3_tools_build, art/meshes/w3_tools.fbx, the wooden / stone ones' sizes
+	-- on. Models: Blender w3_tools_build, art/meshes/w3/w3_tools.fbx, the wooden / stone ones' sizes
 	-- (crystal arms in iron, a purple grip; a jointed cyan / pink / purple rod, a pink reel). The
 	-- recipes follow World 2's: the tool before, the last world's gathered things, this world's
 	-- enemy drops. Prices, power x10 World 2's; all placeholders.
@@ -268,7 +268,7 @@ Tools.Defs = {
 	-- Stone Axe) chops the saguaros, the Sandstone Shovel (the first shovel, so no tool before it) digs
 	-- the dig piles and the Sandstone Rod (from the Crystal Rod) fishes the oasis. No pickaxe: World 4
 	-- has nothing to mine, so the Crystal Pickaxe carries on (the user, 2026-10-29). Models: Blender
-	-- w4_tools_build, art/meshes/w4_tools.fbx, the earlier tools' sizes (sandstone heads with gold edges
+	-- w4_tools_build, art/meshes/w4/w4_tools.fbx, the earlier tools' sizes (sandstone heads with gold edges
 	-- and caps, lapis and turquoise inlays; the axe's turquoise grip, the shovel's carnelian, the rod's
 	-- gold tip). The recipes take World 3's gathered things and the Bone Jackal's fangs (2026-10-29, the
 	-- World 4 rescale, as World 3's tools take Bat Wings). Prices and power x10 World 3's; all placeholders. Icons rendered like the other tools'
