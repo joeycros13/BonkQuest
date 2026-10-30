@@ -1,0 +1,293 @@
+{
+ "Perfumer": {
+  "pieces": {
+   "Beard": {
+    "offset": [
+     -0.0,
+     1.2037,
+     -0.6563
+    ],
+    "size": [
+     0.508,
+     0.6433,
+     0.1457
+    ],
+    "colour": "3b2a1e",
+    "bone": "Head"
+   },
+   "Cork": {
+    "offset": [
+     1.5,
+     0.99,
+     -1.66
+    ],
+    "size": [
+     0.18,
+     0.14,
+     0.18
+    ],
+    "colour": "8b5a2b",
+    "bone": "Tool"
+   },
+   "Corks": {
+    "offset": [
+     -0.0,
+     -0.45,
+     -0.59
+    ],
+    "size": [
+     1.42,
+     0.08,
+     0.1
+    ],
+    "colour": "8b5a2b",
+    "bone": "Torso"
+   },
+   "CuffL": {
+    "offset": [
+     -1.52,
+     -0.63,
+     0.0
+    ],
+    "size": [
+     1.04,
+     0.18,
+     1.08
+    ],
+    "colour": "6a4c93",
+    "bone": "LeftArm"
+   },
+   "CuffR": {
+    "offset": [
+     1.52,
+     -0.2258,
+     -0.9758
+    ],
+    "size": [
+     1.04,
+     0.891,
+     0.891
+    ],
+    "colour": "6a4c93",
+    "bone": "RightArm"
+   },
+   "Fez": {
+    "offset": [
+     -0.0,
+     2.285,
+     0.0
+    ],
+    "size": [
+     1.2847,
+     0.63,
+     1.2847
+    ],
+    "colour": "c0392b",
+    "bone": "Head"
+   },
+   "Flask": {
+    "offset": [
+     1.5,
+     0.4274,
+     -1.66
+    ],
+    "size": [
+     0.64,
+     0.9851,
+     0.6087
+    ],
+    "colour": "cfeff5",
+    "bone": "Tool"
+   },
+   "Potion": {
+    "offset": [
+     1.5,
+     0.1121,
+     -1.66
+    ],
+    "size": [
+     0.56,
+     0.2757,
+     0.5326
+    ],
+    "colour": "4fcf5c",
+    "bone": "Tool"
+   },
+   "Sash": {
+    "offset": [
+     -0.0,
+     -0.78,
+     0.0
+    ],
+    "size": [
+     2.04,
+     0.4,
+     1.04
+    ],
+    "colour": "c0392b",
+    "bone": "Torso"
+   },
+   "SleeveL": {
+    "offset": [
+     -1.53,
+     0.2275,
+     0.0
+    ],
+    "size": [
+     1.06,
+     1.555,
+     1.12
+    ],
+    "colour": "c9b8e8",
+    "bone": "LeftArm"
+   },
+   "SleeveR": {
+    "offset": [
+     1.53,
+     0.3788,
+     -0.3712
+    ],
+    "size": [
+     1.06,
+     1.8173,
+     1.8173
+    ],
+    "colour": "c9b8e8",
+    "bone": "RightArm"
+   },
+   "Slippers": {
+    "offset": [
+     -0.0,
+     -2.82,
+     -0.2011
+    ],
+    "size": [
+     2.03,
+     0.4,
+     1.4422
+    ],
+    "colour": "f2c14e",
+    "bone": "Legs"
+   },
+   "Tassel": {
+    "offset": [
+     -0.3251,
+     2.3206,
+     0.1806
+    ],
+    "size": [
+     0.6697,
+     0.6412,
+     0.3989
+    ],
+    "colour": "2b2b2b",
+    "bone": "Head"
+   },
+   "Trousers": {
+    "offset": [
+     -0.0,
+     -1.785,
+     0.0
+    ],
+    "size": [
+     2.28,
+     1.67,
+     1.24
+    ],
+    "colour": "2f8f86",
+    "bone": "Legs"
+   },
+   "Vest": {
+    "offset": [
+     -0.0,
+     0.225,
+     0.0
+    ],
+    "size": [
+     2.0,
+     1.65,
+     1.12
+    ],
+    "colour": "6a4c93",
+    "bone": "Torso"
+   },
+   "VestTrim": {
+    "offset": [
+     -0.0,
+     0.2,
+     -0.575
+    ],
+    "size": [
+     0.82,
+     1.6,
+     0.03
+    ],
+    "colour": "f2c14e",
+    "bone": "Torso"
+   },
+   "VialBlue": {
+    "offset": [
+     -0.24,
+     -0.66,
+     -0.59
+    ],
+    "size": [
+     0.15,
+     0.34,
+     0.14
+    ],
+    "colour": "3f8ae8",
+    "bone": "Torso"
+   },
+   "VialGold": {
+    "offset": [
+     -0.66,
+     -0.66,
+     -0.59
+    ],
+    "size": [
+     0.15,
+     0.34,
+     0.14
+    ],
+    "colour": "ffd23f",
+    "bone": "Torso"
+   },
+   "VialGreen": {
+    "offset": [
+     0.66,
+     -0.66,
+     -0.59
+    ],
+    "size": [
+     0.15,
+     0.34,
+     0.14
+    ],
+    "colour": "4fcf5c",
+    "bone": "Torso"
+   },
+   "VialRed": {
+    "offset": [
+     0.24,
+     -0.66,
+     -0.59
+    ],
+    "size": [
+     0.15,
+     0.34,
+     0.14
+    ],
+    "colour": "e8402e",
+    "bone": "Torso"
+   }
+  },
+  "size": [
+   4.12,
+   5.661,
+   2.607
+  ],
+  "minZ": -3.02,
+  "maxZ": 2.641
+ }
+}
