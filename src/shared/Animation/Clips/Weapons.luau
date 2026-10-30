@@ -312,15 +312,16 @@ Weapons.SWINGS = {
 		{ u = 0.74, hand = { -0.4, 0.0, -1.0 }, dir = { -1, -0.25, 0.05 }, wy = 36, wp = 6, stop = true },
 		{ u = 1 },
 	},
-	-- Lantern Flail: the handle whirled once round over the head (the lantern swings
-	-- round on its chain behind it: see FlailController), then whipped forward and down
-	-- across to the left.
+	-- Lantern Flail (the Firefly Lantern): an underarm swing beside the body, never over
+	-- the head (2026-10-29, the user: the overhead whirl put the arm straight up by the
+	-- head). The handle is drawn back low past the right hip, so the lantern trails behind
+	-- on its chain (FlailController), then swung forward and up to chest height, where the
+	-- lantern whips through, and on across to the left.
 	FlailWhirl = {
 		{ u = 0 },
-		{ u = 0.2, hand = { 1.7, 1.45, 0.35 }, dir = { 0.45, 1, 0.35 }, wy = -22, wp = -4 },
-		{ u = 0.38, hand = { 0.6, 2.0, 0.15 }, dir = { -0.3, 1, 0.25 }, wy = -12, wp = -6 },
-		{ u = 0.56, hand = { 0.95, 0.6, -1.5 }, dir = { 0.05, 0.25, -1 }, wy = 10, wp = 8, rz = 0.4, hit = true },
-		{ u = 0.74, hand = { -0.2, -0.2, -1.15 }, dir = { -0.9, -0.3, -0.6 }, wy = 30, wp = 6, stop = true },
+		{ u = 0.3, hand = { 1.55, -0.9, 0.85 }, dir = { 0.1, -0.75, 0.65 }, wy = -24, wp = -4, stop = true },
+		{ u = 0.55, hand = { 0.95, 0.35, -1.5 }, dir = { 0.05, 0.35, -1 }, wy = 10, wp = 8, rz = 0.4, hit = true },
+		{ u = 0.74, hand = { 0.1, 0.1, -1.3 }, dir = { -0.75, 0.1, -0.65 }, wy = 28, wp = 5, stop = true },
 		{ u = 1 },
 	},
 	-- Pitchfork, Linen Spear: bring it over to the right side (body turned right, both
