@@ -57,6 +57,8 @@ local player = Players.LocalPlayer
 local changedEvent = Instance.new("BindableEvent")
 -- fires on every swing's "Hit" marker, whatever it touched (World 3's secret crystals listen)
 local landedEvent = Instance.new("BindableEvent")
+-- fires when any character's swing starts on this client, with (model, def, seconds)
+local startedEvent = Instance.new("BindableEvent")
 
 -- Enemies within reach plus this get the auto-turn.
 local AIM_ASSIST_RANGE = 3
@@ -254,6 +256,7 @@ local function startSwing(rig: Rig, def: Weapons.WeaponDef): any
 	-- carry on through the attack.
 	rig.swingBody = rig.animator:Play(body, { speed = speed })
 	rig.swing = track
+	startedEvent:Fire(rig.model, def, def.cooldown)
 	local impact = if def.impact == "Slam" then slam elseif def.impact == "Gust" then gust elseif def.impact == "Pumpkin" then pumpkin else nil
 	if impact then
 		track:GetMarkerReachedSignal("Hit"):Once(function()
@@ -539,6 +542,13 @@ end
 -- struckEnemy), whether or not an enemy was in reach (for things that react to being struck).
 function WeaponController.onSwingLanded(callback: (BasePart, Weapons.WeaponDef, boolean) -> ()): RBXScriptConnection
 	return landedEvent.Event:Connect(callback)
+end
+
+-- Fires when a swing starts for any character this client animates (the local player's
+-- and, from SwingSeq, everyone else's), with (model, def, seconds): the swing runs
+-- over `seconds` (the def's cooldown). The Firefly Lantern's chain follows it.
+function WeaponController.onSwingStarted(callback: (Model, Weapons.WeaponDef, number) -> ()): RBXScriptConnection
+	return startedEvent.Event:Connect(callback)
 end
 
 function WeaponController.equip(id: string)

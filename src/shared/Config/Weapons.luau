@@ -535,7 +535,7 @@ Weapons.Defs = {
 		reach = 9,
 		arc = 160,
 		maxTargets = 4,
-		hitTime = 0.55, -- where the Hook passes in front of the body
+		hitTime = 0.56, -- the smash in front (FlailWhirl's hit key)
 		swing = "FlailWhirl",
 	},
 	-- Secret: the Elder Treant's 2% drop, a forked roasting stick with two

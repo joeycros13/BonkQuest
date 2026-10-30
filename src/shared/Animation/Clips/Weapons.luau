@@ -116,7 +116,9 @@ Weapons.HOLDS = {
 	Hatchet = HIP,
 	Cleaver = HIP,
 	Mace = with(HIP, { sym = true }),
-	LanternFlail = HIP,
+	-- the Firefly Lantern: held out in front at waist height, handle tipped up, so the
+	-- lantern hangs on its chain clear of the ground (from the hip it hung 0.9 into it)
+	LanternFlail = { hand = { 1.35, 0.3, -1.35 }, dir = { 0, 0.5, -1 }, roll = 0 },
 	MarshmallowStick = HIP,
 	HoneycombHammer = with(HIP, { sym = true }),
 	CopperDrill = HIP,
@@ -312,16 +314,17 @@ Weapons.SWINGS = {
 		{ u = 0.74, hand = { -0.4, 0.0, -1.0 }, dir = { -1, -0.25, 0.05 }, wy = 36, wp = 6, stop = true },
 		{ u = 1 },
 	},
-	-- Lantern Flail (the Firefly Lantern): an underarm swing beside the body, never over
-	-- the head (2026-10-29, the user: the overhead whirl put the arm straight up by the
-	-- head). The handle is drawn back low past the right hip, so the lantern trails behind
-	-- on its chain (FlailController), then swung forward and up to chest height, where the
-	-- lantern whips through, and on across to the left.
+	-- Lantern Flail (the Firefly Lantern): a morning-star smash, never straight over the
+	-- head (2026-10-29, the user: the overhead whirl put the arm straight up by the head).
+	-- The handle is drawn back over the right shoulder like the Bash, then brought down in
+	-- front and on across to the left; the lantern follows its own set path
+	-- (FlailController PATHS.FlailWhirl): behind on the windup, up over the top, down in
+	-- front on the hit.
 	FlailWhirl = {
 		{ u = 0 },
-		{ u = 0.3, hand = { 1.55, -0.9, 0.85 }, dir = { 0.1, -0.75, 0.65 }, wy = -24, wp = -4, stop = true },
-		{ u = 0.55, hand = { 0.95, 0.35, -1.5 }, dir = { 0.05, 0.35, -1 }, wy = 10, wp = 8, rz = 0.4, hit = true },
-		{ u = 0.74, hand = { 0.1, 0.1, -1.3 }, dir = { -0.75, 0.1, -0.65 }, wy = 28, wp = 5, stop = true },
+		{ u = 0.32, hand = { 1.95, 0.45, 0.9 }, dir = { 0.4, 0.55, 0.75 }, wy = -28, wp = -6, stop = true },
+		{ u = 0.56, hand = { 0.95, 0.15, -1.5 }, dir = { 0.05, 0.1, -1 }, wy = 12, wp = 9, rz = 0.35, hit = true },
+		{ u = 0.74, hand = { 0.3, -0.35, -1.2 }, dir = { -0.55, -0.35, -0.75 }, wy = 24, wp = 6, stop = true },
 		{ u = 1 },
 	},
 	-- Pitchfork, Linen Spear: bring it over to the right side (body turned right, both

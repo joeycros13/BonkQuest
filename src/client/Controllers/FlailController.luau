@@ -1,16 +1,18 @@
 --!strict
--- FlailController: a flail's head swings on its chain (2026-10-29, the user: "if there is any
--- chance to give the flail actual physics"). The Lantern Flail's lantern hangs from five
--- links under the handle, trails behind the whirl over the head and whips through the blow.
+-- FlailController: the Firefly Lantern's lantern swings on its chain (2026-10-29). A first
+-- version simulated the chain (Verlet under gravity); the user found it messy and asked
+-- for a fixed path instead, so the chain now follows hand-set keys: it hangs straight
+-- down at rest with a slow sway, and on a swing follows PATHS[swing name], keyed over the
+-- swing's length, in the holder's torso frame (so it turns with the body).
 --
 -- A held weapon (a character's EquippedWeapon) is a flail when its Grip has a `FlailPivot`
 -- attachment, where the chain hangs from. Its pieces with a `FlailLink` attribute (1..n,
 -- counted from the handle) are the chain's links; those with `FlailBob` hang from the last
 -- link (the lantern). On each player's client, for every character holding one near the
--- camera, those pieces are hidden (LocalTransparencyModifier, their lights switched off) and
--- anchored copies of them are moved every frame along a chain simulated with Verlet steps
--- under the place's gravity, pinned to the pivot. Purely for looks: the server's hit check
--- is the swing's, unchanged.
+-- camera, those pieces are hidden (LocalTransparencyModifier, their lights switched off)
+-- and anchored copies of them are placed every frame along a straight chain from the
+-- pivot toward the path's direction. The chain is kept out of the holder's body and
+-- above the ground. Purely for looks: the server's hit check is the swing's, unchanged.
 --
 -- One Scheduler Render system (priority 90: after the joints have placed the handle, before
 -- the PartBatch flush), moving the copies through PartBatch.
@@ -28,28 +30,57 @@ local FlailController = {}
 
 local HELD_NAME = "EquippedWeapon"
 local FAR = 150 -- studs from the camera beyond which a flail is left rigid
-local DAMPING = 0.985 -- share of its speed a node keeps each frame (air drag)
-local ITERATIONS = 8 -- passes holding the links to their lengths
-local BOB_WEIGHT = 4 -- the lantern is this much heavier than a link: the links give way to it
-local SNAP = 25 -- studs the pivot may jump in a frame before the chain is laid out again (a teleport)
-local MAX_DT = 1 / 30
+local GROUND_REACH = 12 -- studs looked down from the pivot for the ground
+local BOB_CLEAR = 0.8 -- the lantern's centre kept over the ground (its half height and a little)
+-- the holder's body, a standing cylinder round the root the lantern is kept out of
+local BODY_CLEAR = 1.45
+local BODY_BELOW = 3.2 -- studs under the root the cylinder reaches (the feet)
+local BODY_ABOVE = 2.6 -- and over it (the head)
+-- the rest sway: a slow drift, in the torso's sideways and forward directions
+local SWAY_SIDE, SWAY_SIDE_RATE = 0.06, 1.6
+local SWAY_FWD, SWAY_FWD_RATE = 0.05, 1.1
+
+-- Where the lantern hangs from the pivot over a swing, in the torso's frame (+X right,
+-- +Y up, +Z back), at points through the swing (u 0..1, the swing's own clock), joined
+-- by a Catmull-Rom curve. FlailWhirl (Animation.Clips.Weapons) draws the handle back
+-- over the right shoulder (u 0.32), smashes it down in front (hit u 0.56) and follows
+-- through to the left (u 0.74): the lantern lags behind on the windup, swings up over
+-- the top and comes down in front on the hit, stays in front while the arm follows
+-- through (swinging it back under the body dragged it across the feet), and is lifted
+-- back to hanging as the arm comes home.
+type Key = { u: number, dir: Vector3 }
+local PATHS: { [string]: { Key } } = {
+	FlailWhirl = {
+		{ u = 0, dir = Vector3.new(0, -1, 0) },
+		{ u = 0.18, dir = Vector3.new(0.05, -0.85, 0.5) },
+		{ u = 0.32, dir = Vector3.new(0.15, -0.45, 0.88) },
+		{ u = 0.44, dir = Vector3.new(0.1, 0.55, 0.83) },
+		{ u = 0.5, dir = Vector3.new(0.05, 1, 0.05) },
+		{ u = 0.56, dir = Vector3.new(0, -0.2, -1) },
+		{ u = 0.66, dir = Vector3.new(-0.05, -0.6, -0.8) },
+		{ u = 0.8, dir = Vector3.new(0, -0.72, -0.7) },
+		{ u = 0.92, dir = Vector3.new(0, -0.93, -0.36) },
+		{ u = 1, dir = Vector3.new(0, -1, 0) },
+	},
+}
 
 type Piece = { part: BasePart, copy: BasePart, rest: CFrame, lights: { Light } }
 type Flail = {
 	model: Model,
 	grip: BasePart,
 	pivot: Vector3, -- in the grip's space
-	links: { Piece }, -- link k hangs between node k-1 and node k
-	bob: { Piece }, -- hangs between node n and node n+1
-	nodes: { Vector3 },
-	last: { Vector3 },
-	lengths: { number },
+	links: { Piece }, -- link k lies between node k and node k + 1
+	bob: { Piece }, -- lies between node n + 1 and node n + 2
+	lengths: { number }, -- each stretch's length, from the pivot down
 	restNodes: { Vector3 }, -- the nodes laid out straight, in the grip's space
-	lastPivot: Vector3?,
 }
+type Swing = { path: { Key }, start: number, seconds: number }
 
 local flails: { [Model]: Flail } = {} -- by character
+local swings: { [Model]: Swing } = {} -- a swing under way, by character
 local folder: Folder? = nil
+local groundParams = RaycastParams.new()
+groundParams.FilterType = Enum.RaycastFilterType.Exclude
 
 local function copiesFolder(): Folder
 	if folder and folder.Parent then
@@ -97,16 +128,6 @@ local function release(character: Model)
 			piece.copy:Destroy()
 		end
 	end
-end
-
--- The nodes laid out straight down the weapon from the pivot, in the grip's space.
-local function layOut(flail: Flail)
-	local cf = flail.grip.CFrame
-	for i, point in flail.restNodes do
-		flail.nodes[i] = cf * point
-		flail.last[i] = flail.nodes[i]
-	end
-	flail.lastPivot = cf * flail.pivot
 end
 
 local function adopt(character: Model, model: Model): Flail?
@@ -192,13 +213,9 @@ local function adopt(character: Model, model: Model): Flail?
 		pivot = pivot.Position,
 		links = links,
 		bob = bob,
-		nodes = {},
-		last = {},
 		lengths = lengths,
 		restNodes = restNodes,
-		lastPivot = nil,
 	}
-	layOut(flail)
 	for _, list in { links, bob } do
 		for _, piece in list do
 			hide(piece, true)
@@ -208,62 +225,87 @@ local function adopt(character: Model, model: Model): Flail?
 	return flail
 end
 
-local function simulate(flail: Flail, dt: number)
+-- The path's direction at u: a Catmull-Rom curve through the keys' directions.
+local function pathAt(path: { Key }, u: number): Vector3
+	u = math.clamp(u, 0, 1)
+	local i = 1
+	while i < #path - 1 and path[i + 1].u <= u do
+		i += 1
+	end
+	local a, b = path[i], path[i + 1]
+	local t = if b.u > a.u then (u - a.u) / (b.u - a.u) else 1
+	local p0 = (path[i - 1] or a).dir
+	local p1, p2 = a.dir, b.dir
+	local p3 = (path[i + 2] or b).dir
+	local t2, t3 = t * t, t * t * t
+	local v = 0.5 * ((2 * p1) + (p2 - p0) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (3 * p1 - p0 - 3 * p2 + p3) * t3)
+	return if v.Magnitude > 1e-4 then v.Unit else Vector3.new(0, -1, 0)
+end
+
+local function groundUnder(character: Model, at: Vector3): number?
+	groundParams.FilterDescendantsInstances = { character, copiesFolder() }
+	local hit = Workspace:Raycast(at, Vector3.new(0, -GROUND_REACH, 0), groundParams)
+	return if hit then hit.Position.Y else nil
+end
+
+local function place(character: Model, flail: Flail, now: number)
 	local cf = flail.grip.CFrame
 	local pivot = cf * flail.pivot
-	if not flail.lastPivot or (pivot - flail.lastPivot).Magnitude > SNAP then
-		layOut(flail)
+	local torso = character:FindFirstChild("Torso") :: BasePart?
+	local root = character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	local frame = if torso then torso.CFrame else cf
+	-- where the lantern hangs, in the torso's frame
+	local dir: Vector3
+	local swing = swings[character]
+	if swing and now - swing.start < swing.seconds then
+		dir = pathAt(swing.path, (now - swing.start) / swing.seconds)
+	else
+		swings[character] = nil
+		dir = Vector3.new(math.sin(now * SWAY_SIDE_RATE) * SWAY_SIDE, -1, math.sin(now * SWAY_FWD_RATE) * SWAY_FWD).Unit
 	end
-	flail.lastPivot = pivot
-	local nodes, last = flail.nodes, flail.last
-	local gravity = Vector3.new(0, -Workspace.Gravity, 0) * dt * dt
-	nodes[1], last[1] = pivot, pivot
-	for i = 2, #nodes do
-		local now = nodes[i]
-		local moved = (now - last[i]) * DAMPING
-		last[i] = now
-		nodes[i] = now + moved + gravity
+	local world = frame:VectorToWorldSpace(dir)
+	-- the whole chain's length, the pivot to the lantern's centre
+	local total = 0
+	for _, length in flail.lengths do
+		total += length
 	end
-	local bobNode = if #flail.bob > 0 then #nodes else -1
-	for _ = 1, ITERATIONS do
-		for i = 1, #nodes - 1 do
-			local a, b = nodes[i], nodes[i + 1]
-			local delta = b - a
-			local dist = delta.Magnitude
-			if dist < 1e-6 then
-				continue
-			end
-			local fix = delta * ((dist - flail.lengths[i]) / dist)
-			if i == 1 then
-				nodes[i + 1] = b - fix -- the pivot is held by the hand
-			else
-				local wa, wb = 1, if i + 1 == bobNode then 1 / BOB_WEIGHT else 1
-				local share = wa / (wa + wb)
-				nodes[i] = a + fix * (1 - share)
-				nodes[i + 1] = b - fix * share
+	local tip = pivot + world * total
+	-- kept out of the holder's body and above the ground (the chain then runs to it)
+	if root then
+		local body = root.Position
+		if tip.Y > body.Y - BODY_BELOW and tip.Y < body.Y + BODY_ABOVE then
+			local flat = Vector3.new(tip.X - body.X, 0, tip.Z - body.Z)
+			if flat.Magnitude < BODY_CLEAR then
+				local out = if flat.Magnitude > 1e-4 then flat.Unit else frame.RightVector
+				tip = Vector3.new(body.X, tip.Y, body.Z) + out * BODY_CLEAR
 			end
 		end
 	end
-	-- place the copies: each turned from lying straight down the weapon to its stretch
-	local along = cf.LookVector
-	local turn = cf.Rotation
+	local ground = groundUnder(character, pivot)
+	if ground and tip.Y < ground + BOB_CLEAR then
+		-- lifted to the floor, the chain keeping its length by reaching out sideways
+		local drop = pivot.Y - (ground + BOB_CLEAR)
+		local flat = Vector3.new(tip.X - pivot.X, 0, tip.Z - pivot.Z)
+		local reach = math.sqrt(math.max(total * total - drop * drop, 0))
+		local out = if flat.Magnitude > 1e-4 then flat.Unit else frame.LookVector
+		tip = Vector3.new(pivot.X, ground + BOB_CLEAR, pivot.Z) + out * reach
+	end
+	local along = (tip - pivot)
+	along = if along.Magnitude > 1e-4 then along.Unit else world
+	-- the copies: each turned from lying straight down the weapon to the chain's line
+	local turn = fromTo(cf.LookVector, along) * cf.Rotation
+	local at = 0
 	for k, piece in flail.links do
-		local from, to = nodes[k], nodes[k + 1]
-		local dir = to - from
-		local frame = CFrame.new(from) * (if dir.Magnitude > 1e-6 then fromTo(along, dir.Unit) else CFrame.identity) * turn
-		PartBatch.push(piece.copy, frame * piece.rest)
+		PartBatch.push(piece.copy, CFrame.new(pivot + along * at) * turn * piece.rest)
+		at += flail.lengths[k]
 	end
-	if #flail.bob > 0 then
-		local hang = nodes[#nodes] - nodes[#nodes - 1]
-		local frame = CFrame.new(nodes[#nodes - 1]) * (if hang.Magnitude > 1e-6 then fromTo(along, hang.Unit) else CFrame.identity) * turn
-		for _, piece in flail.bob do
-			PartBatch.push(piece.copy, frame * piece.rest)
-		end
+	for _, piece in flail.bob do
+		PartBatch.push(piece.copy, CFrame.new(pivot + along * at) * turn * piece.rest)
 	end
 end
 
-local function step(dt: number, _now: number)
-	dt = math.min(dt, MAX_DT)
+local function step(_dt: number, _now: number)
+	local now = os.clock() -- the clock onSwingStarted stamps swings with
 	local camera = Workspace.CurrentCamera
 	local eye = if camera then camera.CFrame.Position else Vector3.zero
 	local seen: { [Model]: boolean } = {}
@@ -292,7 +334,7 @@ local function step(dt: number, _now: number)
 		end
 		if flail then
 			seen[character] = true
-			simulate(flail, dt)
+			place(character, flail, now)
 		end
 	end
 	for character in flails do
@@ -302,7 +344,17 @@ local function step(dt: number, _now: number)
 	end
 end
 
-function FlailController.init(_deps: any) end
+function FlailController.init(deps: any)
+	local weapons = deps.Controllers and deps.Controllers.WeaponController
+	if weapons and weapons.onSwingStarted then
+		weapons.onSwingStarted(function(model: Model, def: any, seconds: number)
+			local path = PATHS[def.swing]
+			if path then
+				swings[model] = { path = path, start = os.clock(), seconds = seconds }
+			end
+		end)
+	end
+end
 
 function FlailController.start()
 	-- after the joints (the handle is where the hand put it), before the PartBatch flush (100)
