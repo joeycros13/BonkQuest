@@ -7,8 +7,9 @@
 --   * judges the traps every POLL against the server clock (the same formulas TombController animates):
 --     a hit takes a share of max health (the trap's Damage) and flashes the body (Remotes.PlayerHurt);
 --     a collapsing tile or the boulder sends you back to a checkpoint (PortalService, behind the fade)
---   * fires the dart walls: a plate stepped on sets the trap's FiredAt (server time) and the volley
---     hits whoever is in its zone at that moment
+--   * fires the dart walls: a plate stepped on, or the wall's beat (its Period), sets the trap's FiredAt
+--     (server time) and the volley hits whoever is in its zone at that moment
+--   * lava: falling into a pit hurts and sends you back to your checkpoint
 --   * saves reaching the burial chamber (section "tomb", Tomb.FOUND_ATTR), and from then on the
 --     landing's ShortcutTablet prompt sends you straight to the chamber
 -- Nothing here uses Touched; it polls like PortalService and HealZoneService.
@@ -30,6 +31,7 @@ local deps: any = nil
 local lastHit: { [Player]: { [Instance]: number } } = {}
 local onTile: { [Player]: { tile: BasePart, since: number }? } = {}
 local rearmAt: { [Instance]: number } = {}
+local beatAt: { [Instance]: number } = {}
 
 local tomb: Instance? = nil
 local bounds: { lo: Vector3, hi: Vector3 }? = nil
@@ -139,13 +141,33 @@ local function judge(player: Player, root: BasePart, humanoid: Humanoid, trap: I
 				hurt(player, humanoid, trap, centre)
 			end
 		end
+	elseif kind == "Saw" then
+		local pivot = trap:FindFirstChild("Pivot") :: BasePart?
+		if pivot and zone and Tomb.inside(zone, pos, 1) then
+			local x = Tomb.saw(trap, t)
+			local centre = (pivot.CFrame * CFrame.new(x, 0.3, 0)).Position
+			local d = pos - centre
+			local radius = Tomb.num(trap, "Radius", 2.2)
+			if math.abs(d:Dot(pivot.CFrame.LookVector)) < 1.1 and math.abs(d:Dot(pivot.CFrame.RightVector)) < radius + 0.7
+				and d.Y < radius + 2.6 then
+				hurt(player, humanoid, trap, centre)
+			end
+		end
+	elseif kind == "Lava" then
+		if zone and Tomb.inside(zone, pos) and hurt(player, humanoid, trap, zone.Position) then
+			sendBack(player)
+		end
 	elseif kind == "Darts" then
-		local plate = trap:FindFirstChild("Plate") :: BasePart?
-		if plate and Tomb.over(plate, pos, 4.5, 0.4) and (rearmAt[trap] or 0) <= t then
-			local delay = Tomb.num(trap, "Delay", 0.45)
-			rearmAt[trap] = t + Tomb.num(trap, "Rearm", 2)
-			trap:SetAttribute("FiredAt", t + delay)
-			task.delay(delay, volley, trap)
+		if trap:GetAttribute("Period") == nil and (rearmAt[trap] or 0) <= t then
+			for _, plate in trap:GetChildren() do
+				if plate.Name == "Plate" and plate:IsA("BasePart") and Tomb.over(plate, pos, 4.5, 0.4) then
+					local delay = Tomb.num(trap, "Delay", 0.15)
+					rearmAt[trap] = t + Tomb.num(trap, "Rearm", 2)
+					trap:SetAttribute("FiredAt", t + delay)
+					task.delay(delay, volley, trap)
+					break
+				end
+			end
 		end
 	elseif kind == "Collapse" then
 		local standing: BasePart? = nil
@@ -174,9 +196,29 @@ local function judge(player: Player, root: BasePart, humanoid: Humanoid, trap: I
 			local axis = if start and finish then (finish.Position - start.Position).Unit else Vector3.xAxis
 			if math.abs((pos - centre):Dot(axis)) < Tomb.num(trap, "Radius", 4.5) + 0.8 then
 				if hurt(player, humanoid, trap, centre) then
-					sendBack(player, Tomb.num(trap, "ResetTo", 4))
+					sendBack(player, Tomb.num(trap, "ResetTo", 7))
 				end
 			end
+		end
+	end
+end
+
+-- Dart walls on a beat: a volley every Period (the warning glint is the client's, from FiredAt).
+local function beats(traps: { Instance }, t: number)
+	for _, trap in traps do
+		local period = trap:GetAttribute("Period")
+		if trap:GetAttribute("Kind") ~= "Darts" or type(period) ~= "number" then
+			continue
+		end
+		local due = beatAt[trap]
+		if not due then
+			local off = Tomb.num(trap, "Offset", 0)
+			beatAt[trap] = t + period - ((t + off) % period)
+		elseif t >= due then
+			beatAt[trap] = due + period
+			local delay = Tomb.num(trap, "Delay", 0.35)
+			trap:SetAttribute("FiredAt", t + delay)
+			task.delay(delay, volley, trap)
 		end
 	end
 end
@@ -187,6 +229,17 @@ local function poll()
 	end
 	local t = now()
 	local traps = inWorld(CollectionService:GetTagged(Tomb.TRAP_TAG))
+	local anyone = false
+	for _, player in Players:GetPlayers() do
+		local root = rootOf(player)
+		if root and inTomb(root.Position) then
+			anyone = true
+			break
+		end
+	end
+	if anyone then
+		beats(traps, t)
+	end
 	local plates = inWorld(CollectionService:GetTagged(Tomb.CHECKPOINT_TAG))
 	local structures = tomb
 	local chamber = structures:FindFirstChild("ChamberZone", true) :: BasePart?

@@ -2,8 +2,9 @@
 -- TombController: World 4's secret tomb on this client (2026-10-29; Config/Tomb has the design and the
 -- trap attributes, TombService the hits). Everything here is looks; the server judges.
 --   * the traps, from the server clock (the same formulas TombService uses): spikes rattle then shoot
---     up, blades swing, jackal heads glow then breathe fire, the boulder rolls down the hall, and a dart
---     wall fires a volley at its FiredAt (set by the server when its plate is stepped on)
+--     up, axes swing, buzzsaws spin back and forth in their slots, jackal heads glow then breathe fire,
+--     the boulder rolls down the tunnel, and a dart wall fires a volley at its FiredAt (set by the
+--     server when its plate is stepped on or on its beat)
 --   * a cracked tile you stand on crumbles under you (only on your screen) as the server sends you back
 --   * the quicksand: standing in it you sink, until the server's fade carries you into the tomb
 --   * the shortcut tablet at the landing: sunk in the sand unless you've reached the burial chamber
@@ -25,7 +26,7 @@ local TombController = {}
 
 local NEAR = 420 -- run only while the camera is this close to the tomb's middle
 local SPIKE_DOWN = -2.4 -- spikes' offset when hidden in the floor
-local SPIKE_PEEK = -1.95 -- rattling just under the surface
+local SPIKE_PEEK = -1.55 -- rattling, the tips just showing
 local SPIKE_SPEED_UP, SPIKE_SPEED_DOWN = 30, 9
 local SINK_AFTER = 0.4 -- seconds in the quicksand before you start to sink
 local SINK_SPEED, SINK_DEPTH = 1.3, 3.2
@@ -67,15 +68,22 @@ local function adopt(model: Instance)
 		local spikes = model:FindFirstChild("Spikes") :: Model?
 		trap.state = { spikes = spikes, rest = spikes and spikes:GetPivot(), offset = 0 }
 	elseif kind == "Blade" then
+		-- every piece of the axe swings about the pivot
 		local pivot = model:FindFirstChild("Pivot") :: BasePart?
+		local axe = model:FindFirstChild("Axe")
 		local rel = {}
-		for _, name in { "Arm", "Blade" } do
-			local p = model:FindFirstChild(name)
-			if pivot and p and p:IsA("BasePart") then
-				table.insert(rel, { part = p, rel = pivot.CFrame:ToObjectSpace(p.CFrame) })
+		if pivot and axe then
+			for _, p in axe:GetDescendants() do
+				if p:IsA("BasePart") then
+					table.insert(rel, { part = p, rel = pivot.CFrame:ToObjectSpace(p.CFrame) })
+				end
 			end
 		end
 		trap.state = { rel = rel }
+	elseif kind == "Saw" then
+		local pivot = model:FindFirstChild("Pivot") :: BasePart?
+		local saw = model:FindFirstChild("Saw") :: Model?
+		trap.state = { saw = saw, base = pivot and saw and pivot.CFrame:ToObjectSpace(saw:GetPivot()), pivot = pivot }
 	elseif kind == "Fire" then
 		trap.state = { on = nil, warn = nil }
 	elseif kind == "Boulder" then
@@ -101,21 +109,42 @@ local function adopt(model: Instance)
 					return
 				end
 				local dir = zone.CFrame.RightVector * -side
-				for _, hole in model:GetChildren() do
+				local assets = ReplicatedStorage:FindFirstChild("Assets")
+				local effects = assets and assets:FindFirstChild("Effects")
+				local template = effects and effects:FindFirstChild("TombDart")
+				for _, hole in model:GetDescendants() do
 					if hole.Name == "Hole" and hole:IsA("BasePart") then
-						local dart = Instance.new("Part")
-						dart.Name = "Dart"
-						dart.Size = Vector3.new(0.14, 0.14, 1.1)
-						dart.Color = Color3.fromRGB(58, 40, 26)
-						dart.Material = Enum.Material.SmoothPlastic
-						dart.Anchored, dart.CanCollide, dart.CanQuery, dart.CanTouch, dart.CastShadow = true, false, false, false, false
 						local from = hole.Position + dir * 0.4
-						dart.CFrame = CFrame.lookAt(from, from + dir)
+						local dart: Instance
+						if template and template:IsA("Model") then
+							local copy = template:Clone()
+							dart = copy
+						else
+							local part = Instance.new("Part")
+							part.Size = Vector3.new(0.14, 0.14, 1.1)
+							part.Color = Color3.fromRGB(58, 40, 26)
+							part.Material = Enum.Material.SmoothPlastic
+							part.Anchored, part.CanCollide, part.CanQuery, part.CanTouch, part.CastShadow = true, false, false, false, false
+							dart = part
+						end
+						dart.Name = "Dart"
+						local at = Instance.new("CFrameValue")
+						at.Value = CFrame.lookAt(from, from + dir)
+						local function place()
+							if dart:IsA("Model") then
+								dart:PivotTo(at.Value)
+							elseif dart:IsA("BasePart") then
+								dart.CFrame = at.Value
+							end
+						end
+						place()
+						at.Changed:Connect(place)
 						dart.Parent = Workspace
-						local tween = TweenService:Create(dart, TweenInfo.new(0.22, Enum.EasingStyle.Linear), { CFrame = CFrame.lookAt(from + dir * 9.6, from + dir * 10.6) })
+						local tween = TweenService:Create(at, TweenInfo.new(0.24, Enum.EasingStyle.Linear), { Value = CFrame.lookAt(from + dir * 7.4, from + dir * 8.4) })
 						tween:Play()
 						tween.Completed:Connect(function()
 							dart:Destroy()
+							at:Destroy()
 						end)
 					end
 				end
@@ -150,6 +179,13 @@ local function stepTrap(trap: Trap, t: number, dt: number)
 				r.part.CFrame = pivot * r.rel
 			end
 		end
+	elseif trap.kind == "Saw" then
+		local saw, base, pivot = s.saw :: Model?, s.base :: CFrame?, s.pivot :: BasePart?
+		if saw and base and pivot then
+			local x, spin = Tomb.saw(model, t)
+			-- the blade's middle is 0.3 over the slot; it spins about its own Z
+			saw:PivotTo(pivot.CFrame * CFrame.new(x, 0, 0) * base * CFrame.new(0, 0.3, 0) * CFrame.Angles(0, 0, -spin) * CFrame.new(0, -0.3, 0))
+		end
 	elseif trap.kind == "Fire" then
 		local on, warn = Tomb.active(model, t), Tomb.warning(model, t)
 		if on ~= s.on then
@@ -164,7 +200,7 @@ local function stepTrap(trap: Trap, t: number, dt: number)
 		local glow = on or warn
 		if glow ~= s.warn then
 			s.warn = glow
-			local eyes = model:FindFirstChild("Eyes")
+			local eyes = model:FindFirstChild("Eyes", true)
 			if eyes and eyes:IsA("BasePart") then
 				eyes.Color = if glow then Color3.fromRGB(255, 70, 40) else Color3.fromRGB(255, 179, 71)
 			end

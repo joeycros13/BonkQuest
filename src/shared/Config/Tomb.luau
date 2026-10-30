@@ -1,26 +1,32 @@
 --!strict
 -- Tomb: World 4's secret tomb (2026-10-29, the user's design on
 -- https://claude.ai/artifact/29us8FDHD1zBP9Nw9WRBnE). The quicksand at Obelisk_3's shadow tip (a
--- PortalService charge zone) drops you into a 13 x 13 maze of traps (built by art/tools/w4/build_tomb.py),
--- a boulder hall leads to the Phantom Pharaoh's burial chamber, and once you've reached the chamber a
--- tablet at the landing offers the shortcut.
+-- PortalService charge zone) drops you into a 17 x 17 maze full of traps (built by art/tools/w4/build_tomb.py
+-- and build_tomb_studio.luau). Its goal, the sanctum in the middle, stands on its own island of walls, so
+-- following one wall never finds it; stairs there lead down to the boulder tunnel and the Phantom Pharaoh's
+-- burial chamber, and once you've reached the chamber a tablet at the landing offers the shortcut.
 --
 -- Every trap's timing is a formula of the server clock (workspace:GetServerTimeNow()), so the server
 -- (TombService: hits, checkpoints, the shortcut) and every client (TombController: the animation) agree
 -- without sending anything. A trap is a Model tagged TombTrap; its Kind attribute says which, the rest
 -- of its attributes tune it:
 --   Spikes    Period, Offset, OnFrom / OnTo (the share of the period they're up), Warn (when they rattle),
---             Damage; Zone (the cell), Plate, the Spikes model
+--             Damage; Zone (the cell), the Spikes model (the spike meshes, moved down into the floor)
 --   Fire      the same timing, Side (+1 / -1: the wall the jackal head is on), Damage; Zone (the jet's
---             band), Head, Snout, Ears, Collar, Eyes, Flame, FlameCore
+--             band), the Jackal model (its Eyes glow before it breathes), Flame, FlameCore
 --   Blade     Period, Offset, Amplitude (degrees), Length (pivot to blade), Radius, Damage; Pivot (the
---             swing's centre: it swings about its Z axis, across the corridor), Mount, Arm, Blade
---   Darts     Delay (plate to volley), Rearm, Side, Damage; Zone, Plate, Holes. The server sets the
---             model's FiredAt attribute (the volley's server time) when a plate is stepped on
+--             swing's centre: it swings about its Z axis, across the corridor), the Axe model
+--   Saw       Period, Offset, Range (studs either side of the middle), Radius, Damage; Pivot (the slot's
+--             middle on the floor, its X across the corridor), the Saw model (spun and slid along X)
+--   Darts     Delay (plate or beat to volley), Rearm, Side, Damage, and either Plate parts (stepped on) or a
+--             Period (fires on the beat); Zone, Hole parts. The server sets the model's FiredAt attribute
+--             (the volley's server time)
+--   Lava      Damage; Zone (the pit, up to just under a walker's middle). Falling in hurts and sends you
+--             back to your checkpoint; the Beam across it is safe
 --   Collapse  Hold (seconds standing on a cracked tile before it gives); Cracked tiles. Sends you back
 --             to your checkpoint, no damage
 --   Boulder   Period, Roll (seconds it rolls), Radius, Damage, ResetTo (the checkpoint a hit sends you
---             back to); Zone (the hall's lane: the alcoves are outside it), Start, End, Ball
+--             back to); Zone (the tunnel's lane: the alcoves are outside it), Start, End, Ball
 -- Damage is a share of max health.
 
 local Tomb = {}
@@ -71,6 +77,13 @@ function Tomb.bladePivot(model: Instance, t: number): CFrame?
 		return nil
 	end
 	return pivot.CFrame * CFrame.Angles(0, 0, Tomb.bladeAngle(model, t))
+end
+
+-- A buzzsaw's offset along its slot (studs across the corridor) and its spin angle at t.
+function Tomb.saw(model: Instance, t: number): (number, number)
+	local period = num(model, "Period", 2.6)
+	local x = num(model, "Range", 2.4) * math.sin(2 * math.pi * (t + num(model, "Offset", 0)) / period)
+	return x, (t * num(model, "Spin", 14)) % (2 * math.pi)
 end
 
 -- Where the boulder is at t: rolling?, its centre, how far along (0..1) and how far it has rolled (studs).
