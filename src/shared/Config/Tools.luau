@@ -264,14 +264,15 @@ Tools.Defs = {
 	},
 
 	-- ==================== World 4 (The Scorching Sands) ====================
-	-- (2026-10-28, the user: "sandstone tools but a little more decorated") A full set: the Sandstone
-	-- Axe (from the Stone Axe) chops the saguaros, the Sandstone Shovel (the first shovel, so no tool
-	-- before it) digs the dig piles, the Sandstone Pickaxe (from the Crystal Pickaxe) and the Sandstone
-	-- Rod (from the Crystal Rod) fishes the oasis. Models: Blender w4_tools_build, art/meshes/w4_tools.fbx,
-	-- the earlier tools' sizes (sandstone heads with gold edges and caps, lapis and turquoise inlays; the
-	-- axe's turquoise grip, the pickaxe's lapis, the shovel's carnelian, the rod's gold tip). The recipes
-	-- take World 3's gathered things for now (World 4's enemies have no drops yet). Prices and power x10
-	-- World 3's; all placeholders. Icons rendered like the other tools' (w1_icons_rerender, art/tools/ui/tool_icons.py).
+	-- (2026-10-28, the user: "sandstone tools but a little more decorated") The Sandstone Axe (from the
+	-- Stone Axe) chops the saguaros, the Sandstone Shovel (the first shovel, so no tool before it) digs
+	-- the dig piles and the Sandstone Rod (from the Crystal Rod) fishes the oasis. No pickaxe: World 4
+	-- has nothing to mine, so the Crystal Pickaxe carries on (the user, 2026-10-29). Models: Blender
+	-- w4_tools_build, art/meshes/w4_tools.fbx, the earlier tools' sizes (sandstone heads with gold edges
+	-- and caps, lapis and turquoise inlays; the axe's turquoise grip, the shovel's carnelian, the rod's
+	-- gold tip). The recipes take World 3's gathered things for now (World 4's enemies have no drops
+	-- yet). Prices and power x10 World 3's; all placeholders. Icons rendered like the other tools'
+	-- (w1_icons_rerender, art/tools/ui/tool_icons.py).
 	SandstoneAxe = {
 		id = "SandstoneAxe",
 		icon = "rbxassetid://94072455395551",
@@ -298,33 +299,6 @@ Tools.Defs = {
 		arc = 70,
 		maxTargets = 1,
 		swing = "Diagonal",
-	},
-	SandstonePickaxe = {
-		id = "SandstonePickaxe",
-		icon = "rbxassetid://131036256306824",
-		name = "Sandstone Pickaxe",
-		kind = "Pickaxe",
-		tier = 4,
-		world = 4,
-		sell = 11000,
-		power = 20000,
-		rarity = "Epic",
-		price = 50000,
-		recipe = {
-			tool = "CrystalPickaxe",
-			materials = {
-				{ id = "IronOre", count = 12 },
-				{ id = "CrystalShard", count = 10 },
-				{ id = "RawGem", count = 1 },
-			},
-		},
-		handed = 1,
-		cooldown = 0.9,
-		hitTime = 0.58,
-		reach = 5,
-		arc = 70,
-		maxTargets = 1,
-		swing = "Mine",
 	},
 	SandstoneShovel = {
 		id = "SandstoneShovel",

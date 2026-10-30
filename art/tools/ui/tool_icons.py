@@ -14,11 +14,11 @@ RAW = os.path.join(ART, "icons", "tools", "raw")
 TILES = os.path.join(ART, "ui", "inventory")
 OUT = os.path.join(ART, "icons", "tools")
 WEAPONS = ["WoodenAxe", "WoodenPickaxe", "WoodenRod", "StoneAxe", "StoneRod", "CrystalPickaxe", "CrystalRod",
-           "SandstoneAxe", "SandstonePickaxe", "SandstoneShovel", "SandstoneRod"]
+           "SandstoneAxe", "SandstoneShovel", "SandstoneRod"]
 RARITY = {"WoodenAxe": "common", "WoodenPickaxe": "common", "WoodenRod": "common",
           "StoneAxe": "uncommon", "StoneRod": "uncommon",
           "CrystalPickaxe": "rare", "CrystalRod": "rare",
-          "SandstoneAxe": "epic", "SandstonePickaxe": "epic", "SandstoneShovel": "epic", "SandstoneRod": "epic"}
+          "SandstoneAxe": "epic", "SandstoneShovel": "epic", "SandstoneRod": "epic"}
 INK = (22, 18, 28)
 WORK, FINAL, OUTLINE, SHADOW, MARGIN = 1024, 512, 22, (14, 20), 0.06
 

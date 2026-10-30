@@ -118,7 +118,6 @@ Weapons.HOLDS = {
 	CrystalRod = { hand = { 1.45, -0.75, -0.45 }, dir = { 0, 0.45, -1 }, roll = 0, two = 0 },
 	-- World 4's (2026-10-28) too
 	SandstoneAxe = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
-	SandstonePickaxe = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0 },
 	SandstoneShovel = { hand = { 1.45, -0.8, -0.35 }, dir = { 0, 0.25, -1 }, roll = 0, two = 0 }, -- rests in one hand; digs with both
 	SandstoneRod = { hand = { 1.45, -0.75, -0.45 }, dir = { 0, 0.45, -1 }, roll = 0, two = 0 },
 	-- the 10-stud Pinecone Staff (6.3 ahead of the hand, 3.8 behind): held level across
