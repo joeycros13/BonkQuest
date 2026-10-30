@@ -28,7 +28,7 @@ local NEAR = 420 -- run only while the camera is this close to the tomb's middle
 local SPIKE_DOWN = -2.4 -- spikes' offset when hidden in the floor
 local SPIKE_PEEK = -1.55 -- rattling, the tips just showing
 local SPIKE_SPEED_UP, SPIKE_SPEED_DOWN = 30, 9
-local SINK_AFTER = 0.4 -- seconds in the quicksand before you start to sink
+local SINK_AFTER = 3 -- seconds standing in the quicksand before you start to sink (the user, 2026-10-29)
 local SINK_SPEED, SINK_DEPTH = 1.3, 3.2
 local RISE_SECONDS, RISE_NEAR = 1.2, 40
 local CRUMBLE_SECONDS = 3
@@ -260,8 +260,23 @@ local function stepTiles(root: BasePart)
 	end
 end
 
--- the quicksand: sink while you stand in it (anchored on this client only); the server's charge zone
--- teleports you after its ChargeSeconds
+-- the quicksand: stand in it SINK_AFTER seconds (stepping off before then resets it) and you start to sink
+-- (anchored on this client only, so there's no getting out), with sand puffing round you (the zone's
+-- "SinkFx" emitters, on this client); the server's charge zone (ChargeSeconds = SINK_AFTER + the sink)
+-- teleports you as you go under
+local function inQuicksand(zone: BasePart, root: BasePart): boolean
+	local p = zone.CFrame:PointToObjectSpace(root.Position)
+	return Vector2.new(p.X, p.Z).Magnitude <= zone.Size.X / 2 and math.abs(p.Y) <= zone.Size.Y / 2
+end
+
+local function sinkFx(zone: BasePart, on: boolean)
+	for _, d in zone:GetDescendants() do
+		if d:IsA("ParticleEmitter") and d.Name == "SinkFx" then
+			d.Enabled = on
+		end
+	end
+end
+
 local function stepQuicksand(root: BasePart, dt: number)
 	local zone = quicksand
 	if not zone then
@@ -269,25 +284,35 @@ local function stepQuicksand(root: BasePart, dt: number)
 	end
 	local s = sinking
 	if s then
-		if s.root ~= root or (root.Position - zone.Position).Magnitude > 30 or os.clock() - s.since > 6 then
+		if s.root ~= root or (root.Position - zone.Position).Magnitude > 30 or os.clock() - s.since > SINK_AFTER + 8 then
 			-- teleported (or gave up): let the body go
 			if s.root and s.anchored then
 				s.root.Anchored = false
 			end
+			sinkFx(zone, false)
 			sinking = nil
 			return
 		end
-		if os.clock() - s.since >= SINK_AFTER and s.depth < SINK_DEPTH then
+		if not s.anchored then
+			if not inQuicksand(zone, root) then
+				sinking = nil -- stepped off in time
+				return
+			end
+			if os.clock() - s.since < SINK_AFTER then
+				return
+			end
 			s.anchored = true
 			root.Anchored = true
+			sinkFx(zone, true)
+		end
+		if s.depth < SINK_DEPTH then
 			local step = math.min(SINK_SPEED * dt, SINK_DEPTH - s.depth)
 			s.depth += step
 			root.CFrame = root.CFrame - Vector3.new(0, step, 0)
 		end
 		return
 	end
-	local p = zone.CFrame:PointToObjectSpace(root.Position)
-	if Vector2.new(p.X, p.Z).Magnitude <= zone.Size.X / 2 and math.abs(p.Y) <= zone.Size.Y / 2 then
+	if inQuicksand(zone, root) then
 		sinking = { since = os.clock(), depth = 0, anchored = false, root = root }
 	end
 end
