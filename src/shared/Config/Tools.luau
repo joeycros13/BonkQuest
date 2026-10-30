@@ -159,8 +159,8 @@ Tools.Defs = {
 			tool = "WoodenAxe",
 			materials = {
 				{ id = "OakLog", count = 8 },
-				{ id = "FoxFur", count = 8 },
 				{ id = "Stone", count = 8 },
+				{ id = "FoxFur", count = 8 },
 			},
 		},
 		handed = 1,
@@ -188,8 +188,8 @@ Tools.Defs = {
 			tool = "WoodenRod",
 			materials = {
 				{ id = "OakLog", count = 6 },
-				{ id = "FoxFur", count = 7 },
 				{ id = "Stone", count = 6 },
+				{ id = "FoxFur", count = 7 },
 			},
 		},
 		handed = 2,
@@ -223,8 +223,8 @@ Tools.Defs = {
 			tool = "WoodenPickaxe",
 			materials = {
 				{ id = "RedwoodLog", count = 8 },
-				{ id = "BatWing", count = 8 },
 				{ id = "AmberSap", count = 1 },
+				{ id = "BatWing", count = 8 },
 			},
 		},
 		handed = 1,
@@ -250,8 +250,8 @@ Tools.Defs = {
 			tool = "StoneRod",
 			materials = {
 				{ id = "RedwoodLog", count = 6 },
-				{ id = "BatWing", count = 7 },
 				{ id = "Perch", count = 4 },
+				{ id = "BatWing", count = 7 },
 			},
 		},
 		handed = 2,
@@ -270,8 +270,8 @@ Tools.Defs = {
 	-- has nothing to mine, so the Crystal Pickaxe carries on (the user, 2026-10-29). Models: Blender
 	-- w4_tools_build, art/meshes/w4_tools.fbx, the earlier tools' sizes (sandstone heads with gold edges
 	-- and caps, lapis and turquoise inlays; the axe's turquoise grip, the shovel's carnelian, the rod's
-	-- gold tip). The recipes take World 3's gathered things for now (World 4's enemies have no drops
-	-- yet). Prices and power x10 World 3's; all placeholders. Icons rendered like the other tools'
+	-- gold tip). The recipes take World 3's gathered things and the Bone Jackal's fangs (2026-10-29, the
+	-- World 4 rescale, as World 3's tools take Bat Wings). Prices and power x10 World 3's; all placeholders. Icons rendered like the other tools'
 	-- (w1_icons_rerender, art/tools/ui/tool_icons.py).
 	SandstoneAxe = {
 		id = "SandstoneAxe",
@@ -290,6 +290,7 @@ Tools.Defs = {
 				{ id = "IronOre", count = 10 },
 				{ id = "CrystalShard", count = 8 },
 				{ id = "RawGem", count = 1 },
+				{ id = "JackalFang", count = 8 },
 			},
 		},
 		handed = 1,
@@ -316,6 +317,7 @@ Tools.Defs = {
 				{ id = "IronOre", count = 10 },
 				{ id = "CrystalShard", count = 10 },
 				{ id = "Glowfish", count = 4 },
+				{ id = "JackalFang", count = 8 },
 			},
 		},
 		handed = 2, -- (2026-10-29) the dig uses both hands; it rests in one, like the rods
@@ -343,6 +345,7 @@ Tools.Defs = {
 				{ id = "IronOre", count = 8 },
 				{ id = "CrystalShard", count = 6 },
 				{ id = "BlindCavefish", count = 4 },
+				{ id = "JackalFang", count = 7 },
 			},
 		},
 		handed = 2,

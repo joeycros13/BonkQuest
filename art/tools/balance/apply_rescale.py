@@ -14,12 +14,13 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 SRC = HERE.parents[2] / "src" / "shared" / "Config"
-WORLD_FILES = {1: "W01_SunnyMeadows", 2: "W02_RedwoodForest", 3: "W03_CrystalCaverns"}
+WORLD_FILES = {1: "W01_SunnyMeadows", 2: "W02_RedwoodForest", 3: "W03_CrystalCaverns", 4: "W04_ScorchingSands"}
 STAMP = "2026-10-26 rescale"
 
 
 def num(v):
-    return ("%g" % v) if isinstance(v, float) else str(v)
+    # never an exponent (a 0.005% drop is 0.00005, not 5e-05)
+    return ("%.10f" % v).rstrip("0").rstrip(".") if isinstance(v, float) else str(v)
 
 
 def block(text, name, indent):
@@ -43,14 +44,15 @@ def sub_in(text, span, pattern, repl, changes, what):
 
 
 def items(t):
-    return list(t.values()) if isinstance(t, dict) else t
+    # a Luau list dumped as JSON is an object whose keys ("1", "3", "2"...) come in any order
+    return [t[k] for k in sorted(t, key=int)] if isinstance(t, dict) else t
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry", action="store_true")
     a = ap.parse_args()
-    data = {n: json.load(open(HERE / f"world{n}.json", encoding="utf-8")) for n in (1, 2, 3)}
+    data = {n: json.load(open(HERE / f"world{n}.json", encoding="utf-8")) for n in WORLD_FILES}
     files = {}
     changes = []
 
@@ -84,7 +86,7 @@ def main():
     path = SRC / "Weapons.luau"
     text = path.read_text(encoding="utf-8")
     seen = set()
-    for n in (1, 2, 3):
+    for n in WORLD_FILES:
         for wid, w in data[n]["weapons"].items():
             if wid in seen:
                 continue
@@ -99,9 +101,9 @@ def main():
     # --- the Worldheart tiers: each world's secret x1.1 a second ----------------------
     path = SRC / "Infuse.luau"
     text = path.read_text(encoding="utf-8")
-    secrets = {1: "CornCob", 2: "MarshmallowStick", 3: "RockCandyClub"}
+    secrets = {1: "CornCob", 2: "MarshmallowStick", 3: "RockCandyClub", 4: "CactusClub"}
     tiers = []
-    for n in (1, 2, 3):
+    for n in WORLD_FILES:
         w = data[n]["weapons"][secrets[n]]
         tiers.append(round(w["damage"] / w["cooldown"] * 1.1, 1))
     while len(tiers) < 8:
@@ -115,7 +117,7 @@ def main():
     # --- armour ---------------------------------------------------------------------
     path = SRC / "Armor.luau"
     text = path.read_text(encoding="utf-8")
-    for n in (1, 2, 3):
+    for n in WORLD_FILES:
         for aid, ar in data[n]["armor"].items():
             span = block(text, aid, "\t")
             text, span = sub_in(text, span, r"\bhealth = \d+,", f"health = {ar['health']},", changes, f"armour {aid} health {ar['health']}")
@@ -130,21 +132,21 @@ def main():
     # --- tools ----------------------------------------------------------------------
     path = SRC / "Tools.luau"
     text = path.read_text(encoding="utf-8")
-    for n in (2, 3):
+    for n in (2, 3, 4):
         for tid, t in data[n]["tools"].items():
             r = t.get("recipe")
             if not r:
                 continue
             span = block(text, tid, "\t")
             lines = "".join(f"\t\t\t\t{{ id = \"{x['id']}\", count = {x['count']} }},\n" for x in items(r["materials"]))
-            text, span = sub_in(text, span, r"(recipe = \{\n\t\t\ttool = \"\w+\",\n\t\t\tmaterials = \{\n)(?:\t\t\t\t[^\n]*\n)*?(\t\t\t\},)",
+            text, span = sub_in(text, span, r"(recipe = \{\n(?:\t\t\ttool = \"\w+\",\n)?\t\t\tmaterials = \{\n)(?:\t\t\t\t[^\n]*\n)*?(\t\t\t\},)",
                                 r"\g<1>" + lines.replace("\\", "\\\\") + r"\g<2>", changes, f"tool {tid} recipe")
     files[path] = text
 
     # --- gathering yields -------------------------------------------------------------
     path = SRC / "Gathering.luau"
     text = path.read_text(encoding="utf-8")
-    for n in (1, 2, 3):
+    for n in WORLD_FILES:
         for nid, node in data[n].get("gathering", {}).items():
             span = block(text, nid, "\t")
             # its health (rescale.HITS_PER_NODE hits of the weakest tool that breaks it)
@@ -158,6 +160,7 @@ def main():
     # --- gate materials ---------------------------------------------------------------
     path = SRC / "Gates.luau"
     text = path.read_text(encoding="utf-8")
+    # (World 4's is rescale.MOCK_GATES's stand-in World 5 gate: Config/Gates has none yet)
     for n in (1, 2, 3):
         g = data[n]["gate"]
         a0 = text.index(f'id = "{g["id"]}",')

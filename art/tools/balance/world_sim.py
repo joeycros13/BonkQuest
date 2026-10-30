@@ -151,7 +151,9 @@ class World:
         # every weapon a player can collect here (reported either way); only --goal all needs them
         self.allWeapons = {w for w, v in self.weapons.items() if self.counts(v)}
         self.needWeapons = set(self.allWeapons) if goal == "all" else set()
-        self.needTools = {t for t, v in self.tools.items() if v["kind"] in ("Axe", "Pickaxe") or (rod and v["kind"] == "Rod")}
+        # the kinds this world's nodes need (World 4's shovel too, 2026-10-29; it has no pickaxe)
+        kinds = {g["tool"] for g in self.gather.values()}
+        self.needTools = {t for t, v in self.tools.items() if v["kind"] in kinds or (rod and v["kind"] == "Rod")}
         # A tool made from the one before it (World 2's stone tools, 2026-10-20) also needs
         # materials. Only this world's count: the older tool and the older world's gathered
         # materials are carried in from the last world.
@@ -1043,6 +1045,7 @@ def main():
     ap.add_argument("--set", action="append", default=[])
     ap.add_argument("--upgrades", type=int, default=0, help="every upgrade at this level (the maxed arrival: 3 in World 2, 6 in World 3)")
     ap.add_argument("--trace", action="store_true")
+    ap.add_argument("--dump", help="write each run's minutes, deaths, level and coins left to this JSON file (simw4.sh merges them)")
     ap.add_argument("--remap", action="store_true", help="after level.* changes, move level requirements to the same EXP")
     a = ap.parse_args()
     # World 1: a player takes on a fight up to 90% of their health after resting (2026-10-26, the
@@ -1080,6 +1083,9 @@ def main():
         print("total %.1f min, deaths %d, level %d" % (r.t / 60, r.deaths, r.level()))
         return
     runs = [Run(world, rng).play() for _ in range(a.runs)]
+    if a.dump:
+        with open(a.dump, "w") as f:
+            json.dump([{"t": r.t / 60, "deaths": r.deaths, "level": r.level(), "coins": r.coins} for r in runs], f)
     if a.probe:
         merged = {"kill": {}, "step": {}, "wear": {}}
         for r in runs:

@@ -771,12 +771,13 @@ Weapons.Defs = {
 	},
 	-- ==================== World 4 (The Scorching Sands), 2026-10-29 ====================
 	-- The user's undead roster (canvas https://claude.ai/artifact/VqXijk1fM8nh3uTDNVQKjQ; models in Blender
-	-- w4_weapons_build). Numbers mirror World 3's ladder slot for slot at x10 damage a second (the step World 4's
-	-- placeholder enemies use), x10 prices and sells, until the rescale solves World 4 from its fights: Bone Club
-	-- <- Batwing Blade, Khopesh <- Iron Pickaxe, Scarab Mace <- Pebble Mallet, Linen Spear <- Gold Gauntlets, Desert
-	-- Scimitar <- Copper Drill, Sarcophagus Greatsword <- Ember Coal Maul, Cursed Ankh <- Geode Glaive, Pharaoh's
-	-- Crook <- Queen's Fang (the Sand Pharaoh's 1.25%), Staff of Ra <- Diamond Pickaxe (Professor Dusty's step 10,
-	-- ignores armour), Cactus Club <- Rock Candy Club (secret). Icons: w1_icons_rerender render(id), weapon_icons_finish.py.
+	-- w4_weapons_build). Each fills World 3's slot (Bone Club <- Batwing Blade, Khopesh <- Iron Pickaxe, Scarab Mace
+	-- <- Pebble Mallet, Linen Spear <- Gold Gauntlets, Desert Scimitar <- Copper Drill, Sarcophagus Greatsword <-
+	-- Ember Coal Maul, Cursed Ankh <- Geode Glaive, Pharaoh's Crook <- Queen's Fang (the Sand Pharaoh's 0.75%),
+	-- Staff of Ra <- Diamond Pickaxe (Professor Dusty's step 10, ignores armour), Cactus Club <- Rock Candy Club
+	-- (secret)) with x10 prices and sells. Damage from the rescale (2026-10-29, rescale.py WORLD_FIGHTS / _EASY /
+	-- _STEP): the "beats it easily" drops (Bone Club, Scarab Mace, Desert Scimitar, Cursed Ankh) solved from their
+	-- fights, the rest stepped from them. Icons: w1_icons_rerender render(id), weapon_icons_finish.py.
 	BoneClub = {
 		id = "BoneClub",
 		icon = "rbxassetid://115848499478008",
@@ -789,7 +790,7 @@ Weapons.Defs = {
 		order = 31,
 		color = Color3.fromRGB(239, 230, 207),
 		handed = 1,
-		damage = 8484,
+		damage = 6296,
 		cooldown = 0.7,
 		reach = 6.5,
 		arc = 90,
@@ -809,7 +810,7 @@ Weapons.Defs = {
 		order = 32,
 		color = Color3.fromRGB(201, 138, 58),
 		handed = 1,
-		damage = 7667,
+		damage = 5689,
 		cooldown = 0.55,
 		reach = 6.5,
 		arc = 140,
@@ -829,7 +830,7 @@ Weapons.Defs = {
 		order = 33,
 		color = Color3.fromRGB(255, 211, 107),
 		handed = 1,
-		damage = 17264,
+		damage = 12832,
 		cooldown = 0.85,
 		reach = 6.5,
 		arc = 80,
@@ -849,7 +850,7 @@ Weapons.Defs = {
 		order = 34,
 		color = Color3.fromRGB(239, 228, 200),
 		handed = 2,
-		damage = 17520,
+		damage = 13021,
 		cooldown = 0.75,
 		reach = 10.5,
 		arc = 40,
@@ -869,7 +870,7 @@ Weapons.Defs = {
 		order = 35,
 		color = Color3.fromRGB(214, 218, 227),
 		handed = 1,
-		damage = 19014,
+		damage = 14372,
 		cooldown = 0.6,
 		reach = 7,
 		arc = 120,
@@ -889,7 +890,7 @@ Weapons.Defs = {
 		order = 36,
 		color = Color3.fromRGB(47, 95, 179),
 		handed = 2,
-		damage = 43728,
+		damage = 33056,
 		cooldown = 1.2,
 		reach = 8.5,
 		arc = 120,
@@ -909,7 +910,7 @@ Weapons.Defs = {
 		order = 37,
 		color = Color3.fromRGB(31, 166, 160),
 		handed = 2,
-		damage = 67788,
+		damage = 51836,
 		cooldown = 1.25,
 		reach = 8,
 		arc = 360,
@@ -929,7 +930,7 @@ Weapons.Defs = {
 		order = 38,
 		color = Color3.fromRGB(255, 211, 107),
 		handed = 2,
-		damage = 68334,
+		damage = 52251,
 		cooldown = 1.05,
 		reach = 9.5,
 		arc = 100,
@@ -948,7 +949,7 @@ Weapons.Defs = {
 		order = 39,
 		color = Color3.fromRGB(255, 211, 107),
 		handed = 2,
-		damage = 55770,
+		damage = 42651,
 		cooldown = 1.1,
 		reach = 11.5,
 		arc = 60,
@@ -969,7 +970,7 @@ Weapons.Defs = {
 		order = 40,
 		color = Color3.fromRGB(95, 166, 74),
 		handed = 1,
-		damage = 81340,
+		damage = 62203,
 		cooldown = 1.0,
 		reach = 8.5,
 		arc = 90,
@@ -1084,7 +1085,7 @@ Weapons.Defs = {
 		order = 22.5,
 		color = Color3.fromRGB(107, 47, 168),
 		handed = 1,
-		damage = 65385,
+		damage = 50004,
 		cooldown = 0.7308,
 		reach = 9.775,
 		arc = 110,

@@ -14,14 +14,15 @@
   * A steeper health ladder in every world: medium 3x, elite 4.5x, boss 7x the small enemy
     (2.4 / 3.3 / 5 before), the secret enemy 5x.
   * Weapon drops at a quarter of before; a boss's Legendary at 2%; secrets stay 0.1%.
-  * Times (to buying the gate, a typical player): World 1 45 min, World 2 90, World 3 about 120;
+  * Times (to buying the gate, a typical player): World 1 45 min, World 2 90, World 3 about 120, World 4
+    about 150 (to a stand-in World 5 gate, MOCK_GATES);
     tuned with world_sim.py through each world's kill EXP and coins (KNOBS below).
 
 Reads the world<N>.json dumps as committed before the rescale (git HEAD~ copies in
 before/), writes world<N>.json with the new numbers, and prints every change. The same numbers
 then go into the Luau configs (apply_rescale.py).
 
-  py rescale.py              # write world1..3.json from before/
+  py rescale.py              # write world1..4.json from before/
 """
 import copy, json, math, os
 from pathlib import Path
@@ -47,9 +48,9 @@ LADDER = {"Common": 1.0, "Uncommon": 1.12, "Rare": 1.25, "Epic": 1.4, "Secret": 
 QUEST_LEGENDARY = 1.6
 BOSS_LEGENDARY = 1.75
 NEXT_WORLD_STEP = 1.15     # a world's Common over the last world's boss Legendary
-QUEST_WEAPON = {1: "WeathervaneSpear", 2: "LanternFlail", 3: "DiamondPickaxe"}
-BOSS_WEAPON = {1: "PumpkinMace", 2: "HeartwoodStaff", 3: "QueensFang"}
-SECRET_WEAPON = {1: "CornCob", 2: "MarshmallowStick", 3: "RockCandyClub"}
+QUEST_WEAPON = {1: "WeathervaneSpear", 2: "LanternFlail", 3: "DiamondPickaxe", 4: "StaffOfRa"}
+BOSS_WEAPON = {1: "PumpkinMace", 2: "HeartwoodStaff", 3: "QueensFang", 4: "PharaohsCrook"}
+SECRET_WEAPON = {1: "CornCob", 2: "MarshmallowStick", 3: "RockCandyClub", 4: "CactusClub"}
 WORLD1_COMMON = 31.1       # the Sickle's DPS as it was: World 1 stays put at its bottom
 ARMOR_PIERCE = 0.85        # an armour-ignoring weapon (the Diamond Pickaxe) on its own rung
 
@@ -80,7 +81,12 @@ ARMOR_CHANGES = {
     "CaveRunner": {"IronOre": 18},
     "CrystalQueen": {"CrystalShard": 20},
 }
-GATE_MATERIALS = {1: {"OakLog": 20, "Stone": 20}, 2: {"RedwoodLog": 35, "AmberSap": 3}, 3: {"CrystalShard": 30, "RawGem": 3}}
+GATE_MATERIALS = {1: {"OakLog": 20, "Stone": 20}, 2: {"RedwoodLog": 35, "AmberSap": 3}, 3: {"CrystalShard": 30, "RawGem": 3},
+                  4: {"Fossil": 30, "GoldenScarab": 3}}
+# World 5 isn't built, so World 4 runs to a stand-in gate (2026-10-29, the World 4 rescale): the gates'
+# pattern carried on (a gate every 25 levels, coins x10 a world: 2,500 / 25,000 / 225,000). dump_world puts its
+# place at the west arm's end, where World 5's gate is to go. Never written to Config/Gates (apply_rescale).
+MOCK_GATES = {4: {"id": "World5", "world": 5, "requires": 4, "level": 100, "coins": 2250000, "model": "World5Gate"}}
 # the questlines: no level steps (the user), every line has its elite, more kills and gathering;
 # (kind, target or items, count, coins, exp, extra reward)
 QUESTS = {
@@ -104,6 +110,14 @@ QUESTS = {
         ("hunt", {"PebbleGolem": 6, "CrystalGolem": 3}, None, 10000, 10000),
         ("kill", "SpiderQueen", 1, 15000, 15000, {"item": "MinersLantern"}), ("hunt", {"CrystalGolem": 4, "SpiderQueen": 1}, None, 12000, 15000),
         ("hunt", {"CaveBat": 10, "PebbleGolem": 8, "CrystalGolem": 5, "SpiderQueen": 3}, None, 30000, 30000, {"weapon": "DiamondPickaxe"})],
+    # Professor Dusty's "Curse of the Sand Pharaoh" (2026-10-29), as Config/Quests has it
+    4: [("kill", "BoneJackal", 8, 25000, 20000), ("gather", "CactusRib", 8, 30000, 30000),
+        ("hunt", {"BoneJackal": 12, "ShamblingMummy": 3}, None, 40000, 40000), ("kill", "ShamblingMummy", 5, 60000, 60000),
+        ("gather", "Fossil", 10, 50000, 60000), ("bring", {"Fossil": 15, "CactusRib": 15}, None, 80000, 100000),
+        ("hunt", {"ShamblingMummy": 6, "TombGuardian": 3}, None, 100000, 100000),
+        ("kill", "SandPharaoh", 1, 150000, 150000, {"item": "SunstoneAmulet"}),
+        ("hunt", {"TombGuardian": 4, "SandPharaoh": 1}, None, 120000, 150000),
+        ("hunt", {"BoneJackal": 10, "ShamblingMummy": 8, "TombGuardian": 5, "SandPharaoh": 3}, None, 300000, 300000, {"weapon": "StaffOfRa"})],
 }
 
 
@@ -181,11 +195,17 @@ DROP_TABLES = {
         "PebbleGolem": {"PebbleMallet": 0.15, "GoldGauntlets": 0.05, "CopperDrill": 0.01},
         "CrystalGolem": {"CopperDrill": 0.10, "EmberCoalMaul": 0.03, "GeodeGlaive": 0.005},
         "SpiderQueen": {"GeodeGlaive": 0.08, "QueensFang": 0.01, "RockCandyClub": 0.0002}},
+    # World 4 (2026-10-29) slot for slot with World 3, the Crook 0.75% and the Cactus Club 0.005% (the user's ladder)
+    4: {"BoneJackal": {"BoneClub": 0.25, "Khopesh": 0.08, "ScarabMace": 0.015},
+        "ShamblingMummy": {"ScarabMace": 0.15, "LinenSpear": 0.05, "DesertScimitar": 0.01},
+        "TombGuardian": {"DesertScimitar": 0.10, "SarcophagusGreatsword": 0.03, "CursedAnkh": 0.005},
+        "SandPharaoh": {"CursedAnkh": 0.08, "PharaohsCrook": 0.0075, "CactusClub": 0.00005}},
 }
 # (2026-10-29, the user) each world's boss Legendary and secret a step rarer than the last: Legendaries 2 / 1.5 /
 # 1 / 0.75%, secrets 0.1 / 0.05 / 0.02 / 0.005%. These are the rates players see before luck, never divided by the
 # luck a world's upgrades add (below); the secret enemies' cores 0.2 / 0.1 / 0.04 / 0.01%, luck applying.
-FIXED_RATES = {"PumpkinMace", "CornCob", "HeartwoodStaff", "MarshmallowStick", "QueensFang", "RockCandyClub"}
+FIXED_RATES = {"PumpkinMace", "CornCob", "HeartwoodStaff", "MarshmallowStick", "QueensFang", "RockCandyClub",
+               "PharaohsCrook", "CactusClub"}
 # each world's coin set (the user: a worse set bought with coins alone, from a decent number of kills
 # of its first enemy), first in the Crafter's list
 COIN_SETS = {1: {"PatchworkVest": {"id": "PatchworkVest", "name": "Patchwork Vest", "world": 1, "order": 0,
@@ -236,8 +256,16 @@ WORLD_FIGHTS = {
         "CrystalGolem": ("GoldGauntlets", 58, "CaveRunner", 0.70),
         "GemMole": ("GoldGauntlets", 58, "CaveRunner", 0.70),
         "SpiderQueen": ("EmberCoalMaul", 61, "CaveRunner", 0.75)},
+    # World 4 (2026-10-29) the same shape: the arrival (level 75, Crystal Queen, the Queen's Fang) on the
+    # Jackal; the Mummy at the coin set's level in it with the Jackal's "just beats it" drop; the Guardian and
+    # the Phantom Pharaoh at Bone Warden's level in it with the Mummy's; the Sand Pharaoh three levels on
+    4: {"BoneJackal": ("QueensFang", 75, "CrystalQueen", 0.75),
+        "ShamblingMummy": ("Khopesh", 77, "NomadWraps", 0.75),
+        "TombGuardian": ("LinenSpear", 83, "BoneWarden", 0.70),
+        "PhantomPharaoh": ("LinenSpear", 83, "BoneWarden", 0.70),
+        "SandPharaoh": ("SarcophagusGreatsword", 86, "BoneWarden", 0.75)},
 }
-WORLD_UPGRADES = {2: 3, 3: 6}
+WORLD_UPGRADES = {2: 3, 3: 6, 4: 9}
 # Each fight assumes the upgrades bought by then (2026-10-28, the user: "the upgrades should be almost
 # required for going into the next world"): every set sold in the worlds before complete, and this
 # world's own sets bought as the player climbs, OWN_LEVELS levels of each by the enemy's tier. Enemy
@@ -277,18 +305,24 @@ def up_taken(ups):
 # (2026-10-28, the user's drop rule) the small enemy's common drop now makes its fight easier (55%,
 # against the arrival weapon's 75%; as the world's Common anchored on the last boss Legendary it was
 # 67-69%), so it's solved like the "easily" weapons and its "just beats" drop steps from it
-WORLD_SET = {2: {}, 3: {}}
+WORLD_SET = {2: {}, 3: {}, 4: {}}
 WORLD_EASY = {2: {"Hatchet": ("Fox", 0.55), "Cleaver": ("Boar", 0.5), "HoneycombHammer": ("Bear", 0.5), "WoodsmansAxe": ("ElderTreant", 0.5)},
-              3: {"BatwingBlade": ("CaveBat", 0.55), "PebbleMallet": ("PebbleGolem", 0.5), "CopperDrill": ("CrystalGolem", 0.5), "GeodeGlaive": ("SpiderQueen", 0.5)}}
+              3: {"BatwingBlade": ("CaveBat", 0.55), "PebbleMallet": ("PebbleGolem", 0.5), "CopperDrill": ("CrystalGolem", 0.5), "GeodeGlaive": ("SpiderQueen", 0.5)},
+              4: {"BoneClub": ("BoneJackal", 0.55), "ScarabMace": ("ShamblingMummy", 0.5), "DesertScimitar": ("TombGuardian", 0.5),
+                  "CursedAnkh": ("SandPharaoh", 0.5)}}
 WORLD_STEP = {2: {"Quarterstaff": ("Hatchet", 1.15), "Mace": ("Cleaver", 1.15), "Greatclub": ("HoneycombHammer", 1.15),
                   "LanternFlail": ("WoodsmansAxe", 1.1), "HeartwoodStaff": ("WoodsmansAxe", 1.2), "MarshmallowStick": ("WoodsmansAxe", 1.5)},
               3: {"IronPickaxe": ("BatwingBlade", 1.15), "GoldGauntlets": ("PebbleMallet", 1.15), "EmberCoalMaul": ("CopperDrill", 1.15),
-                  "DiamondPickaxe": ("GeodeGlaive", 1.1), "QueensFang": ("GeodeGlaive", 1.2), "RockCandyClub": ("GeodeGlaive", 1.5)}}
+                  "DiamondPickaxe": ("GeodeGlaive", 1.1), "QueensFang": ("GeodeGlaive", 1.2), "RockCandyClub": ("GeodeGlaive", 1.5)},
+              4: {"Khopesh": ("BoneClub", 1.15), "LinenSpear": ("ScarabMace", 1.15), "SarcophagusGreatsword": ("DesertScimitar", 1.15),
+                  "StaffOfRa": ("CursedAnkh", 1.1), "PharaohsCrook": ("CursedAnkh", 1.2), "CactusClub": ("CursedAnkh", 1.5)}}
 # the order each world's ladder climbs in (each enemy before the weapon that beats it easily)
 WORLD_ORDER = {2: ["Fox", "+Hatchet", "+Quarterstaff", "Boar", "+Cleaver", "+Mace", "Bear", "Fairy", "+HoneycombHammer", "+Greatclub", "ElderTreant",
                    "+WoodsmansAxe", "+LanternFlail", "+HeartwoodStaff", "+MarshmallowStick"],
                3: ["CaveBat", "+BatwingBlade", "+IronPickaxe", "PebbleGolem", "+PebbleMallet", "+GoldGauntlets", "CrystalGolem", "GemMole", "+CopperDrill",
-                   "+EmberCoalMaul", "SpiderQueen", "+GeodeGlaive", "+DiamondPickaxe", "+QueensFang", "+RockCandyClub"]}
+                   "+EmberCoalMaul", "SpiderQueen", "+GeodeGlaive", "+DiamondPickaxe", "+QueensFang", "+RockCandyClub"],
+               4: ["BoneJackal", "+BoneClub", "+Khopesh", "ShamblingMummy", "+ScarabMace", "+LinenSpear", "TombGuardian", "PhantomPharaoh",
+                   "+DesertScimitar", "+SarcophagusGreatsword", "SandPharaoh", "+CursedAnkh", "+StaffOfRa", "+PharaohsCrook", "+CactusClub"]}
 
 # each enemy's drops in order: (its own common drop, the one that just beats the next enemy, the rare
 # one that beats the next enemy easily); the user's rule (2026-10-28): the first makes its own enemy
@@ -296,7 +330,8 @@ WORLD_ORDER = {2: ["Fox", "+Hatchet", "+Quarterstaff", "Boar", "+Cleaver", "+Mac
 # the next easier (not crazy easy). drop_check prints all three against the fights they're for.
 NEXT_ENEMY = {1: {"Chicken": "Bull", "Bull": "Stallion", "Stallion": "BossScarecrow"},
               2: {"Fox": "Boar", "Boar": "Bear", "Bear": "ElderTreant"},
-              3: {"CaveBat": "PebbleGolem", "PebbleGolem": "CrystalGolem", "CrystalGolem": "SpiderQueen"}}
+              3: {"CaveBat": "PebbleGolem", "PebbleGolem": "CrystalGolem", "CrystalGolem": "SpiderQueen"},
+              4: {"BoneJackal": "ShamblingMummy", "ShamblingMummy": "TombGuardian", "TombGuardian": "SandPharaoh"}}
 
 
 def drop_check(n, taken, weapon, log):
@@ -311,10 +346,10 @@ def drop_check(n, taken, weapon, log):
 
 
 # base fights: (small enemy, its base fight length in seconds, share of max HP it should take)
-BASE = {1: ("Chicken", None, 0.50), 2: ("Fox", 10.0, 0.75), 3: ("CaveBat", 11.0, 0.75)}
+BASE = {1: ("Chicken", None, 0.50), 2: ("Fox", 10.0, 0.75), 3: ("CaveBat", 11.0, 0.75), 4: ("BoneJackal", 12.0, 0.75)}
 
 # time knobs per world (kill EXP and coins multipliers on the current values), tuned with world_sim
-KNOBS = {1: {"exp": 1.0, "coins": 1.0}, 2: {"exp": 1.0, "coins": 1.0}, 3: {"exp": 1.0, "coins": 1.0}}
+KNOBS = {1: {"exp": 1.0, "coins": 1.0}, 2: {"exp": 1.0, "coins": 1.0}, 3: {"exp": 1.0, "coins": 1.0}, 4: {"exp": 1.0, "coins": 1.0}}
 
 
 def load(n):
@@ -330,7 +365,9 @@ def items(t):
 
 
 def main(knobs=KNOBS, quiet=False):
-    data = {n: load(n) for n in (1, 2, 3)}
+    data = {n: load(n) for n in (1, 2, 3, 4)}
+    for n, g in MOCK_GATES.items():
+        data[n].setdefault("gate", dict(g))
     log = []
     # health curve
     for d in data.values():
@@ -414,6 +451,13 @@ def main(knobs=KNOBS, quiet=False):
                                                         for k, v in mats.items() if v["id"] != "GolemPebble"}
     log.append("recipe CaveRunner: Bat Wing 22 + Iron Ore 12 (no Golem Pebble); CrystalQueen + Golem Pebble 10; "
                "Crystal Pickaxe / Rod: no Golem Pebble, Bat Wing 8 / 7")
+    # and World 4 (2026-10-29): its tools take the Bone Jackal's fangs on top of World 3's gathered things (they
+    # had only those while World 4's enemies dropped nothing), as World 3's take Bat Wings
+    for tid, fang in (("SandstoneAxe", 8), ("SandstoneShovel", 8), ("SandstoneRod", 7)):
+        mats = data[4]["tools"][tid]["recipe"]["materials"]
+        if not any(v["id"] == "JackalFang" for v in items(mats)):
+            mats[str(len(mats) + 1)] = {"id": "JackalFang", "count": fang}
+    log.append("recipe Sandstone Axe / Shovel / Rod: + Jackal Fang 8 / 8 / 7")
 
     # gathering yields, armour counts, gate materials, the questlines
     for n, d in data.items():
@@ -479,7 +523,7 @@ def main(knobs=KNOBS, quiet=False):
     for n, new in NEW_WEAPONS.items():
         for wid, w in new.items():
             data[n]["weapons"][wid] = dict(w, id=wid, world=n, damage=1)
-    for n in (1, 2, 3):
+    for n in (1, 2, 3, 4):
         ws = data[n]["weapons"]
         if n == 1:
             solve_world1(data, log)
@@ -497,9 +541,9 @@ def main(knobs=KNOBS, quiet=False):
                 w["damage"] = d
         anchor = new_dps[BOSS_WEAPON[n]] * NEXT_WORLD_STEP
     # carried weapons (world N+1's dump lists the last world's for --from): keep them in step
-    for n in (2, 3):
+    for n in (2, 3, 4):
         for wid, w in list(data[n]["weapons"].items()):
-            for m in (1, 2):
+            for m in (1, 2, 3):
                 if m < n and wid in data[m]["weapons"]:
                     w["damage"] = data[m]["weapons"][wid]["damage"]
     if not quiet:
@@ -508,7 +552,8 @@ def main(knobs=KNOBS, quiet=False):
 
 
 # the base player of each world: (level, base weapon, armour worn, upgrade level)
-BASE_PLAYER = {1: (1, "Dagger", None, 0), 2: (25, "PumpkinMace", "HarvestKnight", 3), 3: (50, "HeartwoodStaff", "HeartwoodBark", 6)}
+BASE_PLAYER = {1: (1, "Dagger", None, 0), 2: (25, "PumpkinMace", "HarvestKnight", 3), 3: (50, "HeartwoodStaff", "HeartwoodBark", 6),
+               4: (75, "QueensFang", "CrystalQueen", 9)}
 
 
 def solve_world1(data, log, runs=4000):
@@ -594,7 +639,7 @@ def solve_world1(data, log, runs=4000):
 
 
 def solve_world(data, n, anchor, log, runs=4000):
-    """World n (2 or 3) fight by fight (WORLD_FIGHTS / _SET / _EASY / _STEP): health from the world's
+    """World n (2, 3 or 4) fight by fight (WORLD_FIGHTS / _SET / _EASY / _STEP): health from the world's
     ladder (the small enemy's from its base fight's length), every enemy's damage from its fight, the
     "beats it easily" weapons from theirs, the rest stepped."""
     import random, statistics

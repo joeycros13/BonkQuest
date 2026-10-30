@@ -178,8 +178,8 @@ Armor.Defs = {
 		coins = 7500,
 		recipe = {
 			{ id = "BearClaw", count = 10 },
-			{ id = "RangerBadge", count = 1 },
 			{ id = "HeartwoodSap", count = 3 },
+			{ id = "RangerBadge", count = 1 },
 			{ id = "RedwoodLog", count = 20 },
 			{ id = "AmberSap", count = 1 },
 			{ id = "BoarTusk", count = 10 },
@@ -239,10 +239,10 @@ Armor.Defs = {
 		coins = 75000,
 		recipe = {
 			{ id = "GolemCrystal", count = 10 },
-			{ id = "MinersLantern", count = 1 },
 			{ id = "QueensSilk", count = 3 },
-			{ id = "RawGem", count = 1 },
+			{ id = "MinersLantern", count = 1 },
 			{ id = "CrystalShard", count = 20 },
+			{ id = "RawGem", count = 1 },
 			{ id = "GolemPebble", count = 10 },
 		},
 		defense = 0.44,
