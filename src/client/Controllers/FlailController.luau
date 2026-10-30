@@ -114,6 +114,20 @@ local function hide(piece: Piece, hidden: boolean)
 	end
 end
 
+-- Roblox's camera (the PlayerModule's TransparencyController) rewrites the
+-- LocalTransparencyModifier of every part in the character, the held weapon included,
+-- when the camera zooms in or out, which showed the rigid originals beside the copies
+-- (the user's screenshot, 2026-10-29); so they are hidden again every frame.
+local function keepHidden(flail: Flail)
+	for _, list in { flail.links, flail.bob } do
+		for _, piece in list do
+			if piece.part.LocalTransparencyModifier ~= 1 then
+				piece.part.LocalTransparencyModifier = 1
+			end
+		end
+	end
+end
+
 local function release(character: Model)
 	local flail = flails[character]
 	if not flail then
@@ -334,6 +348,7 @@ local function step(_dt: number, _now: number)
 		end
 		if flail then
 			seen[character] = true
+			keepHidden(flail)
 			place(character, flail, now)
 		end
 	end
