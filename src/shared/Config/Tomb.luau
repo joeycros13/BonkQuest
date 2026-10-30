@@ -27,7 +27,8 @@
 --             to your checkpoint, no damage
 --   Boulder   Period, Roll (seconds it rolls), Radius, Damage, ResetTo (the checkpoint a hit sends you
 --             back to); Zone (the tunnel's lane: the alcoves are outside it), Start, End, Ball
--- Damage is a share of max health.
+-- Damage is a share of max health: 1 on every trap (the user, 2026-10-29: all traps insta-kill), and a
+-- death in the tomb respawns you at your checkpoint (TombService).
 
 local Tomb = {}
 

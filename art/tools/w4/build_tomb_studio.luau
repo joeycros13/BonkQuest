@@ -117,7 +117,7 @@ for _, item in D.traps do
 		m:SetAttribute("Range", 2.4)
 		m:SetAttribute("Radius", 2.2)
 		m:SetAttribute("Spin", 14)
-		m:SetAttribute("Damage", 0.2)
+		m:SetAttribute("Damage", 1)
 		part("Pivot", Vector3.new(1, 0.2, 1), cf, nil, m)
 		clone("BuzzsawTrack", cf, m, "Track")
 		clone("Buzzsaw", cf, m, "Saw")
@@ -128,7 +128,7 @@ for _, item in D.traps do
 		m:SetAttribute("Amplitude", 16)
 		m:SetAttribute("Length", 7.35)
 		m:SetAttribute("Radius", 2.2)
-		m:SetAttribute("Damage", 0.2)
+		m:SetAttribute("Damage", 1)
 		local pivot = cf * CFrame.new(0, WALL_H, 0)
 		part("Pivot", Vector3.new(0.5, 0.5, 0.5), pivot, nil, m)
 		clone("SwingAxe", pivot, m, "Axe")
@@ -140,7 +140,7 @@ for _, item in D.traps do
 		m:SetAttribute("OnTo", 0.85)
 		m:SetAttribute("Warn", 0.4)
 		m:SetAttribute("Side", item.side)
-		m:SetAttribute("Damage", 0.2)
+		m:SetAttribute("Damage", 1)
 		local head = CFrame.new(L(item.wall) + Vector3.new(0, 2.8, 0)) * CFrame.Angles(0, math.rad(item.face), 0)
 		clone("JackalHead", head, m, "Jackal")
 		local mouth = (head * CFrame.new(0, 1.22, -2.61)).Position
@@ -156,7 +156,7 @@ for _, item in D.traps do
 		part("Zone", Vector3.new(8, 4.5, 2.6), cf * CFrame.new(0, 3.75, 0), nil, m)
 	elseif kind == "Darts" then
 		m:SetAttribute("Side", item.side)
-		m:SetAttribute("Damage", 0.15)
+		m:SetAttribute("Damage", 1)
 		if item.beat then
 			m:SetAttribute("Period", item.period)
 			m:SetAttribute("Offset", item.offset)
@@ -180,7 +180,7 @@ for _, item in D.traps do
 		m:SetAttribute("OnFrom", 0.62)
 		m:SetAttribute("OnTo", 0.9)
 		m:SetAttribute("Warn", 0.45)
-		m:SetAttribute("Damage", 0.15)
+		m:SetAttribute("Damage", 1)
 		local spikes = Instance.new("Model")
 		spikes.Name = "Spikes"
 		spikes.Parent = m
@@ -193,6 +193,7 @@ for _, item in D.traps do
 		part("Zone", Vector3.new(8, 5, 8), cf * CFrame.new(0, 2.5, 0), nil, m)
 	elseif kind == "Collapse" then
 		m:SetAttribute("Hold", 0.3)
+		m:SetAttribute("Damage", 1)
 		for row = 0, 3 do
 			for col = 0, 3 do
 				local safe = item.safe[row + 1] == col
@@ -206,10 +207,12 @@ for _, item in D.traps do
 			end
 		end
 	elseif kind == "Lava" then
-		m:SetAttribute("Damage", 0.2)
+		m:SetAttribute("Damage", 1)
 		local h = item.hole
 		local x0, x1, z0, z1 = h[1], h[2], h[3], h[4]
-		local lava = part("Lava", Vector3.new(x1 - x0, 2.4, z1 - z0), CFrame.new(L({ (x0 + x1) / 2, -2.8, (z0 + z1) / 2 })), "ff4d1a", m, true)
+		-- a stone floor under the lava, so it never shows in the tunnel's ceiling below
+		part("PitFloor", Vector3.new(x1 - x0, 1.4, z1 - z0), CFrame.new(L({ (x0 + x1) / 2, -3.3, (z0 + z1) / 2 })), "5a4632", m, true)
+		local lava = part("Lava", Vector3.new(x1 - x0, 1, z1 - z0), CFrame.new(L({ (x0 + x1) / 2, -2.1, (z0 + z1) / 2 })), "ff4d1a", m, true)
 		lava.Material = Enum.Material.Neon
 		local light = Instance.new("PointLight")
 		light.Color = Color3.fromHex("ff7a2a")
@@ -241,7 +244,7 @@ do
 	m:SetAttribute("Period", 6.5)
 	m:SetAttribute("Roll", 3.6)
 	m:SetAttribute("Radius", 3.3)
-	m:SetAttribute("Damage", 0.2)
+	m:SetAttribute("Damage", 1)
 	m:SetAttribute("ResetTo", 7)
 	m.Parent = traps
 	part("Start", Vector3.new(1, 1, 1), CFrame.new(L(b.start)), nil, m)

@@ -353,8 +353,8 @@ for g in ALCOVES_S:
     box("Lower", "Wall", g - AL_W / 2 - 2, g - AL_W / 2, LOW, -FLOOR_T, LANE_Z1 + 2, z1, WALL)
     box("Lower", "Wall", g + AL_W / 2, g + AL_W / 2 + 2, LOW, -FLOOR_T, LANE_Z1 + 2, z1, WALL)
     box("Lower", "Wall", g - AL_W / 2 - 2, g + AL_W / 2 + 2, LOW, -FLOOR_T, z1, z1 + 2, WALL)
-# the tunnel's roof past the maze slab's east edge
-box("Lower", "Roof", FX1, TUNNEL_X1 + 2, -FLOOR_T, 0, LANE_Z0 - 2, LANE_Z1 + 2, ROOF)
+# the tunnel's roof past the maze slab's east edge, up to the chamber's wall
+box("Lower", "Roof", FX1, TUNNEL_X1, -FLOOR_T, 0, LANE_Z0 - 2, LANE_Z1 + 2, ROOF)
 
 # the chamber: inside x 174..214, z 56..96, floor LOW, 20 tall; a 10-wide doorway west on the lane
 CX0, CX1, CZ0, CZ1, CH = TUNNEL_X1 + 2, TUNNEL_X1 + 42, 56, 96, 20
@@ -368,6 +368,8 @@ box("Chamber", "Wall", CX0, CX1 + 2, LOW, CTOP, CZ1, CZ1 + 2, CHAMBER)
 box("Chamber", "Wall", CX1, CX1 + 2, LOW, CTOP, CZ0, CZ1, CHAMBER)
 box("Chamber", "Floor", TUNNEL_X1, CX1 + 2, LOW - FLOOR_T, LOW, CZ0 - 2, CZ1 + 2, FLOOR)
 box("Chamber", "Roof", TUNNEL_X1, CX1 + 2, CTOP, CTOP + ROOF_T, CZ0 - 2, CZ1 + 2, ROOF)
+# a wooden board over the doorway, standing proud of the wall on both sides
+box("Chamber", "Board", TUNNEL_X1 - 1.4, CX0 + 0.6, -FLOOR_T - 0.2, -FLOOR_T + 1.6, DOOR_Z0 - 1.6, DOOR_Z1 + 1.6, "6b4a2a")
 # the v1 chamber (inside x 216..256, z 130..170, floor 0) moves by this
 CHAMBER_DELTA = [CX0 - 216, LOW - 0, CZ0 - 130]
 

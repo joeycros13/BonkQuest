@@ -9,7 +9,9 @@
 --     a collapsing tile or the boulder sends you back to a checkpoint (PortalService, behind the fade)
 --   * fires the dart walls: a plate stepped on, or the wall's beat (its Period), sets the trap's FiredAt
 --     (server time) and the volley hits whoever is in its zone at that moment
---   * lava: falling into a pit hurts and sends you back to your checkpoint
+--   * every trap kills (Damage 1 since 2026-10-29, the user: all traps insta-kill), and a death in the
+--     tomb respawns you at your checkpoint; a trap set to a smaller Damage hurts, and lava, a collapsing
+--     tile or the boulder then sends you back to the checkpoint instead
 --   * saves reaching the burial chamber (section "tomb", Tomb.FOUND_ATTR), and from then on the
 --     landing's ShortcutTablet prompt sends you straight to the chamber
 -- Nothing here uses Touched; it polls like PortalService and HealZoneService.
@@ -154,7 +156,7 @@ local function judge(player: Player, root: BasePart, humanoid: Humanoid, trap: I
 			end
 		end
 	elseif kind == "Lava" then
-		if zone and Tomb.inside(zone, pos) and hurt(player, humanoid, trap, zone.Position) then
+		if zone and Tomb.inside(zone, pos) and hurt(player, humanoid, trap, zone.Position) and humanoid.Health > 0 then
 			sendBack(player)
 		end
 	elseif kind == "Darts" then
@@ -183,8 +185,12 @@ local function judge(player: Player, root: BasePart, humanoid: Humanoid, trap: I
 				onTile[player] = { tile = standing, since = os.clock() }
 			elseif os.clock() - state.since >= Tomb.num(trap, "Hold", 0.3) then
 				onTile[player] = nil
-				-- the tile crumbles under them (TombController shows it) and they wake at the checkpoint
-				task.delay(0.35, sendBack, player)
+				-- the tile crumbles under them (TombController shows it) and they fall
+				task.delay(0.35, function()
+					if hurt(player, humanoid, trap, standing.Position) and humanoid.Health > 0 then
+						sendBack(player)
+					end
+				end)
 			end
 		elseif state and state.tile.Parent == trap then
 			onTile[player] = nil
@@ -195,7 +201,7 @@ local function judge(player: Player, root: BasePart, humanoid: Humanoid, trap: I
 			local start, finish = trap:FindFirstChild("Start") :: BasePart?, trap:FindFirstChild("End") :: BasePart?
 			local axis = if start and finish then (finish.Position - start.Position).Unit else Vector3.xAxis
 			if math.abs((pos - centre):Dot(axis)) < Tomb.num(trap, "Radius", 4.5) + 0.8 then
-				if hurt(player, humanoid, trap, centre) then
+				if hurt(player, humanoid, trap, centre) and humanoid.Health > 0 then
 					sendBack(player, Tomb.num(trap, "ResetTo", 7))
 				end
 			end
@@ -246,7 +252,8 @@ local function poll()
 	for _, player in Players:GetPlayers() do
 		local root, humanoid = rootOf(player)
 		if not (root and humanoid) or not inTomb(root.Position) then
-			if player:GetAttribute(Tomb.CHECKPOINT_ATTR) ~= nil and not (root and inTomb(root.Position)) then
+			-- a living body outside the tomb has left it; a dead one keeps its checkpoint to respawn at
+			if root and player:GetAttribute(Tomb.CHECKPOINT_ATTR) ~= nil and not inTomb(root.Position) then
 				player:SetAttribute(Tomb.CHECKPOINT_ATTR, nil)
 			end
 			onTile[player] = nil
@@ -335,10 +342,29 @@ function TombService.start()
 			player:SetAttribute(Tomb.FOUND_ATTR, false)
 		end
 	end
+	-- a death in the tomb respawns you at your checkpoint (moved while the death screen is still black)
+	local function watch(player: Player)
+		player.CharacterAdded:Connect(function(character)
+			local index = player:GetAttribute(Tomb.CHECKPOINT_ATTR)
+			if type(index) ~= "number" then
+				return
+			end
+			local root = character:WaitForChild("HumanoidRootPart", 5)
+			local plate = checkpointPart(index) or checkpointPart(1)
+			if root and plate then
+				task.wait()
+				character:PivotTo(CFrame.new(plate.Position + Vector3.new(0, 3.2, 0)))
+			end
+		end)
+	end
+	for _, player in Players:GetPlayers() do
+		watch(player)
+	end
 	Players.PlayerAdded:Connect(function(player)
 		if player:GetAttribute(Tomb.FOUND_ATTR) == nil then
 			player:SetAttribute(Tomb.FOUND_ATTR, false)
 		end
+		watch(player)
 	end)
 	Players.PlayerRemoving:Connect(function(player)
 		lastHit[player] = nil
