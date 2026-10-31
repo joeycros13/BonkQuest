@@ -12,8 +12,8 @@
 -- The curve (2026-10-24, the user: every world about x10 the one before, enemy damage keeping
 -- pace with enemy health, and a gate every 25 levels): max HP and the EXP a level needs both
 -- grow by GROWTH a level, x10 every 25 levels, so each world's levels give x10 the health of
--- the last world's with no jump at the gate. Max HP is 100 at level 1, 912 at 25, 1,000 at 26,
--- 10,000 at 51; each level up adds a little more than the one before (+10, +10, +12, +13...).
+-- the last world's with no jump at the gate. Max HP (since 2026-10-26, HEALTH_KNEE below) is 100
+-- at level 1, 350 at 25, 3,500 at 50, 35,000 at 75; armour gives about twice that at each gate.
 -- A level needs 40 EXP at level 1 and x10 every 25 levels (3,366 in all to level 25), tuned
 -- with art/tools/balance/world_sim.py so a typical player buys the World 2 gate in about 30
 -- minutes. It replaced 30 + 15 a level with health 100 + 10 a level, both x4 / x16 from each
@@ -49,6 +49,13 @@ Leveling.LEVELS_PER_WORLD = 25
 Leveling.GROWTH = 10 ^ (1 / Leveling.LEVELS_PER_WORLD)
 Leveling.FIRST = 40 -- EXP to go from level 1 to 2
 Leveling.BASE_HEALTH = 100 -- max HP at level 1
+-- Health per level cut (2026-10-26, the user: players finished the game without armour; armour must
+-- be needed): 100 at level 1 to KNEE_HEALTH at HEALTH_KNEE (World 2's gate level), x GROWTH a level
+-- after it (x10 a world, as enemy damage grows), so a level gives about a third of the health a
+-- world's best armour set does (Config/Armor: about twice the level's at the gate). It was 912 at
+-- level 25 (x10 every 25 levels from level 1).
+Leveling.HEALTH_KNEE = 25
+Leveling.KNEE_HEALTH = 350
 
 -- x GROWTH for every level past the first
 local function grown(base: number, level: number): number
@@ -60,7 +67,13 @@ function Leveling.need(level: number): number
 end
 
 function Leveling.maxHealth(level: number): number
-	return grown(Leveling.BASE_HEALTH, level)
+	level = math.max(level, Leveling.START)
+	local knee = Leveling.HEALTH_KNEE
+	if level <= knee then
+		local early = (Leveling.KNEE_HEALTH / Leveling.BASE_HEALTH) ^ (1 / (knee - Leveling.START))
+		return math.floor(Leveling.BASE_HEALTH * early ^ (level - Leveling.START) + 0.5)
+	end
+	return math.floor(Leveling.KNEE_HEALTH * Leveling.GROWTH ^ (level - knee) + 0.5)
 end
 
 function Leveling.fromTotal(total: number): (number, number, number)

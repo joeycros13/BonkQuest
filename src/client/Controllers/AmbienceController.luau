@@ -19,6 +19,9 @@
 --   Ambient         Color3  Lighting.Ambient (lifts the shadows indoors)
 --   OutdoorAmbient  Color3  Lighting.OutdoorAmbient
 --   Brightness      number  Lighting.Brightness
+--   ExposureCompensation   number
+--   AtmosphereDensity / AtmosphereHaze / AtmosphereGlare   numbers: the world's haze, off indoors
+--                   (World 4's tomb, 2026-10-29: World 2's misty Atmosphere washed the torchlit maze out)
 -- Any of them may be left out. Only this client's Lighting changes; nobody
 -- else's sky moves.
 
@@ -35,7 +38,9 @@ local AmbienceController = {}
 local TAG = "AmbienceZone"
 local POLL, EASE, WORLD_EASE = 0.25, 1.2, 4
 
-local ZONE_PROPS = { "ClockTime", "Ambient", "OutdoorAmbient", "Brightness" }
+local ZONE_PROPS = { "ClockTime", "Ambient", "OutdoorAmbient", "Brightness", "ExposureCompensation" }
+-- zone attribute -> the Atmosphere property it overrides
+local ZONE_ATMOSPHERE = { AtmosphereDensity = "Density", AtmosphereHaze = "Haze", AtmosphereGlare = "Glare" }
 local LIGHT_PROPS = { "ClockTime", "Brightness", "ExposureCompensation", "Ambient", "OutdoorAmbient", "ColorShift_Top" }
 -- the Lighting children a look may set, and their properties
 local CHILDREN: { [string]: { class: string, props: { string } } } = {
@@ -85,6 +90,14 @@ local function target(world: number, zone: BasePart?): { [string]: any }
 			local v = zone:GetAttribute(prop)
 			if v ~= nil then
 				look[prop] = v
+			end
+		end
+		for attr, prop in ZONE_ATMOSPHERE do
+			local v = zone:GetAttribute(attr)
+			if v ~= nil then
+				local atmosphere = table.clone(look.Atmosphere or built.Atmosphere or {})
+				atmosphere[prop] = v
+				look.Atmosphere = atmosphere
 			end
 		end
 	end

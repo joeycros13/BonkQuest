@@ -39,7 +39,7 @@ those numbers are in PLAYER below.
   py world_sim.py --set boss.PumpkinMace=0.05 --set gate.coins=2000   # try changes
   py world_sim.py --trace             # one run, step by step
 """
-import argparse, json, math, random, statistics, sys
+import argparse, os, json, math, random, statistics, sys
 from collections import Counter
 from pathlib import Path
 
@@ -62,13 +62,29 @@ PLAYER = {
                              # player tops up first; 1.1 until then, when deaths were rare anyway)
     "replanEvery": 4,        # kills between rethinking what to farm
     "closeEnough": 0.10,     # activities paying within this share of the best are equal: the nearest wins
-    "tooStrong": 0.7,        # skip a fight that would take this share of max HP: get stronger first
+    "enemyLand": 0.78,       # share of an enemy's attacks that land in the game: the user's playtest (2026-10-26, a
+                             # fresh save, no upgrades) kept 40-45% after a Bull fight the simulation gave 24% for,
+                             # and lived through a Stallion fight it called lethal (the player moving, the enemy
+                             # turning and closing in)
+    "tooStrong": 0.85,       # skip a fight that would take this share of max HP: get stronger first (0.7 until
+                             # 2026-10-26: a maxed arrival's first small-enemy fight takes ~75% since the rescale)
                              # (0.9 until 2026-10-24; with ~50% small-enemy fights a player backs off sooner)
 }
 
 
+def level_health(lv, level):
+    """Leveling.maxHealth since 2026-10-26 (the user: armour must be needed, about 2/3 of a
+    player's health with their world's best set): BASE_HEALTH at level 1 up to KNEE_HEALTH at the
+    knee (World 2's gate level) and x GROWTH a level after it, x10 a world."""
+    start, knee = lv["start"], lv["healthKnee"]
+    if level <= knee:
+        g = (lv["kneeHealth"] / lv["baseHealth"]) ** (1 / (knee - start))
+        return math.floor(lv["baseHealth"] * g ** (level - start) + 0.5)
+    return math.floor(lv["kneeHealth"] * lv["growth"] ** (level - knee) + 0.5)
+
+
 def load(world):
-    data = json.load(open(HERE / f"world{world}.json", encoding="utf-8"))
+    data = json.load(open(Path(os.environ.get("WORLD_DIR", HERE)) / f"world{world}.json", encoding="utf-8"))
     # Luau's JSONEncode writes an empty table as [] (World 2 has no gathering or tools yet)
     for k in ("gathering", "tools", "armor", "weapons"):
         if isinstance(data.get(k), list):
@@ -93,6 +109,7 @@ class World:
         self.d = data
         self.goal = goal
         cfg = data["config"]
+        self.n = cfg.get("id", 1)
         self.enemies = {}
         for group, boss in ((cfg["enemies"], False), (cfg["bosses"], True)):
             for eid, e in group.items():
@@ -125,6 +142,8 @@ class World:
         for s in self.quest:
             if "items" in s:
                 s["items"] = listify(s["items"])
+            if "targets" in s:
+                s["targets"] = listify(s["targets"])
         self.lv = data["leveling"]
         self.speed = data["walkSpeed"] * (data["balance"]["sprint"] if PLAYER["sprint"] else 1)
         self.respawnTime = data["respawnTime"]
@@ -132,7 +151,9 @@ class World:
         # every weapon a player can collect here (reported either way); only --goal all needs them
         self.allWeapons = {w for w, v in self.weapons.items() if self.counts(v)}
         self.needWeapons = set(self.allWeapons) if goal == "all" else set()
-        self.needTools = {t for t, v in self.tools.items() if v["kind"] in ("Axe", "Pickaxe") or (rod and v["kind"] == "Rod")}
+        # the kinds this world's nodes need (World 4's shovel too, 2026-10-29; it has no pickaxe)
+        kinds = {g["tool"] for g in self.gather.values()}
+        self.needTools = {t for t, v in self.tools.items() if v["kind"] in kinds or (rod and v["kind"] == "Rod")}
         # A tool made from the one before it (World 2's stone tools, 2026-10-20) also needs
         # materials. Only this world's count: the older tool and the older world's gathered
         # materials are carried in from the last world.
@@ -177,7 +198,9 @@ class World:
         return sum(self.need(l) for l in range(self.lv["start"], level))
 
     def max_hp(self, level, armor):
-        if self.lv.get("growth"):
+        if self.lv.get("healthKnee"):
+            base = level_health(self.lv, level)
+        elif self.lv.get("growth"):
             base = math.floor(self.lv["baseHealth"] * self.lv["growth"] ** (level - self.lv["start"]) + 0.5)
         else:
             base = (self.lv["baseHealth"] + self.lv["healthPerLevel"] * (level - self.lv["start"])) * self.scale_at(level)
@@ -190,12 +213,28 @@ START = {}
 # it was only Health, Defense, Attack and Attack Speed). Config/Upgrades steps a level.
 UPG = {"health": 0, "defense": 0, "attack": 0, "speed": 0, "critChance": 0, "critDamage": 0,
        "regen": 0, "coins": 0, "exp": 0, "luck": 0, "gathering": 0, "sprint": 0}
-UPG_STEP = {"health": 0.05, "defense": -0.01, "attack": 0.03, "speed": -0.015, "critChance": 0.01, "critDamage": 0.05,
-            "regen": 0.0015, "coins": 0.04, "exp": 0.04, "luck": 0.05, "gathering": 0.01, "sprint": 0.04}
+UPG_STEP = {"health": 0.15, "defense": -0.05, "attack": 0.12, "speed": -0.06, "critChance": 0.04, "critDamage": 0.20,
+            "regen": 0.005, "coins": 0.15, "exp": 0.15, "luck": 0.20, "gathering": 0.12, "sprint": 0.12}
+# the two worlds whose upgraders sell each upgrade's levels 1-3 and 4-6 (2026-10-28 rework)
+UPG_WORLDS = {"sprint": (1, 4), "luck": (3, 7), "health": (1, 5), "defense": (1, 4), "attack": (2, 5),
+              "speed": (3, 7), "critDamage": (6, 8), "critChance": (4, 8), "regen": (3, 7),
+              "coins": (2, 6), "exp": (5, 8), "gathering": (2, 6)}
+
+
+# what a run starts with (--upgrades); each run copies it into UPG and buys its own world's levels
+START_UPG = dict(UPG)
+# Config/Upgrades prices: STEP_PRICES by the level within its world's set x WORLD_SCALE of that world
+UPG_PRICES = (100, 250, 500)
 
 
 def upg(name):
     return 1 + UPG_STEP[name] * UPG[name]
+
+
+def upg_price(name, level):
+    """The coins for an upgrade's level (Upgrades.cost)."""
+    world = UPG_WORLDS[name][(level - 1) // 3]
+    return UPG_PRICES[(level - 1) % 3] * 10 ** (world - 1)
 
 
 def crit():
@@ -225,6 +264,7 @@ class Run:
         self.step = 0              # quest step index; len(quest) = done
         self.accepted = False      # the current step has been taken from the giver
         self.progress = 0
+        self.hunt = {}
         self.gateDone = False
         self.dead = {}             # (archetype, marker index) -> time it comes back
         self.nodeDown = {}         # (node kind, index) -> time it stands again
@@ -239,6 +279,7 @@ class Run:
         self.levelHeals = 0
         self.fights = []           # (time, enemy, share of max HP it took)
         self.kills = {}
+        UPG.clear(); UPG.update(START_UPG)
         if START:
             self.weapons |= set(START.get("weapons", []))
             self.armor |= set(START.get("armor", []))
@@ -278,7 +319,7 @@ class Run:
         # with the Sprint upgrade the player sprints everywhere (Bonuses.speed adds its share)
         boost = min(self.worn("speed"), 0.5)
         if UPG["sprint"] > 0:
-            boost += 0.16 + UPG_STEP["sprint"] * UPG["sprint"]
+            boost += 0.18 + UPG_STEP["sprint"] * UPG["sprint"]
         return self.w.speed * (1 + boost)
 
     def maxhp(self):
@@ -330,14 +371,25 @@ class Run:
         return best[0]
 
     def fight(self, enemy, weapon, dry=False):
-        """One fight, hit by hit. Returns (seconds, damage taken)."""
+        """One fight, hit by hit. Returns (seconds, damage taken). A dry run is the average of 16
+        seeded fights (2026-10-26: one seeded fight could come out lucky, and the player took on
+        Bulls that kill nine times in ten)."""
+        if dry:
+            key = (enemy, weapon, self.defense())
+            cache = self.__dict__.setdefault("_dry", {})
+            if key not in cache:
+                runs = [self._fight(enemy, weapon, random.Random(k)) for k in range(16)]
+                cache[key] = (sum(r[0] for r in runs) / 16, sum(r[1] for r in runs) / 16)
+            return cache[key]
+        return self._fight(enemy, weapon, self.rng)
+
+    def _fight(self, enemy, weapon, rng):
         e = self.w.enemies[enemy]
         m = e["melee"]
         v = self.w.weapons[weapon]
         per = v["damage"] * upg("attack") * (1 - (0 if v.get("ignoreArmor") else m.get("armor", 0)))
         cooldown = v["cooldown"] * upg("speed")
         hp = e["hp"]
-        rng = self.rng if not dry else random.Random(1)
         t = PLAYER["engageSeconds"] + v["hitTime"] * upg("speed")
         first_hit = None
         chance, mult = crit()
@@ -358,6 +410,7 @@ class Run:
             while na + m["windup"] < end:
                 taken += max(1, math.floor(m["damage"] * (1 - self.defense()) * upg("defense") + 0.5))
                 na += m["cooldown"]
+            taken *= PLAYER["enemyLand"]
         return end, taken
 
     def use_fountain(self, markers, rest_seconds):
@@ -441,7 +494,7 @@ class Run:
             self.progress += got
         self.add_exp(round(e.get("exp", 0) * upg("exp")))
         for x in e["materials"]:
-            if self.rng.random() < lucky(x["chance"]):
+            if self.rng.random() < x["chance"]:  # luck never touches materials (2026-10-26)
                 n = self.rng.randint(x["min"], max(x["min"], x["max"]))
                 self.mats[x["id"]] = self.mats.get(x["id"], 0) + n
         for x in e["drops"]:
@@ -451,6 +504,11 @@ class Run:
                 self.say("drop!", x["weapon"], "from", enemy)
         if self.accepted and self.cur() and self.cur()["kind"] == "kill" and self.cur()["target"] == enemy:
             self.progress += 1
+        # a hunt step (2026-10-26): each kind counts up to its own count
+        if self.accepted and self.cur() and self.cur()["kind"] == "hunt":
+            for t in self.cur()["targets"]:
+                if t["id"] == enemy and self.hunt.get(enemy, 0) < t["count"]:
+                    self.hunt[enemy] = self.hunt.get(enemy, 0) + 1
         return True
 
     def gather_one(self, kind):
@@ -500,6 +558,8 @@ class Run:
         k = c["kind"]
         if k == "kill":
             return self.progress >= c["count"]
+        if k == "hunt":
+            return all(self.hunt.get(t["id"], 0) >= t["count"] for t in c["targets"])
         if k == "gather":
             # what's held counts, and nothing is taken at hand-in (issue 21, 2026-10-25)
             return self.mats.get(c["target"], 0) >= c["count"]
@@ -522,7 +582,7 @@ class Run:
             if c is None:
                 return
             if not self.accepted:
-                self.accepted, self.progress = True, 0
+                self.accepted, self.progress, self.hunt = True, 0, {}
                 self.say("quest step", self.step + 1, "accepted:", c["kind"], c.get("target", c.get("level", "")))
                 if not self.step_ready():
                     return
@@ -577,6 +637,7 @@ class Run:
             n += self.w.weapons[ups[0]]["price"] if ups else 0
         n += sum(v["coins"] for a, v in self.w.armor.items() if a not in self.armor)
         n += sum(self.w.tools[t]["price"] for t in self.w.needTools - self.tools)
+        n += sum(p for p, _, _ in self.upgrades_left())
         if not self.gateDone:
             n += self.w.gate["coins"]
         for s in self.w.quest[self.step:]:
@@ -593,6 +654,18 @@ class Run:
         quest = {s.get("reward", {}).get("weapon") for s in self.w.quest}
         return [x for x in self.w.needWeapons - self.weapons if not self.w.weapons[x].get("price") and x not in quest]
 
+    def upgrades_left(self):
+        """(price, upgrade) of every level this world's upgrader still sells, cheapest first
+        (2026-10-28: the world's enemies are balanced on them, so they're all bought before the gate)."""
+        out = []
+        for k, worlds in UPG_WORLDS.items():
+            if self.w.n not in worlds:
+                continue
+            top = 3 * (worlds.index(self.w.n) + 1)
+            for lvl in range(UPG[k] + 1, top + 1):
+                out.append((upg_price(k, lvl), k, lvl))
+        return sorted(out)
+
     # --- shopping ------------------------------------------------------------
     def shop(self, final=False):
         """At the plaza: tools, weapon upgrades, armour. Returns True if anything happened."""
@@ -607,6 +680,16 @@ class Run:
                 self.tools.add(t)
                 self.say("made", t)
                 did = True
+        # the upgrader's next levels, cheapest first (each upgrade's levels in order)
+        while True:
+            nxt = [(p, k) for p, k, lvl in self.upgrades_left() if lvl == UPG[k] + 1 and p <= self.coins]
+            if not nxt:
+                break
+            p, k = min(nxt)
+            self.coins -= p
+            UPG[k] += 1
+            self.say("upgraded", k, UPG[k])
+            did = True
         # the gate's coins come last: keep them only once everything else is bought
         missing = sorted((x for x in w.needWeapons - self.weapons if w.weapons[x].get("price")), key=lambda x: w.weapons[x]["price"])
         if w.goal == "gate":
@@ -633,7 +716,8 @@ class Run:
                     self.mats[x["id"]] -= x["count"]
                 self.coins -= v["coins"]
                 self.armor.add(a)
-                self.wearing = a
+                # wear the best set owned (a coin set bought late never replaces a crafted one)
+                self.wearing = max(self.armor, key=lambda k: w.armor[k]["health"])
                 self.say("crafted", a)
                 did = True
         if did:
@@ -653,6 +737,8 @@ class Run:
         if any(self.coins >= w.weapons[x]["price"] for x in w.needWeapons - self.weapons if w.weapons[x].get("price")):
             return True
         if w.goal == "gate" and any(self.coins >= w.weapons[x]["price"] for x in self.upgrades()):
+            return True
+        if any(p <= self.coins for p, k, lvl in self.upgrades_left() if lvl == UPG[k] + 1):
             return True
         for a, v in w.armor.items():
             if a not in self.armor and self.level() >= v["level"] and self.coins >= v["coins"] and all(self.mats.get(x["id"], 0) >= x["count"] for x in v["recipe"]):
@@ -752,6 +838,12 @@ class Run:
                         self.do(c["target"])
                         continue
                     # too strong for now: level up and gear up on something else
+                if k == "hunt":
+                    # the nearest kind still short that it can take on
+                    short = [t["id"] for t in c["targets"] if self.hunt.get(t["id"], 0) < t["count"] and self.beatable(t["id"])]
+                    if short:
+                        self.do(min(short, key=self.distance_to))
+                        continue
                 if k == "gather":
                     self.farm_material(c["target"])
                     continue
@@ -823,7 +915,7 @@ class Run:
     def ready_for_gate(self):
         g = self.w.gate
         if self.w.goal == "gate":
-            return (self.level() >= g["level"] and self.coins >= g["coins"]
+            return (self.level() >= g["level"] and self.coins >= g["coins"] and not self.upgrades_left()
                     and all(self.mats.get(x["id"], 0) >= x["count"] for x in g["materials"]))
         return (self.step >= len(self.w.quest) and not (self.w.needWeapons - self.weapons)
                 and len(self.armor) == len(self.w.armor) and self.w.needTools <= self.tools
@@ -953,8 +1045,14 @@ def main():
     ap.add_argument("--set", action="append", default=[])
     ap.add_argument("--upgrades", type=int, default=0, help="every upgrade at this level (the maxed arrival: 3 in World 2, 6 in World 3)")
     ap.add_argument("--trace", action="store_true")
+    ap.add_argument("--dump", help="write each run's minutes, deaths, level and coins left to this JSON file (simw4.sh merges them)")
     ap.add_argument("--remap", action="store_true", help="after level.* changes, move level requirements to the same EXP")
     a = ap.parse_args()
+    # World 1: a player takes on a fight up to 90% of their health after resting (2026-10-26, the
+    # user's ladder: the Bull costs 80-90% with the Machete and the coin set, and Farmhand's Gear
+    # needs its hide); from World 2 the base small-enemy fight takes ~75% (the 2026-10-26 rescale)
+    if a.world == 1:
+        PLAYER["tooStrong"] = 0.92
     data = load(a.world)
     if a.prev is None and a.world > 1:
         a.prev = a.world - 1
@@ -970,8 +1068,10 @@ def main():
             "armor": [x for x in a.start_armor.split(",") if x],
             "wear": a.start_wear or None,
         })
+    # --upgrades N: every set sold up to world N // 3 bought (3: World 1's, 6: Worlds 1-2's)
     for k in UPG:
-        UPG[k] = a.upgrades
+        UPG[k] = 3 * sum(1 for w in UPG_WORLDS[k] if w <= a.upgrades // 3)
+    START_UPG.update(UPG)
     old_curve = dict(data["leveling"])
     apply_overrides(data, a.set)
     if a.remap:
@@ -983,6 +1083,9 @@ def main():
         print("total %.1f min, deaths %d, level %d" % (r.t / 60, r.deaths, r.level()))
         return
     runs = [Run(world, rng).play() for _ in range(a.runs)]
+    if a.dump:
+        with open(a.dump, "w") as f:
+            json.dump([{"t": r.t / 60, "deaths": r.deaths, "level": r.level(), "coins": r.coins} for r in runs], f)
     if a.probe:
         merged = {"kill": {}, "step": {}, "wear": {}}
         for r in runs:

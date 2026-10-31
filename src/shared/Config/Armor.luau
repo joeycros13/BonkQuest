@@ -3,7 +3,8 @@
 -- one at a time (ArmorService). Decided with the user on 2026-10-12; the numbers
 -- are starting values.
 --
--- A set is ONE item (the Inventory has a single Armour slot). Two sets per world:
+-- A set is ONE item (the Inventory has a single Armour slot). Three sets per world:
+--   * the coin set (2026-10-26): coins alone and a low level, the weakest (World 1's Patchwork Vest);
 --   * set 1: materials from the world's first two enemies, coins and a level;
 --   * set 2: materials from enemy 3 and the boss, the world's quest item, coins
 --     and a level.
@@ -66,24 +67,43 @@ Armor.MAX_SPEED = 0.5
 
 Armor.Defs = {
 	-- ==================== World 1 (The Sunny Meadows) ====================
+	-- The coin set (2026-10-26, the user: a worse set bought with coins alone, from a decent number
+	-- of chicken kills, so a player with the Machete can take on the Bulls at 80-90% of their
+	-- health; no model or icon yet, so it only changes the stats)
+	PatchworkVest = {
+		id = "PatchworkVest",
+		icon = "rbxassetid://83170628579779",
+		name = "Patchwork Vest",
+		blurb = "Scraps of sacking sewn into a vest. Bought, not crafted.",
+		world = 1,
+		sell = 40,
+		order = 0,
+		rarity = "Common",
+		level = 7,
+		coins = 500,
+		recipe = {
+		},
+		defense = 0.05,
+		health = 60,
+	},
 	FarmhandsGear = {
 		id = "FarmhandsGear",
 		icon = "rbxassetid://71932067359739",
 		name = "Farmhand's Gear",
-		blurb = "Stitched from feathers and hide. Better than nothing!",
+		blurb = "Stitched from feathers, hide and oak. Better than nothing!",
 		world = 1,
 		sell = 62,
 		order = 1,
 		rarity = "Uncommon",
-		level = 5,
-		coins = 150,
+		level = 12,
+		coins = 900,
 		recipe = {
-			{ id = "ChickenFeather", count = 15 },
-			{ id = "BullHide", count = 10 },
-			{ id = "OakLog", count = 8 }, -- gathered (2026-10-19, user)
+			{ id = "ChickenFeather", count = 10 },
+			{ id = "BullHide", count = 3 },
+			{ id = "OakLog", count = 8 },
 		},
-		defense = 0.10,
-		health = 35,
+		defense = 0.12,
+		health = 220,
 	},
 	HarvestKnight = {
 		id = "HarvestKnight",
@@ -94,19 +114,38 @@ Armor.Defs = {
 		sell = 150,
 		order = 2,
 		rarity = "Rare",
-		level = 14,
+		level = 16,
 		coins = 750,
 		recipe = {
-			{ id = "Horsehair", count = 8 },
-			{ id = "GoldenStraw", count = 3 },
+			{ id = "Horsehair", count = 6 },
 			{ id = "LuckyHorseshoe", count = 1 },
-			{ id = "Stone", count = 12 }, -- gathered (2026-10-19, user)
-			{ id = "OakLog", count = 6 },
+			{ id = "GoldenStraw", count = 3 },
+			{ id = "OakLog", count = 5 },
+			{ id = "Stone", count = 15 },
+			{ id = "BullHide", count = 10 },
 		},
 		defense = 0.18,
-		health = 75,
+		health = 700,
 	},
 	-- ==================== World 2 (The Redwood Forest) ====================
+	-- World 2's coin set (2026-10-27, the user's pick on https://claude.ai/artifact/JfZ26WCcj2QYXq163LXaCV): rows of
+	-- pinecone scales; a step up from Harvest Knight, under Woodland Hide. Blender w2_armor_pinecone_build
+	PineconeScale = {
+		id = "PineconeScale",
+		icon = "rbxassetid://114824616394982",
+		name = "Pinecone Scale",
+		blurb = "Rows of pinecone scales on a mossy belt. Bought, not crafted.",
+		world = 2,
+		sell = 400,
+		order = 2.5,
+		rarity = "Uncommon",
+		level = 26,
+		coins = 5000,
+		recipe = {
+		},
+		defense = 0.21,
+		health = 1100,
+	},
 	WoodlandHide = {
 		id = "WoodlandHide",
 		icon = "rbxassetid://112957981852004",
@@ -119,12 +158,11 @@ Armor.Defs = {
 		level = 28, -- 20 until 2026-10-21: players arrive at 25, so it unlocked on arrival
 		coins = 1500,
 		recipe = {
-			{ id = "FoxFur", count = 15 },
-			{ id = "BoarTusk", count = 10 },
-			{ id = "RedwoodLog", count = 10 }, -- gathered (2026-10-21, user: like World 1's sets)
+			{ id = "FoxFur", count = 20 },
+			{ id = "RedwoodLog", count = 15 },
 		},
 		defense = 0.25,
-		health = 350,
+		health = 2200,
 		speed = 0.05,
 	},
 	HeartwoodBark = {
@@ -142,14 +180,33 @@ Armor.Defs = {
 			{ id = "BearClaw", count = 10 },
 			{ id = "HeartwoodSap", count = 3 },
 			{ id = "RangerBadge", count = 1 },
-			{ id = "RedwoodLog", count = 12 }, -- gathered (2026-10-21)
+			{ id = "RedwoodLog", count = 20 },
 			{ id = "AmberSap", count = 1 },
+			{ id = "BoarTusk", count = 10 },
 		},
 		defense = 0.32,
-		health = 750,
+		health = 7000,
 		regen = 0.0025,
 	},
 	-- ==================== World 3 (The Crystal Caverns), 2026-10-13 ====================
+	-- World 3's coin set (2026-10-27, the user's pick on https://claude.ai/artifact/JfZ26WCcj2QYXq163LXaCV): plain
+	-- riveted iron; a step up from Heartwood Bark, under Cave Runner. Blender w3_armor_ironplate_build
+	IronPlate = {
+		id = "IronPlate",
+		icon = "rbxassetid://140122534880082",
+		name = "Iron Plate",
+		blurb = "Plain riveted iron from the mine's smithy. Bought, not crafted.",
+		world = 3,
+		sell = 4000,
+		order = 4.5,
+		rarity = "Rare",
+		level = 52,
+		coins = 50000,
+		recipe = {
+		},
+		defense = 0.35,
+		health = 11000,
+	},
 	CaveRunner = {
 		id = "CaveRunner",
 		icon = "rbxassetid://114489790834583",
@@ -162,12 +219,11 @@ Armor.Defs = {
 		level = 58, -- 53 until 2026-10-24: Pip's EXP rewards got players there in under 4 minutes
 		coins = 15000,
 		recipe = {
-			{ id = "BatWing", count = 15 },
-			{ id = "GolemPebble", count = 10 },
-			{ id = "IronOre", count = 12 }, -- mined (2026-10-24), like Woodland Hide's Redwood Logs
+			{ id = "BatWing", count = 22 },
+			{ id = "IronOre", count = 18 },
 		},
 		defense = 0.38,
-		health = 5500,
+		health = 22000,
 		speed = 0.10,
 	},
 	CrystalQueen = {
@@ -185,13 +241,80 @@ Armor.Defs = {
 			{ id = "GolemCrystal", count = 10 },
 			{ id = "QueensSilk", count = 3 },
 			{ id = "MinersLantern", count = 1 },
-			{ id = "CrystalShard", count = 12 }, -- mined (2026-10-24), like Heartwood Bark's logs and sap
+			{ id = "CrystalShard", count = 20 },
 			{ id = "RawGem", count = 1 },
+			{ id = "GolemPebble", count = 10 },
 		},
 		defense = 0.44,
-		health = 13000,
+		health = 70000,
 		regen = 0.005,
 		speed = 0.08,
+	},
+	-- ==================== World 4 (The Scorching Sands), 2026-10-29 ====================
+	-- The user's picks on the World 4 armour canvas: coin set A "Nomad Wraps", set 1 B "Bone Warden", set 2 A
+	-- "Sun King's Regalia". Numbers x10 World 3's set for set (health, coins, sells), levels the same distance
+	-- past the World 4 gate's 75 as World 3's past its 50; both bonuses from here on. Icons art/tools/icons/w4_armor_icons.html.
+	-- Blender w4_armor_nomad_build / w4_armor_bonewarden_build / w4_armor_sunking_build.
+	NomadWraps = {
+		id = "NomadWraps",
+		icon = "rbxassetid://99908469133573",
+		name = "Nomad Wraps",
+		blurb = "A desert traveller's robe, sash and wraps. Bought, not crafted.",
+		world = 4,
+		sell = 40000,
+		order = 6.5,
+		rarity = "Epic",
+		level = 77,
+		coins = 500000,
+		recipe = {
+		},
+		defense = 0.46,
+		health = 110000,
+	},
+	BoneWarden = {
+		id = "BoneWarden",
+		icon = "rbxassetid://132285634877132",
+		name = "Bone Warden",
+		blurb = "Jackal bones over a ragged tunic, a skull on the belt.",
+		world = 4,
+		sell = 62000,
+		order = 7,
+		rarity = "Legendary",
+		level = 83,
+		coins = 150000,
+		recipe = {
+			{ id = "JackalFang", count = 22 },
+			{ id = "MummyLinen", count = 10 },
+			{ id = "CactusRib", count = 18 },
+		},
+		defense = 0.49,
+		health = 220000,
+		regen = 0.005,
+		speed = 0.12,
+	},
+	SunKing = {
+		id = "SunKing",
+		icon = "rbxassetid://115831306353855",
+		name = "Sun King's Regalia",
+		blurb = "Gold scales, a jewelled collar and the Sunstone scarab.",
+		world = 4,
+		sell = 150000,
+		order = 8,
+		rarity = "Legendary",
+		level = 90,
+		coins = 750000,
+		recipe = {
+			{ id = "GuardianBronze", count = 10 },
+			{ id = "SunstoneAmulet", count = 1 },
+			{ id = "PharaohsGold", count = 3 },
+			{ id = "GoldenScarab", count = 1 },
+			{ id = "Fossil", count = 20 },
+			{ id = "MummyLinen", count = 10 },
+		},
+		defense = 0.54,
+		health = 700000,
+		regen = 0.0075,
+		speed = 0.15,
 	},
 } :: { [string]: ArmorDef }
 

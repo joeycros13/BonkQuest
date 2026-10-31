@@ -23,8 +23,8 @@
 --           first enemy's material is Common, the second's Uncommon, the third's Rare,
 --           the boss's Epic; quest items are Legendary
 --   quest   true for a quest item: given once, never dropped
---   core    true for a secret-weapon core (2026-10-12): one per world, dropped about 1% by
---           that world's secret enemy, at most once per player (no duplicates, no pity);
+--   core    true for a secret-weapon core (2026-10-12): one per world, dropped by
+--           that world's secret enemy (0.2 / 0.1 / 0.04 / 0.01% x luck, 2026-10-29), at most once per player (no duplicates, no pity);
 --           it shows the big Index-style popup (rarity "Core") instead of a side toast, and
 --           is infused into the Rusty Blade at that world's Crafter (the Farm Core first)
 --   sell    coins for selling ONE from the Inventory (placeholder, 2026-10-20); quest items
@@ -470,6 +470,170 @@ Materials.Defs = {
 		gathered = true,
 		fished = true,
 		color = Color3.fromRGB(168, 140, 255),
+	},
+	-- ==================== World 4 (The Scorching Sands) ====================
+	-- World 4's enemy materials (2026-10-29, the user's picks on https://claude.ai/artifact/GgzBGjpZz3yu4YYZ5fbYZo): the
+	-- Bone Jackal's and Shambling Mummy's go into the Bone Warden, the Tomb Guardian's and Sand Pharaoh's into the Sun
+	-- King's Regalia with the quest's Sunstone Amulet. Icons art/tools/icons/w4_icons.html.
+	JackalFang = {
+		id = "JackalFang",
+		icon = "rbxassetid://74180816198873",
+		rarity = "Common",
+		name = "Jackal Fang",
+		world = 4,
+		sell = 2000,
+		order = 1,
+		source = "BoneJackal",
+		color = Color3.fromRGB(255, 250, 240),
+	},
+	MummyLinen = {
+		id = "MummyLinen",
+		icon = "rbxassetid://73775737184807",
+		rarity = "Uncommon",
+		name = "Mummy Linen",
+		world = 4,
+		sell = 3000,
+		order = 2,
+		source = "ShamblingMummy",
+		color = Color3.fromRGB(239, 228, 200),
+	},
+	GuardianBronze = {
+		id = "GuardianBronze",
+		icon = "rbxassetid://124150482206298",
+		rarity = "Rare",
+		name = "Guardian Bronze",
+		world = 4,
+		sell = 8000,
+		order = 3,
+		source = "TombGuardian",
+		color = Color3.fromRGB(181, 118, 58),
+	},
+	PharaohsGold = {
+		id = "PharaohsGold",
+		icon = "rbxassetid://84015847035330",
+		rarity = "Epic",
+		name = "Pharaoh's Gold",
+		world = 4,
+		sell = 14000,
+		order = 4,
+		source = "SandPharaoh",
+		color = Color3.fromRGB(242, 193, 78),
+	},
+	-- the World 4 quest item: Professor Dusty's defeat-the-Sand-Pharaoh step (the questline, "ArchaeologistSands", is
+	-- still to be written). Goes into the Sun King's Regalia.
+	SunstoneAmulet = {
+		id = "SunstoneAmulet",
+		icon = "rbxassetid://73125002066196",
+		rarity = "Legendary",
+		name = "Sunstone Amulet",
+		world = 4,
+		order = 5,
+		source = "ArchaeologistSands",
+		quest = true,
+		color = Color3.fromRGB(255, 122, 26),
+	},
+	-- the World 4 secret core (2026-10-29): deep amber with a gold stepped pyramid, dropped by the Phantom Pharaoh
+	-- (not placed until World 4 has its secret room). Model: Blender shared_secretcores_build build_desert_core_q.
+	DesertCore = {
+		id = "DesertCore",
+		rarity = "Core",
+		icon = "rbxassetid://91222459236386",
+		name = "Desert Core",
+		world = 4,
+		order = 6,
+		source = "PhantomPharaoh",
+		core = true,
+		color = Color3.fromRGB(217, 98, 15),
+	},
+	-- Gathered (2026-10-28): the saguaro's Cactus Rib, the dig pile's Fossil, Old Coin and Golden Scarab,
+	-- and the oasis's fish (memory tools-per-world). World 4's enemy materials come with its roster's
+	-- drops. No icons yet; sells x10 World 3's (placeholders).
+	CactusRib = {
+		id = "CactusRib",
+		icon = "rbxassetid://122584201424665",
+		rarity = "Common",
+		name = "Cactus Rib",
+		world = 4,
+		sell = 2000,
+		order = 7,
+		source = "Saguaro",
+		gathered = true,
+		color = Color3.fromRGB(120, 170, 80),
+	},
+	Fossil = {
+		id = "Fossil",
+		icon = "rbxassetid://134892582558324",
+		rarity = "Common",
+		name = "Fossil",
+		world = 4,
+		sell = 2000,
+		order = 8,
+		source = "DigPile",
+		gathered = true,
+		color = Color3.fromRGB(226, 214, 190),
+	},
+	OldCoin = {
+		id = "OldCoin",
+		icon = "rbxassetid://82966059292974",
+		rarity = "Uncommon",
+		name = "Old Coin",
+		world = 4,
+		sell = 4000,
+		order = 9,
+		source = "DigPile",
+		gathered = true,
+		color = Color3.fromRGB(214, 168, 60),
+	},
+	GoldenScarab = {
+		id = "GoldenScarab",
+		icon = "rbxassetid://88573096156282",
+		rarity = "Rare",
+		name = "Golden Scarab",
+		world = 4,
+		sell = 8000,
+		order = 10,
+		source = "DigPile",
+		gathered = true,
+		color = Color3.fromRGB(242, 193, 78),
+	},
+	Pupfish = {
+		id = "Pupfish",
+		icon = "rbxassetid://89772019118194",
+		rarity = "Common",
+		name = "Pupfish",
+		world = 4,
+		sell = 3000,
+		order = 11,
+		source = "OasisPool",
+		gathered = true,
+		fished = true,
+		color = Color3.fromRGB(90, 140, 220),
+	},
+	OasisKoi = {
+		id = "OasisKoi",
+		icon = "rbxassetid://79320368527481",
+		rarity = "Uncommon",
+		name = "Oasis Koi",
+		world = 4,
+		sell = 5000,
+		order = 12,
+		source = "OasisPool",
+		gathered = true,
+		fished = true,
+		color = Color3.fromRGB(255, 140, 60),
+	},
+	SandShark = {
+		id = "SandShark",
+		icon = "rbxassetid://107529624538647",
+		rarity = "Rare",
+		name = "Sand Shark",
+		world = 4,
+		sell = 8000,
+		order = 13,
+		source = "OasisPool",
+		gathered = true,
+		fished = true,
+		color = Color3.fromRGB(200, 170, 120),
 	},
 } :: { [string]: MaterialDef }
 

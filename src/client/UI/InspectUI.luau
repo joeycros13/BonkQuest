@@ -1,19 +1,20 @@
 --!strict
--- InspectUI: walk up to another player and press E to see who they are (2026-10-23,
--- option C "press-E peek" on https://claude.ai/artifact/MkJ7Xobg1XbSe6zZ8gJxfp, the
--- user's pick). Every other player's character gets an "Inspect <name>" prompt (made on
--- this client only, drawn by PromptController from Assets/UI/InspectPrompt, a copy of
--- the Talk bubble); triggering it opens the peek card: their headshot, level, name,
+-- InspectUI: the peek card for another player (2026-10-23, option C on
+-- https://claude.ai/artifact/MkJ7Xobg1XbSe6zZ8gJxfp): their headshot, level, name,
 -- title and world, health, weekly medal, and the weapon (with their DPS) and armour they
 -- wear. Full Profile and Inventory open their full card (ProfileUI) on that tab.
+-- InspectUI.show(who) opens it. The press-E "Inspect" prompt on other players'
+-- characters is gone (2026-10-28, the user: players fighting the same enemy clicked it
+-- by accident); players are inspected from the player list (PlayerListUI's row opens
+-- their profile card).
 -- Everything comes from their published attributes, as on the profile card.
 -- Hand-built StarterGui/InspectPeek (Panel = "Inspect"; gui attribute TitleFormat
 -- "%s · World %d"): Window (PopScale, Blocker, Close), Avatar/Photo,
 -- Avatar/LevelBadge/Level, PlayerName, TitleLine, Health, Medal, WeaponMini /
 -- ArmorMini (TileSlot, ItemName, Stat; ArmorMini's EmptyName), ProfileButton,
 -- InventoryButton.
--- Testing alone in Studio: set the Studio-only DevInspectSelf attribute on your own player
--- (Client datamodel) and the prompt goes on your own character too.
+-- Testing alone in Studio: with the Studio-only DevInspectSelf attribute on your own
+-- player, InspectUI.show(yourself) works.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -28,12 +29,10 @@ local InspectUI = {}
 local PANEL = "Inspect"
 local GUI_TIMEOUT = 15
 local TICK = 0.5
-local PROMPT_RANGE = 10 -- studs
 local player = Players.LocalPlayer
 
 -- Every word the card shows itself.
 local Text = {
-	action = "Inspect",
 	world = "World %d",
 }
 
@@ -89,49 +88,6 @@ function InspectUI.show(who: Player)
 	InspectUI.refresh()
 end
 
--- The prompt on one other player's character (local to this client).
-local function addPrompt(who: Player, character: Model)
-	local root = character:WaitForChild("HumanoidRootPart", 10)
-	if not (root and root:IsA("BasePart")) or root:FindFirstChild("InspectPrompt") then
-		return
-	end
-	local prompt = Instance.new("ProximityPrompt")
-	prompt.Name = "InspectPrompt"
-	prompt.ActionText = Text.action
-	prompt.ObjectText = who.DisplayName
-	prompt.KeyboardKeyCode = Enum.KeyCode.E
-	prompt.HoldDuration = 0
-	prompt.MaxActivationDistance = PROMPT_RANGE
-	prompt.RequiresLineOfSight = false
-	prompt.Style = Enum.ProximityPromptStyle.Custom
-	prompt:SetAttribute("Template", "InspectPrompt")
-	prompt:SetAttribute("ShortName", who.DisplayName)
-	prompt.Triggered:Connect(function()
-		InspectUI.show(who)
-	end)
-	prompt.Parent = root
-end
-
-local function watchPlayer(who: Player)
-	if who == player then
-		-- Studio only: inspect yourself while testing alone
-		if RunService:IsStudio() then
-			player:GetAttributeChangedSignal("DevInspectSelf"):Connect(function()
-				if selfTest() and player.Character then
-					task.spawn(addPrompt, player, player.Character)
-				end
-			end)
-		end
-		return
-	end
-	who.CharacterAdded:Connect(function(character)
-		addPrompt(who, character)
-	end)
-	if who.Character then
-		task.spawn(addPrompt, who, who.Character)
-	end
-end
-
 function InspectUI.init(injected: any)
 	deps = injected
 	PanelWindow = injected.UI.PanelWindow
@@ -164,10 +120,6 @@ function InspectUI.start()
 		local badge = window:FindFirstChild("Level", true)
 		if card and card.watchBadge and badge then
 			card.watchBadge(badge)
-		end
-		Players.PlayerAdded:Connect(watchPlayer)
-		for _, who in Players:GetPlayers() do
-			watchPlayer(who)
 		end
 		while true do
 			task.wait(TICK)

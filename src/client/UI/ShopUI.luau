@@ -397,8 +397,35 @@ local function refresh()
 	end
 end
 
+-- Window/List scrolls (2026-10-26: World 1 sells 8 weapons, more than the 6 the window holds). Its canvas
+-- is the layout's content plus the UIPadding's room above and below (kept for a quest row's glow and ribbon).
+local function fitList()
+	local list = shop and shop:FindFirstChild("List", true)
+	if not (list and list:IsA("ScrollingFrame")) then
+		return
+	end
+	local layout = list:FindFirstChildWhichIsA("UIGridStyleLayout")
+	local pad = list:FindFirstChildOfClass("UIPadding")
+	local extra = if pad then pad.PaddingTop.Offset + pad.PaddingBottom.Offset else 0
+	if layout then
+		list.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + extra)
+	end
+end
+
+local function scrollToTop()
+	local list = shop and shop:FindFirstChild("List", true)
+	if list and list:IsA("ScrollingFrame") then
+		list.CanvasPosition = Vector2.zero
+	end
+end
+
 local function wire(gui: ScreenGui)
 	shop = gui
+	local list = gui:FindFirstChild("List", true)
+	local layout = list and list:FindFirstChildWhichIsA("UIGridStyleLayout")
+	if layout then
+		layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(fitList)
+	end
 	for _, row in rows() do
 		local id = row:GetAttribute("ItemId") :: string
 		-- the shared tile in the Art slot (its own name and damage pill are hidden:
@@ -423,6 +450,15 @@ local function wire(gui: ScreenGui)
 		-- an upgrade's path: the previous tool's tile in UpgradeFrom (the shared tile, like Art)
 		local from = row:FindFirstChild("UpgradeFrom")
 		local prev = def and def.recipe and def.recipe.tool and Tools.get(def.recipe.tool)
+		if from and def and def.recipe and not prev then
+			-- a recipe with no tool before it (the Sandstone Shovel, the first shovel): no path to show
+			for _, name in { "UpgradeFrom", "Arrow", "FromText" } do
+				local piece = row:FindFirstChild(name)
+				if piece and piece:IsA("GuiObject") then
+					piece.Visible = false
+				end
+			end
+		end
 		if from and prev and not from:FindFirstChild(prev.id) then
 			local tile = WeaponTile.new(prev, { name = false, stat = false, statText = "" })
 			if tile then
@@ -469,6 +505,7 @@ local function wire(gui: ScreenGui)
 			button.Activated:Connect(function()
 				tab = name
 				refresh()
+				scrollToTop()
 			end)
 		end
 	end
@@ -497,9 +534,27 @@ local function wire(gui: ScreenGui)
 		if gui.Enabled and next(questTools(currentWorld())) ~= nil then
 			tab = "Tools"
 		end
+		-- a world whose weapons aren't on sale yet (World 4) opens on its tools
+		if gui.Enabled and tab == "Weapons" then
+			local world, any = currentWorld(), false
+			for _, row in rows() do
+				local def = defOf(row)
+				if def and not isTool(row) and (def.world or 1) == world then
+					any = true
+					break
+				end
+			end
+			if not any then
+				tab = "Tools"
+			end
+		end
 		refresh()
+		if gui.Enabled then
+			scrollToTop()
+		end
 	end)
 	refresh()
+	fitList()
 end
 
 function ShopUI.init(injected: any)

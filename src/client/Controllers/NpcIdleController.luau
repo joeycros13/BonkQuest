@@ -56,6 +56,22 @@
 --                               ribbon out from the spool, twice, eyes on it), beret
 --                               (straightens the beret with a little wiggle) and pat (two
 --                               pats on the apron pocket).
+--                  "Archaeologist" (Professor Dusty, the W4 quest giver, 2026-10-29) the
+--                               left arm rests raised with the magnifying glass, the
+--                               brush in the right fist; peer (the glass up to the eye,
+--                               leaning in and looking along something), brush (dusts
+--                               a find in front of him, eyes down) and ponder (taps
+--                               the brush handle on his chin, head tilted).
+--                  "ArmsDealer" (the W4 Weaponsmith, a caravan arms dealer, 2026-10-29) the
+--                               scimitar arm rests raised and steady; twirl (the free hand
+--                               twirls the curled moustache), flourish (lifts the scimitar
+--                               high, chin up, proud) and beckon (the free hand out, palm
+--                               up, waving a customer over).
+--                  "Perfumer"   (the W4 Crafter, 2026-10-29) the flask arm rests raised
+--                               and steady; whiff (lifts the flask under the nose, eyes
+--                               closed-ish, a pleased nod), swirl (swirls the flask in
+--                               little circles, watching it) and vials (the free hand runs
+--                               along the vials on his sash, picking one).
 --                Default style: the shopkeepers' wave / wipe.
 --   IdleActions  a comma list restricting the actions; "" means none.
 --   HandPoint    Vector3, the torso-local fist of the right hand. Parts with
@@ -149,6 +165,9 @@ local function adopt(inst: Instance)
 		elseif style == "Explorer" then { "compass", "glasses", "study" }
 		elseif style == "Sensei" then { "stroke", "bow", "stamp" }
 		elseif style == "Wrapper" then { "unspool", "beret", "pat" }
+		elseif style == "Archaeologist" then { "peer", "brush", "ponder" }
+		elseif style == "ArmsDealer" then { "twirl", "flourish", "beckon" }
+		elseif style == "Perfumer" then { "whiff", "swirl", "vials" }
 		else { "wave", "wipe" }
 	local handAttr = inst:GetAttribute("HandPoint")
 	local listed = inst:GetAttribute("IdleActions")
@@ -185,18 +204,33 @@ local function release(inst: Instance)
 	end
 end
 
--- 0 -> 1 -> 0 across u in [0, 1].
+-- 0 -> 1 -> 0 across u in [0, 1], leaving and coming back to rest at no speed (2026-10-29,
+-- the user: no snapping in or out of an action; a plain sine left the rest pose at full speed).
 local function bump(u: number): number
-	return math.sin(math.clamp(u, 0, 1) * math.pi)
+	local s = math.sin(math.clamp(u, 0, 1) * math.pi)
+	return s * s
+end
+
+local function smoothstep(x: number): number
+	x = math.clamp(x, 0, 1)
+	return x * x * (3 - 2 * x)
+end
+
+-- A rhythmic tap (pats, tugs, nods): the positive halves of a sine, squared so each beat
+-- starts and ends softly instead of kinking at zero.
+local function pulse(x: number): number
+	local s = math.max(0, math.sin(x))
+	return s * s
 end
 
 local function about(pivot: Vector3, rot: CFrame): CFrame
 	return CFrame.new(pivot) * rot * CFrame.new(-pivot)
 end
 
--- Rises to 1, holds, falls back: a gesture that stays at its peak for a while.
+-- Rises to 1, holds, falls back: a gesture that stays at its peak for a while (eased in over
+-- the first 30% and out over the last, with no corner where it reaches the top).
 local function plateau(u: number): number
-	return math.min(1, bump(u) * 1.6)
+	return smoothstep(u / 0.3) * smoothstep((1 - u) / 0.3)
 end
 
 -- How long each action lasts, in seconds.
@@ -211,6 +245,9 @@ local ACTION_SECONDS: { [string]: number } = {
 	compass = 3.0, glasses = 1.8, study = 3.2, -- Explorer
 	stroke = 2.8, bow = 2.6, -- Sensei (+ stamp)
 	unspool = 2.8, beret = 2.2, pat = 1.8, -- Wrapper
+	peer = 3.0, brush = 2.6, ponder = 2.4, -- Archaeologist
+	twirl = 2.4, flourish = 2.2, beckon = 2.4, -- ArmsDealer
+	whiff = 2.6, swirl = 2.8, vials = 2.6, -- Perfumer (not "sniff": the Trapper has one)
 }
 
 -- Per-style base motion: a weight shift (radians), whether the right arm holds still (a held
@@ -227,6 +264,9 @@ local STYLE_BASE: { [string]: { shift: number, steadyRight: boolean, lookRate: n
 	Explorer = { shift = WEIGHT_SHIFT, steadyRight = true, lookRate = 1.3, lookScale = 1.1 },
 	Sensei = { shift = 0.012, steadyRight = true, lookRate = 0.7, lookScale = 0.8 },
 	Wrapper = { shift = 0.02, steadyRight = true, lookRate = 1.1, lookScale = 0.9 },
+	Archaeologist = { shift = WEIGHT_SHIFT, steadyRight = false, lookRate = 1.1, lookScale = 1 },
+	ArmsDealer = { shift = 0.02, steadyRight = true, lookRate = 1.2, lookScale = 1 },
+	Perfumer = { shift = 0.015, steadyRight = true, lookRate = 0.9, lookScale = 0.8 },
 }
 
 local function pose(npc: Npc, now: number, dt: number)
@@ -277,7 +317,7 @@ local function pose(npc: Npc, now: number, dt: number)
 		nod = 0.15 * k
 	elseif action == "stamp" then
 		-- lift the pitchfork, then thump it down (the Tool follows the fist)
-		local lift = if u < 0.45 then math.sin(u / 0.45 * math.pi / 2) else math.max(0, 1 - (u - 0.45) / 0.1)
+		local lift = if u < 0.45 then smoothstep(u / 0.45) else math.max(0, 1 - (u - 0.45) / 0.1)
 		local thump = if u >= 0.55 then bump((u - 0.55) / 0.45) else 0
 		fwdR = 0.3 * lift - 0.04 * thump
 		lean = 0.05 * lift
@@ -319,7 +359,7 @@ local function pose(npc: Npc, now: number, dt: number)
 	elseif action == "stitch" then
 		-- the left hand holds the cloth out while the needle hand pulls the thread through, three times
 		local k = plateau(u)
-		local pull = math.max(0, math.sin(u * math.pi * 6))
+		local pull = pulse(u * math.pi * 6)
 		fwdL = 0.9 * k
 		fwdR = 0.45 * pull * k
 		armR = 0.35 * pull * k
@@ -382,7 +422,7 @@ local function pose(npc: Npc, now: number, dt: number)
 	elseif action == "lampTap" then
 		-- hand up to the headlamp on the front of the hard hat, tapping it twice
 		local k = plateau(u)
-		local tap = math.max(0, math.sin(u * math.pi * 4))
+		local tap = pulse(u * math.pi * 4)
 		fwdR = (2.6 + 0.12 * tap) * k
 		armR = -0.45 * k
 		nod = (0.06 + 0.05 * tap) * k
@@ -439,7 +479,7 @@ local function pose(npc: Npc, now: number, dt: number)
 	elseif action == "stroke" then
 		-- the free hand up to the chin, drawing down the long beard twice, a thoughtful tilt
 		local k = plateau(u)
-		fwdL = (1.75 - 0.25 * math.max(0, math.sin(u * math.pi * 4))) * k
+		fwdL = (1.75 - 0.25 * pulse(u * math.pi * 4)) * k
 		armL = -0.45 * k
 		nod = -0.05 * k
 		yawExtra = -0.1 * k
@@ -468,10 +508,80 @@ local function pose(npc: Npc, now: number, dt: number)
 	elseif action == "pat" then
 		-- two pats on the apron pocket, eyes down to it
 		local k = plateau(u)
-		local tap = math.max(0, math.sin(u * math.pi * 4))
+		local tap = pulse(u * math.pi * 4)
 		fwdL = (0.5 + 0.12 * tap) * k
 		armL = -0.32 * k
 		nod = 0.22 * k
+	-- ---------- Archaeologist (the left arm rests raised with the magnifier, the brush in the right fist) ----------
+	elseif action == "peer" then
+		-- the glass comes up in front of the eye, he leans in and looks slowly along something
+		local k = plateau(u)
+		fwdL = 0.35 * k
+		armL = -0.25 * k
+		lean = 0.07 * k
+		nod = 0.06 * k
+		yawExtra = 0.18 * math.sin(u * math.pi * 2) * k
+	elseif action == "brush" then
+		-- dusting a find in front of him: the brush hand flicks side to side, eyes down
+		local k = plateau(u)
+		local flick = math.sin(now * 11)
+		fwdR = (0.75 + 0.1 * flick) * k
+		armR = (-0.2 + 0.16 * flick) * k
+		lean = 0.08 * k
+		nod = 0.26 * k
+	elseif action == "ponder" then
+		-- the brush handle tapped against the chin, head tilted, thinking it over
+		local k = plateau(u)
+		local tap = pulse(u * math.pi * 6)
+		fwdR = (1.8 + 0.08 * tap) * k
+		armR = -0.45 * k
+		nod = -0.06 * k
+		yawExtra = -0.15 * k
+	-- ---------- ArmsDealer (the right arm rests raised, holding the scimitar upright) ----------
+	elseif action == "twirl" then
+		-- the free hand up to the curled moustache, twirling its end
+		local k = plateau(u)
+		fwdL = (2.05 + 0.06 * math.sin(now * 13)) * k
+		armL = (-0.42 + 0.08 * math.cos(now * 13)) * k
+		nod = -0.05 * k
+		yawExtra = -0.12 * k
+	elseif action == "flourish" then
+		-- lifts the scimitar high, chin up, showing it off (the Tool follows the fist)
+		local k = plateau(u)
+		fwdR = 0.55 * k
+		lean = -0.04 * k
+		nod = -0.12 * k
+		yawExtra = 0.15 * k
+	elseif action == "beckon" then
+		-- the free hand out in front, palm up, curling the customer over, twice
+		local k = plateau(u)
+		local curl = pulse(u * math.pi * 4)
+		fwdL = (0.95 + 0.25 * curl) * k
+		armL = (0.25 - 0.1 * curl) * k
+		lean = 0.03 * k
+		yawExtra = 0.1 * k
+	-- ---------- Perfumer (the right arm rests raised, the flask on the fist) ----------
+	elseif action == "whiff" then
+		-- the flask comes up under the nose, a long sniff with the head tipped back, then a pleased nod
+		local k = plateau(u)
+		fwdR = 0.35 * k
+		armR = -0.2 * k
+		nod = (-0.12 + 0.18 * bump((u - 0.6) / 0.35)) * k
+		yawExtra = 0.1 * k
+	elseif action == "swirl" then
+		-- swirls the flask in little circles, eyes on it
+		local k = plateau(u)
+		fwdR = 0.1 * math.sin(now * 9) * k
+		armR = 0.1 * math.cos(now * 9) * k
+		nod = 0.16 * k
+		yawExtra = 0.22 * k
+	elseif action == "vials" then
+		-- the free hand runs along the vials on the sash, eyes down, and taps one
+		local k = plateau(u)
+		fwdL = (0.42 + 0.05 * pulse(u * math.pi * 6)) * k
+		armL = (-0.15 - 0.3 * u) * k
+		nod = 0.26 * k
+		yawExtra = -0.15 * k
 	end
 
 	local t = now + npc.phase

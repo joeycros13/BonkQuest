@@ -30,7 +30,8 @@ Balance.Melee = {
 	leashRange = 35, -- an enemy gives up once it, or its target, is this far from its spawn point
 	returnSpeedScale = 1.5, -- walking home is this much faster than chasing
 	stopFraction = 0.75, -- a chasing enemy stops this fraction of its attack range past its front
-	dodgeSlack = 1.5, -- extra studs beyond range at which a landing attack still connects
+	dodgeSlack = 8, -- extra studs beyond range at which a landing attack still connects (was 1.5; attacks all but always land)
+	lungeScale = 2.5, -- through its windup an attacking enemy lunges after its target this much faster than it chases
 	separation = 3, -- chasing enemies keep at least this far apart
 	-- Server-side tolerance for hit claims, in studs: covers the per-client wander
 	-- and network delay between where the client drew an enemy and where the

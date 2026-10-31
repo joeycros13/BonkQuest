@@ -141,6 +141,26 @@ local function neededMaterial(step: Quests.Step): string?
 	return nil
 end
 
+-- A hunt step's nearest enemy among the kinds still short (2026-10-26).
+local function nearestHunted(step: Quests.Step, from: Vector3): Vector3?
+	local line = currentLine()
+	if not line then
+		return nil
+	end
+	local kills = Quests.huntKills(player, line.id)
+	local best: Vector3? = nil
+	local bestDistance = math.huge
+	for _, t in step.targets or {} do
+		if (kills[t.id] or 0) < t.count then
+			local at = nearestEnemy(t.id, from)
+			if at and (at - from).Magnitude < bestDistance then
+				best, bestDistance = at, (at - from).Magnitude
+			end
+		end
+	end
+	return best
+end
+
 -- True when the current quest state has somewhere to point.
 function GuideController.guidable(): boolean
 	local step, state = currentStep()
@@ -148,7 +168,7 @@ function GuideController.guidable(): boolean
 		return false
 	end
 	return state == "Ready"
-		or (state == "Active" and (step.kind == "kill" or neededMaterial(step) ~= nil or Quests.toolNeeded(step, player) ~= nil))
+		or (state == "Active" and (step.kind == "kill" or step.kind == "hunt" or neededMaterial(step) ~= nil or Quests.toolNeeded(step, player) ~= nil))
 end
 
 local function target(from: Vector3): Vector3?
@@ -159,6 +179,8 @@ local function target(from: Vector3): Vector3?
 		return giverPosition()
 	elseif state == "Active" and step.kind == "kill" and step.target then
 		return nearestEnemy(step.target, from)
+	elseif state == "Active" and step.kind == "hunt" then
+		return nearestHunted(step, from)
 	elseif state == "Active" then
 		local tool = Quests.toolNeeded(step, player)
 		if tool then

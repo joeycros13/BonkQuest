@@ -1,0 +1,1817 @@
+{
+ "CaveBat": {
+  "pieces": {
+   "Belly": {
+    "offset": [
+     -0.0,
+     3.534,
+     -0.3432
+    ],
+    "size": [
+     0.627,
+     0.693,
+     0.0396
+    ],
+    "colour": "8a7ba3",
+    "follows": "Torso"
+   },
+   "BrowsAngry": {
+    "offset": [
+     -0.0,
+     4.6032,
+     -0.5874
+    ],
+    "size": [
+     0.6974,
+     0.1539,
+     0.0396
+    ],
+    "colour": "231d2b",
+    "follows": "Head",
+    "mood": "Angry"
+   },
+   "BrowsCalm": {
+    "offset": [
+     -0.0,
+     4.6296,
+     -0.5874
+    ],
+    "size": [
+     0.6996,
+     0.0528,
+     0.0396
+    ],
+    "colour": "231d2b",
+    "follows": "Head",
+    "mood": "Calm"
+   },
+   "EarInner": {
+    "offset": [
+     -0.0,
+     5.0652,
+     -0.4389
+    ],
+    "size": [
+     0.8316,
+     0.405,
+     0.0198
+    ],
+    "colour": "c98fb0",
+    "follows": "Head"
+   },
+   "Ears": {
+    "offset": [
+     -0.0,
+     5.0652,
+     -0.198
+    ],
+    "size": [
+     0.9993,
+     0.6364,
+     0.462
+    ],
+    "colour": "5b4f72",
+    "follows": "Head"
+   },
+   "Eyes": {
+    "offset": [
+     -0.0,
+     4.4712,
+     -0.5808
+    ],
+    "size": [
+     0.6204,
+     0.1452,
+     0.0396
+    ],
+    "colour": "ff4d7a",
+    "follows": "Head",
+    "neon": true
+   },
+   "Fangs": {
+    "offset": [
+     -0.0,
+     4.029,
+     -0.759
+    ],
+    "size": [
+     0.2508,
+     0.132,
+     0.066
+    ],
+    "colour": "f4efe6",
+    "follows": "Head"
+   },
+   "Head": {
+    "offset": [
+     -0.0,
+     4.392,
+     -0.198
+    ],
+    "size": [
+     0.99,
+     0.792,
+     0.726
+    ],
+    "colour": "5b4f72",
+    "joint": [
+     -0.0,
+     3.996,
+     -0.066
+    ]
+   },
+   "LeftArm": {
+    "offset": [
+     -0.396,
+     3.897,
+     0.099
+    ],
+    "size": [
+     0.132,
+     0.132,
+     0.132
+    ],
+    "colour": "5b4f72",
+    "joint": [
+     -0.396,
+     3.897,
+     0.099
+    ],
+    "hidden": true
+   },
+   "LeftClaw": {
+    "offset": [
+     -0.2376,
+     2.6892,
+     0.0792
+    ],
+    "size": [
+     0.2112,
+     0.0924,
+     0.2376
+    ],
+    "colour": "2b2433",
+    "follows": "LeftLeg"
+   },
+   "LeftLeg": {
+    "offset": [
+     -0.2376,
+     2.973,
+     0.165
+    ],
+    "size": [
+     0.1716,
+     0.528,
+     0.1716
+    ],
+    "colour": "5b4f72",
+    "joint": [
+     -0.2376,
+     3.204,
+     0.165
+    ]
+   },
+   "LeftWing": {
+    "offset": [
+     -1.3695,
+     3.7914,
+     0.099
+    ],
+    "size": [
+     2.013,
+     1.5708,
+     0.0792
+    ],
+    "colour": "3e3452",
+    "joint": [
+     -0.396,
+     3.897,
+     0.099
+    ]
+   },
+   "LeftWingBone": {
+    "offset": [
+     -1.4206,
+     3.9192,
+     0.0198
+    ],
+    "size": [
+     2.1594,
+     1.7668,
+     0.112
+    ],
+    "colour": "6a5d84",
+    "follows": "LeftWing"
+   },
+   "Nose": {
+    "offset": [
+     -0.0,
+     4.2732,
+     -0.8052
+    ],
+    "size": [
+     0.198,
+     0.0924,
+     0.0396
+    ],
+    "colour": "2b2433",
+    "follows": "Head"
+   },
+   "RightArm": {
+    "offset": [
+     0.396,
+     3.897,
+     0.099
+    ],
+    "size": [
+     0.132,
+     0.132,
+     0.132
+    ],
+    "colour": "5b4f72",
+    "joint": [
+     0.396,
+     3.897,
+     0.099
+    ],
+    "hidden": true
+   },
+   "RightClaw": {
+    "offset": [
+     0.2376,
+     2.6892,
+     0.0792
+    ],
+    "size": [
+     0.2112,
+     0.0924,
+     0.2376
+    ],
+    "colour": "2b2433",
+    "follows": "RightLeg"
+   },
+   "RightLeg": {
+    "offset": [
+     0.2376,
+     2.973,
+     0.165
+    ],
+    "size": [
+     0.1716,
+     0.528,
+     0.1716
+    ],
+    "colour": "5b4f72",
+    "joint": [
+     0.2376,
+     3.204,
+     0.165
+    ]
+   },
+   "RightWing": {
+    "offset": [
+     1.3695,
+     3.7914,
+     0.099
+    ],
+    "size": [
+     2.013,
+     1.5708,
+     0.0792
+    ],
+    "colour": "3e3452",
+    "joint": [
+     0.396,
+     3.897,
+     0.099
+    ]
+   },
+   "RightWingBone": {
+    "offset": [
+     1.4206,
+     3.9192,
+     0.0198
+    ],
+    "size": [
+     2.1594,
+     1.7668,
+     0.112
+    ],
+    "colour": "6a5d84",
+    "follows": "RightWing"
+   },
+   "Snout": {
+    "offset": [
+     -0.0,
+     4.2072,
+     -0.6732
+    ],
+    "size": [
+     0.4092,
+     0.2772,
+     0.2376
+    ],
+    "colour": "8a7ba3",
+    "follows": "Head"
+   },
+   "Torso": {
+    "offset": [
+     -0.0,
+     3.6,
+     0.066
+    ],
+    "size": [
+     0.891,
+     0.99,
+     0.792
+    ],
+    "colour": "5b4f72",
+    "joint": [
+     -0.0,
+     3.6,
+     0.066
+    ]
+   }
+  },
+  "size": [
+   5.001,
+   2.74,
+   1.287
+  ],
+  "minZ": 2.643,
+  "maxZ": 5.383
+ },
+ "PebbleGolem": {
+  "pieces": {
+   "BrowAngry": {
+    "offset": [
+     -0.0,
+     5.3639,
+     -0.772
+    ],
+    "size": [
+     1.2744,
+     0.3771,
+     0.1863
+    ],
+    "colour": "6e6556",
+    "follows": "Head",
+    "mood": "Angry"
+   },
+   "BrowCalm": {
+    "offset": [
+     -0.0,
+     5.4039,
+     -0.772
+    ],
+    "size": [
+     1.2511,
+     0.173,
+     0.1863
+    ],
+    "colour": "6e6556",
+    "follows": "Head",
+    "mood": "Calm"
+   },
+   "Core": {
+    "offset": [
+     -0.0,
+     3.7268,
+     -0.8518
+    ],
+    "size": [
+     0.8659,
+     0.8659,
+     0.213
+    ],
+    "colour": "ffa733",
+    "follows": "Torso",
+    "neon": true
+   },
+   "CoreSocket": {
+    "offset": [
+     -0.0,
+     3.7268,
+     -0.8252
+    ],
+    "size": [
+     1.1713,
+     1.2778,
+     0.1597
+    ],
+    "colour": "5f574a",
+    "follows": "Torso"
+   },
+   "Eyes": {
+    "offset": [
+     -0.0,
+     5.0977,
+     -0.772
+    ],
+    "size": [
+     0.9317,
+     0.1863,
+     0.0799
+    ],
+    "colour": "ffd25a",
+    "follows": "Head",
+    "neon": true
+   },
+   "Head": {
+    "offset": [
+     -0.0,
+     5.1643,
+     -0.0666
+    ],
+    "size": [
+     1.3975,
+     1.2644,
+     1.1979
+    ],
+    "colour": "b8ae98",
+    "joint": [
+     -0.0,
+     4.5254,
+     0.0
+    ]
+   },
+   "Hips": {
+    "offset": [
+     -0.0,
+     2.2893,
+     0.0399
+    ],
+    "size": [
+     1.7303,
+     1.1313,
+     1.331
+    ],
+    "colour": "8a8070",
+    "follows": "Torso"
+   },
+   "LeftArm": {
+    "offset": [
+     -1.4641,
+     3.7268,
+     0.0
+    ],
+    "size": [
+     0.6655,
+     0.9583,
+     0.6921
+    ],
+    "colour": "8a8070",
+    "joint": [
+     -1.3576,
+     4.1926,
+     0.0
+    ]
+   },
+   "LeftElbow": {
+    "offset": [
+     -1.4641,
+     3.221,
+     0.0266
+    ],
+    "size": [
+     0.7454,
+     0.559,
+     0.7454
+    ],
+    "colour": "b8ae98",
+    "follows": "LeftLowerArm"
+   },
+   "LeftFist": {
+    "offset": [
+     -1.5173,
+     1.9965,
+     -0.0666
+    ],
+    "size": [
+     0.9983,
+     0.9583,
+     0.9983
+    ],
+    "colour": "b8ae98",
+    "follows": "LeftLowerArm"
+   },
+   "LeftFoot": {
+    "offset": [
+     -0.5324,
+     0.3461,
+     -0.1331
+    ],
+    "size": [
+     0.9583,
+     0.6921,
+     1.2644
+    ],
+    "colour": "a39882",
+    "follows": "LeftLowerLeg"
+   },
+   "LeftKnee": {
+    "offset": [
+     -0.4792,
+     1.1314,
+     -0.0532
+    ],
+    "size": [
+     0.772,
+     0.559,
+     0.772
+    ],
+    "colour": "b8ae98",
+    "follows": "LeftLowerLeg"
+   },
+   "LeftLeg": {
+    "offset": [
+     -0.4792,
+     1.6238,
+     0.0399
+    ],
+    "size": [
+     0.6921,
+     1.0382,
+     0.732
+    ],
+    "colour": "8a8070",
+    "joint": [
+     -0.4792,
+     1.9299,
+     0.0399
+    ]
+   },
+   "LeftLowerArm": {
+    "offset": [
+     -1.4907,
+     2.6886,
+     -0.0266
+    ],
+    "size": [
+     0.6389,
+     0.8252,
+     0.6655
+    ],
+    "colour": "8a8070",
+    "joint": [
+     -1.4641,
+     3.221,
+     0.0
+    ]
+   },
+   "LeftLowerLeg": {
+    "offset": [
+     -0.4925,
+     0.6655,
+     0.0
+    ],
+    "size": [
+     0.6655,
+     0.8252,
+     0.7054
+    ],
+    "colour": "8a8070",
+    "joint": [
+     -0.4792,
+     1.1314,
+     0.0
+    ]
+   },
+   "LeftShoulder": {
+    "offset": [
+     -1.4109,
+     4.2592,
+     0.0266
+    ],
+    "size": [
+     0.9583,
+     0.8785,
+     0.9583
+    ],
+    "colour": "a39882",
+    "follows": "LeftArm"
+   },
+   "Pebbles": {
+    "offset": [
+     -0.0141,
+     3.6536,
+     0.0197
+    ],
+    "size": [
+     2.3953,
+     1.3709,
+     1.9305
+    ],
+    "colour": "b8ae98",
+    "follows": "Torso"
+   },
+   "RightArm": {
+    "offset": [
+     1.4641,
+     3.7268,
+     0.0
+    ],
+    "size": [
+     0.6655,
+     0.9583,
+     0.6921
+    ],
+    "colour": "8a8070",
+    "joint": [
+     1.3576,
+     4.1926,
+     0.0
+    ]
+   },
+   "RightElbow": {
+    "offset": [
+     1.4641,
+     3.221,
+     0.0266
+    ],
+    "size": [
+     0.7454,
+     0.559,
+     0.7454
+    ],
+    "colour": "b8ae98",
+    "follows": "RightLowerArm"
+   },
+   "RightFist": {
+    "offset": [
+     1.5173,
+     1.9965,
+     -0.0666
+    ],
+    "size": [
+     0.9983,
+     0.9583,
+     0.9983
+    ],
+    "colour": "b8ae98",
+    "follows": "RightLowerArm"
+   },
+   "RightFoot": {
+    "offset": [
+     0.5324,
+     0.3461,
+     -0.1331
+    ],
+    "size": [
+     0.9583,
+     0.6921,
+     1.2644
+    ],
+    "colour": "a39882",
+    "follows": "RightLowerLeg"
+   },
+   "RightKnee": {
+    "offset": [
+     0.4792,
+     1.1314,
+     -0.0532
+    ],
+    "size": [
+     0.772,
+     0.559,
+     0.772
+    ],
+    "colour": "b8ae98",
+    "follows": "RightLowerLeg"
+   },
+   "RightLeg": {
+    "offset": [
+     0.4792,
+     1.6238,
+     0.0399
+    ],
+    "size": [
+     0.6921,
+     1.0382,
+     0.732
+    ],
+    "colour": "8a8070",
+    "joint": [
+     0.4792,
+     1.9299,
+     0.0399
+    ]
+   },
+   "RightLowerArm": {
+    "offset": [
+     1.4907,
+     2.6886,
+     -0.0266
+    ],
+    "size": [
+     0.6389,
+     0.8252,
+     0.6655
+    ],
+    "colour": "8a8070",
+    "joint": [
+     1.4641,
+     3.221,
+     0.0
+    ]
+   },
+   "RightLowerLeg": {
+    "offset": [
+     0.4925,
+     0.6655,
+     0.0
+    ],
+    "size": [
+     0.6655,
+     0.8252,
+     0.7054
+    ],
+    "colour": "8a8070",
+    "joint": [
+     0.4792,
+     1.1314,
+     0.0
+    ]
+   },
+   "RightShoulder": {
+    "offset": [
+     1.4109,
+     4.2592,
+     0.0266
+    ],
+    "size": [
+     0.9583,
+     0.8785,
+     0.9583
+    ],
+    "colour": "a39882",
+    "follows": "RightArm"
+   },
+   "Torso": {
+    "offset": [
+     -0.0,
+     3.7002,
+     0.0
+    ],
+    "size": [
+     2.1296,
+     1.93,
+     1.5972
+    ],
+    "colour": "a39882",
+    "joint": [
+     -0.0,
+     2.9282,
+     0.0
+    ]
+   }
+  },
+  "size": [
+   4.033,
+   5.797,
+   1.943
+  ],
+  "minZ": 0.0,
+  "maxZ": 5.797
+ },
+ "CrystalGolem": {
+  "pieces": {
+   "BackCrystals": {
+    "offset": [
+     -0.0342,
+     5.0534,
+     1.1817
+    ],
+    "size": [
+     2.2448,
+     2.519,
+     1.676
+    ],
+    "colour": "8fe4f7",
+    "follows": "Torso"
+   },
+   "BrowAngry": {
+    "offset": [
+     -0.0,
+     6.3871,
+     -1.1104
+    ],
+    "size": [
+     1.2084,
+     0.3817,
+     0.1985
+    ],
+    "colour": "24212e",
+    "follows": "Head",
+    "mood": "Angry"
+   },
+   "BrowCalm": {
+    "offset": [
+     -0.0,
+     6.4318,
+     -1.1128
+    ],
+    "size": [
+     1.1872,
+     0.1771,
+     0.1877
+    ],
+    "colour": "24212e",
+    "follows": "Head",
+    "mood": "Calm"
+   },
+   "ChestCrystals": {
+    "offset": [
+     -0.0816,
+     4.6239,
+     -1.2103
+    ],
+    "size": [
+     3.1034,
+     1.9393,
+     1.1402
+    ],
+    "colour": "c3b2ff",
+    "follows": "Torso"
+   },
+   "ChestPlate": {
+    "offset": [
+     -0.0,
+     4.7837,
+     -1.0953
+    ],
+    "size": [
+     1.904,
+     1.4051,
+     0.3279
+    ],
+    "colour": "5d5870",
+    "follows": "Torso"
+   },
+   "Cracks": {
+    "offset": [
+     0.0492,
+     4.8158,
+     -1.1903
+    ],
+    "size": [
+     1.4082,
+     0.9666,
+     0.1793
+    ],
+    "colour": "6fe8ff",
+    "follows": "Torso",
+    "neon": true
+   },
+   "Eyes": {
+    "offset": [
+     -0.0,
+     6.1864,
+     -1.0887
+    ],
+    "size": [
+     0.9632,
+     0.1154,
+     0.073
+    ],
+    "colour": "7ff4ff",
+    "follows": "Head",
+    "neon": true
+   },
+   "Head": {
+    "offset": [
+     -0.0,
+     6.241,
+     -0.4747
+    ],
+    "size": [
+     1.4,
+     1.1718,
+     1.2248
+    ],
+    "colour": "5d5870",
+    "joint": [
+     -0.0,
+     5.7465,
+     -0.2806
+    ]
+   },
+   "HeadCrystals": {
+    "offset": [
+     -0.0543,
+     7.089,
+     -0.197
+    ],
+    "size": [
+     0.9999,
+     0.7587,
+     0.4611
+    ],
+    "colour": "c3b2ff",
+    "follows": "Head"
+   },
+   "HipCrystals": {
+    "offset": [
+     0.5881,
+     3.2082,
+     -0.841
+    ],
+    "size": [
+     0.5003,
+     0.2633,
+     0.7065
+    ],
+    "colour": "8fe4f7",
+    "follows": "Torso"
+   },
+   "Hips": {
+    "offset": [
+     -0.0,
+     3.3697,
+     0.11
+    ],
+    "size": [
+     2.184,
+     1.0681,
+     1.5447
+    ],
+    "colour": "3d3a4a",
+    "follows": "Torso"
+   },
+   "LeftArm": {
+    "offset": [
+     -2.016,
+     4.6928,
+     -0.1325
+    ],
+    "size": [
+     0.84,
+     1.4338,
+     1.0525
+    ],
+    "colour": "3d3a4a",
+    "joint": [
+     -1.792,
+     5.4137,
+     -0.2338
+    ]
+   },
+   "LeftArmCrystals": {
+    "offset": [
+     -2.8145,
+     3.1265,
+     -0.1781
+    ],
+    "size": [
+     1.0283,
+     1.198,
+     0.9775
+    ],
+    "colour": "c3b2ff",
+    "follows": "LeftLowerArm"
+   },
+   "LeftCrystals": {
+    "offset": [
+     -2.3729,
+     6.4964,
+     -0.2025
+    ],
+    "size": [
+     1.2973,
+     1.6124,
+     0.7951
+    ],
+    "colour": "8fe4f7",
+    "follows": "LeftArm"
+   },
+   "LeftElbow": {
+    "offset": [
+     -2.0384,
+     3.9719,
+     -0.0312
+    ],
+    "size": [
+     1.064,
+     0.7239,
+     1.1463
+    ],
+    "colour": "5d5870",
+    "follows": "LeftLowerArm"
+   },
+   "LeftFist": {
+    "offset": [
+     -2.128,
+     2.2647,
+     -0.5789
+    ],
+    "size": [
+     1.4,
+     1.4731,
+     1.6267
+    ],
+    "colour": "4b4759",
+    "follows": "LeftLowerArm"
+   },
+   "LeftFoot": {
+    "offset": [
+     -0.728,
+     0.336,
+     -0.1894
+    ],
+    "size": [
+     1.288,
+     0.672,
+     1.624
+    ],
+    "colour": "4b4759",
+    "follows": "LeftLowerLeg"
+   },
+   "LeftKnee": {
+    "offset": [
+     -0.672,
+     1.8121,
+     -0.3979
+    ],
+    "size": [
+     1.064,
+     0.722,
+     1.1788
+    ],
+    "colour": "5d5870",
+    "follows": "LeftLowerLeg"
+   },
+   "LeftLeg": {
+    "offset": [
+     -0.672,
+     2.589,
+     -0.0995
+    ],
+    "size": [
+     0.952,
+     1.4013,
+     1.2382
+    ],
+    "colour": "3d3a4a",
+    "joint": [
+     -0.672,
+     3.0781,
+     0.0224
+    ]
+   },
+   "LeftLowerArm": {
+    "offset": [
+     -2.072,
+     3.3321,
+     -0.2379
+    ],
+    "size": [
+     0.952,
+     1.4189,
+     1.2653
+    ],
+    "colour": "3d3a4a",
+    "joint": [
+     -2.0384,
+     3.9719,
+     -0.0312
+    ]
+   },
+   "LeftLowerLeg": {
+    "offset": [
+     -0.672,
+     1.1817,
+     -0.1484
+    ],
+    "size": [
+     0.9184,
+     1.4502,
+     1.23
+    ],
+    "colour": "3d3a4a",
+    "joint": [
+     -0.672,
+     1.8337,
+     -0.3109
+    ]
+   },
+   "LeftShinCrystals": {
+    "offset": [
+     -1.3924,
+     1.002,
+     0.0447
+    ],
+    "size": [
+     0.9226,
+     0.4295,
+     0.5821
+    ],
+    "colour": "c3b2ff",
+    "follows": "LeftLowerLeg"
+   },
+   "LeftShoulder": {
+    "offset": [
+     -1.96,
+     5.5801,
+     -0.2572
+    ],
+    "size": [
+     1.4,
+     1.1235,
+     1.5525
+    ],
+    "colour": "4b4759",
+    "follows": "LeftArm"
+   },
+   "LeftThighCrystals": {
+    "offset": [
+     -0.852,
+     2.8716,
+     -0.7595
+    ],
+    "size": [
+     0.6793,
+     0.5113,
+     0.8233
+    ],
+    "colour": "8fe4f7",
+    "follows": "LeftLeg"
+   },
+   "RightArm": {
+    "offset": [
+     2.016,
+     4.6928,
+     -0.1325
+    ],
+    "size": [
+     0.84,
+     1.4338,
+     1.0525
+    ],
+    "colour": "3d3a4a",
+    "joint": [
+     1.792,
+     5.4137,
+     -0.2338
+    ]
+   },
+   "RightArmCrystals": {
+    "offset": [
+     2.9074,
+     3.2271,
+     -0.3698
+    ],
+    "size": [
+     1.2253,
+     1.2897,
+     0.9777
+    ],
+    "colour": "8fe4f7",
+    "follows": "RightLowerArm"
+   },
+   "RightCrystals": {
+    "offset": [
+     2.4786,
+     6.4769,
+     -0.2861
+    ],
+    "size": [
+     1.4255,
+     1.6371,
+     0.8123
+    ],
+    "colour": "c3b2ff",
+    "follows": "RightArm"
+   },
+   "RightElbow": {
+    "offset": [
+     2.0384,
+     3.9719,
+     -0.0312
+    ],
+    "size": [
+     1.064,
+     0.7239,
+     1.1463
+    ],
+    "colour": "5d5870",
+    "follows": "RightLowerArm"
+   },
+   "RightFist": {
+    "offset": [
+     2.128,
+     2.2647,
+     -0.5789
+    ],
+    "size": [
+     1.4,
+     1.4731,
+     1.6267
+    ],
+    "colour": "4b4759",
+    "follows": "RightLowerArm"
+   },
+   "RightFoot": {
+    "offset": [
+     0.728,
+     0.336,
+     -0.1894
+    ],
+    "size": [
+     1.288,
+     0.672,
+     1.624
+    ],
+    "colour": "4b4759",
+    "follows": "RightLowerLeg"
+   },
+   "RightKnee": {
+    "offset": [
+     0.672,
+     1.8121,
+     -0.3979
+    ],
+    "size": [
+     1.064,
+     0.722,
+     1.1788
+    ],
+    "colour": "5d5870",
+    "follows": "RightLowerLeg"
+   },
+   "RightLeg": {
+    "offset": [
+     0.672,
+     2.589,
+     -0.0995
+    ],
+    "size": [
+     0.952,
+     1.4013,
+     1.2382
+    ],
+    "colour": "3d3a4a",
+    "joint": [
+     0.672,
+     3.0781,
+     0.0224
+    ]
+   },
+   "RightLowerArm": {
+    "offset": [
+     2.072,
+     3.3321,
+     -0.2379
+    ],
+    "size": [
+     0.952,
+     1.4189,
+     1.2653
+    ],
+    "colour": "3d3a4a",
+    "joint": [
+     2.0384,
+     3.9719,
+     -0.0312
+    ]
+   },
+   "RightLowerLeg": {
+    "offset": [
+     0.672,
+     1.1817,
+     -0.1484
+    ],
+    "size": [
+     0.9184,
+     1.4502,
+     1.23
+    ],
+    "colour": "3d3a4a",
+    "joint": [
+     0.672,
+     1.8337,
+     -0.3109
+    ]
+   },
+   "RightShinCrystals": {
+    "offset": [
+     1.394,
+     1.0127,
+     -0.156
+    ],
+    "size": [
+     0.8942,
+     0.4753,
+     0.5801
+    ],
+    "colour": "8fe4f7",
+    "follows": "RightLowerLeg"
+   },
+   "RightShoulder": {
+    "offset": [
+     1.96,
+     5.5801,
+     -0.2572
+    ],
+    "size": [
+     1.4,
+     1.1235,
+     1.5525
+    ],
+    "colour": "4b4759",
+    "follows": "RightArm"
+   },
+   "RightThighCrystals": {
+    "offset": [
+     0.6806,
+     2.8659,
+     -0.7391
+    ],
+    "size": [
+     0.6332,
+     0.5383,
+     0.775
+    ],
+    "colour": "c3b2ff",
+    "follows": "RightLeg"
+   },
+   "Torso": {
+    "offset": [
+     -0.0,
+     4.7483,
+     -0.1403
+    ],
+    "size": [
+     2.912,
+     2.3349,
+     2.0489
+    ],
+    "colour": "4b4759",
+    "joint": [
+     -0.0,
+     3.7501,
+     0.0
+    ]
+   }
+  },
+  "size": [
+   6.849,
+   7.468,
+   3.8
+  ],
+  "minZ": 0.0,
+  "maxZ": 7.468
+ },
+ "SpiderQueen": {
+  "pieces": {
+   "Abdomen": {
+    "offset": [
+     -0.0,
+     7.2,
+     4.6
+    ],
+    "size": [
+     7.4,
+     7.1536,
+     8.7409
+    ],
+    "colour": "241f2e",
+    "follows": "Torso"
+   },
+   "BrowAngry": {
+    "offset": [
+     -0.0,
+     7.0,
+     -6.1
+    ],
+    "size": [
+     3.5875,
+     1.0358,
+     0.45
+    ],
+    "colour": "16131d",
+    "follows": "Head",
+    "mood": "Angry"
+   },
+   "BrowCalm": {
+    "offset": [
+     -0.0,
+     7.075,
+     -6.1
+    ],
+    "size": [
+     3.6384,
+     0.5396,
+     0.45
+    ],
+    "colour": "16131d",
+    "follows": "Head",
+    "mood": "Calm"
+   },
+   "Chelicerae": {
+    "offset": [
+     -0.0,
+     4.1625,
+     -5.8125
+    ],
+    "size": [
+     2.7375,
+     1.75,
+     1.125
+    ],
+    "colour": "463c58",
+    "follows": "Head"
+   },
+   "CrystalsCyan": {
+    "offset": [
+     -1.6034,
+     10.8876,
+     5.3086
+    ],
+    "size": [
+     5.6663,
+     4.7015,
+     4.1622
+    ],
+    "colour": "8fe4f7",
+    "follows": "Torso"
+   },
+   "CrystalsLilac": {
+    "offset": [
+     1.5071,
+     10.6295,
+     5.6768
+    ],
+    "size": [
+     5.6086,
+     4.3678,
+     5.2977
+    ],
+    "colour": "c3b2ff",
+    "follows": "Torso"
+   },
+   "CrystalsPink": {
+    "offset": [
+     -0.1453,
+     11.8107,
+     5.8841
+    ],
+    "size": [
+     4.1567,
+     4.5615,
+     4.2735
+    ],
+    "colour": "ffa8d8",
+    "follows": "Torso"
+   },
+   "Eyes": {
+    "offset": [
+     -0.0,
+     6.125,
+     -5.925
+    ],
+    "size": [
+     3.725,
+     1.3,
+     0.1
+    ],
+    "colour": "ff3d8b",
+    "follows": "Head",
+    "neon": true
+   },
+   "Fangs": {
+    "offset": [
+     -0.0,
+     2.6547,
+     -6.2856
+    ],
+    "size": [
+     1.9387,
+     1.8594,
+     0.7806
+    ],
+    "colour": "d9d2c4",
+    "follows": "Head"
+   },
+   "Head": {
+    "offset": [
+     -0.0,
+     5.6,
+     -4.5
+    ],
+    "size": [
+     4.25,
+     3.25,
+     2.75
+    ],
+    "colour": "322a40",
+    "joint": [
+     -0.0,
+     5.4,
+     -3.6
+    ]
+   },
+   "Hourglass": {
+    "offset": [
+     -0.0,
+     9.7138,
+     2.6422
+    ],
+    "size": [
+     1.9092,
+     0.9774,
+     3.4733
+    ],
+    "colour": "ff5ca8",
+    "follows": "Torso",
+    "neon": true
+   },
+   "LeftArm": {
+    "offset": [
+     -4.6484,
+     5.4765,
+     -6.5428
+    ],
+    "size": [
+     5.7484,
+     10.9096,
+     8.6729
+    ],
+    "colour": "322a40",
+    "joint": [
+     -2.5,
+     5.0,
+     -2.9
+    ]
+   },
+   "LeftArmSpikes": {
+    "offset": [
+     -4.6277,
+     11.3651,
+     -6.2925
+    ],
+    "size": [
+     1.0415,
+     1.2686,
+     1.3984
+    ],
+    "colour": "3a3247",
+    "follows": "LeftArm"
+   },
+   "LeftBackLeg": {
+    "offset": [
+     -6.7581,
+     5.0765,
+     0.3365
+    ],
+    "size": [
+     9.6912,
+     10.1096,
+     2.9954
+    ],
+    "colour": "322a40",
+    "joint": [
+     -2.5,
+     5.0,
+     -0.5
+    ]
+   },
+   "LeftBackLegSpikes": {
+    "offset": [
+     -6.3803,
+     10.5658,
+     0.481
+    ],
+    "size": [
+     1.5508,
+     1.2671,
+     0.6991
+    ],
+    "colour": "3a3247",
+    "follows": "LeftBackLeg"
+   },
+   "LeftHindLeg": {
+    "offset": [
+     -5.2939,
+     5.0765,
+     3.8416
+    ],
+    "size": [
+     7.0499,
+     10.1096,
+     7.7303
+    ],
+    "colour": "322a40",
+    "follows": "LeftBackLeg"
+   },
+   "LeftHindLegSpikes": {
+    "offset": [
+     -5.182,
+     10.5647,
+     3.6775
+    ],
+    "size": [
+     1.203,
+     1.2693,
+     1.2832
+    ],
+    "colour": "3a3247",
+    "follows": "LeftBackLeg"
+   },
+   "LeftLeg": {
+    "offset": [
+     -6.5335,
+     5.0765,
+     -3.1376
+    ],
+    "size": [
+     9.3518,
+     10.1096,
+     4.2721
+    ],
+    "colour": "322a40",
+    "joint": [
+     -2.5,
+     5.0,
+     -1.7
+    ]
+   },
+   "LeftLegSpikes": {
+    "offset": [
+     -6.2088,
+     10.5649,
+     -3.2079
+    ],
+    "size": [
+     1.5012,
+     1.269,
+     0.85
+    ],
+    "colour": "3a3247",
+    "follows": "LeftLeg"
+   },
+   "RightArm": {
+    "offset": [
+     4.6484,
+     5.4765,
+     -6.5428
+    ],
+    "size": [
+     5.7484,
+     10.9096,
+     8.6729
+    ],
+    "colour": "322a40",
+    "joint": [
+     2.5,
+     5.0,
+     -2.9
+    ]
+   },
+   "RightArmSpikes": {
+    "offset": [
+     4.6277,
+     11.3649,
+     -6.2948
+    ],
+    "size": [
+     1.0415,
+     1.2689,
+     1.4041
+    ],
+    "colour": "3a3247",
+    "follows": "RightArm"
+   },
+   "RightBackLeg": {
+    "offset": [
+     6.7581,
+     5.0765,
+     0.3365
+    ],
+    "size": [
+     9.6912,
+     10.1096,
+     2.9954
+    ],
+    "colour": "322a40",
+    "joint": [
+     2.5,
+     5.0,
+     -0.5
+    ]
+   },
+   "RightBackLegSpikes": {
+    "offset": [
+     6.3803,
+     10.5647,
+     0.4797
+    ],
+    "size": [
+     1.5508,
+     1.2693,
+     0.6961
+    ],
+    "colour": "3a3247",
+    "follows": "RightBackLeg"
+   },
+   "RightHindLeg": {
+    "offset": [
+     5.2939,
+     5.0765,
+     3.8416
+    ],
+    "size": [
+     7.0499,
+     10.1096,
+     7.7303
+    ],
+    "colour": "322a40",
+    "follows": "RightBackLeg"
+   },
+   "RightHindLegSpikes": {
+    "offset": [
+     5.182,
+     10.5657,
+     3.6749
+    ],
+    "size": [
+     1.203,
+     1.2675,
+     1.2768
+    ],
+    "colour": "3a3247",
+    "follows": "RightBackLeg"
+   },
+   "RightLeg": {
+    "offset": [
+     6.5335,
+     5.0765,
+     -3.1376
+    ],
+    "size": [
+     9.3518,
+     10.1096,
+     4.2721
+    ],
+    "colour": "322a40",
+    "joint": [
+     2.5,
+     5.0,
+     -1.7
+    ]
+   },
+   "RightLegSpikes": {
+    "offset": [
+     6.2088,
+     10.5657,
+     -3.2098
+    ],
+    "size": [
+     1.5012,
+     1.2674,
+     0.8545
+    ],
+    "colour": "3a3247",
+    "follows": "RightLeg"
+   },
+   "ThoraxPlate": {
+    "offset": [
+     -0.0,
+     6.65,
+     -1.4
+    ],
+    "size": [
+     3.8,
+     0.2,
+     3.9
+    ],
+    "colour": "463c58",
+    "follows": "Torso"
+   },
+   "Torso": {
+    "offset": [
+     -0.0,
+     5.1,
+     -1.3
+    ],
+    "size": [
+     5.4,
+     3.0,
+     5.2
+    ],
+    "colour": "322a40",
+    "joint": [
+     -0.0,
+     5.0,
+     -1.0
+    ]
+   }
+  },
+  "size": [
+   23.207,
+   14.07,
+   19.85
+  ],
+  "minZ": 0.022,
+  "maxZ": 14.091
+ }
+}

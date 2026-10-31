@@ -39,6 +39,9 @@
 
 local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Worlds = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("Worlds"))
 
 local PlayerDataService = {}
 
@@ -46,7 +49,9 @@ local STORE_NAME = "PlayerData"
 local VERSION = 1
 local AUTOSAVE = 60
 local RETRIES = 3
-local MAX_WORLD = 3
+-- the highest world a player can unlock: the last world in Config/Worlds (it was a fixed 3,
+-- which would have kept World 4's gate from unlocking it)
+local MAX_WORLD = Worlds.Order[#Worlds.Order]
 
 type Section = { load: (Player, any) -> (), save: (Player) -> any }
 type Profile = {

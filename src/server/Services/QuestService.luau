@@ -26,8 +26,10 @@
 -- (2026-10-19), falling back to Active like "give" if they are spent; a "gather"
 -- step counts what was already held when it was accepted and takes nothing at
 -- hand-in (issue 21, 2026-10-25, the user: logs already held count, so a player
--- who has them is rewarded straight away; it counted only rises after accepting). Every line hears every kill and coin, so two lines can
--- move at once.
+-- who has them is rewarded straight away; it counted only rises after accepting). A "hunt"
+-- step (2026-10-26) counts each of its kinds up to its own count; the kills are published
+-- (before Progress) as "QuestKills_<line>" ("Chicken=5,Bull=2") and saved with the line.
+-- Every line hears every kill and coin, so two lines can move at once.
 --
 -- Studio only: setting a player's "DevQuestStep_<lineId>" attribute (a step
 -- number) from the Server datamodel jumps them to that step, on offer, for
@@ -60,6 +62,8 @@ type State = {
 	step: number,
 	state: string,
 	progress: number,
+	-- a hunt step's kills per enemy (Config/Worlds id -> count)
+	kills: { [string]: number },
 	-- the Coins value last seen, so "earn" counts only rises
 	coinsSeen: number,
 }
@@ -78,8 +82,18 @@ end
 -- Progress and state go out before the step number: the client reacts to each
 -- attribute as it arrives, and a new step paired with the previous step's
 -- progress once made the tracker show a fresh step as already done.
+local function encodeKills(kills: { [string]: number }): string
+	local parts = {}
+	for enemy, n in kills do
+		table.insert(parts, enemy .. "=" .. n)
+	end
+	table.sort(parts)
+	return table.concat(parts, ",")
+end
+
 local function publish(player: Player, s: State)
 	local id = s.line.id
+	player:SetAttribute(Quests.attr("Kills", id), encodeKills(s.kills))
 	player:SetAttribute(Quests.attr("Progress", id), s.progress)
 	player:SetAttribute(Quests.attr("State", id), s.state)
 	player:SetAttribute(Quests.attr("Step", id), s.step)
@@ -105,6 +119,12 @@ local function refresh(player: Player, s: State)
 		local total = 0
 		for _, item in step.items or {} do
 			total += math.min(held[item.id] or 0, item.count)
+		end
+		s.progress = total
+	elseif step.kind == "hunt" then
+		local total = 0
+		for _, target in step.targets or {} do
+			total += math.min(s.kills[target.id] or 0, target.count)
 		end
 		s.progress = total
 	end
@@ -133,6 +153,13 @@ local function onKill(enemy: any, killer: Player?)
 		local step = s.line.steps[s.step]
 		if step and step.kind == "kill" and enemy.archetype == step.target then
 			addProgress(killer :: Player, s, 1)
+		elseif step and step.kind == "hunt" and s.state == "Active" then
+			for _, target in step.targets or {} do
+				if target.id == enemy.archetype and (s.kills[target.id] or 0) < target.count then
+					s.kills[target.id] = (s.kills[target.id] or 0) + 1
+					refresh(killer :: Player, s)
+				end
+			end
 		end
 	end
 end
@@ -216,6 +243,7 @@ local function accept(player: Player, s: State)
 	end
 	s.state = "Active"
 	s.progress = 0
+	s.kills = {}
 	s.coinsSeen = coins(player)
 	publish(player, s)
 	-- a level, coin or material goal can already be met
@@ -244,6 +272,7 @@ local function turnIn(player: Player, s: State, giver: Model?)
 	s.step += 1
 	s.state = if s.line.steps[s.step] then "Offer" else "Done"
 	s.progress = 0
+	s.kills = {}
 	-- every line's coin baseline moves past the payout
 	for _, other in states[player] or {} do
 		other.coinsSeen = coins(player)
@@ -272,7 +301,7 @@ end
 
 local function jumpTo(player: Player, s: State, step: any)
 	if type(step) == "number" and s.line.steps[step] then
-		s.step, s.state, s.progress, s.coinsSeen = step, "Offer", 0, coins(player)
+		s.step, s.state, s.progress, s.kills, s.coinsSeen = step, "Offer", 0, {}, coins(player)
 		publish(player, s)
 	end
 end
@@ -290,7 +319,7 @@ function QuestService.setStep(player: Player, lineId: any, step: any): (number?,
 	step = math.clamp(math.floor(step), 1, n + 1)
 	s.step = step
 	s.state = if step > n then "Done" else "Offer"
-	s.progress, s.coinsSeen = 0, coins(player)
+	s.progress, s.kills, s.coinsSeen = 0, {}, coins(player)
 	publish(player, s)
 	backfillItems(player, s)
 	return step, step > n
@@ -311,7 +340,7 @@ local function onPlayer(player: Player)
 	for _, id in Quests.order do
 		local line = Quests.get(id)
 		if line then
-			local s: State = { line = line, step = 1, state = "Offer", progress = 0, coinsSeen = coins(player) }
+			local s: State = { line = line, step = 1, state = "Offer", progress = 0, kills = {}, coinsSeen = coins(player) }
 			lines[id] = s
 			publish(player, s)
 		end
@@ -366,6 +395,12 @@ local function loadLine(player: Player, s: State, value: any)
 	s.step = if finished then #s.line.steps + 1 else value.step
 	s.state = if finished then "Done" elseif value.state == "Active" or value.state == "Ready" then value.state else "Offer"
 	s.progress = if type(value.progress) == "number" then value.progress else 0
+	s.kills = {}
+	if type(value.kills) == "string" then
+		for enemy, n in value.kills:gmatch("(%w+)=(%d+)") do
+			s.kills[enemy] = tonumber(n) or 0
+		end
+	end
 	s.coinsSeen = coins(player)
 	publish(player, s)
 	refresh(player, s)
@@ -404,6 +439,7 @@ function QuestService.init(injected: any)
 						step = step,
 						state = player:GetAttribute(Quests.attr("State", id)),
 						progress = player:GetAttribute(Quests.attr("Progress", id)),
+						kills = player:GetAttribute(Quests.attr("Kills", id)),
 					}
 				end
 			end

@@ -88,6 +88,10 @@ local World: WorldTypes.WorldDef = {
 	-- comes back after the same time in its world; bosses and the secret enemy
 	-- after `boss` / `secret`. A spawn marker's RespawnSeconds attribute still wins.
 	respawn = { small = 10, medium = 15, elite = 20, boss = 30, secret = 30 },
+	-- enemies start an attack this far past their front: only the Quarterstaff (11) and the Heartwood Staff (10.5) hit from beyond it, with a stud or two to spare (2026-10-28; a stud shorter the same day, the user: a touch too far)
+	attackStart = 9,
+	-- every enemy here chases at its own speed x this (2026-10-28: faster every world)
+	chaseScale = 1.4,
 
 	enemies = {
 		-- Minion: quick and common, at the front of both lanes
@@ -97,17 +101,19 @@ local World: WorldTypes.WorldDef = {
 			tier = "small",
 			name = "Snarling Fox",
 			portrait = "rbxassetid://102792357956654", -- calm face (2026-10-11)
-			hp = 800, -- x10 the Chicken (2026-10-24); 904 before
+			hp = 1020, -- x10 the Chicken (2026-10-24); 904 before
 			-- Quick pounces with a snap at the end.
-			melee = { damage = 80, cooldown = 1.0, windup = 0.5, range = 1.5, chaseSpeed = 17, armor = 0, move = "pounce" },
-			coins = { min = 35, max = 70 },
-			exp = 60,
+			melee = { damage = 143, cooldown = 0.6, windup = 0.25, range = 1.5, chaseSpeed = 17, armor = 0, move = "pounce" },
+			coins = { min = 44, max = 88 },
+			exp = 47,
 			drops = {
-				{ weapon = "Hatchet", chance = 0.20 },
-				{ weapon = "Cleaver", chance = 0.05 },
+				-- (2026-10-27) World 1's pattern: a common drop for this tier, one that just beats the next, a rare one that beats it easily
+				{ weapon = "Hatchet", chance = 0.25 },
+				{ weapon = "Quarterstaff", chance = 0.08 },
+				{ weapon = "Cleaver", chance = 0.015 },
 			},
 			-- crafting materials (Config/Materials): the first armour set
-			materials = { { id = "FoxFur", chance = 0.5, min = 1, max = 2 } },
+			materials = { { id = "FoxFur", chance = 0.5, min = 1, max = 1 } },
 		},
 		-- Tough minion: armoured hide and a tusk charge
 		-- (ServerStorage/Assets/Enemies/Boar).
@@ -116,16 +122,16 @@ local World: WorldTypes.WorldDef = {
 			tier = "medium",
 			name = "Wild Boar",
 			portrait = "rbxassetid://105726195455752", -- calm face (2026-10-11)
-			hp = 1900, -- x10 the Bull (2026-10-24); 2,144 before
-			melee = { damage = 159, cooldown = 1.8, windup = 0.55, range = 1.5, chaseSpeed = 15, armor = 0.1, move = "charge" },
-			coins = { min = 65, max = 135 },
-			exp = 110,
+			hp = 3430, -- x10 the Bull (2026-10-24); 2,144 before
+			melee = { damage = 163, cooldown = 1.1, windup = 0.3, range = 1.5, chaseSpeed = 15, armor = 0.1, move = "charge" },
+			coins = { min = 81, max = 169 },
+			exp = 86,
 			drops = {
-				{ weapon = "Cleaver", chance = 0.20 },
-				{ weapon = "Quarterstaff", chance = 0.15 },
-				{ weapon = "Mace", chance = 0.08 },
+				{ weapon = "Cleaver", chance = 0.15 },
+				{ weapon = "Mace", chance = 0.05 },
+				{ weapon = "HoneycombHammer", chance = 0.01 },
 			},
-			materials = { { id = "BoarTusk", chance = 0.5, min = 1, max = 2 } },
+			materials = { { id = "BoarTusk", chance = 0.5, min = 1, max = 1 } },
 		},
 		-- Elite: one at the far end of each lane; rears up for a two-paw slam
 		-- (ServerStorage/Assets/Enemies/Bear).
@@ -134,17 +140,17 @@ local World: WorldTypes.WorldDef = {
 			tier = "elite",
 			name = "Grizzly Bear",
 			portrait = "rbxassetid://117018743106247", -- calm face (2026-10-11)
-			hp = 2600, -- x10 the Stallion (2026-10-24); 2,928 before
-			melee = { damage = 266, cooldown = 2.4, windup = 0.78, range = 1.6, chaseSpeed = 13, armor = 0.15, move = "slam" },
-			coins = { min = 95, max = 190 },
-			exp = 160,
+			hp = 5690, -- x10 the Stallion (2026-10-24); 2,928 before
+			melee = { damage = 393, cooldown = 1.4, windup = 0.35, range = 1.6, chaseSpeed = 13, armor = 0.15, move = "slam" },
+			coins = { min = 119, max = 238 },
+			exp = 125,
 			drops = {
-				{ weapon = "Mace", chance = 0.15 },
-				{ weapon = "WoodsmansAxe", chance = 0.10 },
-				{ weapon = "Greatclub", chance = 0.08 },
+				{ weapon = "HoneycombHammer", chance = 0.1 },
+				{ weapon = "Greatclub", chance = 0.03 },
+				{ weapon = "WoodsmansAxe", chance = 0.005 },
 			},
 			-- the second armour set
-			materials = { { id = "BearClaw", chance = 0.4, min = 1, max = 1 } },
+			materials = { { id = "BearClaw", chance = 0.5, min = 1, max = 1 } },
 		},
 		-- SECRET (2026-10-12): the Fairy of the hollow stump. Found by looking through the
 		-- lookout telescope at the fairy ring, then standing in the ring for 5 s. A small
@@ -155,14 +161,14 @@ local World: WorldTypes.WorldDef = {
 		Fairy = {
 			id = "Fairy",
 			name = "Fairy",
-			hp = 3600, -- x10 the Corn Wraith (2026-10-24); 4,056 before
+			hp = 6320, -- x10 the Corn Wraith (2026-10-24); 4,056 before
 			secret = true,
 			adminPortrait = "rbxassetid://128352315360379", -- admin panel only, never the Index (2026-10-17)
-			melee = { damage = 199, cooldown = 1.6, windup = 0.45, range = 2.2, chaseSpeed = 18, armor = 0.1, move = "zap" },
-			coins = { min = 135, max = 265 },
-			exp = 225,
-			-- the Forest Core: about 1%, once per player (trial numbers)
-			materials = { { id = "ForestCore", chance = 0.01, min = 1, max = 1 } },
+			melee = { damage = 255, cooldown = 1, windup = 0.25, range = 2.2, chaseSpeed = 18, armor = 0.1, move = "zap" },
+			coins = { min = 169, max = 331 },
+			exp = 176,
+			-- the Forest Core: 0.1% x luck, once per player (2026-10-29)
+			materials = { { id = "ForestCore", chance = 0.001, min = 1, max = 1 } },
 		},
 	},
 
@@ -173,19 +179,18 @@ local World: WorldTypes.WorldDef = {
 			id = "ElderTreant",
 			name = "Elder Treant",
 			portrait = "rbxassetid://98505547017601", -- calm face (2026-10-11)
-			hp = 4000, -- x10 the Scarecrow King (2026-10-24); 4,504 before
+			hp = 8320, -- x10 the Scarecrow King (2026-10-24); 4,504 before
 			-- Two attacks, picked 50/50, same damage and timing (user, 2026-10-11): the
 			-- knee-up stomp and an overhead double-arm smash.
-			melee = { damage = 293, cooldown = 2.4, windup = 0.72, range = 1.5, chaseSpeed = 10, armor = 0.2, move = "stomp", moves = { "stomp", "smash" } },
-			coins = { min = 410, max = 815 },
-			exp = 690,
+			melee = { damage = 511, cooldown = 1.4, windup = 0.35, range = 1.5, chaseSpeed = 10, armor = 0.2, move = "stomp", moves = { "stomp", "smash" } },
+			coins = { min = 512, max = 1019 },
+			exp = 541,
 			drops = {
-				{ weapon = "WoodsmansAxe", chance = 0.20 },
-				{ weapon = "Greatclub", chance = 0.20 },
+				{ weapon = "WoodsmansAxe", chance = 0.08 },
 				-- Legendary: the treant's living heart
-				{ weapon = "HeartwoodStaff", chance = 0.05 },
+				{ weapon = "HeartwoodStaff", chance = 0.015 },
 				-- the secret Marshmallow Stick (hidden in the Index until found)
-				{ weapon = "MarshmallowStick", chance = 0.001 }, -- secrets drop at 0.1% (the user's rule); 2% until 2026-10-20
+				{ weapon = "MarshmallowStick", chance = 0.0005 }, -- (2026-10-29, the user) each world's secret rarer than the last
 			},
 			materials = { { id = "HeartwoodSap", chance = 0.5, min = 1, max = 1 } },
 		},

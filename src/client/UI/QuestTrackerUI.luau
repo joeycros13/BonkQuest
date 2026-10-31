@@ -18,13 +18,20 @@
 --               A gather / bring step's tool phase (Quests.toolNeeded, 2026-10-21)
 --               shows "BUY A Wooden Axe" / "UPGRADE TO A Stone Axe", the tool's
 --               icon and "at the Weaponsmith" until the tool is owned
---   Chips       a "bring" step with several materials (2026-10-19, option A on the
+--   Chips       a "bring" step with several materials, or a "hunt" step with several enemies
+--               (2026-10-26: the enemy's portrait in the chip) (2026-10-19, option A on the
 --               Quest Tracker Materials canvas): instead of Count, one clone of
 --               QuestTracker/Templates/MaterialChip per item (Icon, Count "5/8" in
 --               its Format), coloured from its ShortFill / ShortText / DoneFill /
---               DoneText attributes; the badge shows the first item still short
---   Reward      the gold tab under the card: Caption, Coins / Exp (Icon, Amount) and
---               Item (Icon: the quest item or weapon), what this step pays
+--               DoneText attributes; the badge shows the first item still short.
+--               Hardest first, left to right (Quests.ranked: the boss, then the elite...;
+--               Stone before Oak Logs), on a UIGridLayout: chips that don't fit one row
+--               wrap onto the next, and the card grows to hold them (fitCard: Pill and
+--               PillLip get taller and Reward moves down by the extra rows; 2026-10-26,
+--               the user: the Clean Up's four enemies ran off the card)
+--   Reward      the gold tab under the card: Coins / Exp chips (Icon, Amount; centred rows) and
+--               Item (Icon: the quest item or weapon), what this step pays. No "Reward"
+--               caption since 2026-10-26 (the user: it spilled out of the tab)
 --   Guide       turns the guide arrow on / off (GuideController); shown only
 --               when there is somewhere to point. While held down it sits
 --               pressed into its lip (GuideLip) and darkens by PressDarken,
@@ -120,19 +127,17 @@ local function iconFor(line: Quests.Line, step: Quests.Step, ready: boolean): st
 	elseif step.kind == "kill" then
 		local def = Enemies.get(step.target or "")
 		return if def and def.portrait then def.portrait else ""
+	elseif step.kind == "hunt" then
+		-- the toughest kind still short, then the next (Quests.focus)
+		local def = Enemies.get(Quests.focus(step, Quests.huntKills(player, line.id)) or "")
+		return if def and def.portrait then def.portrait else ""
 	elseif step.kind == "level" then
 		return attr("LevelIcon") or ""
 	elseif Quests.material(step) then
 		local id = Quests.material(step)
 		if step.kind == "bring" then
-			-- the first item still short
-			local held = Materials.counts(player)
-			for _, item in step.items or {} do
-				if (held[item.id] or 0) < item.count then
-					id = item.id
-					break
-				end
-			end
+			-- the rarest item still short, then the next (Quests.focus)
+			id = Quests.focus(step, nil, Materials.counts(player)) or id
 		end
 		local def = Materials.get(id)
 		return def and def.icon or ""
@@ -248,7 +253,29 @@ local function renderReward(frame: Frame, step: Quests.Step)
 end
 
 -- One chip per material of a "bring" step: its icon and "held/needed", green once met.
-local function renderChips(chips: Instance, items: { { id: string, count: number } })
+-- One chip per thing a "bring" step needs (its material's icon) or a "hunt" step must defeat
+-- (the enemy's portrait): "have/needed", green once met.
+type Chip = { id: string, icon: string, have: number, need: number }
+
+local function chipsFor(line: Quests.Line, step: Quests.Step): { Chip }
+	local out: { Chip } = {}
+	if step.kind == "bring" then
+		local held = Materials.counts(player)
+		for _, item in Quests.ranked(step) do
+			local def = Materials.get(item.id)
+			table.insert(out, { id = item.id, icon = def and def.icon or "", have = held[item.id] or 0, need = item.count })
+		end
+	elseif step.kind == "hunt" then
+		local kills = Quests.huntKills(player, line.id)
+		for _, target in Quests.ranked(step) do
+			local def = Enemies.get(target.id)
+			table.insert(out, { id = target.id, icon = def and def.portrait or "", have = kills[target.id] or 0, need = target.count })
+		end
+	end
+	return out
+end
+
+local function renderChips(chips: Instance, items: { Chip })
 	local gui = chips:FindFirstAncestorWhichIsA("ScreenGui")
 	local templates = gui and gui:FindFirstChild("Templates")
 	local template = templates and templates:FindFirstChild("MaterialChip")
@@ -268,23 +295,45 @@ local function renderChips(chips: Instance, items: { { id: string, count: number
 	if not template then
 		return
 	end
-	local held = Materials.counts(player)
 	for index, item in items do
 		local chip = chips:FindFirstChild(item.id) :: any
 		if not chip then
 			chip = template:Clone()
 			chip.Name = item.id
 			chip.Visible = true
-			local def = Materials.get(item.id)
-			chip.Icon.Image = def and def.icon or ""
 			chip.Parent = chips
 		end
+		chip.Icon.Image = item.icon
 		chip.LayoutOrder = index
-		local have = math.min(held[item.id] or 0, item.count)
-		local met = have >= item.count
+		local have = math.min(item.have, item.need)
+		local met = have >= item.need
 		chip.BackgroundColor3 = template:GetAttribute(if met then "DoneFill" else "ShortFill") or chip.BackgroundColor3
 		chip.Count.TextColor3 = template:GetAttribute(if met then "DoneText" else "ShortText") or chip.Count.TextColor3
-		chip.Count.Text = (template:GetAttribute("Format") or "%s/%s"):format(Format.commas(have), Format.commas(item.count))
+		chip.Count.Text = (template:GetAttribute("Format") or "%s/%s"):format(Format.commas(have), Format.commas(item.need))
+	end
+end
+
+-- The card as authored (one row of chips); fitCard grows it by the rows past the first.
+local cardBase: { [GuiObject]: UDim2 } = {}
+
+local function fitCard()
+	local frame = tracker
+	local chips = frame and frame:FindFirstChild("Chips")
+	if not (frame and chips and chips:IsA("GuiObject")) then
+		return
+	end
+	local grid = chips:FindFirstChildWhichIsA("UIGridLayout")
+	local extra = 0
+	if chips.Visible and grid and frame.AbsoluteSize.Y > 0 then
+		local oneRow = grid.CellSize.Y.Scale * chips.AbsoluteSize.Y + grid.CellSize.Y.Offset
+		extra = math.max(0, grid.AbsoluteContentSize.Y - oneRow) / frame.AbsoluteSize.Y
+	end
+	for piece, base in cardBase do
+		if piece.Name == "Reward" then
+			piece.Position = base + UDim2.fromScale(0, extra)
+		else
+			piece.Size = base + UDim2.fromScale(0, extra)
+		end
 	end
 end
 
@@ -387,12 +436,14 @@ local function render()
 	targetLabel.Text = name
 	local countLabel = frame:FindFirstChild("Count") :: TextLabel
 	local chips = frame:FindFirstChild("Chips")
-	local byItem = not ready and not tool and step.kind == "bring" and chips ~= nil and #(step.items or {}) > 1
+	local list = if ready or tool then {} else chipsFor(line, step)
+	local byItem = chips ~= nil and #list > 1
 	countLabel.Visible = not byItem
 	if chips and chips:IsA("GuiObject") then
 		chips.Visible = byItem
-		renderChips(chips, if byItem then step.items or {} else {})
+		renderChips(chips, if byItem then list else {})
 	end
+	fitCard()
 	if ready then
 		countLabel.Text = line.returnNote
 	elseif tool then
@@ -428,12 +479,28 @@ function QuestTrackerUI.start()
 		return
 	end
 	tracker = frame
+	for _, name in { "Pill", "PillLip" } do
+		local piece = frame:FindFirstChild(name)
+		if piece and piece:IsA("GuiObject") then
+			cardBase[piece] = piece.Size
+		end
+	end
+	local rewardTab = frame:FindFirstChild("Reward")
+	if rewardTab and rewardTab:IsA("GuiObject") then
+		cardBase[rewardTab] = rewardTab.Position
+	end
+	local chipsFrame = frame:FindFirstChild("Chips")
+	local chipGrid = chipsFrame and chipsFrame:FindFirstChildWhichIsA("UIGridLayout")
+	if chipGrid then
+		chipGrid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(fitCard)
+	end
+	frame:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitCard)
 	ringValue.Changed:Connect(function(value: number)
 		shownProgress = value
 		setRing(value)
 	end)
 	for _, id in Quests.order do
-		for _, field in { "Step", "State", "Progress" } do
+		for _, field in { "Step", "State", "Progress", "Kills" } do
 			player:GetAttributeChangedSignal(Quests.attr(field, id)):Connect(refresh)
 		end
 	end

@@ -14,14 +14,17 @@
 --   * Owns none: "Needs a Wooden Axe / Buy one at the Weaponsmith", or "Craft it at the
 --     Weaponsmith" when the needed tool is made from a recipe (World 2's tools and up; the
 --     user: they're crafted, not bought).
+--   * A tool swung at an enemy (2026-10-26, the user): "Use your weapon!" with the hotbar
+--     weapon's picture and how to take it out ("Press 1 for your Machete"), its slot shaking.
 -- Every word is an attribute on ReplicatedStorage/Assets/UI/NeedPop: NeedsFormat, PressFormat,
--- TapFormat, EquipFormat, UpgradeText, BuyText, CraftText.
+-- TapFormat, EquipFormat, UpgradeText, BuyText, CraftText, WeaponText.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 
 local Tools = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("Tools"))
+local Weapons = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("Weapons"))
 
 local ToolHint = {}
 
@@ -121,6 +124,25 @@ function ToolHint.show(at: Vector3, kind: string, tier: number)
 		icon = needed and needed.icon
 	end
 	deps.Util.BonkPop.need(at, top, hint, icon)
+end
+
+-- A tool swung at an enemy: tell the player to take their weapon out, with the hotbar weapon's
+-- picture (the selected one, the Dagger at least) at the spot struck.
+function ToolHint.weapon(at: Vector3)
+	local player = Players.LocalPlayer
+	local selected = player:GetAttribute("SelectedWeapon")
+	local def = (if type(selected) == "string" then Weapons.get(selected) else nil) or Weapons.get(Weapons.default)
+	local name = if def then def.name else "weapon"
+	local using = device()
+	local hint = if using == "Touch"
+		then words("TapFormat", "Tap your %s"):format(name)
+		elseif using == "Gamepad" then words("EquipFormat", "Equip your %s"):format(name)
+		else words("PressFormat", "Press %s for your %s"):format("1", name)
+	local HotbarUI = deps and deps.UI and deps.UI.HotbarUI
+	if HotbarUI then
+		HotbarUI.nudge("Weapon", false, popSeconds())
+	end
+	deps.Util.BonkPop.need(at, words("WeaponText", "Use your weapon!"), hint, def and def.icon)
 end
 
 -- A rod cast that landed on dry ground (2026-10-25, the user: the same pop): NeedPop at the

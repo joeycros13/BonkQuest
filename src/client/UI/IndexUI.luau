@@ -401,11 +401,8 @@ local function recipeRow(rowTemplate: GuiObject, ingredient: Armor.Ingredient): 
 	if source and source.quest then
 		setText(row, "Chance", attribute(rowTemplate, "QuestText", "Quest"), attribute(rowTemplate, "Color_Legendary", nil))
 	else
-		-- an enemy drop shows this player's luck (cores never take luck; fish odds aren't drops)
+		-- luck never changes a material's chance (MaterialService, 2026-10-26)
 		local chance = source and source.chance
-		if chance and not (mat.core or mat.fished or mat.gathered) then
-			chance = luckyChance(chance)
-		end
 		setText(row, "Chance", if chance then Index.percent(chance) else "", attribute(rowTemplate, "ChanceColor", nil))
 	end
 	return row
@@ -636,7 +633,7 @@ local function renderWeaponSlip(slip: Instance, def: any)
 			local world = worldOfEnemy(source.enemy :: string)
 			setText(row, "WeaponName", enemy.name, attribute(rowTemplate, "NameColor", nil))
 			setText(row, "Rarity", if world then world.name else "", attribute(rowTemplate, "SourceColor", nil))
-			setText(row, "Chance", Index.percent(luckyChance(source.chance or 0)), attribute(rowTemplate, "ChanceColor", nil))
+			setText(row, "Chance", Index.percent(source.chance or 0), attribute(rowTemplate, "ChanceColor", nil))
 		else
 			row:Destroy()
 			continue

@@ -38,10 +38,14 @@ local CONTROLLER_ORDER = {
 	"EnemyAnimator",
 	"CritterController",
 	"SprintController",
+	-- our own shift lock on Ctrl (Roblox's is off)
+	"ShiftLockController",
 	-- Before WeaponController: both pose joints each frame, and the weapon arm and
 	-- swings must win over the idle / walk / sprint pose.
 	"PlayerAnimator",
 	"WeaponController",
+	-- the flail's chain, after the weapon is placed
+	"FlailController",
 	"LootController",
 	"SpinnerController",
 	"FlowController",
@@ -63,6 +67,10 @@ local CONTROLLER_ORDER = {
 	"InfuserController",
 	-- World 3's secret: the three breathing crystals and their colour code
 	"SecretCrystalController",
+	-- the secret rooms' plaques: the core's shadow until you have it, then the core
+	"SecretPlaqueController",
+	-- World 4's secret tomb: its traps, the quicksand sink and the shortcut tablet (Config/Tomb)
+	"TombController",
 	-- trees and rocks you break with your weapon for materials
 	"GatherController",
 	-- casting, the bobber and the line, bites and the reel-in (FishingBarUI draws the reel bar)

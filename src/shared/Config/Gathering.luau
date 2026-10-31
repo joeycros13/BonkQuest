@@ -27,6 +27,9 @@
 
 -- World scale (2026-10-23, Config/Leveling): node health x2 / x8 for Worlds 1 / 2, like the tools'
 -- power (Config/Tools).
+-- One of a node's main material a break since 2026-10-26 (was 2-3; the user: wood and stone came too
+-- easily and in big bunches; gathering should matter as much as fighting). The rare extras (Amber Sap,
+-- Raw Gem) keep their chance. The quests, armour and gates ask for more of them (art/tools/balance/rescale.py).
 
 local Gathering = {}
 
@@ -53,7 +56,9 @@ Gathering.reachSlack = 3
 
 Gathering.Nodes = {
 	-- ==================== World 1 (The Sunny Meadows) ====================
-	-- The Wooden Axe / Pickaxe (power 10) fell an oak in 5 hits and break a boulder in 6.
+	-- The Wooden Axe / Pickaxe (power 10) fell an oak or break a boulder in 5 hits (2026-10-26, the user:
+	-- both 50 HP, the tools 10 a hit; the x2 world scale had made them 100 / 120 and 20). One drop a break,
+	-- always.
 	OakTree = {
 		id = "OakTree",
 		name = "Oak Tree",
@@ -61,10 +66,10 @@ Gathering.Nodes = {
 		verb = "Chop",
 		tool = "Axe",
 		tier = 1,
-		hp = 100,
+		hp = 40,
 		respawn = 45,
 		drops = {
-			{ id = "OakLog", min = 2, max = 3, chance = 1 },
+			{ id = "OakLog", min = 1, max = 1, chance = 1 },
 		},
 	},
 	Boulder = {
@@ -74,10 +79,10 @@ Gathering.Nodes = {
 		verb = "Mine",
 		tool = "Pickaxe",
 		tier = 1,
-		hp = 120,
+		hp = 40,
 		respawn = 45,
 		drops = {
-			{ id = "Stone", min = 2, max = 3, chance = 1 },
+			{ id = "Stone", min = 1, max = 1, chance = 1 },
 		},
 	},
 	-- ==================== World 2 (The Redwood Forest) ====================
@@ -90,17 +95,17 @@ Gathering.Nodes = {
 		verb = "Chop",
 		tool = "Axe",
 		tier = 2,
-		hp = 1000,
+		hp = 800,
 		respawn = 45,
 		drops = {
-			{ id = "RedwoodLog", min = 2, max = 3, chance = 1 },
+			{ id = "RedwoodLog", min = 1, max = 1, chance = 1 },
 			{ id = "AmberSap", min = 1, max = 1, chance = 0.1 },
 		},
 	},
 	-- ==================== World 3 (The Crystal Caverns) ====================
 	-- (2026-10-24, the user's design) Mining only: both need the Crystal Pickaxe (power 2,000),
 	-- an Ore Rock in 6 hits like World 1's boulder and a cluster in 5. Models: Blender
-	-- w3_gather_build, art/meshes/w3_gathering.fbx (a grey rock with orange ore veins and nuggets;
+	-- w3_gather_build, art/meshes/w3/w3_gathering.fbx (a grey rock with orange ore veins and nuggets;
 	-- a rounded rock with cyan, pink and purple crystals and a pink gem), unlike the cave's
 	-- decoration ores and crystals. The Raw Gem is the cluster's rare drop (placeholder 10%).
 	OreRock = {
@@ -110,10 +115,10 @@ Gathering.Nodes = {
 		verb = "Mine",
 		tool = "Pickaxe",
 		tier = 3,
-		hp = 12000,
+		hp = 8000,
 		respawn = 45,
 		drops = {
-			{ id = "IronOre", min = 2, max = 3, chance = 1 },
+			{ id = "IronOre", min = 1, max = 1, chance = 1 },
 		},
 	},
 	CrystalCluster = {
@@ -123,11 +128,45 @@ Gathering.Nodes = {
 		verb = "Mine",
 		tool = "Pickaxe",
 		tier = 3,
-		hp = 10000,
+		hp = 8000,
 		respawn = 45,
 		drops = {
-			{ id = "CrystalShard", min = 2, max = 3, chance = 1 },
+			{ id = "CrystalShard", min = 1, max = 1, chance = 1 },
 			{ id = "RawGem", min = 1, max = 1, chance = 0.1 },
+		},
+	},
+	-- ==================== World 4 (The Scorching Sands) ====================
+	-- (2026-10-28) A saguaro to chop (the Sandstone Axe) and a dig pile to dig (the Sandstone Shovel,
+	-- the game's first shovel), each in 4 hits at power 20,000 like every node (rescale.HITS_PER_NODE).
+	-- Models: Blender w4_deco_build, Assets/Gathering/Saguaro (a pale notch on its front, a pink
+	-- flower; the stump as Remains) and DigPile (a stepped mound with a red X; the dug hole as Remains).
+	-- The dig pile's extras: an Old Coin (placeholder 25%) and the rare Golden Scarab (10%).
+	Saguaro = {
+		id = "Saguaro",
+		name = "Saguaro",
+		world = 4,
+		verb = "Chop",
+		tool = "Axe",
+		tier = 4,
+		hp = 80000,
+		respawn = 45,
+		drops = {
+			{ id = "CactusRib", min = 1, max = 1, chance = 1 },
+		},
+	},
+	DigPile = {
+		id = "DigPile",
+		name = "Dig Pile",
+		world = 4,
+		verb = "Dig",
+		tool = "Shovel",
+		tier = 4,
+		hp = 80000,
+		respawn = 45,
+		drops = {
+			{ id = "Fossil", min = 1, max = 1, chance = 1 },
+			{ id = "OldCoin", min = 1, max = 1, chance = 0.25 },
+			{ id = "GoldenScarab", min = 1, max = 1, chance = 0.1 },
 		},
 	},
 } :: { [string]: NodeDef }

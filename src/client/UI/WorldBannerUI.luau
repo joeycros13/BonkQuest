@@ -3,11 +3,12 @@
 -- the player walks into a different world, and once when they join (user's
 -- request, 2026-10-11).
 --
--- Which world the player is in comes from where they stand: each world's
--- footprint is the X/Z box of its Workspace.Worlds.<folder>/Ground parts (a Ground child marked
--- `Secret`, a secret room far off the world, is left out; a player in one has no world)
--- (ignoring huge base plates like World 1's 2048-stud Baseplate), checked
--- smallest box first. Outside every box (a gate's doorway) the last world holds.
+-- Which world the player is in comes from the ground under their feet: a ray down from the
+-- root into every world's Workspace.Worlds.<folder>/Ground (as WorldGuardService does on the
+-- server). Over no ground (mid-air, a gate's doorway) or over a secret room's floor (a Ground
+-- child marked `Secret`, far off its world; a player in one has no world) the last world holds.
+-- (Until 2026-10-26 it used each world's X/Z box of its Ground parts, smallest first; World 4
+-- is turned 45 degrees, so its box covered World 2's south-west corner and the other way round.)
 -- The world is also published on the local player as "CurrentWorld" (client-only;
 -- Config/Quests' Quests.tracked picks the tracker's questline by it).
 --
@@ -28,24 +29,28 @@ local WorldBannerUI = {}
 
 -- the words above the name (UI text lives in code)
 local SUBTITLE = "World %d"
--- ground parts wider than this are base plates, not the world's footprint
-local BASEPLATE = 400
 local CHECK_EVERY = 0.4
+local RAY_DOWN = 80 -- studs below the root the ground is looked for (WorldGuardService's)
 
 local player = Players.LocalPlayer
 local deps: any = nil
 local gui: ScreenGui? = nil
 
-type Area = { id: number, minX: number, maxX: number, minZ: number, maxZ: number, size: number }
-local areas: { Area } = {}
+type Ground = { folder: Instance, world: number, secret: { Instance } }
+local grounds: { Ground } = {}
+local params = RaycastParams.new()
+params.FilterType = Enum.RaycastFilterType.Include
 
 local function number(name: string, fallback: number): number
 	local value = gui and gui:GetAttribute(name)
 	return if type(value) == "number" then value else fallback
 end
 
+-- Every world's Ground folder, with its secret rooms' floors (a Ground child with the Secret
+-- attribute: the Corn Wraith cellar, the Fairy's stump room), which belong to no world.
 local function measure()
-	areas = {}
+	table.clear(grounds)
+	local list = {}
 	local root = workspace:FindFirstChild("Worlds")
 	for _, id in Worlds.Order do
 		local def = Worlds.get(id)
@@ -54,44 +59,36 @@ local function measure()
 		if not ground then
 			continue
 		end
-		local minX, maxX, minZ, maxZ = math.huge, -math.huge, math.huge, -math.huge
-		-- a secret room's floor (a Ground child with the Secret attribute: the Corn Wraith cellar,
-		-- the Fairy's stump room) floats far off its world (2026-10-20), so it never counts
 		local secret = {}
 		for _, child in ground:GetChildren() do
 			if child:GetAttribute("Secret") then
 				table.insert(secret, child)
 			end
 		end
-		local function inSecret(part: Instance): boolean
-			for _, folder in secret do
-				if part:IsDescendantOf(folder) then
-					return true
-				end
-			end
-			return false
-		end
-		for _, part in ground:GetDescendants() do
-			if part:IsA("BasePart") and part.Size.X < BASEPLATE and part.Size.Z < BASEPLATE and not inSecret(part) then
-				local p, h = part.Position, part.Size / 2
-				minX, maxX = math.min(minX, p.X - h.X), math.max(maxX, p.X + h.X)
-				minZ, maxZ = math.min(minZ, p.Z - h.Z), math.max(maxZ, p.Z + h.Z)
-			end
-		end
-		if minX < maxX then
-			table.insert(areas, { id = id, minX = minX, maxX = maxX, minZ = minZ, maxZ = maxZ, size = (maxX - minX) * (maxZ - minZ) })
-		end
+		table.insert(grounds, { folder = ground, world = id, secret = secret })
+		table.insert(list, ground)
 	end
-	-- the smallest box wins where two overlap
-	table.sort(areas, function(a, b)
-		return a.size < b.size
-	end)
+	params.FilterDescendantsInstances = list
 end
 
+-- a ray straight down an exact seam between two ground parts (World 4's corridor slabs meet
+-- along the corridor's centre line) can slip between them, so a miss tries once more just aside
+local NUDGE = Vector3.new(0.13, 0, 0.07)
+
 local function worldAt(pos: Vector3): number?
-	for _, area in areas do
-		if pos.X >= area.minX and pos.X <= area.maxX and pos.Z >= area.minZ and pos.Z <= area.maxZ then
-			return area.id
+	local hit = workspace:Raycast(pos, Vector3.new(0, -RAY_DOWN, 0), params)
+		or workspace:Raycast(pos + NUDGE, Vector3.new(0, -RAY_DOWN, 0), params)
+	if not hit then
+		return nil
+	end
+	for _, g in grounds do
+		if hit.Instance:IsDescendantOf(g.folder) then
+			for _, room in g.secret do
+				if hit.Instance:IsDescendantOf(room) then
+					return nil
+				end
+			end
+			return g.world
 		end
 	end
 	return nil

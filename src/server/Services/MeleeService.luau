@@ -28,8 +28,10 @@
 --
 -- Fighting back. A hit enemy leaves its client-side wander and becomes a Fight
 -- owned here: it chases its attacker, stops just inside its attack range, and
--- attacks on its own cooldown. An attack lands after the enemy's windup only if
--- the player is still in reach, so stepping back dodges it. If the enemy or its
+-- attacks on its own cooldown. Through its windup it lunges after the player
+-- (Balance.Melee.lungeScale) and the blow reaches dodgeSlack past its range, so
+-- an attack that starts in reach all but always lands (the user, 2026-10-28:
+-- players dodged every attack with shift lock). If the enemy or its
 -- target strays past Balance.Melee.leashRange from the spawn point -- or the
 -- target dies or leaves -- it walks home (immune on the way) and
 -- heals to full. Damage to players goes through Humanoid:TakeDamage, so dying is
@@ -59,6 +61,7 @@ local Balance = require(Config:WaitForChild("Balance"))
 local Enemies = require(Config:WaitForChild("Enemies"))
 local MapLayout = require(Config:WaitForChild("MapLayout"))
 local Weapons = require(Config:WaitForChild("Weapons"))
+local Worlds = require(Config:WaitForChild("Worlds"))
 local Tools = require(Config:WaitForChild("Tools"))
 -- the Worldheart Blade's damage / speed / reach follow the cores in it (Infuse.adjust)
 local Infuse = require(Config:WaitForChild("Infuse"))
@@ -124,6 +127,8 @@ type Fight = {
 	target: Player,
 	nextAttack: number,
 	busyUntil: number,
+	-- until the attack lands the enemy keeps lunging at its target (os.clock time)
+	lungeUntil: number,
 }
 
 local playerStates: { [Player]: PlayerState } = {}
@@ -161,6 +166,22 @@ end
 local function meleeOf(enemy: any): any
 	local def = Enemies.get(enemy.archetype)
 	return def and def.melee
+end
+
+-- How fast an enemy runs: its own chase speed x its world's chaseScale (2026-10-28, the
+-- user: enemies faster every world, so the Sprint levels are worth buying).
+local function chaseSpeed(enemy: any, melee: any): number
+	local world = Worlds.get(enemy.worldId)
+	local scale = world and world.chaseScale
+	return melee.chaseSpeed * (if type(scale) == "number" then scale else 1)
+end
+
+-- How far past its front an enemy starts an attack: its world's attackStart (just
+-- under the world's longest weapon reaches, 2026-10-28), else its own range's share.
+local function attackStart(enemy: any, melee: any): number
+	local world = Worlds.get(enemy.worldId)
+	local start = world and world.attackStart
+	return if type(start) == "number" then start else melee.range * Balance.Melee.stopFraction
 end
 
 -- Half the enemy's widest footprint: reach is measured to its edge, not its
@@ -511,6 +532,7 @@ local function startFight(enemy: any, attacker: Player, seenAt: Vector3)
 		target = attacker,
 		nextAttack = os.clock() + FIRST_ATTACK_DELAY,
 		busyUntil = 0,
+		lungeUntil = 0,
 	}
 	WorldEnemyService.setAiState(enemy.id, "Chase")
 	WorldEnemyService.setFightPose(enemy.id, start, fights[enemy.id].look)
@@ -529,6 +551,7 @@ end
 local function beginAttack(enemy: any, fight: Fight, melee: any, now: number)
 	fight.nextAttack = now + melee.cooldown
 	fight.busyUntil = now + melee.windup + RECOVERY
+	fight.lungeUntil = now + melee.windup
 	WorldEnemyService.signalAttack(enemy.id)
 	local target = fight.target
 	task.delay(melee.windup, function()
@@ -542,7 +565,7 @@ local function beginAttack(enemy: any, fight: Fight, melee: any, now: number)
 			return
 		end
 		local gap = flat(root.Position - fight.position).Magnitude
-		local reach = frontReach(enemy) + melee.range + Balance.Melee.dodgeSlack
+		local reach = frontReach(enemy) + math.max(melee.range, attackStart(enemy, melee)) + Balance.Melee.dodgeSlack
 		if gap <= reach and math.abs(root.Position.Y - fight.position.Y) < MAX_HEIGHT_GAP then
 			local defense = target:GetAttribute("ArmorDefense")
 			defense = if type(defense) == "number" then math.clamp(defense, 0, 0.9) else 0
@@ -582,7 +605,7 @@ local function stepFight(enemy: any, fight: Fight, melee: any, dt: number, now: 
 			return
 		end
 		fight.look = toHome.Unit
-		fight.position = approach(fight.position, home, melee.chaseSpeed * Balance.Melee.returnSpeedScale * dt, 0)
+		fight.position = approach(fight.position, home, chaseSpeed(enemy, melee) * Balance.Melee.returnSpeedScale * dt, 0)
 		return
 	end
 
@@ -596,12 +619,21 @@ local function stepFight(enemy: any, fight: Fight, melee: any, dt: number, now: 
 	if toTarget.Magnitude > 1e-3 then
 		fight.look = toTarget.Unit
 	end
+	local front = frontReach(enemy)
+	local stop = front + attackStart(enemy, melee)
+	-- Winding up, the enemy lunges at its target faster than it chases, right up to
+	-- it (it starts from attackStart away), so stepping or strafing away (shift lock
+	-- included) doesn't dodge the blow.
+	if now < fight.lungeUntil then
+		local close = front + melee.range * Balance.Melee.stopFraction
+		fight.position = approach(fight.position, root.Position, chaseSpeed(enemy, melee) * Balance.Melee.lungeScale * dt, close)
+		return
+	end
 	if now < fight.busyUntil then
 		return
 	end
-	local stop = frontReach(enemy) + melee.range * Balance.Melee.stopFraction
 	if toTarget.Magnitude > stop + STOP_TOLERANCE then
-		fight.position = approach(fight.position, root.Position, melee.chaseSpeed * dt, stop)
+		fight.position = approach(fight.position, root.Position, chaseSpeed(enemy, melee) * dt, stop)
 	elseif now >= fight.nextAttack then
 		beginAttack(enemy, fight, melee, now)
 	end

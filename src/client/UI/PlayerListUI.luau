@@ -146,11 +146,41 @@ local function fit()
 				target.Position = UDim2.new(target.Position.X, UDim.new(entry.baseY + shift / h, 0))
 				local shown = target.Visible and (not holder:IsA("ScreenGui") or holder.Enabled)
 				if shown then
-					bottom = math.max(bottom, baseTop + shift + target.AbsoluteSize.Y + gap)
+					-- its own box, or lower where anything shown inside hangs out of it
+					-- (the quest card's Reward tab and its item chip sit under the Tracker
+					-- frame, wrapped chip rows grow past it; 2026-10-26 / 28, the material
+					-- toasts drew over them)
+					local frameTop = target.AbsolutePosition.Y
+					local low = baseTop + shift + target.AbsoluteSize.Y
+					local function reach(node: Instance)
+						for _, child in node:GetChildren() do
+							if child:IsA("GuiObject") and child.Visible then
+								local childBottom = child.AbsolutePosition.Y + child.AbsoluteSize.Y - frameTop
+								low = math.max(low, baseTop + shift + childBottom)
+								reach(child)
+							end
+						end
+					end
+					reach(target)
+					bottom = math.max(bottom, low + gap)
 				end
 			end
 		end
 	end
+end
+
+-- Many changes can land in one frame (a card re-laying out its chips); fit once
+-- at the end of it.
+local fitQueued = false
+local function queueFit()
+	if fitQueued then
+		return
+	end
+	fitQueued = true
+	task.defer(function()
+		fitQueued = false
+		fit()
+	end)
 end
 
 local function style(row: Frame, key: string)
@@ -323,9 +353,29 @@ function PlayerListUI.start()
 				local target = holder and holder:FindFirstChild(childName)
 				if target and target:IsA("GuiObject") then
 					table.insert(pushed, { target = target, baseY = target.Position.Y.Scale })
-					-- a piece showing or hiding moves the ones under it
-					target:GetPropertyChangedSignal("Visible"):Connect(fit)
-					target:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
+					-- a piece showing or hiding moves the ones under it: the piece, its
+					-- whole gui (panels and talking switch the quest card's gui off and
+					-- back on), and anything inside it (a tab, chips, a wrapped row)
+					target:GetPropertyChangedSignal("Visible"):Connect(queueFit)
+					target:GetPropertyChangedSignal("AbsoluteSize"):Connect(queueFit)
+					if holder:IsA("ScreenGui") then
+						holder:GetPropertyChangedSignal("Enabled"):Connect(queueFit)
+					end
+					local function watchPiece(d: Instance)
+						if d:IsA("GuiObject") then
+							d:GetPropertyChangedSignal("Visible"):Connect(queueFit)
+							d:GetPropertyChangedSignal("Size"):Connect(queueFit)
+							d:GetPropertyChangedSignal("Position"):Connect(queueFit)
+						end
+					end
+					for _, d in target:GetDescendants() do
+						watchPiece(d)
+					end
+					target.DescendantAdded:Connect(function(d)
+						watchPiece(d)
+						queueFit()
+					end)
+					target.DescendantRemoving:Connect(queueFit)
 				end
 			end
 		end
@@ -355,6 +405,14 @@ function PlayerListUI.start()
 			fit()
 		end)
 		render()
+		-- a safety net: anything that moves the card without a signal above is
+		-- caught within a second
+		task.spawn(function()
+			while true do
+				task.wait(1)
+				queueFit()
+			end
+		end)
 	end)
 end
 

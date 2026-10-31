@@ -101,6 +101,9 @@ type Enemy = {
 	hpRatio: number,
 	trailTween: Tween?,
 	trailToken: number,
+	-- whether the camera can see the body or its bar (checkSight), and the misses in a row
+	seen: boolean,
+	misses: number,
 }
 
 local enemies: { [string]: Enemy } = {}
@@ -469,12 +472,92 @@ end
 -- A living enemy's bar only shows while the player's character is within the
 -- bar's "ShowDistance" attribute (user, 2026-10-12: 32 studs). Measured from the
 -- character, not the camera, so zooming out doesn't hide a bar you're next to.
-local function showBar(enemy: Enemy, from: Vector3?)
-	local show = enemy.alive
-	if show and from then
-		local range = numberAttr(enemy.billboard, "ShowDistance", 32)
-		show = (enemy.anchor.Position - from).Magnitude <= range
+-- And only while the camera can see the enemy (2026-10-26, the user: like the quest
+-- markers, no bars through walls, hills or trees): checkSight casts from the camera to
+-- the body's middle and its head every SightSeconds (on the bar template, 0.2);
+-- one that reaches means seen, and SightMisses (2) misses in a row hide the bar again, so
+-- the edge of cover doesn't flicker. Other enemies and the player's own body never block
+-- the line, and nearly see-through parts are looked through.
+local function inRange(enemy: Enemy, from: Vector3?): boolean
+	if not from then
+		return true
 	end
+	local range = numberAttr(enemy.billboard, "ShowDistance", 32)
+	return (enemy.anchor.Position - from).Magnitude <= range
+end
+
+local SEE_THROUGH = 0.9
+local MAX_SEE_THROUGH = 4
+
+local function reaches(from: Vector3, to: Vector3, skip: { Instance }): boolean
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	local list = table.clone(skip)
+	params.FilterDescendantsInstances = list
+	for _ = 1, MAX_SEE_THROUGH do
+		local hit = workspace:Raycast(from, to - from, params)
+		if not hit then
+			return true
+		end
+		local blocker = hit.Instance
+		if not (blocker:IsA("BasePart") and blocker.Transparency + blocker.LocalTransparencyModifier >= SEE_THROUGH) then
+			return false
+		end
+		table.insert(list, blocker)
+		params.FilterDescendantsInstances = list
+	end
+	return false
+end
+
+local function checkSight()
+	local camera = workspace.CurrentCamera
+	if not camera then
+		return
+	end
+	local character = Players.LocalPlayer.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	local from = if root and root:IsA("BasePart") then root.Position else nil
+	local eye = camera.CFrame.Position
+	local skip: { Instance } = {}
+	if character then
+		table.insert(skip, character)
+	end
+	for _, enemy in enemies do
+		table.insert(skip, enemy.instance)
+	end
+	for _, enemy in enemies do
+		if enemy.alive and inRange(enemy, from) then
+			local centre = enemy.anchor.Position
+			local head = enemy.instance:FindFirstChild("Head", true)
+			local points = { centre }
+			if head and head:IsA("BasePart") then
+				table.insert(points, head.Position)
+			end
+			local seen = false
+			for _, point in points do
+				if reaches(eye, point, skip) then
+					seen = true
+					break
+				end
+			end
+			if seen then
+				enemy.misses = 0
+				enemy.seen = true
+			else
+				enemy.misses += 1
+				if enemy.misses >= numberAttr(enemy.billboard, "SightMisses", 2) then
+					enemy.seen = false
+				end
+			end
+		else
+			enemy.misses = 0
+			enemy.seen = false
+		end
+	end
+end
+
+local function showBar(enemy: Enemy, from: Vector3?)
+	local show = enemy.alive and enemy.seen and inRange(enemy, from)
 	if enemy.billboard.Enabled ~= show then
 		enemy.billboard.Enabled = show
 	end
@@ -491,6 +574,12 @@ local function startLoop()
 		for _, enemy in enemies do
 			step(enemy, dt, now)
 			showBar(enemy, from)
+		end
+	end)
+	task.spawn(function()
+		while true do
+			task.wait(if barTemplate then numberAttr(barTemplate, "SightSeconds", 0.2) else 0.2)
+			checkSight()
 		end
 	end)
 end
@@ -625,6 +714,8 @@ local function register(inst: Instance)
 		hpRatio = 1,
 		trailTween = nil,
 		trailToken = 0,
+		seen = false,
+		misses = 0,
 	}
 
 	enemies[id] = enemy

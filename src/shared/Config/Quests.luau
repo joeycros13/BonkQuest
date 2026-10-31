@@ -8,9 +8,10 @@
 --                   the final reward is the Firefly Lantern (LanternFlail)
 --   ExplorerCaverns Explorer Pip, "Into the Crystal Caverns" (World 3, 2026-10-17,
 --                   picked on the design canvas); the final reward is the Diamond
---                   Pickaxe. Level steps follow the other lines: the first comes at the
---                   same EXP as before the 2026-10-19 curve (36), the second at the
---                   second set's level (42).
+--                   Pickaxe.
+-- No line has a "level" step since 2026-10-26 (the user): each became a gathering step (step 5)
+-- or an elite step (step 9), every line sends the player after its world's elite, and kill and
+-- gather counts went up about half (art/tools/balance/rescale.py QUESTS mirrors the numbers).
 -- Lines run side by side: each player has a step in every line, published as
 -- per-line attributes (Quests.attr). A giver model (tagged QuestGiver) names its
 -- line in its "QuestLine" attribute. Add a line to `lines` and `order` and give it
@@ -28,6 +29,11 @@
 --              "bring" hand over `items` ({ { id, count } } materials, taken when
 --                      handing in); progress is the total held toward the total
 --                      needed. Fish never go in quests (user: they're for potions)
+--              "hunt"  defeat several kinds at once: `targets` ({ { id, count } } Config/Worlds
+--                      ids, 2026-10-26, the user: quests that kill several enemies); each
+--                      kind counts up to its own count (the kills go out as the
+--                      "QuestKills_<line>" attribute, "Chicken=5,Bull=2"), progress is
+--                      the total toward the total needed
 --   objective  the red objective line in the dialogue's Objective box
 --   track      the tracker line: the words before {braces} become the small
 --              label ("DEFEAT"), the part in braces the red name (the enemy or
@@ -55,11 +61,14 @@
 --
 -- All the wording and numbers here are free to edit.
 
+local Enemies = require(script.Parent:WaitForChild("Enemies"))
 local Gathering = require(script.Parent:WaitForChild("Gathering"))
+local Materials = require(script.Parent:WaitForChild("Materials"))
 local Tools = require(script.Parent:WaitForChild("Tools"))
+local Weapons = require(script.Parent:WaitForChild("Weapons"))
 
--- World scale (2026-10-23, Config/Leveling): every step's EXP x1 / x4 / x16 for Worlds 1 / 2 / 3, like
--- the EXP a level needs there. Coins are unscaled (they already grew x10 a world).
+-- Each line's rewards are written for its world (about x10 the last world's, coins and EXP alike); nothing
+-- scales them in code.
 
 local Quests = {}
 
@@ -77,6 +86,7 @@ export type Step = {
 	target: string?,
 	count: number?,
 	items: { { id: string, count: number } }?,
+	targets: { { id: string, count: number } }?,
 	amount: number?,
 	level: number?,
 	objective: string,
@@ -122,101 +132,52 @@ lines.DaleFarm = {
 		{
 			kind = "kill",
 			target = "Chicken",
-			count = 5,
-			objective = "Defeat 5 Angry Chickens",
+			count = 8,
+			objective = "Defeat 8 Angry Chickens",
 			track = "Defeat {Angry Chickens}",
 			reward = { coins = 25, exp = 20 },
 			offer = {
 				"Well howdy there, partner! Name's Dale. I've been farmin' this here meadow for forty years.",
 				"Lately my chickens have gone plumb mad. Peckin' my crops, peckin' my boots, peckin' ME!",
-				"Reckon you could [defeat 5 Angry Chickens] for me? I'll make it worth your while.",
+				"Reckon you could [defeat 8 Angry Chickens] for me? I'll make it worth your while.",
 			},
-			reminder = { "Them chickens are still runnin' wild! [Defeat 5 Angry Chickens], would ya?" },
-			complete = { "Well I'll be! Five fewer feathered menaces. Here, take this for your trouble." },
+			reminder = { "Them chickens are still runnin' wild! [Defeat 8 Angry Chickens], would ya?" },
+			complete = { "Well I'll be! Eight fewer feathered menaces. Here, take this for your trouble." },
 		},
 		{
 			-- 2026-10-19 (user): was "earn 75 coins"; teaches the axe early
 			kind = "gather",
 			target = "OakLog",
-			count = 5,
+			count = 8,
 			-- "Collect", not "Chop" (issue 21, 2026-10-25): logs already held count
-			objective = "Collect 5 Oak Logs",
+			objective = "Collect 8 Oak Logs",
 			track = "Collect {Oak Logs}",
 			reward = { coins = 30, exp = 30 },
 			offer = {
 				"Now, a farmhand's gotta keep the stove burnin', and that means firewood.",
 				"You can't chop a tree with that little dagger, though. The Weaponsmith on the plaza sells all the tools: axes, pickaxes, fishin' rods.",
-				"Pick yourself up a [Wooden Axe] first. Then head to them big oaks by the cliffs and [collect 5 Oak Logs].",
+				"Pick yourself up a [Wooden Axe] first. Then head to them big oaks by the cliffs and [collect 8 Oak Logs].",
 			},
 			offerHasTool = {
 				"Now, a farmhand's gotta keep the stove burnin', and that means firewood.",
-				"I see you've already got yourself an axe. Head to them big oaks by the cliffs and [collect 5 Oak Logs].",
+				"I see you've already got yourself an axe. Head to them big oaks by the cliffs and [collect 8 Oak Logs].",
 			},
-			reminder = { "Them big oaks by the cliffs are full of firewood. [Collect 5 Oak Logs] and come see me." },
+			reminder = { "Them big oaks by the cliffs are full of firewood. [Collect 8 Oak Logs] and come see me." },
 			complete = { "Now that's a fine stack of firewood! Hang on to it, I'll be needin' logs for the barn soon. Here's a little somethin' for the sweat." },
 		},
 		{
-			kind = "kill",
-			target = "Chicken",
-			count = 10,
-			objective = "Defeat 10 Angry Chickens",
-			track = "Defeat {Angry Chickens}",
+			-- 2026-10-26 (the user): a mixed hunt
+			kind = "hunt",
+			targets = { { id = "Chicken", count = 12 }, { id = "Bull", count = 3 } },
+			objective = "Defeat 12 Angry Chickens and 3 Raging Bulls",
+			track = "Defeat {Chickens and Bulls}",
 			reward = { coins = 40, exp = 40 },
 			offer = {
-				"Bad news, partner. Them chickens multiplied overnight.",
-				"I need you to [defeat 10 Angry Chickens] before they eat my whole carrot patch!",
+				"Bad news, partner. Them chickens multiplied overnight, and now the bulls are joinin' in.",
+				"[Defeat 12 Angry Chickens and 3 Raging Bulls] before they flatten my whole carrot patch!",
 			},
-			reminder = { "Still a whole lotta cluckin' out there! [Defeat 10 Angry Chickens]." },
-			complete = { "Ten more down! My carrots thank ya. So do I." },
-		},
-		{
-			kind = "kill",
-			target = "Bull",
-			count = 3,
-			objective = "Defeat 3 Raging Bulls",
-			track = "Defeat {Raging Bulls}",
-			reward = { coins = 60, exp = 60 },
-			offer = {
-				"Somethin' bigger's stirrin' now. Them bulls up the paths are seein' red.",
-				"They knocked my fence clean over! [Defeat 3 Raging Bulls] and teach 'em some manners.",
-			},
-			reminder = { "Watch them horns! [Defeat 3 Raging Bulls]." },
-			complete = { "Three bulls! You're tougher than you look, friend." },
-		},
-		{
-			kind = "level",
-			level = 9,
-			objective = "Reach level 9",
-			track = "Reach {Level 9}",
-			-- + the Rusty Blade (Relic), the start of the secret super weapon (2026-10-12)
-			reward = { coins = 50, weapon = "RustyBlade" },
-			offer = {
-				"Them bulls'll only get meaner from here. You gotta toughen up.",
-				"Go get some practice in and [reach level 9]. Come back when you're ready.",
-			},
-			reminder = { "Keep at it! [Reach level 9] first." },
-			complete = {
-				"Now that's a seasoned fighter if I ever saw one!",
-				"Here, I dug this old blade up behind the barn. Rusty as anything... but that empty socket's always made me wonder.",
-			},
-		},
-		{
-			-- 2026-10-19 (user): was "give 200 coins"; the logs and stone are taken at hand-in
-			kind = "bring",
-			items = { { id = "OakLog", count = 8 }, { id = "Stone", count = 8 } },
-			objective = "Bring Dale 8 Oak Logs and 8 Stone",
-			track = "Bring Dale {Logs and Stone}",
-			reward = { coins = 80, exp = 100 },
-			offer = {
-				"I hate to ask, but them bulls flattened my barn door and knocked the wall stones loose.",
-				"Could you [bring me 8 Oak Logs and 8 Stone] for the repairs? A pickaxe'll crack them boulders; the Weaponsmith sells those too.",
-			},
-			offerHasTool = {
-				"I hate to ask, but them bulls flattened my barn door and knocked the wall stones loose.",
-				"Could you [bring me 8 Oak Logs and 8 Stone] for the repairs? That pickaxe of yours'll crack them boulders.",
-			},
-			reminder = { "No rush... but my barn door's still flat. [Bring me 8 Oak Logs and 8 Stone]." },
-			complete = { "Bless ya! That door'll be standin' by sundown. Here, it ain't much, but it's honest." },
+			reminder = { "Still a whole lotta cluckin' and stompin' out there! [Defeat 12 Angry Chickens and 3 Raging Bulls]." },
+			complete = { "My carrots thank ya. So do I. Them bulls are another story, though..." },
 		},
 		{
 			kind = "kill",
@@ -224,13 +185,70 @@ lines.DaleFarm = {
 			count = 5,
 			objective = "Defeat 5 Raging Bulls",
 			track = "Defeat {Raging Bulls}",
+			reward = { coins = 60, exp = 60 },
+			offer = {
+				"Them bulls up the paths are seein' red. They knocked my fence clean over!",
+				"[Defeat 5 Raging Bulls] and teach 'em some manners.",
+				"Mind you, they hit hard. Some proper armor from the crafter wouldn't go amiss.",
+			},
+			reminder = { "Watch them horns! [Defeat 5 Raging Bulls]." },
+			complete = { "Five bulls! You're tougher than you look, friend." },
+		},
+		{
+			-- 2026-10-26 (the user): the level step went; mining in its place
+			kind = "gather",
+			target = "Stone",
+			count = 10,
+			objective = "Collect 10 Stone",
+			track = "Collect {Stone}",
+			-- + the Rusty Blade (Relic), the start of the secret super weapon (2026-10-12)
+			reward = { coins = 50, exp = 60, weapon = "RustyBlade" },
+			offer = {
+				"Them bulls kicked my old well clean in half. I need stone to build it back up.",
+				"A pickaxe'll crack them grey boulders; the Weaponsmith on the plaza sells those.",
+				"Grab yourself a [Wooden Pickaxe] and [collect 10 Stone].",
+			},
+			offerHasTool = {
+				"Them bulls kicked my old well clean in half. I need stone to build it back up.",
+				"That pickaxe of yours'll crack them grey boulders. [Collect 10 Stone] for me.",
+			},
+			reminder = { "Them grey boulders are full of good stone. [Collect 10 Stone]." },
+			complete = {
+				"Now that's good honest stone! Hang on to it, the barn's gonna need some too.",
+				"Oh, and diggin' out the old well I found this. Rusty as anything... but that empty socket's always made me wonder.",
+			},
+		},
+		{
+			-- 2026-10-19 (user): was "give 200 coins"; the logs and stone are taken at hand-in
+			kind = "bring",
+			items = { { id = "Stone", count = 15 }, { id = "OakLog", count = 15 } },
+			objective = "Bring Dale 15 Oak Logs and 15 Stone",
+			track = "Bring Dale {Logs and Stone}",
+			reward = { coins = 80, exp = 100 },
+			offer = {
+				"I hate to ask, but them bulls flattened my barn door and knocked the wall stones loose.",
+				"Could you [bring me 15 Oak Logs and 15 Stone] for the repairs? A pickaxe'll crack them boulders; the Weaponsmith sells those too.",
+			},
+			offerHasTool = {
+				"I hate to ask, but them bulls flattened my barn door and knocked the wall stones loose.",
+				"Could you [bring me 15 Oak Logs and 15 Stone] for the repairs? That pickaxe of yours'll crack them boulders.",
+			},
+			reminder = { "No rush... but my barn door's still flat. [Bring me 15 Oak Logs and 15 Stone]." },
+			complete = { "Bless ya! That door'll be standin' by sundown. Here, it ain't much, but it's honest." },
+		},
+		{
+			-- 2026-10-26 (the user): a mixed hunt with the elites
+			kind = "hunt",
+			targets = { { id = "Bull", count = 6 }, { id = "Stallion", count = 3 } },
+			objective = "Defeat 6 Raging Bulls and 3 Wild Stallions",
+			track = "Defeat {Bulls and Stallions}",
 			reward = { coins = 100, exp = 100 },
 			offer = {
-				"Word is the bulls are gatherin' near the boss platform.",
-				"Head up there and [defeat 5 Raging Bulls] before they stampede the whole valley.",
+				"Word is the bulls are gatherin' near the boss platform, and the wild stallions are runnin' with 'em now.",
+				"Head up there and [defeat 6 Raging Bulls and 3 Wild Stallions] before they stampede the whole valley.",
 			},
-			reminder = { "Them bulls ain't gonna fight themselves! [Defeat 5 Raging Bulls]." },
-			complete = { "The valley's quiet for the first time in weeks. Thank ya kindly." },
+			reminder = { "That herd ain't gonna round itself up! [Defeat 6 Raging Bulls and 3 Wild Stallions]." },
+			complete = { "The valley's quiet for the first time in weeks. And now I see who's been stirrin' 'em up..." },
 		},
 		{
 			kind = "kill",
@@ -250,34 +268,37 @@ lines.DaleFarm = {
 			},
 		},
 		{
-			kind = "level",
-			level = 14,
-			objective = "Reach level 14",
-			track = "Reach {Level 14}",
-			reward = { coins = 100 },
+			-- 2026-10-26 (the user): the elites and the boss together
+			kind = "hunt",
+			targets = { { id = "Stallion", count = 4 }, { id = "BossScarecrow", count = 1 } },
+			objective = "Defeat 4 Wild Stallions and the Scarecrow King",
+			track = "Defeat {Stallions and the King}",
+			reward = { coins = 120, exp = 150 },
 			offer = {
 				"Bad news. That old scarecrow's stitched himself back together.",
-				"He comes back stronger every time. Go [reach level 14] so you can stand up to him.",
+				"And now he's got the wild stallions guardin' his platform. They kick like thunder.",
+				"[Defeat 4 Wild Stallions and the Scarecrow King] again. That Harvest Knight armor'd help, if you've a mind to craft it.",
 			},
-			reminder = { "Keep trainin'! [Reach level 14]." },
-			complete = { "Look at ya! The strongest farmhand this meadow's ever seen." },
+			reminder = { "Them stallions are still guardin' that pumpkin-head! [Defeat 4 Wild Stallions and the Scarecrow King]." },
+			complete = { "Stallions scattered and the King knocked flat again! The strongest farmhand this meadow's ever seen." },
 		},
 		{
-			kind = "kill",
-			target = "BossScarecrow",
-			count = 5,
-			objective = "Defeat the Scarecrow King 5 times",
-			track = "Defeat the {Scarecrow King}",
+			-- 2026-10-26 (the user): the Clean Up, a long hunt through the whole world
+			kind = "hunt",
+			targets = { { id = "Chicken", count = 10 }, { id = "Bull", count = 8 }, { id = "Stallion", count = 5 }, { id = "BossScarecrow", count = 3 } },
+			objective = "Clean up The Farm: defeat 10 Angry Chickens, 8 Raging Bulls, 5 Wild Stallions and the Scarecrow King 3 times",
+			track = "Clean up {The Farm}",
 			-- The quest-only Weathervane Spear (Legendary, 2026-10-11).
 			reward = { coins = 300, exp = 300, weapon = "WeathervaneSpear" },
 			offer = {
-				"This is it, partner. The Scarecrow King has to learn his lesson for good.",
-				"[Defeat the Scarecrow King 5 times] and he'll never bother this farm again.",
+				"This is it, partner. Time for the big clean up.",
+				"Every critter on this farm's still sore from that scarecrow's spell, and he keeps stitchin' himself back together.",
+				"[Defeat 10 Angry Chickens, 8 Raging Bulls, 5 Wild Stallions and the Scarecrow King 3 times], and this farm'll finally have some peace.",
 				"Do this, and I'll give ya somethin' I've been savin' a long, long time.",
 			},
-			reminder = { "He keeps comin' back! [Defeat the Scarecrow King 5 times]." },
+			reminder = { "Still some cleanin' up to do! Chickens, bulls, stallions, and that pumpkin-headed menace." },
 			complete = {
-				"You did it! The farm's safe at last.",
+				"You did it! The farm's clean, quiet and safe at last.",
 				"Here. This was my granddaddy's. I reckon it's yours now.",
 			},
 		},
@@ -305,106 +326,113 @@ lines.RangerRedwoods = {
 		{
 			kind = "kill",
 			target = "Fox",
-			count = 5,
-			objective = "Defeat 5 Snarling Foxes",
+			count = 8,
+			objective = "Defeat 8 Snarling Foxes",
 			track = "Defeat {Snarling Foxes}",
 			reward = { coins = 250, exp = 200 },
 			offer = {
 				"Evening, traveller. I'm Ranger Rowan. I look after these redwoods.",
 				"Something has the wildlife riled up. The foxes snap at anything that moves.",
-				"Could you [defeat 5 Snarling Foxes] for me? They won't make it easy.",
+				"Could you [defeat 8 Snarling Foxes] for me? They won't make it easy.",
 			},
-			reminder = { "Those foxes are still prowling the trails. [Defeat 5 Snarling Foxes]." },
+			reminder = { "Those foxes are still prowling the trails. [Defeat 8 Snarling Foxes]." },
 			complete = { "That's a relief. The trail's safer already. Here, for your trouble." },
 		},
 		{
 			-- 2026-10-21 (user): was "earn 300 coins"; the fur goes toward the Stone Axe
 			kind = "gather",
 			target = "FoxFur",
-			count = 6,
-			objective = "Collect 6 Fox Fur",
+			count = 10,
+			objective = "Collect 10 Fox Fur",
 			track = "Collect {Fox Fur}",
 			reward = { coins = 300, exp = 300 },
 			offer = {
 				"Your old wooden axe won't bite into a redwood. You'll want a Stone Axe.",
-				"The weaponsmith wraps their grips in fox fur. Go and [collect 6 Fox Fur] from the foxes on the trail.",
+				"The weaponsmith wraps their grips in fox fur. Go and [collect 10 Fox Fur] from the foxes on the trail.",
 			},
-			reminder = { "Those foxes still have their coats. [Collect 6 Fox Fur]." },
-			complete = { "Thick and warm. That'll make a fine grip. Now all you need is a boar tusk or two." },
+			reminder = { "Those foxes still have their coats. [Collect 10 Fox Fur]." },
+			complete = { "Thick and warm. That'll make a fine grip, and the crafter can stitch the rest into a hide coat." },
 		},
 		{
-			kind = "kill",
-			target = "Fox",
-			count = 10,
-			objective = "Defeat 10 Snarling Foxes",
-			track = "Defeat {Snarling Foxes}",
+			-- 2026-10-26 (the user): a mixed hunt
+			kind = "hunt",
+			targets = { { id = "Fox", count = 12 }, { id = "Boar", count = 3 } },
+			objective = "Defeat 12 Snarling Foxes and 3 Wild Boars",
+			track = "Defeat {Foxes and Boars}",
 			reward = { coins = 400, exp = 400 },
 			offer = {
-				"I counted tracks this morning. Far more foxes than there should be.",
-				"Please [defeat 10 Snarling Foxes] before they overrun the camp.",
+				"I counted tracks this morning. Far more foxes than there should be, and boar prints among them.",
+				"Please [defeat 12 Snarling Foxes and 3 Wild Boars] before they overrun the camp.",
 			},
-			reminder = { "I can still hear them yipping. [Defeat 10 Snarling Foxes]." },
+			reminder = { "I can still hear them yipping and grunting. [Defeat 12 Snarling Foxes and 3 Wild Boars]." },
 			complete = { "Quiet at last. You move through these woods like you were born here." },
 		},
 		{
 			kind = "kill",
 			target = "Boar",
-			count = 3,
-			objective = "Defeat 3 Wild Boars",
+			count = 5,
+			objective = "Defeat 5 Wild Boars",
 			track = "Defeat {Wild Boars}",
 			reward = { coins = 600, exp = 600 },
 			offer = {
 				"Now the boars are charging hikers right off the trail.",
-				"Their hides are thick, so hit hard. [Defeat 3 Wild Boars].",
+				"Their hides are thick, so hit hard, and wear something tougher than you came in. [Defeat 5 Wild Boars].",
 			},
-			reminder = { "Mind those tusks! [Defeat 3 Wild Boars]." },
-			complete = { "Three boars! I'll mark those trails open again." },
+			reminder = { "Mind those tusks! [Defeat 5 Wild Boars]." },
+			complete = { "Five boars! I'll mark those trails open again." },
 		},
 		{
-			kind = "level",
-			level = 30, -- 22 until 2026-10-20: players arrive at 25 since the World 2 gate moved to level 25
-			objective = "Reach level 30",
-			track = "Reach {Level 30}",
-			reward = { coins = 500 },
+			-- 2026-10-26 (the user): the level step went; chopping in its place
+			kind = "gather",
+			target = "RedwoodLog",
+			count = 12,
+			objective = "Collect 12 Redwood Logs",
+			track = "Collect {Redwood Logs}",
+			reward = { coins = 500, exp = 600 },
 			offer = {
-				"Deeper in, the bears are waking up angry. You're not ready for them yet.",
-				"Train up and [reach level 30]. I'll be right here by the fire.",
+				"The boars trampled my woodpile flat. Winter comes early under these trees.",
+				"Only a Stone Axe will fell a redwood. The Weaponsmith by the gate can turn your wooden axe into one.",
+				"Then [collect 12 Redwood Logs] for me.",
 			},
-			reminder = { "Keep training. [Reach level 30] first." },
-			complete = { "Look at you. Strong enough to stare down a grizzly." },
+			offerHasTool = {
+				"The boars trampled my woodpile flat. Winter comes early under these trees.",
+				"That Stone Axe of yours will fell a redwood nicely. [Collect 12 Redwood Logs] for me.",
+			},
+			reminder = { "The camp's fire won't last the night. [Collect 12 Redwood Logs]." },
+			complete = { "Now that's a woodpile. Keep hold of it, the tower's going to need beams too." },
 		},
 		{
 			-- 2026-10-21 (user): was "give 600 coins"; the logs and tusks are taken at hand-in
 			kind = "bring",
-			items = { { id = "RedwoodLog", count = 10 }, { id = "BoarTusk", count = 4 } },
-			objective = "Bring Rowan 10 Redwood Logs and 4 Boar Tusks",
+			items = { { id = "RedwoodLog", count = 15 }, { id = "BoarTusk", count = 6 } },
+			objective = "Bring Rowan 15 Redwood Logs and 6 Boar Tusks",
 			track = "Bring Rowan {Logs and Tusks}",
 			reward = { coins = 800, exp = 1000 },
 			offer = {
 				"The boars battered the lookout tower. I can't keep watch from up there like this.",
-				"Could you [bring me 10 Redwood Logs and 4 Boar Tusks]? Logs for the beams, tusks for pegs.",
+				"Could you [bring me 15 Redwood Logs and 6 Boar Tusks]? Logs for the beams, tusks for pegs.",
 				"Only a Stone Axe will fell a redwood. The Weaponsmith by the gate can turn your wooden axe into one.",
 			},
 			offerHasTool = {
 				"The boars battered the lookout tower. I can't keep watch from up there like this.",
-				"Could you [bring me 10 Redwood Logs and 4 Boar Tusks]? Logs for the beams, tusks for pegs.",
+				"Could you [bring me 15 Redwood Logs and 6 Boar Tusks]? Logs for the beams, tusks for pegs.",
 				"That Stone Axe of yours will fell a redwood nicely.",
 			},
-			reminder = { "The tower still needs fixing. [Bring me 10 Redwood Logs and 4 Boar Tusks]." },
+			reminder = { "The tower still needs fixing. [Bring me 15 Redwood Logs and 6 Boar Tusks]." },
 			complete = { "Thank you. The tower will be standing tall by morning. Take this, it's what I can spare." },
 		},
 		{
-			kind = "kill",
-			target = "Bear",
-			count = 2,
-			objective = "Defeat 2 Grizzly Bears",
-			track = "Defeat {Grizzly Bears}",
+			-- 2026-10-26 (the user): a mixed hunt with the elites
+			kind = "hunt",
+			targets = { { id = "Boar", count = 6 }, { id = "Bear", count = 3 } },
+			objective = "Defeat 6 Wild Boars and 3 Grizzly Bears",
+			track = "Defeat {Boars and Bears}",
 			reward = { coins = 1000, exp = 1000 },
 			offer = {
-				"From the tower I spotted two grizzlies guarding the path to the old ruins.",
-				"[Defeat 2 Grizzly Bears] so we can find out what's stirring in there.",
+				"From the tower I spotted grizzlies guarding the path to the old ruins, with a pack of boars around them.",
+				"[Defeat 6 Wild Boars and 3 Grizzly Bears] so we can find out what's stirring in there.",
 			},
-			reminder = { "The bears still block the ruins. [Defeat 2 Grizzly Bears]." },
+			reminder = { "The bears and boars still block the ruins. [Defeat 6 Wild Boars and 3 Grizzly Bears]." },
 			complete = { "The path's clear. And now I know what's behind all this..." },
 		},
 		{
@@ -425,32 +453,34 @@ lines.RangerRedwoods = {
 			},
 		},
 		{
-			kind = "level",
-			level = 34, -- 27 until 2026-10-20 (World 2 balance)
-			objective = "Reach level 34",
-			track = "Reach {Level 34}",
-			reward = { coins = 1000 },
+			-- 2026-10-26 (the user): the elites and the boss together
+			kind = "hunt",
+			targets = { { id = "Bear", count = 4 }, { id = "ElderTreant", count = 1 } },
+			objective = "Defeat 4 Grizzly Bears and the Elder Treant",
+			track = "Defeat {Bears and the Treant}",
+			reward = { coins = 1200, exp = 1500 },
 			offer = {
 				"Bad news. Roots don't die easily. The treant is growing back, stronger than before.",
-				"You'll need to be stronger too. [Reach level 34].",
+				"Every bear in the forest has gathered round its ruins to guard it.",
+				"[Defeat 4 Grizzly Bears and the Elder Treant] before it takes root for good.",
 			},
-			reminder = { "Keep at it. [Reach level 34]." },
-			complete = { "The strongest warden these woods have ever had." },
+			reminder = { "The grizzlies are still circling the ruins, and the treant's still standing. [Defeat 4 Grizzly Bears and the Elder Treant]." },
+			complete = { "Bears and treant both! The strongest warden these woods have ever had." },
 		},
 		{
-			kind = "kill",
-			target = "ElderTreant",
-			count = 5, -- 3 until 2026-10-20 (World 2 balance; Dale's is 5 too)
-			objective = "Defeat the Elder Treant 5 times",
-			track = "Defeat the {Elder Treant}",
+			-- 2026-10-26 (the user): the Clean Up, a long hunt through the whole world
+			kind = "hunt",
+			targets = { { id = "Fox", count = 10 }, { id = "Boar", count = 8 }, { id = "Bear", count = 5 }, { id = "ElderTreant", count = 3 } },
+			objective = "Clean up The Forest: defeat 10 Snarling Foxes, 8 Wild Boars, 5 Grizzly Bears and the Elder Treant 3 times",
+			track = "Clean up {The Forest}",
 			-- The quest-only Firefly Lantern (Legendary, 2026-10-11).
 			reward = { coins = 3000, exp = 3000, weapon = "LanternFlail" },
 			offer = {
-				"This is it. We have to calm that old tree for good.",
-				"[Defeat the Elder Treant 5 times] and the forest can finally rest.",
+				"This is it. The treant keeps regrowing, and its rage still runs through every creature here.",
+				"[Defeat 10 Snarling Foxes, 8 Wild Boars, 5 Grizzly Bears and the Elder Treant 3 times], and the forest can finally rest.",
 				"Do this, and I'll trust you with something very special.",
 			},
-			reminder = { "It keeps regrowing! [Defeat the Elder Treant 5 times]." },
+			reminder = { "The forest isn't calm yet. Foxes, boars, bears, and that old tree." },
 			complete = {
 				"You did it. Listen... the forest is quiet again.",
 				"This lantern has lit my way for years. The fireflies chose you. It's yours now.",
@@ -462,9 +492,8 @@ lines.RangerRedwoods = {
 -- Explorer Pip beside the boarded-up mine entrance at the end of the World 3 entry
 -- hall (2026-10-17). His mapping crew went missing deeper in; they turn up past the
 -- Spider Queen's hall. Numbers are starting values, about twice Rowan's.
--- Rewards x10 Rowan's step for step and the coin steps 2,000 / 10,000 (2026-10-24, the rescale). Level steps 60 / 65
--- (players arrive at 50; were 55 / 59, but Pip's EXP rewards got a player there in 5 and 8 minutes): with
--- world_sim.py they come about a third and two fifths of the way through World 3, as Rowan's 30 / 34 do in World 2.
+-- Rewards about x10 Rowan's step for step (2026-10-24, the rescale). Steps 5 and 9 were levels 60 / 65 until
+-- 2026-10-26 (the user: no level steps); now Crystal Shards and the Crystal Golems.
 lines.ExplorerCaverns = {
 	id = "ExplorerCaverns",
 	name = "Into the Crystal Caverns",
@@ -483,107 +512,109 @@ lines.ExplorerCaverns = {
 		{
 			kind = "kill",
 			target = "CaveBat",
-			count = 5,
-			objective = "Defeat 5 Cave Bats",
+			count = 8,
+			objective = "Defeat 8 Cave Bats",
 			track = "Defeat {Cave Bats}",
 			reward = { coins = 2500, exp = 2000 },
 			offer = {
 				"Oh! A real person, down here! I'm Pip, explorer and map-maker.",
 				"My crew went deeper into these caverns to map them, and they never came back.",
-				"The bats keep flapping my lantern out. Could you [defeat 5 Cave Bats] so I can see where I'm going?",
+				"The bats keep flapping my lantern out. Could you [defeat 8 Cave Bats] so I can see where I'm going?",
 			},
-			reminder = { "Still too many wings in the dark. [Defeat 5 Cave Bats], please!" },
+			reminder = { "Still too many wings in the dark. [Defeat 8 Cave Bats], please!" },
 			complete = { "Light! Lovely, steady light. You're handy to have around." },
 		},
 		{
 			-- (2026-10-24) World 3's gathering, like Dale's and Rowan's step 2: the Ore Rocks
 			kind = "gather",
 			target = "IronOre",
-			count = 5,
+			count = 8,
 			-- "Collect", not "Mine" (issue 21, 2026-10-25): ore already held counts
-			objective = "Collect 5 Iron Ore",
+			objective = "Collect 8 Iron Ore",
 			track = "Collect {Iron Ore}",
 			reward = { coins = 3000, exp = 3000 },
 			offer = {
 				"My crew's pick snapped down here, and mine's a wooden toy next to these rocks.",
 				"The Weaponsmith by the way in can turn your wooden pickaxe into a Crystal Pickaxe.",
-				"Then find the grey rocks streaked with orange and [collect 5 Iron Ore]. Hold on to it, we'll want ore for the winch later.",
+				"Then find the grey rocks streaked with orange and [collect 8 Iron Ore]. Hold on to it, we'll want ore for the winch later.",
 			},
 			offerHasTool = {
 				"My crew's pick snapped down here, but I see you've got a Crystal Pickaxe already.",
-				"Find the grey rocks streaked with orange and [collect 5 Iron Ore]. Hold on to it, we'll want ore for the winch later.",
+				"Find the grey rocks streaked with orange and [collect 8 Iron Ore]. Hold on to it, we'll want ore for the winch later.",
 			},
-			reminder = { "Grey rocks, orange veins. [Collect 5 Iron Ore] with a Crystal Pickaxe." },
+			reminder = { "Grey rocks, orange veins. [Collect 8 Iron Ore] with a Crystal Pickaxe." },
 			complete = { "Good solid ore! A natural! Now let's go find that trail." },
 		},
 		{
-			kind = "kill",
-			target = "CaveBat",
-			count = 10,
-			objective = "Defeat 10 Cave Bats",
-			track = "Defeat {Cave Bats}",
+			-- 2026-10-26 (the user): a mixed hunt
+			kind = "hunt",
+			targets = { { id = "CaveBat", count = 12 }, { id = "PebbleGolem", count = 3 } },
+			objective = "Defeat 12 Cave Bats and 3 Pebble Golems",
+			track = "Defeat {Bats and Pebble Golems}",
 			reward = { coins = 4000, exp = 4000 },
 			offer = {
-				"My crew marked their path on the walls, but the bats nested right over it.",
-				"[Defeat 10 Cave Bats] and clear the way.",
+				"My crew marked their path on the walls, but the bats nested right over it, and the rocks there walk.",
+				"[Defeat 12 Cave Bats and 3 Pebble Golems] and clear the way.",
 			},
-			reminder = { "The marks are under all those bats. [Defeat 10 Cave Bats]." },
+			reminder = { "The marks are under all those bats and pebbles. [Defeat 12 Cave Bats and 3 Pebble Golems]." },
 			complete = { "There! Chalk arrows, and a boot print. They came this way!" },
 		},
 		{
 			kind = "kill",
 			target = "PebbleGolem",
-			count = 3,
-			objective = "Defeat 3 Pebble Golems",
+			count = 5,
+			objective = "Defeat 5 Pebble Golems",
 			track = "Defeat {Pebble Golems}",
 			reward = { coins = 6000, exp = 6000 },
 			offer = {
-				"The arrows point down the tunnels, but the rocks there walk.",
-				"[Defeat 3 Pebble Golems] so I can chart it.",
+				"The arrows point down the tunnels, but more rocks keep getting up and walking.",
+				"[Defeat 5 Pebble Golems] so I can chart it.",
 			},
-			reminder = { "Can't draw a map with the map walking around. [Defeat 3 Pebble Golems]." },
+			reminder = { "Can't draw a map with the map walking around. [Defeat 5 Pebble Golems]." },
 			complete = { "Charted! Well, it's mostly pebbles now." },
 		},
 		{
-			kind = "level",
-			level = 60,
-			objective = "Reach level 60",
-			track = "Reach {Level 60}",
-			reward = { coins = 5000 },
+			-- 2026-10-26 (the user): the level step went; mining in its place
+			kind = "gather",
+			target = "CrystalShard",
+			count = 10,
+			objective = "Collect 10 Crystal Shards",
+			track = "Collect {Crystal Shards}",
+			reward = { coins = 5000, exp = 6000 },
 			offer = {
-				"The tunnel ends at a sheer drop. Whatever's down there isn't for beginners.",
-				"Come back when you [reach level 60].",
+				"The tunnel ends at a sheer drop, and it's pitch black down there.",
+				"The crystal clusters glow pink and purple and blue. Your Crystal Pickaxe will crack them.",
+				"[Collect 10 Crystal Shards] and I'll make us some lamps.",
 			},
-			reminder = { "Toughen up a bit first. [Reach level 60]." },
-			complete = { "Look at you! Tougher than a stalagmite." },
+			reminder = { "No light, no way down. [Collect 10 Crystal Shards]." },
+			complete = { "Look at them glow! Keep them safe, the winch at the drop will want some too." },
 		},
 		{
 			-- (2026-10-24) the mined bring step, like Rowan's step 6 (x10 its reward)
 			kind = "bring",
-			items = { { id = "IronOre", count = 10 }, { id = "CrystalShard", count = 10 } },
-			objective = "Bring Pip 10 Iron Ore and 10 Crystal Shards",
+			items = { { id = "CrystalShard", count = 15 }, { id = "IronOre", count = 15 } },
+			objective = "Bring Pip 15 Iron Ore and 15 Crystal Shards",
 			track = "Bring Pip {Ore and Shards}",
 			reward = { coins = 8000, exp = 10000 },
 			offer = {
 				"The old winch at the drop is busted. It needs new gears and a new lamp.",
-				"Could you [bring me 10 Iron Ore and 10 Crystal Shards]? Ore for the gears, shards for the light.",
-				"The crystal clusters glow pink and purple and blue. Your Crystal Pickaxe will crack them.",
+				"Could you [bring me 15 Iron Ore and 15 Crystal Shards]? Ore for the gears, shards for the light.",
 			},
-			reminder = { "No gears, no light, no way down. [Bring me 10 Iron Ore and 10 Crystal Shards]." },
+			reminder = { "No gears, no light, no way down. [Bring me 15 Iron Ore and 15 Crystal Shards]." },
 			complete = { "Clank, whirr, glow, perfect! Hold on tight, we're going down." },
 		},
 		{
-			kind = "kill",
-			target = "CrystalGolem",
-			count = 2,
-			objective = "Defeat 2 Crystal Golems",
-			track = "Defeat {Crystal Golems}",
+			-- 2026-10-26 (the user): a mixed hunt with the elites
+			kind = "hunt",
+			targets = { { id = "PebbleGolem", count = 6 }, { id = "CrystalGolem", count = 3 } },
+			objective = "Defeat 6 Pebble Golems and 3 Crystal Golems",
+			track = "Defeat {Pebble and Crystal Golems}",
 			reward = { coins = 10000, exp = 10000 },
 			offer = {
-				"Bad news: the lower hall is guarded by Crystal Golems. Big shiny ones.",
-				"[Defeat 2 Crystal Golems] and we're through.",
+				"Bad news: the lower hall is guarded by Crystal Golems, big shiny ones, with pebble golems all around them.",
+				"[Defeat 6 Pebble Golems and 3 Crystal Golems] and we're through.",
 			},
-			reminder = { "They're pretty, but they're in the way. [Defeat 2 Crystal Golems]." },
+			reminder = { "They're pretty, but they're in the way. [Defeat 6 Pebble Golems and 3 Crystal Golems]." },
 			complete = { "We're through! And there's webbing everywhere. I don't like webbing." },
 		},
 		{
@@ -604,31 +635,32 @@ lines.ExplorerCaverns = {
 			},
 		},
 		{
-			kind = "level",
-			level = 65,
-			objective = "Reach level 65",
-			track = "Reach {Level 65}",
-			reward = { coins = 10000 },
+			-- 2026-10-26 (the user): the elites and the boss together
+			kind = "hunt",
+			targets = { { id = "CrystalGolem", count = 4 }, { id = "SpiderQueen", count = 1 } },
+			objective = "Defeat 4 Crystal Golems and the Spider Queen",
+			track = "Defeat {Crystal Golems and the Queen}",
+			reward = { coins = 12000, exp = 15000 },
 			offer = {
-				"Fresh tracks lead past her hall, deeper than any map. We'll need you at your best.",
-				"[Reach level 65] first.",
+				"Fresh tracks lead past her hall, deeper than any map. But she's back, and the golems have closed ranks around her.",
+				"[Defeat 4 Crystal Golems and the Spider Queen] and we can follow the tracks.",
 			},
-			reminder = { "Not yet, not yet. [Reach level 65]." },
+			reminder = { "They keep reforming, and she keeps spinning! [Defeat 4 Crystal Golems and the Spider Queen]." },
 			complete = { "Ready? Me too. Let's finish this." },
 		},
 		{
-			kind = "kill",
-			target = "SpiderQueen",
-			count = 3,
-			objective = "Defeat the Spider Queen 3 times",
-			track = "Defeat the {Spider Queen}",
+			-- 2026-10-26 (the user): the Clean Up, a long hunt through the whole world
+			kind = "hunt",
+			targets = { { id = "CaveBat", count = 10 }, { id = "PebbleGolem", count = 8 }, { id = "CrystalGolem", count = 5 }, { id = "SpiderQueen", count = 3 } },
+			objective = "Clean up The Caverns: defeat 10 Cave Bats, 8 Pebble Golems, 5 Crystal Golems and the Spider Queen 3 times",
+			track = "Clean up {The Caverns}",
 			-- The quest-only Diamond Pickaxe (Legendary).
 			reward = { coins = 30000, exp = 30000, weapon = "DiamondPickaxe" },
 			offer = {
-				"She keeps coming back, and every time she seals the tunnel behind her with web.",
-				"[Defeat the Spider Queen 3 times] and we'll break through for good.",
+				"She keeps coming back, and the whole cave answers her: bats, pebbles, crystal golems, everything.",
+				"[Defeat 10 Cave Bats, 8 Pebble Golems, 5 Crystal Golems and the Spider Queen 3 times], and we'll break through for good.",
 			},
-			reminder = { "The web's thinning! [Defeat the Spider Queen 3 times]." },
+			reminder = { "The caverns still aren't safe. Bats, golems, and the Queen herself." },
 			complete = {
 				"We're through, and my crew's safe on the other side!",
 				"They dug this up down there. A diamond pickaxe. It's yours, partner.",
@@ -637,10 +669,186 @@ lines.ExplorerCaverns = {
 	} :: { Step },
 }
 
+-- Professor Dusty at the start of World 4 (2026-10-29), on the entry road between the corridor and the
+-- Crafter. His dig cracked the seal on the pyramid and woke the Sand Pharaoh; the Sunstone Amulet that
+-- sealed him is in its hall. The step pattern every line uses since 2026-10-26; rewards x10 Pip's step
+-- for step (trial numbers: World 4 isn't in the simulation yet).
+lines.ArchaeologistSands = {
+	id = "ArchaeologistSands",
+	name = "Curse of the Sand Pharaoh",
+	world = 4,
+	short = "The Sands",
+	npc = {
+		name = "Professor Dusty",
+		short = "Dusty",
+		portrait = "",
+	},
+	returnTrack = "Return to {Professor Dusty}",
+	returnNote = "to claim your reward",
+	finished = { "The curse is broken and the dig is open again. History owes you one, my friend!" },
+	steps = {
+		{
+			kind = "kill",
+			target = "BoneJackal",
+			count = 8,
+			objective = "Defeat 8 Bone Jackals",
+			track = "Defeat {Bone Jackals}",
+			reward = { coins = 25000, exp = 20000 },
+			offer = {
+				"Ah, a visitor! Professor Dusty, archaeologist. Mind the sand, it gets everywhere.",
+				"My team was digging at the old tombs when the bones started to walk. They ran. I stayed, naturally.",
+				"Those jackals keep running off with my finds. Could you [defeat 8 Bone Jackals]?",
+			},
+			reminder = { "They're chewing on my best pottery! [Defeat 8 Bone Jackals], please." },
+			complete = { "Splendid! And hardly a shard broken." },
+		},
+		{
+			-- the saguaros: the Sandstone Axe, made from the Stone Axe at the Weaponsmith
+			kind = "gather",
+			target = "CactusRib",
+			count = 8,
+			objective = "Collect 8 Cactus Ribs",
+			track = "Collect {Cactus Ribs}",
+			reward = { coins = 30000, exp = 30000 },
+			offer = {
+				"My trenches keep caving in. Cactus ribs make fine props: light, and tough as anything.",
+				"The Weaponsmith by the way in can turn your stone axe into a Sandstone Axe.",
+				"Then chop the big saguaros and [collect 8 Cactus Ribs]. Hold on to them, we'll want more for the shoring later.",
+			},
+			offerHasTool = {
+				"My trenches keep caving in. Cactus ribs make fine props, and I see you've got a Sandstone Axe already.",
+				"Chop the big saguaros and [collect 8 Cactus Ribs]. Hold on to them, we'll want more for the shoring later.",
+			},
+			reminder = { "The tall cacti with the arms. [Collect 8 Cactus Ribs] with a Sandstone Axe." },
+			complete = { "Good stout ribs! The trenches will hold." },
+		},
+		{
+			kind = "hunt",
+			targets = { { id = "BoneJackal", count = 12 }, { id = "ShamblingMummy", count = 3 } },
+			objective = "Defeat 12 Bone Jackals and 3 Shambling Mummies",
+			track = "Defeat {Jackals and Mummies}",
+			reward = { coins = 40000, exp = 40000 },
+			offer = {
+				"A sandstorm blew my field notes right into a pack of jackals, and now the mummies are up too.",
+				"[Defeat 12 Bone Jackals and 3 Shambling Mummies] so I can gather my pages.",
+			},
+			reminder = { "My notes are out there with them! [Defeat 12 Bone Jackals and 3 Shambling Mummies]." },
+			complete = { "Page twelve! And thirteen! They say the pyramid was sealed with a sunstone." },
+		},
+		{
+			kind = "kill",
+			target = "ShamblingMummy",
+			count = 5,
+			objective = "Defeat 5 Shambling Mummies",
+			track = "Defeat {Shambling Mummies}",
+			reward = { coins = 60000, exp = 60000 },
+			offer = {
+				"The mummies keep shuffling into my trenches and unwrapping everything.",
+				"[Defeat 5 Shambling Mummies] before they make a mess of the whole site.",
+			},
+			reminder = { "There's linen all over my dig! [Defeat 5 Shambling Mummies]." },
+			complete = { "All wrapped up. Ha! Archaeology humour." },
+		},
+		{
+			-- the dig piles: the Sandstone Shovel, World 4's first shovel (bought)
+			kind = "gather",
+			target = "Fossil",
+			count = 10,
+			objective = "Collect 10 Fossils",
+			track = "Collect {Fossils}",
+			reward = { coins = 50000, exp = 60000 },
+			offer = {
+				"Now, the fun part: digging! The mounds with a red X are full of old bones and treasure.",
+				"The Weaponsmith sells a Sandstone Shovel. Dig them up and [collect 10 Fossils].",
+			},
+			offerHasTool = {
+				"Now, the fun part: digging! The mounds with a red X are full of old bones and treasure.",
+				"You've a shovel already, splendid. Dig them up and [collect 10 Fossils].",
+			},
+			reminder = { "The mounds with the red X. [Collect 10 Fossils] with a Sandstone Shovel." },
+			complete = { "Marvellous specimens! Keep them safe, I'll want some for the key." },
+		},
+		{
+			kind = "bring",
+			items = { { id = "Fossil", count = 15 }, { id = "CactusRib", count = 15 } },
+			objective = "Bring Dusty 15 Cactus Ribs and 15 Fossils",
+			track = "Bring Dusty {Ribs and Fossils}",
+			reward = { coins = 80000, exp = 100000 },
+			offer = {
+				"The way into the pyramid's hall is shut with an old puzzle lock, all bone and timber. I can rebuild its key.",
+				"Could you [bring me 15 Cactus Ribs and 15 Fossils]? Ribs for the frame, fossils for the teeth.",
+			},
+			reminder = { "No key, no hall. [Bring me 15 Cactus Ribs and 15 Fossils]." },
+			complete = { "Click, clack... it fits! The hall is open. Oh dear. Something heard that." },
+		},
+		{
+			kind = "hunt",
+			targets = { { id = "ShamblingMummy", count = 6 }, { id = "TombGuardian", count = 3 } },
+			objective = "Defeat 6 Shambling Mummies and 3 Tomb Guardians",
+			track = "Defeat {Mummies and Guardians}",
+			reward = { coins = 100000, exp = 100000 },
+			offer = {
+				"The Tomb Guardians have woken at every doorway, and the mummies are pouring out behind them.",
+				"[Defeat 6 Shambling Mummies and 3 Tomb Guardians] and we can get inside.",
+			},
+			reminder = { "Those guardians are very large and very cross. [Defeat 6 Shambling Mummies and 3 Tomb Guardians]." },
+			complete = { "The way in is clear. And there in the great hall... the Sand Pharaoh himself." },
+		},
+		{
+			kind = "kill",
+			target = "SandPharaoh",
+			count = 1,
+			objective = "Defeat the Sand Pharaoh",
+			track = "Defeat the {Sand Pharaoh}",
+			reward = { coins = 150000, exp = 150000, item = "SunstoneAmulet" },
+			offer = {
+				"My notes say he wore the sunstone that sealed him in. When my dig cracked the seal, he woke.",
+				"[Defeat the Sand Pharaoh] and bring back anything he drops.",
+			},
+			reminder = { "He's in the hall at the heart of the pyramid. [Defeat the Sand Pharaoh]." },
+			complete = {
+				"The Sunstone Amulet! Warm as the noon sun. I never thought I'd hold it.",
+				"Keep the [Sunstone Amulet]. The Crafter here can set it into armor fit for a king.",
+			},
+		},
+		{
+			kind = "hunt",
+			targets = { { id = "TombGuardian", count = 4 }, { id = "SandPharaoh", count = 1 } },
+			objective = "Defeat 4 Tomb Guardians and the Sand Pharaoh",
+			track = "Defeat {Guardians and the Pharaoh}",
+			reward = { coins = 120000, exp = 150000 },
+			offer = {
+				"Without the sunstone his curse is weaker, but he's back, and his guardians with him.",
+				"[Defeat 4 Tomb Guardians and the Sand Pharaoh] and I can read the writing in his hall.",
+			},
+			reminder = { "The guardians won't let me near the walls. [Defeat 4 Tomb Guardians and the Sand Pharaoh]." },
+			complete = { "The inscriptions! They say the curse only breaks when the whole desert is quiet." },
+		},
+		{
+			-- the Clean Up, a long hunt through the whole world
+			kind = "hunt",
+			targets = { { id = "BoneJackal", count = 10 }, { id = "ShamblingMummy", count = 8 }, { id = "TombGuardian", count = 5 }, { id = "SandPharaoh", count = 3 } },
+			objective = "Clean up The Sands: defeat 10 Bone Jackals, 8 Shambling Mummies, 5 Tomb Guardians and the Sand Pharaoh 3 times",
+			track = "Clean up {The Sands}",
+			-- The quest-only Staff of Ra (Legendary).
+			reward = { coins = 300000, exp = 300000, weapon = "StaffOfRa" },
+			offer = {
+				"Every jackal, every mummy, every guardian answers him. The whole desert has to go quiet.",
+				"[Defeat 10 Bone Jackals, 8 Shambling Mummies, 5 Tomb Guardians and the Sand Pharaoh 3 times], and the curse will break.",
+			},
+			reminder = { "The sands are still restless. Jackals, mummies, guardians, and the Pharaoh himself." },
+			complete = {
+				"Listen... nothing at all. The curse is broken!",
+				"I found this in the Pharaoh's hall. The Staff of Ra. It belongs with a hero, not in a museum.",
+			},
+		},
+	} :: { Step },
+}
+
 Quests.lines = lines
 -- the order lines are checked in (the tracker's fallback when the player's
 -- world has nothing to show)
-Quests.order = { "DaleFarm", "RangerRedwoods", "ExplorerCaverns" }
+Quests.order = { "DaleFarm", "RangerRedwoods", "ExplorerCaverns", "ArchaeologistSands" }
 
 function Quests.get(id: any): Line?
 	return if type(id) == "string" then lines[id] else nil
@@ -684,14 +892,76 @@ function Quests.goal(step: Step): number
 		return step.count or 1
 	elseif step.kind == "level" then
 		return step.level or 1
-	elseif step.kind == "bring" then
+	elseif step.kind == "bring" or step.kind == "hunt" then
 		local total = 0
-		for _, item in step.items or {} do
+		for _, item in (if step.kind == "hunt" then step.targets else step.items) or {} do
 			total += item.count
 		end
 		return math.max(total, 1)
 	end
 	return step.amount or 1
+end
+
+-- What a hunt or bring step's icon shows (2026-10-26, the user: the stronger enemy, then the
+-- next as each is done): the toughest enemy still short (the most health; a boss over its
+-- elite and so on), or for a bring step the rarest material still short. Once all are met,
+-- the toughest / rarest of all. `held` is the player's material counts (Materials.counts),
+-- `kills` the hunt's kills (Quests.huntKills). Returns the Config/Worlds or Config/Materials id.
+function Quests.focus(step: Step, kills: { [string]: number }?, held: { [string]: number }?): string?
+	local list = Quests.ranked(step)
+	if #list == 0 then
+		return nil
+	end
+	local have = if step.kind == "hunt" then kills or {} else held or {}
+	for _, item in list do
+		if (have[item.id] or 0) < item.count then
+			return item.id
+		end
+	end
+	return list[1].id
+end
+
+-- A hunt step's targets or a bring step's items, hardest first (the user, 2026-10-26: the
+-- tracker's chips read left to right from the toughest enemy, or the rarest material, down):
+-- enemies by `hp`, materials by rarity, ties in the step's own order (Dale's Stone before his
+-- Oak Logs).
+function Quests.ranked(step: Step): { { id: string, count: number } }
+	local list = if step.kind == "hunt" then step.targets elseif step.kind == "bring" then step.items else nil
+	local out = {}
+	for index, item in list or {} do
+		local weight = 0
+		if step.kind == "hunt" then
+			local def = Enemies.get(item.id)
+			weight = def and def.hp or 0
+		else
+			local def = Materials.get(item.id)
+			weight = if def then (table.find(Weapons.Rarities, def.rarity) or 0) else 0
+		end
+		table.insert(out, { item = item, weight = weight, index = index })
+	end
+	table.sort(out, function(a, b)
+		if a.weight ~= b.weight then
+			return a.weight > b.weight
+		end
+		return a.index < b.index
+	end)
+	local items = {}
+	for _, entry in out do
+		table.insert(items, entry.item)
+	end
+	return items
+end
+
+-- A hunt step's kills so far, per enemy (from the "QuestKills_<line>" attribute).
+function Quests.huntKills(player: Player, lineId: string): { [string]: number }
+	local out: { [string]: number } = {}
+	local raw = player:GetAttribute(Quests.attr("Kills", lineId))
+	if type(raw) == "string" then
+		for id, n in raw:gmatch("(%w+)=(%d+)") do
+			out[id] = tonumber(n) or 0
+		end
+	end
+	return out
 end
 
 -- The material a gather / bring step is about (its icon on the dialogue and tracker).

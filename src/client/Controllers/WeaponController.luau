@@ -57,6 +57,8 @@ local player = Players.LocalPlayer
 local changedEvent = Instance.new("BindableEvent")
 -- fires on every swing's "Hit" marker, whatever it touched (World 3's secret crystals listen)
 local landedEvent = Instance.new("BindableEvent")
+-- fires when any character's swing starts on this client, with (model, def, seconds)
+local startedEvent = Instance.new("BindableEvent")
 
 -- Enemies within reach plus this get the auto-turn.
 local AIM_ASSIST_RANGE = 3
@@ -85,6 +87,7 @@ type Rig = {
 	swingBody: any?, -- its additive body layer (twist, lean, lunge)
 	trail: any?, -- slash trail handle on the held weapon
 	trailModel: Model?,
+	turn: number, -- swings thrown so far, for a def's `swings` taken in turn (the gauntlets' fists)
 }
 
 local rigs: { [Model]: Rig } = {}
@@ -241,11 +244,19 @@ local function startSwing(rig: Rig, def: Weapons.WeaponDef): any
 		rig.swingBody:Stop(0.05)
 	end
 	local speed = 1 / def.cooldown
-	local track = rig.animator:Play(WeaponClips.swing(def), { speed = speed })
+	local arms, body = WeaponClips.swing(def), WeaponClips.swingBody(def)
+	local turns = (def :: any).swings
+	if turns and #turns > 0 then
+		-- swings taken in turn: the gauntlets punch right, left, right...
+		rig.turn += 1
+		arms, body = WeaponClips.extra(def, turns[(rig.turn - 1) % #turns + 1], def.hitTime)
+	end
+	local track = rig.animator:Play(arms, { speed = speed })
 	-- The body moves additively on top of walking, so the legs and foot planting
 	-- carry on through the attack.
-	rig.swingBody = rig.animator:Play(WeaponClips.swingBody(def), { speed = speed })
+	rig.swingBody = rig.animator:Play(body, { speed = speed })
 	rig.swing = track
+	startedEvent:Fire(rig.model, def, def.cooldown)
 	local impact = if def.impact == "Slam" then slam elseif def.impact == "Gust" then gust elseif def.impact == "Pumpkin" then pumpkin else nil
 	if impact then
 		track:GetMarkerReachedSignal("Hit"):Once(function()
@@ -300,6 +311,7 @@ local function adopt(model: Model, cull: boolean): Rig
 		swingBody = nil,
 		trail = nil,
 		trailModel = nil,
+		turn = 0,
 	}
 	rigs[model] = rig
 	sync(rig)
@@ -404,6 +416,10 @@ local function findHits(root: BasePart, def: Weapons.WeaponDef): { Hit }
 	return hits
 end
 
+-- a tool swung at an enemy: the "use your weapon" hint, at most this often
+local TOOL_HINT_GAP = 1.5
+local lastToolHint = -math.huge
+
 -- Turn to face the nearest enemy close enough to be worth swinging at.
 local function aimAssist(root: BasePart, def: Weapons.WeaponDef)
 	local best: Vector3? = nil
@@ -427,9 +443,20 @@ local function landSwing(character: Model, root: BasePart, def: any)
 	if player.Character ~= character or not held or held.id ~= def.id or not alive(character) then
 		return
 	end
-	-- a tool's swing is for the trees and rocks (GatherController), never enemies
+	-- a tool's swing is for the trees and rocks (GatherController), never enemies; one that
+	-- reaches an enemy tells the player to take their weapon out (ToolHint.weapon, at most every
+	-- TOOL_HINT_GAP seconds)
 	if def.kind then
 		landedEvent:Fire(root, def, false)
+		local hits = findHits(root, def)
+		if #hits > 0 and os.clock() - lastToolHint >= TOOL_HINT_GAP and deps.Util.ToolHint then
+			lastToolHint = os.clock()
+			-- on the enemy's side facing the player, at chest height
+			local pos = hits[1].pos
+			local toward = flat(root.Position - pos)
+			local side = if toward.Magnitude > 0.1 then toward.Unit * 1.5 else Vector3.zero
+			deps.Util.ToolHint.weapon(Vector3.new(pos.X, root.Position.Y + 1, pos.Z) + side)
+		end
 		return
 	end
 	local hits = findHits(root, def)
@@ -515,6 +542,13 @@ end
 -- struckEnemy), whether or not an enemy was in reach (for things that react to being struck).
 function WeaponController.onSwingLanded(callback: (BasePart, Weapons.WeaponDef, boolean) -> ()): RBXScriptConnection
 	return landedEvent.Event:Connect(callback)
+end
+
+-- Fires when a swing starts for any character this client animates (the local player's
+-- and, from SwingSeq, everyone else's), with (model, def, seconds): the swing runs
+-- over `seconds` (the def's cooldown). The Firefly Lantern's chain follows it.
+function WeaponController.onSwingStarted(callback: (Model, Weapons.WeaponDef, number) -> ()): RBXScriptConnection
+	return startedEvent.Event:Connect(callback)
 end
 
 function WeaponController.equip(id: string)

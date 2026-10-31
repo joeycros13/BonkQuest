@@ -265,7 +265,9 @@ function HotbarUI.nudge(kind: string, weak: boolean, seconds: number?)
 	end
 	local slot: GuiButton? = nil
 	for _, child in hotbar:GetChildren() do
-		if child:IsA("GuiButton") and child:GetAttribute("ToolKind") == kind and child.Visible then
+		-- "Weapon" is the weapon's slot (Slot1, no ToolKind): a tool swung at an enemy (ToolHint.weapon)
+		local match = if kind == "Weapon" then child.Name == "Slot1" else child:GetAttribute("ToolKind") == kind
+		if child:IsA("GuiButton") and match and child.Visible then
 			slot = child
 		end
 	end

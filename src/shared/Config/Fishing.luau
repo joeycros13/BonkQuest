@@ -89,6 +89,9 @@ Fishing.Fish = {
 	Glowfish = "Easy",
 	BlindCavefish = "Medium",
 	CrystalEel = "Hard",
+	Pupfish = "Easy",
+	OasisKoi = "Medium",
+	SandShark = "Hard",
 } :: { [string]: string }
 
 Fishing.Spots = {
@@ -129,6 +132,18 @@ Fishing.Spots = {
 			{ id = "Glowfish", weight = 60 },
 			{ id = "BlindCavefish", weight = 30 },
 			{ id = "CrystalEel", weight = 10 },
+		},
+	},
+	-- World 4's oasis in the north arm (Oasis/Water, 2026-10-28): a Sandstone Rod or better.
+	OasisPool = {
+		id = "OasisPool",
+		name = "The Oasis",
+		world = 4,
+		tier = 4,
+		fish = {
+			{ id = "Pupfish", weight = 60 },
+			{ id = "OasisKoi", weight = 30 },
+			{ id = "SandShark", weight = 10 },
 		},
 	},
 } :: { [string]: Spot }

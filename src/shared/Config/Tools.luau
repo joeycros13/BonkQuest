@@ -79,7 +79,7 @@ Tools.Defs = {
 		tier = 1,
 		world = 1,
 		sell = 11,
-		power = 20,
+		power = 10,
 		rarity = "Common",
 		price = 50,
 		icon = "rbxassetid://120793441722751",
@@ -90,7 +90,7 @@ Tools.Defs = {
 		arc = 70,
 		maxTargets = 1,
 		-- the Machete's diagonal: a chop down and across into the trunk
-		swing = "Diagonal",
+		swing = "Chop",
 	},
 	WoodenPickaxe = {
 		id = "WoodenPickaxe",
@@ -99,7 +99,7 @@ Tools.Defs = {
 		tier = 1,
 		world = 1,
 		sell = 14,
-		power = 20,
+		power = 10,
 		rarity = "Common",
 		price = 50,
 		icon = "rbxassetid://123876463543492",
@@ -138,7 +138,7 @@ Tools.Defs = {
 	-- ==================== World 2 (The Redwood Forest) ====================
 	-- The approved table (2026-10-20, memory tools-per-world): World 2 sells a Stone Axe and a
 	-- Stone Rod (no pickaxe: the Wooden Pickaxe lasts until World 3). Models: Blender
-	-- w2_tools_build, art/meshes/w2_tools.fbx, built to the wooden ones' sizes ("Redwood +
+	-- w2_tools_build, art/meshes/w2/w2_tools.fbx, built to the wooden ones' sizes ("Redwood +
 	-- slate": knapped slate, vine lashing; the axe's amber grip, the all-stone rod's teal reel).
 	-- Prices, power, sell and the recipes are placeholders.
 	StoneAxe = {
@@ -160,8 +160,7 @@ Tools.Defs = {
 			materials = {
 				{ id = "OakLog", count = 8 },
 				{ id = "Stone", count = 8 },
-				{ id = "FoxFur", count = 6 },
-				{ id = "BoarTusk", count = 2 },
+				{ id = "FoxFur", count = 8 },
 			},
 		},
 		handed = 1,
@@ -170,7 +169,7 @@ Tools.Defs = {
 		reach = 5,
 		arc = 70,
 		maxTargets = 1,
-		swing = "Diagonal",
+		swing = "Chop",
 	},
 	StoneRod = {
 		id = "StoneRod",
@@ -190,8 +189,7 @@ Tools.Defs = {
 			materials = {
 				{ id = "OakLog", count = 6 },
 				{ id = "Stone", count = 6 },
-				{ id = "FoxFur", count = 4 },
-				{ id = "BoarTusk", count = 3 },
+				{ id = "FoxFur", count = 7 },
 			},
 		},
 		handed = 2,
@@ -206,7 +204,7 @@ Tools.Defs = {
 	-- ==================== World 3 (The Crystal Caverns) ====================
 	-- (2026-10-24, the user: "Crystal" fits the caves) World 3 sells a Crystal Pickaxe (from the
 	-- Wooden Pickaxe: World 2 had none) and a Crystal Rod (from the Stone Rod); the Stone Axe carries
-	-- on. Models: Blender w3_tools_build, art/meshes/w3_tools.fbx, the wooden / stone ones' sizes
+	-- on. Models: Blender w3_tools_build, art/meshes/w3/w3_tools.fbx, the wooden / stone ones' sizes
 	-- (crystal arms in iron, a purple grip; a jointed cyan / pink / purple rod, a pink reel). The
 	-- recipes follow World 2's: the tool before, the last world's gathered things, this world's
 	-- enemy drops. Prices, power x10 World 2's; all placeholders.
@@ -226,8 +224,7 @@ Tools.Defs = {
 			materials = {
 				{ id = "RedwoodLog", count = 8 },
 				{ id = "AmberSap", count = 1 },
-				{ id = "BatWing", count = 6 },
-				{ id = "GolemPebble", count = 2 },
+				{ id = "BatWing", count = 8 },
 			},
 		},
 		handed = 1,
@@ -254,8 +251,101 @@ Tools.Defs = {
 			materials = {
 				{ id = "RedwoodLog", count = 6 },
 				{ id = "Perch", count = 4 },
-				{ id = "BatWing", count = 4 },
-				{ id = "GolemPebble", count = 3 },
+				{ id = "BatWing", count = 7 },
+			},
+		},
+		handed = 2,
+		cooldown = 1.0,
+		hitTime = 0.56,
+		reach = 0,
+		arc = 0,
+		maxTargets = 0,
+		swing = "Cast",
+	},
+
+	-- ==================== World 4 (The Scorching Sands) ====================
+	-- (2026-10-28, the user: "sandstone tools but a little more decorated") The Sandstone Axe (from the
+	-- Stone Axe) chops the saguaros, the Sandstone Shovel (the first shovel, so no tool before it) digs
+	-- the dig piles and the Sandstone Rod (from the Crystal Rod) fishes the oasis. No pickaxe: World 4
+	-- has nothing to mine, so the Crystal Pickaxe carries on (the user, 2026-10-29). Models: Blender
+	-- w4_tools_build, art/meshes/w4/w4_tools.fbx, the earlier tools' sizes (sandstone heads with gold edges
+	-- and caps, lapis and turquoise inlays; the axe's turquoise grip, the shovel's carnelian, the rod's
+	-- gold tip). The recipes take World 3's gathered things and the Bone Jackal's fangs (2026-10-29, the
+	-- World 4 rescale, as World 3's tools take Bat Wings). Prices and power x10 World 3's; all placeholders. Icons rendered like the other tools'
+	-- (w1_icons_rerender, art/tools/ui/tool_icons.py).
+	SandstoneAxe = {
+		id = "SandstoneAxe",
+		icon = "rbxassetid://94072455395551",
+		name = "Sandstone Axe",
+		kind = "Axe",
+		tier = 4,
+		world = 4,
+		sell = 11000,
+		power = 20000,
+		rarity = "Epic",
+		price = 50000,
+		recipe = {
+			tool = "StoneAxe",
+			materials = {
+				{ id = "IronOre", count = 10 },
+				{ id = "CrystalShard", count = 8 },
+				{ id = "RawGem", count = 1 },
+				{ id = "JackalFang", count = 8 },
+			},
+		},
+		handed = 1,
+		cooldown = 0.8,
+		hitTime = 0.52,
+		reach = 5,
+		arc = 70,
+		maxTargets = 1,
+		swing = "Chop",
+	},
+	SandstoneShovel = {
+		id = "SandstoneShovel",
+		icon = "rbxassetid://91759919988456",
+		name = "Sandstone Shovel",
+		kind = "Shovel",
+		tier = 4,
+		world = 4,
+		sell = 11000,
+		power = 20000,
+		rarity = "Epic",
+		price = 50000,
+		recipe = {
+			materials = {
+				{ id = "IronOre", count = 10 },
+				{ id = "CrystalShard", count = 10 },
+				{ id = "Glowfish", count = 4 },
+				{ id = "JackalFang", count = 8 },
+			},
+		},
+		handed = 2, -- (2026-10-29) the dig uses both hands; it rests in one, like the rods
+		cooldown = 0.9,
+		hitTime = 0.5,
+		reach = 5,
+		arc = 70,
+		maxTargets = 1,
+		swing = "Dig", -- (2026-10-29) a real dig: in, lever up, tip it over the shoulder
+	},
+	SandstoneRod = {
+		id = "SandstoneRod",
+		icon = "rbxassetid://114014911885940",
+		name = "Sandstone Rod",
+		kind = "Rod",
+		tier = 4,
+		world = 4,
+		sell = 16000,
+		power = 0,
+		rarity = "Epic",
+		price = 75000,
+		recipe = {
+			tool = "CrystalRod",
+			materials = {
+				{ id = "IronOre", count = 8 },
+				{ id = "CrystalShard", count = 6 },
+				{ id = "BlindCavefish", count = 4 },
+				{ id = "JackalFang", count = 7 },
 			},
 		},
 		handed = 2,

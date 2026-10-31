@@ -153,7 +153,21 @@ local function destroy(model: Model)
 	end
 end
 
-local function play(entry: Entry?, move: string)
+-- How fast a move plays so its "Strike" lands on the enemy's windup (the server's hit time):
+-- since the 2026-10-26 rescale windups are 0.2-0.35 s (quick attacks a player can't simply step
+-- away from), shorter than the moves' authored strikes (0.28-0.8 s into them).
+local function moveSpeed(model: Instance, move: string): number
+	local duration = EnemyClips.MOVE_DURATION[move]
+	local strike = EnemyClips.STRIKE[move]
+	local def = Enemies.get(model:GetAttribute("Archetype") :: any)
+	local windup = def and (def :: any).melee and (def :: any).melee.windup
+	if not (duration and strike and type(windup) == "number" and windup > 0) then
+		return 1
+	end
+	return math.clamp(strike * duration / windup, 0.5, 4)
+end
+
+local function play(entry: Entry?, move: string, model: Instance?)
 	if not entry then
 		return
 	end
@@ -164,7 +178,7 @@ local function play(entry: Entry?, move: string)
 	if entry.move then
 		entry.move:Stop(0.08)
 	end
-	local track = entry.animator:Play(clip)
+	local track = entry.animator:Play(clip, { speed = if model then moveSpeed(model, move) else 1 })
 	entry.move = track
 	local effect = STRIKE_EFFECTS[move]
 	if effect then
@@ -212,7 +226,7 @@ local function adopt(inst: Instance)
 		entry.attackConn = inst:GetAttributeChangedSignal("AttackSeq"):Connect(function()
 			local move = inst:GetAttribute("AttackMove")
 			if type(move) == "string" then
-				play(entry, move)
+				play(entry, move, inst)
 			end
 		end)
 		if hasMood(inst) then

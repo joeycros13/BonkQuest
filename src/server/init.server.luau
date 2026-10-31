@@ -58,6 +58,8 @@ local SERVICE_ORDER = {
 	"InfuseService",
 	-- World 3's secret crystal code: opens the front mineshaft for whoever solves it
 	"SecretService",
+	-- World 4's secret tomb: its traps, checkpoints and the shortcut to the burial chamber (Config/Tomb)
+	"TombService",
 	-- trees and rocks to break for materials, through MaterialService
 	"GatherService",
 	-- casting a rod for fish (Config/Fishing), through ToolService and MaterialService

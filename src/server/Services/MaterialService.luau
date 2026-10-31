@@ -5,13 +5,15 @@
 -- Gathering: trees and rocks broken by GatherService give theirs through `drop`.
 --
 -- Kills: every kill rolls the enemy's `materials` table (Config/Worlds); each
--- entry rolls on its own and drops min..max of its material, its chance times the
--- killer's "LuckBoost" (capped at 100%, like weapon drops). Quest items come
+-- entry rolls on its own and drops min..max of its material at its chance. Since 2026-10-26 (the
+-- user) every material is a flat 50% for 1, and luck never changes it (it used to multiply the
+-- chance by the killer's "LuckBoost"; luck is for weapon drops). Quest items come
 -- from QuestService (give), once per player. Secret-weapon cores (`core`) drop
 -- like materials but at most once per player ever (remembered in `received`, so
--- infusing one later never lets it drop again), luck never changes their chance
--- (the user's rule, 2026-10-19), and they announce through the big Index popup
--- (Remotes.IndexDiscovered { kind = "Core", id }) instead of a toast.
+-- infusing one later never lets it drop again), and since 2026-10-29 (the user, reversing 2026-10-19's
+-- rule) the killer's luck multiplies their chance like a weapon drop's (Bonuses.luck), and they announce through the big Index popup
+-- (Remotes.IndexDiscovered { kind = "Core", id }) instead of a toast. Every player who hit
+-- the enemy since it last healed rolls its table on their own (2026-10-26).
 --
 -- The counts reach the client as the player's "Materials" attribute,
 -- "BullHide=3,ChickenFeather=12" (read it with Materials.counts). Remotes.MaterialsDropped
@@ -127,41 +129,47 @@ local function bodyPosition(body: Instance): Vector3?
 	return nil
 end
 
-local function onKill(enemy: any, killer: Player?)
-	if not killer then
-		return
-	end
+local function onKill(enemy: any, killer: Player?, hitters: { Player }?)
 	local def = Enemies.get(enemy.archetype)
 	local table_ = def and def.materials
 	if not table_ then
 		return
 	end
-	local profile = profileOf(killer)
-	-- passes, boosts and the Luck upgrade, added (Config/Bonuses); never cores
-	local luck = Bonuses.luck(killer)
-	local items = {}
-	for _, drop in table_ do
-		local material = Materials.get(drop.id)
-		if not material then
+	-- every player who hit it since it last healed rolls on their own, whoever killed it
+	-- (2026-10-26, the user; WorldEnemyService's `hitters`)
+	local rollers = hitters or {}
+	if #rollers == 0 and killer then
+		rollers = { killer }
+	end
+	for _, player in rollers do
+		if not player.Parent then
 			continue
 		end
-		if material.core then
-			-- one per player, ever: no duplicates
-			if not profile.received[drop.id] and random:NextNumber() < drop.chance then
-				profile.received[drop.id] = true
-				MaterialService.add(killer, drop.id, 1)
-				if discovered then
-					discovered:FireClient(killer, { kind = "Core", id = drop.id })
+		local profile = profileOf(player)
+		local items = {}
+		for _, drop in table_ do
+			local material = Materials.get(drop.id)
+			if not material then
+				continue
+			end
+			if material.core then
+				-- one per player, ever: no duplicates
+				if not profile.received[drop.id] and random:NextNumber() < math.min(1, drop.chance * Bonuses.luck(player)) then
+					profile.received[drop.id] = true
+					MaterialService.add(player, drop.id, 1)
+					if discovered then
+						discovered:FireClient(player, { kind = "Core", id = drop.id })
+					end
+				end
+			elseif random:NextNumber() < drop.chance then
+				local amount = random:NextInteger(drop.min, math.max(drop.min, drop.max))
+				if amount > 0 then
+					table.insert(items, { id = drop.id, amount = amount })
 				end
 			end
-		elseif random:NextNumber() < math.min(1, drop.chance * luck) then
-			local amount = random:NextInteger(drop.min, math.max(drop.min, drop.max))
-			if amount > 0 then
-				table.insert(items, { id = drop.id, amount = amount })
-			end
 		end
+		MaterialService.drop(player, items, bodyPosition(enemy.instance) or enemy.origin, enemy.instance)
 	end
-	MaterialService.drop(killer, items, bodyPosition(enemy.instance) or enemy.origin, enemy.instance)
 end
 
 -- Give the player these materials and show them (the side toast). Kills and gathering

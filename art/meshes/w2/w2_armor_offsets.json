@@ -1,0 +1,1015 @@
+{
+ "HeartwoodBark": {
+  "pieces": {
+   "Belt": {
+    "offset": [
+     -0.0,
+     -0.865,
+     0.0
+    ],
+    "size": [
+     2.26,
+     0.21,
+     1.36
+    ],
+    "colour": "3a2a1e",
+    "bone": "Torso"
+   },
+   "BracerGrainL": {
+    "offset": [
+     -1.5,
+     -0.6587,
+     0.0
+    ],
+    "size": [
+     1.23,
+     0.5974,
+     1.25
+    ],
+    "colour": "2c1e16",
+    "bone": "LeftArm"
+   },
+   "BracerGrainR": {
+    "offset": [
+     1.5,
+     -0.6587,
+     0.0
+    ],
+    "size": [
+     1.23,
+     0.5974,
+     1.25
+    ],
+    "colour": "2c1e16",
+    "bone": "RightArm"
+   },
+   "BracerL": {
+    "offset": [
+     -1.5,
+     -0.635,
+     0.0
+    ],
+    "size": [
+     1.19,
+     0.67,
+     1.21
+    ],
+    "colour": "4a3426",
+    "bone": "LeftArm"
+   },
+   "BracerR": {
+    "offset": [
+     1.5,
+     -0.635,
+     0.0
+    ],
+    "size": [
+     1.19,
+     0.67,
+     1.21
+    ],
+    "colour": "4a3426",
+    "bone": "RightArm"
+   },
+   "Chest": {
+    "offset": [
+     -0.0,
+     -0.055,
+     0.0
+    ],
+    "size": [
+     2.25,
+     2.21,
+     1.33
+    ],
+    "colour": "4a3426",
+    "bone": "Torso"
+   },
+   "Crack": {
+    "offset": [
+     -0.04,
+     -0.04,
+     -0.616
+    ],
+    "size": [
+     0.42,
+     1.32,
+     0.032
+    ],
+    "colour": "ffb02e",
+    "bone": "Torso"
+   },
+   "Grain": {
+    "offset": [
+     -0.0,
+     -0.015,
+     -0.0157
+    ],
+    "size": [
+     2.167,
+     1.7397,
+     1.2785
+    ],
+    "colour": "2c1e16",
+    "bone": "Torso"
+   },
+   "GreaveGrainL": {
+    "offset": [
+     -0.5,
+     -2.585,
+     -0.005
+    ],
+    "size": [
+     1.27,
+     0.91,
+     1.28
+    ],
+    "colour": "2c1e16",
+    "bone": "LeftLeg"
+   },
+   "GreaveGrainR": {
+    "offset": [
+     0.5,
+     -2.585,
+     -0.005
+    ],
+    "size": [
+     1.27,
+     0.91,
+     1.28
+    ],
+    "colour": "2c1e16",
+    "bone": "RightLeg"
+   },
+   "GreaveL": {
+    "offset": [
+     -0.5,
+     -2.49,
+     -0.005
+    ],
+    "size": [
+     1.23,
+     0.78,
+     1.24
+    ],
+    "colour": "4a3426",
+    "bone": "LeftLeg"
+   },
+   "GreaveR": {
+    "offset": [
+     0.5,
+     -2.49,
+     -0.005
+    ],
+    "size": [
+     1.23,
+     0.78,
+     1.24
+    ],
+    "colour": "4a3426",
+    "bone": "RightLeg"
+   },
+   "KneeL": {
+    "offset": [
+     -0.5,
+     -2.0221,
+     -0.5827
+    ],
+    "size": [
+     0.74,
+     0.4399,
+     0.2693
+    ],
+    "colour": "6b4a32",
+    "bone": "LeftLeg"
+   },
+   "KneeR": {
+    "offset": [
+     0.5,
+     -2.0221,
+     -0.5827
+    ],
+    "size": [
+     0.74,
+     0.4399,
+     0.2693
+    ],
+    "colour": "6b4a32",
+    "bone": "RightLeg"
+   },
+   "Knot": {
+    "offset": [
+     -0.0,
+     -0.865,
+     -0.725
+    ],
+    "size": [
+     0.26,
+     0.2,
+     0.07
+    ],
+    "colour": "6b4a32",
+    "bone": "Torso"
+   },
+   "MossL": {
+    "offset": [
+     -1.55,
+     1.2364,
+     -0.015
+    ],
+    "size": [
+     0.84,
+     0.1029,
+     0.87
+    ],
+    "colour": "4a6630",
+    "bone": "LeftArm"
+   },
+   "MossR": {
+    "offset": [
+     1.55,
+     1.2392,
+     -0.015
+    ],
+    "size": [
+     0.84,
+     0.1085,
+     0.87
+    ],
+    "colour": "4a6630",
+    "bone": "RightArm"
+   },
+   "PadL": {
+    "offset": [
+     -1.56,
+     0.7925,
+     0.0
+    ],
+    "size": [
+     1.27,
+     0.785,
+     1.35
+    ],
+    "colour": "5f7d3a",
+    "bone": "LeftArm"
+   },
+   "PadR": {
+    "offset": [
+     1.56,
+     0.7925,
+     0.0
+    ],
+    "size": [
+     1.27,
+     0.785,
+     1.35
+    ],
+    "colour": "5f7d3a",
+    "bone": "RightArm"
+   },
+   "SleeveL": {
+    "offset": [
+     -1.5,
+     0.0975,
+     0.0
+    ],
+    "size": [
+     1.09,
+     1.895,
+     1.09
+    ],
+    "colour": "291a10",
+    "bone": "LeftArm"
+   },
+   "SleeveR": {
+    "offset": [
+     1.5,
+     0.0975,
+     0.0
+    ],
+    "size": [
+     1.09,
+     1.895,
+     1.09
+    ],
+    "colour": "291a10",
+    "bone": "RightArm"
+   },
+   "ThornsL": {
+    "offset": [
+     -1.47,
+     1.4517,
+     0.06
+    ],
+    "size": [
+     0.6533,
+     0.7075,
+     0.773
+    ],
+    "colour": "f5ecd4",
+    "bone": "LeftArm"
+   },
+   "ThornsR": {
+    "offset": [
+     1.47,
+     1.4517,
+     0.06
+    ],
+    "size": [
+     0.6533,
+     0.7075,
+     0.773
+    ],
+    "colour": "f5ecd4",
+    "bone": "RightArm"
+   },
+   "TrousersL": {
+    "offset": [
+     -0.5,
+     -1.975,
+     0.0
+    ],
+    "size": [
+     1.09,
+     1.95,
+     1.09
+    ],
+    "colour": "291a10",
+    "bone": "LeftLeg"
+   },
+   "TrousersR": {
+    "offset": [
+     0.5,
+     -1.975,
+     0.0
+    ],
+    "size": [
+     1.09,
+     1.95,
+     1.09
+    ],
+    "colour": "291a10",
+    "bone": "RightLeg"
+   }
+  },
+  "size": [
+   4.39,
+   4.846,
+   1.44
+  ],
+  "minZ": -3.04,
+  "maxZ": 1.806
+ },
+ "WoodlandHide": {
+  "pieces": {
+   "Belt": {
+    "offset": [
+     -0.0,
+     -0.86,
+     0.0
+    ],
+    "size": [
+     2.26,
+     0.22,
+     1.36
+    ],
+    "colour": "5a3a22",
+    "bone": "Torso"
+   },
+   "Collar": {
+    "offset": [
+     -0.0,
+     0.955,
+     0.0
+    ],
+    "size": [
+     1.85,
+     0.62,
+     1.81
+    ],
+    "colour": "fff8ef",
+    "bone": "Torso"
+   },
+   "FurL": {
+    "offset": [
+     -1.51,
+     0.02,
+     0.0
+    ],
+    "size": [
+     1.27,
+     0.8,
+     1.29
+    ],
+    "colour": "e8752a",
+    "bone": "LeftArm"
+   },
+   "FurR": {
+    "offset": [
+     1.51,
+     0.02,
+     0.0
+    ],
+    "size": [
+     1.27,
+     0.8,
+     1.29
+    ],
+    "colour": "e8752a",
+    "bone": "RightArm"
+   },
+   "LaceL": {
+    "offset": [
+     -2.1095,
+     -0.66,
+     0.0
+    ],
+    "size": [
+     0.029,
+     0.4754,
+     0.1757
+    ],
+    "colour": "3a2618",
+    "bone": "LeftArm"
+   },
+   "LaceR": {
+    "offset": [
+     2.1095,
+     -0.66,
+     0.0
+    ],
+    "size": [
+     0.029,
+     0.4754,
+     0.1757
+    ],
+    "colour": "3a2618",
+    "bone": "RightArm"
+   },
+   "LegFurL": {
+    "offset": [
+     -0.5,
+     -2.07,
+     -0.005
+    ],
+    "size": [
+     1.29,
+     0.22,
+     1.3
+    ],
+    "colour": "e8752a",
+    "bone": "LeftLeg"
+   },
+   "LegFurR": {
+    "offset": [
+     0.5,
+     -2.07,
+     -0.005
+    ],
+    "size": [
+     1.29,
+     0.22,
+     1.3
+    ],
+    "colour": "e8752a",
+    "bone": "RightLeg"
+   },
+   "LegWrapL": {
+    "offset": [
+     -0.5,
+     -2.5,
+     -0.005
+    ],
+    "size": [
+     1.23,
+     0.76,
+     1.24
+    ],
+    "colour": "7a4a2a",
+    "bone": "LeftLeg"
+   },
+   "LegWrapR": {
+    "offset": [
+     0.5,
+     -2.5,
+     -0.005
+    ],
+    "size": [
+     1.23,
+     0.76,
+     1.24
+    ],
+    "colour": "7a4a2a",
+    "bone": "RightLeg"
+   },
+   "Loops": {
+    "offset": [
+     -0.0,
+     0.1,
+     -0.64
+    ],
+    "size": [
+     0.14,
+     0.96,
+     0.08
+    ],
+    "colour": "3a2618",
+    "bone": "Torso"
+   },
+   "PadL": {
+    "offset": [
+     -1.56,
+     0.8075,
+     0.0
+    ],
+    "size": [
+     1.29,
+     0.815,
+     1.35
+    ],
+    "colour": "9a5a34",
+    "bone": "LeftArm"
+   },
+   "PadR": {
+    "offset": [
+     1.56,
+     0.8075,
+     0.0
+    ],
+    "size": [
+     1.29,
+     0.815,
+     1.35
+    ],
+    "colour": "9a5a34",
+    "bone": "RightArm"
+   },
+   "Seam": {
+    "offset": [
+     -0.0,
+     -0.01,
+     -0.6175
+    ],
+    "size": [
+     0.05,
+     1.54,
+     0.035
+    ],
+    "colour": "b8561d",
+    "bone": "Torso"
+   },
+   "SleeveL": {
+    "offset": [
+     -1.5,
+     0.0975,
+     0.0
+    ],
+    "size": [
+     1.09,
+     1.895,
+     1.09
+    ],
+    "colour": "904613",
+    "bone": "LeftArm"
+   },
+   "SleeveR": {
+    "offset": [
+     1.5,
+     0.0975,
+     0.0
+    ],
+    "size": [
+     1.09,
+     1.895,
+     1.09
+    ],
+    "colour": "904613",
+    "bone": "RightArm"
+   },
+   "StrapL": {
+    "offset": [
+     -0.5,
+     -2.69,
+     -0.005
+    ],
+    "size": [
+     1.27,
+     0.7,
+     1.28
+    ],
+    "colour": "3a2618",
+    "bone": "LeftLeg"
+   },
+   "StrapR": {
+    "offset": [
+     0.5,
+     -2.69,
+     -0.005
+    ],
+    "size": [
+     1.27,
+     0.7,
+     1.28
+    ],
+    "colour": "3a2618",
+    "bone": "RightLeg"
+   },
+   "TrousersL": {
+    "offset": [
+     -0.5,
+     -1.975,
+     0.0
+    ],
+    "size": [
+     1.09,
+     1.95,
+     1.09
+    ],
+    "colour": "904613",
+    "bone": "LeftLeg"
+   },
+   "TrousersR": {
+    "offset": [
+     0.5,
+     -1.975,
+     0.0
+    ],
+    "size": [
+     1.09,
+     1.95,
+     1.09
+    ],
+    "colour": "904613",
+    "bone": "RightLeg"
+   },
+   "Tusk": {
+    "offset": [
+     -0.0,
+     -0.228,
+     -0.7354
+    ],
+    "size": [
+     0.4414,
+     1.544,
+     0.113
+    ],
+    "colour": "f5ecd4",
+    "bone": "Torso"
+   },
+   "TuskL": {
+    "offset": [
+     -1.9206,
+     1.3406,
+     0.0476
+    ],
+    "size": [
+     0.7939,
+     0.7952,
+     0.3238
+    ],
+    "colour": "f5ecd4",
+    "bone": "LeftArm"
+   },
+   "TuskR": {
+    "offset": [
+     1.9206,
+     1.3406,
+     0.0476
+    ],
+    "size": [
+     0.7939,
+     0.7952,
+     0.3238
+    ],
+    "colour": "f5ecd4",
+    "bone": "RightArm"
+   },
+   "Vest": {
+    "offset": [
+     -0.0,
+     -0.05,
+     0.0
+    ],
+    "size": [
+     2.25,
+     2.2,
+     1.33
+    ],
+    "colour": "e8752a",
+    "bone": "Torso"
+   },
+   "WrapL": {
+    "offset": [
+     -1.5,
+     -0.655,
+     0.0
+    ],
+    "size": [
+     1.19,
+     0.63,
+     1.21
+    ],
+    "colour": "7a4a2a",
+    "bone": "LeftArm"
+   },
+   "WrapR": {
+    "offset": [
+     1.5,
+     -0.655,
+     0.0
+    ],
+    "size": [
+     1.19,
+     0.63,
+     1.21
+    ],
+    "colour": "7a4a2a",
+    "bone": "RightArm"
+   }
+  },
+  "size": [
+   4.635,
+   4.778,
+   1.81
+  ],
+  "minZ": -3.04,
+  "maxZ": 1.738
+ },
+ "PineconeScale": {
+  "pieces": {
+   "BootL": {
+    "offset": [
+     -0.5,
+     -2.92,
+     0.0
+    ],
+    "size": [
+     1.3,
+     0.24,
+     1.3
+    ],
+    "colour": "4a3322",
+    "bone": "LeftLeg"
+   },
+   "BootR": {
+    "offset": [
+     0.5,
+     -2.92,
+     0.0
+    ],
+    "size": [
+     1.3,
+     0.24,
+     1.3
+    ],
+    "colour": "4a3322",
+    "bone": "RightLeg"
+   },
+   "KneeDarkL": {
+    "offset": [
+     -0.5,
+     -2.575,
+     0.0
+    ],
+    "size": [
+     1.3,
+     0.45,
+     1.3
+    ],
+    "colour": "8a5432",
+    "bone": "LeftLeg"
+   },
+   "KneeDarkR": {
+    "offset": [
+     0.5,
+     -2.575,
+     0.0
+    ],
+    "size": [
+     1.3,
+     0.45,
+     1.3
+    ],
+    "colour": "8a5432",
+    "bone": "RightLeg"
+   },
+   "KneeL": {
+    "offset": [
+     -0.5,
+     -2.275,
+     0.0
+    ],
+    "size": [
+     1.22,
+     0.45,
+     1.22
+    ],
+    "colour": "a8693c",
+    "bone": "LeftLeg"
+   },
+   "KneeR": {
+    "offset": [
+     0.5,
+     -2.275,
+     0.0
+    ],
+    "size": [
+     1.22,
+     0.45,
+     1.22
+    ],
+    "colour": "a8693c",
+    "bone": "RightLeg"
+   },
+   "Moss": {
+    "offset": [
+     -0.0,
+     -0.97,
+     0.0
+    ],
+    "size": [
+     2.35,
+     0.12,
+     1.35
+    ],
+    "colour": "6aa84f",
+    "bone": "Torso"
+   },
+   "MossL": {
+    "offset": [
+     -1.5,
+     -0.67,
+     0.0
+    ],
+    "size": [
+     1.23,
+     0.14,
+     1.23
+    ],
+    "colour": "6aa84f",
+    "bone": "LeftArm"
+   },
+   "MossR": {
+    "offset": [
+     1.5,
+     -0.67,
+     0.0
+    ],
+    "size": [
+     1.23,
+     0.14,
+     1.23
+    ],
+    "colour": "6aa84f",
+    "bone": "RightArm"
+   },
+   "Scales": {
+    "offset": [
+     -0.0,
+     -0.185,
+     0.0
+    ],
+    "size": [
+     2.34,
+     2.37,
+     1.34
+    ],
+    "colour": "a8693c",
+    "bone": "Torso"
+   },
+   "ScalesDark": {
+    "offset": [
+     -0.0,
+     0.085,
+     0.0
+    ],
+    "size": [
+     2.29,
+     2.03,
+     1.34
+    ],
+    "colour": "8a5432",
+    "bone": "Torso"
+   },
+   "ShoulderDarkL": {
+    "offset": [
+     -1.5425,
+     0.29,
+     0.0
+    ],
+    "size": [
+     1.255,
+     0.62,
+     1.34
+    ],
+    "colour": "8a5432",
+    "bone": "LeftArm"
+   },
+   "ShoulderDarkR": {
+    "offset": [
+     1.5425,
+     0.29,
+     0.0
+    ],
+    "size": [
+     1.255,
+     0.62,
+     1.34
+    ],
+    "colour": "8a5432",
+    "bone": "RightArm"
+   },
+   "ShoulderL": {
+    "offset": [
+     -1.565,
+     0.8225,
+     0.0
+    ],
+    "size": [
+     1.3,
+     0.805,
+     1.43
+    ],
+    "colour": "a8693c",
+    "bone": "LeftArm"
+   },
+   "ShoulderR": {
+    "offset": [
+     1.565,
+     0.8225,
+     0.0
+    ],
+    "size": [
+     1.3,
+     0.805,
+     1.43
+    ],
+    "colour": "a8693c",
+    "bone": "RightArm"
+   },
+   "SleeveL": {
+    "offset": [
+     -1.5,
+     0.0975,
+     0.0
+    ],
+    "size": [
+     1.09,
+     1.895,
+     1.09
+    ],
+    "colour": "683f20",
+    "bone": "LeftArm"
+   },
+   "SleeveR": {
+    "offset": [
+     1.5,
+     0.0975,
+     0.0
+    ],
+    "size": [
+     1.09,
+     1.895,
+     1.09
+    ],
+    "colour": "683f20",
+    "bone": "RightArm"
+   },
+   "TrousersL": {
+    "offset": [
+     -0.5,
+     -1.975,
+     0.0
+    ],
+    "size": [
+     1.09,
+     1.95,
+     1.09
+    ],
+    "colour": "683f20",
+    "bone": "LeftLeg"
+   },
+   "TrousersR": {
+    "offset": [
+     0.5,
+     -1.975,
+     0.0
+    ],
+    "size": [
+     1.09,
+     1.95,
+     1.09
+    ],
+    "colour": "683f20",
+    "bone": "RightLeg"
+   }
+  },
+  "size": [
+   4.43,
+   4.265,
+   1.43
+  ],
+  "minZ": -3.04,
+  "maxZ": 1.225
+ }
+}

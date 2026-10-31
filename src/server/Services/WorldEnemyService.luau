@@ -26,8 +26,12 @@
 -- its server-side position is its spawn point.
 --
 -- Kills: defeat() takes the player whose weapon hit finished it, and
--- onDefeated() listeners hear (enemy, killer) -- IndexService, CoinService,
--- ExpService and QuestService use that.
+-- onDefeated() listeners hear (enemy, killer, hitters) -- IndexService, CoinService,
+-- ExpService and QuestService use that. `hitters` is every player still in the game
+-- who hit the enemy since it last healed (2026-10-26, the user: two players who both
+-- hit an enemy both get a roll at its drops, whoever killed it and however much each
+-- did; IndexService and MaterialService roll for each). It clears when the enemy
+-- walks home to heal (AiState back to Idle) and on death.
 --
 -- Fights live in MeleeService. While one runs, the enemy's AiState is "Chase"
 -- or "Return" and MeleeService -- not the client wander -- decides where it
@@ -63,10 +67,11 @@ export type WorldEnemy = {
 	respawnSeconds: number,
 	wanderRadius: number,
 	aiState: string, -- "Idle" (wandering), "Chase" or "Return" (MeleeService owns it)
+	hitters: { [Player]: boolean }, -- who hit it since it last healed (see the header)
 }
 
 local enemies: { [string]: WorldEnemy } = {}
-local defeatedListeners: { (WorldEnemy, Player?) -> () } = {}
+local defeatedListeners: { (WorldEnemy, Player?, { Player }) -> () } = {}
 -- deaths per enemy id, so a stale respawn timer can tell it's been overtaken
 local lives: { [string]: number } = {}
 
@@ -287,6 +292,7 @@ local function register(marker: Instance, worldId: number, index: number, isBoss
 		respawnSeconds = numberAttribute(marker, "RespawnSeconds", respawnFor(worldId, def, isBoss)),
 		wanderRadius = wanderRadius,
 		aiState = "Idle",
+		hitters = {},
 	}
 	enemies[id] = enemy
 
@@ -325,6 +331,9 @@ function WorldEnemyService.damage(enemyId: string, amount: number, attacker: Pla
 		return false
 	end
 	enemy.hp = math.max(0, enemy.hp - math.max(0, math.floor(amount + 0.5)))
+	if attacker then
+		enemy.hitters[attacker] = true
+	end
 	-- Who landed the hit ("HitBy", their UserId), set before Hp like CritHp: only that
 	-- player's screen draws the damage bubble and, on the killing hit, the BONK
 	-- (2026-10-23, the user: other players shouldn't see someone else's).
@@ -353,6 +362,8 @@ function WorldEnemyService.setAiState(enemyId: string, state: string)
 		enemy.instance:SetAttribute("FightLook", nil)
 		if enemy.alive then
 			enemy.hp = enemy.maxHp
+			-- it healed, so the players who wore it down lose their share
+			enemy.hitters = {}
 		end
 	end
 	publish(enemy)
@@ -389,9 +400,10 @@ function WorldEnemyService.signalAttack(enemyId: string)
 	enemy.instance:SetAttribute("AttackSeq", (if type(seq) == "number" then seq else 0) + 1)
 end
 
--- Call `callback(enemy, killer)` whenever an enemy is defeated. `killer` is
--- the player who won, when there is one.
-function WorldEnemyService.onDefeated(callback: (WorldEnemy, Player?) -> ())
+-- Call `callback(enemy, killer, hitters)` whenever an enemy is defeated. `killer` is
+-- the player who won, when there is one; `hitters` every player who hit it since it
+-- last healed (the killer included), each of whom rolls its drops.
+function WorldEnemyService.onDefeated(callback: (WorldEnemy, Player?, { Player }) -> ())
 	table.insert(defeatedListeners, callback)
 end
 
@@ -407,8 +419,18 @@ function WorldEnemyService.defeat(enemyId: string, killer: Player?)
 	enemy.instance:SetAttribute("FightPos", nil)
 	enemy.instance:SetAttribute("FightLook", nil)
 	publish(enemy)
+	local hitters: { Player } = {}
+	for player in enemy.hitters do
+		if player.Parent then
+			table.insert(hitters, player)
+		end
+	end
+	if killer and not enemy.hitters[killer] then
+		table.insert(hitters, killer)
+	end
+	enemy.hitters = {}
 	for _, callback in defeatedListeners do
-		task.spawn(callback, enemy, killer)
+		task.spawn(callback, enemy, killer, hitters)
 	end
 
 	-- Each death gets a number, so a respawn forced early (the admin panel)
@@ -443,6 +465,7 @@ function WorldEnemyService.respawnArchetype(archetype: string): number
 		enemy.hp = enemy.maxHp
 		enemy.alive = true
 		enemy.aiState = "Idle"
+		enemy.hitters = {}
 		enemy.instance:SetAttribute("FightPos", nil)
 		enemy.instance:SetAttribute("FightLook", nil)
 		publish(enemy)
